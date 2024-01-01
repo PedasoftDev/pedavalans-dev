@@ -1,0 +1,17 @@
+step 1:
+useCreateOrganization ** ismi istenecek ilk önce
+useCreateTeam ile org yaratılacak. org ismi kullanıcıdan istenecek. bir sayfa yapılacak. next dediği anda team ile org oluşturuldu.
+ID.unique() -> $id
+step 2:
+useCreateRealm ile bir realm ("pedavalans", org_response.$id ) oluşturulacak. teamid ile parametreyi vereceğiz.
+
+step 3:
+useCreateDatabase ile realmid("pedavalans") verilecek. database id de "pedavalans" olacak. ismi de "pedavalans" olacak.
+
+step 4:
+useCreateCollection ile 1.realmid 2.databaseid 3.collectionid("competency") 4. olarak türkçe ismi
+
+step 5:
+useStringAttribute ile  
+
+Equal. ile erişmek
