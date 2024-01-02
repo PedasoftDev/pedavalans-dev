@@ -49,7 +49,7 @@ export class LoginController extends UIController {
 
         return (
             isLoading ? Fragment() :
-                me != null ? UINavigate('/main') :
+                me != null ? UINavigate('/home') :
                     VStack({ alignment: cTop })(
                         ReactView(
                             <Container>

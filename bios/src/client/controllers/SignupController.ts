@@ -37,7 +37,7 @@ export class SignupController extends UIController {
                 createEmailSession({
                     email: form.email,
                     password: form.password
-                }, () => navigate('/main'))
+                }, () => navigate('/home'))
             })
 
         }

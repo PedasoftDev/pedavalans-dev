@@ -33,4 +33,4 @@ shell.cp('-Rf', './dist_web/index.js', `../realmocean/system/bios`);
 shell.cd('..');
 shell.exec(`docker-compose restart`);
 
-shell.echo(`All done.`);
+shell.echo(`All done. ${new Date().getHours()}:${new Date().getMinutes()}`);
