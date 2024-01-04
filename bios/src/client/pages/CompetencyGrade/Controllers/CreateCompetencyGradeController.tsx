@@ -35,20 +35,13 @@ export class CreateCompetencyGradeController extends UIFormController {
                     tenant_id: "1",
                     realm_id: "1"
                 }
-            })
-            if (!isLoading && isSuccess) {
+            }, ()=> {
                 Toast.fire({
                     icon: 'success',
                     title: 'Yetkinlik Düzeyi Oluşturuldu'
                 })
                 navigate("/competencyGrade/list")
-            }
-            if (!isLoading && isError) {
-                Toast.fire({
-                    icon: 'error',
-                    title: error?.message
-                })
-            }
+            })
         }
 
         const onCancel = () => {

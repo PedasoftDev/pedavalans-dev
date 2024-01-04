@@ -7,9 +7,12 @@ namespace CompetencyGrade {
         return { createDocument, isLoading, isSuccess, isError, error }
     }
 
-    export const GetCompetencyGrade = (id: string) => {
+    export const GetCompetencyGrade = (id: string): { grade: ICompetencyGrade.ICompetencyGrade, isLoading: boolean } => {
         const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: "competency_grade", documentId: id })
-        return { document, isLoading }
+        return {
+            grade: document as any,
+            isLoading
+        }
     }
 
     export const GetCompetencyGrades = (): { grades: ICompetencyGrade.ICompetencyGrade[], isLoading: boolean } => {

@@ -12,7 +12,7 @@ export namespace Views {
 
     export const GradeCard = (grade_name: string, uiDropdownItems: any[]) =>
         HStack({ spacing: 10 })(
-            Icon("\\e267").width("30px").height("30px"),
+            Icon("\\e267").fontSize("30px").width("30px").height("30px"),
             VStack({ alignment: cLeading })(
                 PedaText("Düzey Adı").fontSize("10px").foregroundColor("gray"),
                 PedaText(grade_name).multilineTextAlignment(TextAlignment.leading)
