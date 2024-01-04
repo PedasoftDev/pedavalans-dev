@@ -1,0 +1,1 @@
+export const _colorTextField = '#F2F2F2';

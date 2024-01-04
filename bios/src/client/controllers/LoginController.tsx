@@ -1,7 +1,8 @@
 import { Fragment, ReactView, UIController, UINavigate, UIView, VStack, cTop, useNavigate, useState } from "@tuval/forms";
 import { useCreateEmailSession, useGetMe } from "@realmocean/sdk";
 import React from "react";
-import { Container, Header, LoginButton, LoginContainer, LoginError, LoginForm, LoginInput, LoginLabel, LoginToSignUp, customLogo } from "./LoginStyles/Styles";
+import { Container, Header, LoginContainer, LoginError, LoginForm, LoginInput, LoginLabel, LoginToSignUp, customLogo } from "./LoginStyles/Styles";
+import Button from '../components/Button';
 
 
 export class LoginController extends UIController {
@@ -17,13 +18,25 @@ export class LoginController extends UIController {
 
         const [form, setForm] = useState({
             email: '',
-            password: ''
+            password: '',
+            disabled: false
         });
 
         const handleFormChange = (e: any) => {
             setForm({
                 ...form,
                 [e.target.name]: e.target.value
+            })
+        }
+
+        const onSubmit = (e: any) => {
+            e.preventDefault();
+            setForm({ ...form, disabled: true })
+            createEmailSession({
+                email: form.email,
+                password: form.password
+            }, () => {
+                navigate('/dashboard')
             })
         }
 
@@ -36,20 +49,9 @@ export class LoginController extends UIController {
             )
         }
 
-        const onSubmit = (e: any) => {
-            e.preventDefault();
-            createEmailSession({
-                email: form.email,
-                password: form.password
-            }, () => {
-
-                navigate('/home')
-            })
-        }
-
         return (
             isLoading ? Fragment() :
-                me != null ? UINavigate('/home') :
+                me != null ? UINavigate('/dashboard') :
                     VStack({ alignment: cTop })(
                         ReactView(
                             <Container>
@@ -72,7 +74,12 @@ export class LoginController extends UIController {
                                             value={form.password}
                                             required
                                         />
-                                        <LoginButton>Giriş Yap</LoginButton>
+                                        <Button
+                                            variant="contained"
+                                            fullWidth
+                                            type="submit"
+                                            disabled={form.disabled}
+                                        >Giriş Yap</Button>
                                         {isError && <LoginError>{error?.message}</LoginError>}
                                     </LoginForm>
                                     <LoginToSignUp onClick={() => navigate('/signup')}>

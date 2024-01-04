@@ -74,7 +74,7 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "is_active_competency",
-                    "type": "string",
+                    "type": "boolean",
                     "default": true
                 },
                 {
@@ -157,11 +157,11 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "competency_department_name",
-                    "type": "boolean",
+                    "type": "string",
                 },
                 {
                     "key": "competency_id",
-                    "type": "boolean",
+                    "type": "string",
                 },
                 {
                     "key": "tenant_id",
@@ -171,7 +171,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-                ,
                 {
                     "key": "is_active",
                     "type": "boolean",
@@ -269,7 +268,7 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-                ,
+
             ]
         },
         {
@@ -378,7 +377,11 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "polyvalence_department_id",
-                    "type": "polyvalence_department_name"
+                    "type": "string"
+                },
+                {
+                    "key": "polyvalence_department_name",
+                    "type": "string"
                 },
                 {
                     "key": "polyvalence_evaluation_frequency",
@@ -406,7 +409,7 @@ const Database: IDatabase = {
             ]
         },
         {
-            "id": "polyvalence_unit_table_data_responsible",
+            "id": "polyvalence_unit_table_data_respon",
             "name": "Polyvalence Unit Table Data Responsible",
             "description": {
                 "en": "Polyvalence Unit Table Data Responsible is a collection of polyvalence unit table data responsibles.",
@@ -438,7 +441,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-                ,
                 {
                     "key": "is_active",
                     "type": "boolean",
@@ -484,7 +486,7 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-                ,
+
                 {
                     "key": "is_active",
                     "type": "boolean",
@@ -576,7 +578,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-
             ]
         },
         {
@@ -604,7 +605,7 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string",
                 },
-                ,
+
                 {
                     "key": "is_active",
                     "type": "boolean",
@@ -692,22 +693,6 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "action_finish_date",
-                    "type": "string",
-                },
-                {
-                    "key": "created_at",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_at",
-                    "type": "string",
-                },
-                {
-                    "key": "created_by",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_by",
                     "type": "string",
                 },
                 {
@@ -800,22 +785,6 @@ const Database: IDatabase = {
                     "type": "string",
                 },
                 {
-                    "key": "created_at",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_at",
-                    "type": "string",
-                },
-                {
-                    "key": "created_by",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_by",
-                    "type": "string",
-                },
-                {
                     "key": "is_active",
                     "type": "boolean",
                     "default": true
@@ -865,25 +834,9 @@ const Database: IDatabase = {
                     "type": "string",
                 },
                 {
-                    "key": "created_at",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_at",
-                    "type": "string",
-                },
-                {
-                    "key": "created_by",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_by",
-                    "type": "string",
-                },
-                {
-                    "key": "is_deleted",
+                    "key": "is_active",
                     "type": "boolean",
-                    "default": false
+                    "default": true
                 },
                 {
                     "key": "is_deleted",
@@ -918,25 +871,9 @@ const Database: IDatabase = {
                     "type": "string",
                 },
                 {
-                    "key": "created_at",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_at",
-                    "type": "string",
-                },
-                {
-                    "key": "created_by",
-                    "type": "string",
-                },
-                {
-                    "key": "updated_by",
-                    "type": "string",
-                },
-                {
-                    "key": "is_deleted",
+                    "key": "is_active",
                     "type": "boolean",
-                    "default": false
+                    "default": true
                 },
                 {
                     "key": "is_deleted",
@@ -978,7 +915,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string",
                 },
-                ,
                 {
                     "key": "is_active",
                     "type": "boolean",
@@ -1047,6 +983,14 @@ const Database: IDatabase = {
                     "type": "string",
                 },
                 {
+                    "key": "department_id",
+                    "type": "string",
+                },
+                {
+                    "key": "department_name",
+                    "type": "string",
+                },
+                {
                     "key": "tenant_id",
                     "type": "string",
                 },
@@ -1072,15 +1016,6 @@ const Database: IDatabase = {
                     "type": "boolean",
                     "default": false
                 },
-                ,
-                {
-                    "key": "department_id",
-                    "type": "string",
-                },
-                {
-                    "key": "department_name",
-                    "type": "string",
-                }
             ]
         },
         {
@@ -1122,7 +1057,7 @@ const Database: IDatabase = {
                     "type": "boolean",
                     "default": false
                 },
-                ,
+
             ]
         },
         {
@@ -1164,7 +1099,7 @@ const Database: IDatabase = {
                     "type": "boolean",
                     "default": false
                 },
-                ,
+
             ]
         },
         {
@@ -1218,7 +1153,6 @@ const Database: IDatabase = {
                     "type": "boolean",
                     "default": false
                 },
-                ,
                 {
                     "key": "tenant_id",
                     "type": "string",

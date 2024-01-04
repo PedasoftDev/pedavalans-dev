@@ -4,7 +4,10 @@ import { LoginController } from "./controllers/LoginController"
 import { SignupController } from "./controllers/SignupController"
 import { NotFoundController } from "./pages/NotFound/Controllers/NotFoundController"
 import { SetupController } from "./pages/Setup/Controllers/SetupController"
-import { HomeController } from "./pages/Home/Controllers/HomeController"
+import { DashboardController } from "./pages/Dashboard/DashboardController"
+import { CompetencyGradeController } from "./pages/CompetencyGrade/Controllers/CompetencyGradeController"
+import { CompetencyGradeListController } from "./pages/CompetencyGrade/Controllers/CompetencyGradeListController"
+import { CreateCompetencyGradeController } from "./pages/CompetencyGrade/Controllers/CreateCompetencyGradeController"
 
 export const Routes = () => {
     return (
@@ -13,8 +16,16 @@ export const Routes = () => {
                 // setup
                 UIRoute('setup', SetupController),
 
-                // home
-                UIRoute('home', HomeController),
+                // dashboard
+                UIRoute('dashboard', DashboardController),
+
+                // competencyGrade
+                UIRoute("competencyGrade", CompetencyGradeController).children(
+                    UIRoute("create", CreateCompetencyGradeController),
+                    UIRoute("list", CompetencyGradeListController)
+                ),
+
+
 
                 UIRoute('', LoginController),
                 UIRoute('login', LoginController),

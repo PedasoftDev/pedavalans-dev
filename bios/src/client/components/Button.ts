@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
+import { Button as ButtonMUI } from '@mui/material/';
 
-const BootstrapButton = styled(Button)({
+const Button = styled(ButtonMUI)({
     boxShadow: 'none',
     textTransform: 'none',
     fontSize: 16,
@@ -37,4 +37,4 @@ const BootstrapButton = styled(Button)({
     },
 });
 
-export default BootstrapButton;
+export default Button;
