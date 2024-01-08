@@ -1,4 +1,4 @@
-import { cTop, VStack, useNavigate, ReactView, UIController, Spinner, useParams, Text, UIFormController, UIViewBuilder } from "@tuval/forms";
+import { cTop, VStack, useNavigate, ReactView, Spinner, useParams, Text, UIFormController, UIViewBuilder } from "@tuval/forms";
 import React, { useCallback, useEffect } from "react";
 import Form from "../Views/Form";
 import { Button, TextField } from "@mui/material";
@@ -70,9 +70,7 @@ export class UpdateCompetencyGradeController extends UIFormController {
                             databaseId: AppInfo.Database,
                             collectionId: "competency_grade",
                             documentId: id,
-                            data: {
-                                ...grade
-                            }
+                            data: this.GetFormData()
                         })
                     }
 

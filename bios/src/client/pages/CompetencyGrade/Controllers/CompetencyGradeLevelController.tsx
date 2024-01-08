@@ -6,7 +6,6 @@ import { GridColDef } from '@mui/x-data-grid';
 import Swal from 'sweetalert2';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
-import ICompetencyGrade from '../../../interfaces/CompetencyGrade';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import AppInfo from '../../../../AppInfo';
 
