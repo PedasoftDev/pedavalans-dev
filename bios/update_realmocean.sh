@@ -1,4 +1,4 @@
-yarn remove @realmocean/sdk && yarn add @realmocean/sdk@latest
+npm uninstall @realmocean/sdk && npm install --save-dev @realmocean/sdk@latest
 cd ../
 ./drop_images.sh
 docker rmi $(docker images 'realmocean/realmocean' -a -q)

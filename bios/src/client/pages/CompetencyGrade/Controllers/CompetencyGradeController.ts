@@ -14,11 +14,8 @@ export class CompetencyGradeController extends UIController {
     }
 
     protected BindRouterParams() {
-        Services.Accounts.get().catch((err) => {
-            err.code === 401 && this.navigate('/login')
-        })
         Services.Databases.get(AppInfo.Name, AppInfo.Database).catch((err) => {
-            err.code === 404 && this.navigate('/setup')
+            err.code === 404 && this.navigate('/app/setup')
         })
         this.getTheme()
     }

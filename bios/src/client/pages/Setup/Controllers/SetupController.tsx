@@ -22,7 +22,7 @@ export class SetupController extends UIController {
         this.helpTexts = [];
         Services.Databases.get(AppInfo.Name, AppInfo.Database).then((database) => {
             if (database != null) {
-                this.navigate('/dashboard');
+                this.navigate('/app/dashboard');
             }
         })
     }
@@ -56,6 +56,7 @@ export class SetupController extends UIController {
                 Services.Client.setMode(undefined);
                 // Services.Teams.get()
                 const organization = await Services.Teams.create(form.organizationId, form.organizationName);
+                Services.Accounts.updatePrefs({ organization: organization.$id })
                 this.pushHelpText("Organizasyon oluşturuldu: " + organization.name);
                 this.pushHelpText("Realm oluşturuluyor...");
                 const realm = await Services.Projects.create(AppInfo.Name, AppInfo.Name, organization.$id);
@@ -97,7 +98,7 @@ export class SetupController extends UIController {
                     title: 'Pedavalans oluşturuldu'
                 })
                 setTimeout(() => {
-                    this.navigate('/dashboard');
+                    this.navigate('/app/dashboard');
                 }, 3000);
             } catch (error: any) {
                 console.log(error);

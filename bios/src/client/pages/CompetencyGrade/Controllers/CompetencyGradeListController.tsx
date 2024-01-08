@@ -58,7 +58,7 @@ export class CompetencyGradeListController extends UIController {
                                     ).width("80%"),
                                     VStack(
                                         ReactView(
-                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/competencyGrade/create")}>Yeni Kayıt</Button>
+                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competencyGrade/create")}>Yeni Kayıt</Button>
                                         )
                                     ).width("20%")
                                 ),

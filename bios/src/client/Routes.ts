@@ -15,7 +15,7 @@ import { CompetencyGroupController } from './pages/CompetencyGroup/Controllers/C
 export const Routes = () => {
     return (
         UIRoutes(
-            UIRoute('/', LayoutController).children(
+            UIRoute('/app', LayoutController).children(
                 // setup
                 UIRoute('setup', SetupController),
 
@@ -38,15 +38,14 @@ export const Routes = () => {
                     // UIRoute("level/:id", CompetencyGradeLevelController)
                 ),
 
-                UIRoute('', LoginController),
-                UIRoute('login', LoginController),
-                UIRoute('signup', SignupController),
-                UIRoute('logout', LoginController),
-
 
                 UIRoute('*', NotFoundController),
             ),
-            UIRoute('*', NotFoundController)
+
+            UIRoute('', LoginController),
+            UIRoute('login', LoginController),
+            UIRoute('signup', SignupController),
+            UIRoute('logout', LoginController)
         )
     )
 }

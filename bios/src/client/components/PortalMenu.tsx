@@ -10,7 +10,7 @@ import { TbHeartRateMonitor, TbReportAnalytics } from "react-icons/tb";
 import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
 import { MdOutlineSettings } from "react-icons/md";
-import { useGetCurrentTeam } from '@realmocean/sdk';
+import { useGetCurrentTeam, useGetMe, useGetOrganization } from '@realmocean/sdk';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -46,13 +46,17 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             localStorage.getItem("polyvalenceUnitTableAuth") == "responsible_user") || localStorage.getItem("pedavalans_unit_table_authorization") == "false" ? true : false
     )
 
-    const { team, isLoading } = useGetCurrentTeam()
+    const { me, isLoading } = useGetMe("console")
+
+    const { organization } = useGetOrganization({ organizationId: me?.prefs?.organization })
+
+    // hiding
 
 
     const sideBarMenuModel: menuModel[] = [
         {
             title: "Dashboard",
-            link: "/dashboard",
+            link: "/app/dashboard",
             icon: ReactView(
                 <RxDashboard size={25} />
             ),
@@ -60,7 +64,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
         },
         {
             title: "Birim Polivalans",
-            link: "/polyvalenceUnit/list",
+            link: "/app/polyvalenceUnit/list",
             icon: ReactView(
                 <RxTable size={25} />
                 //import { FaRegObjectGroup } from "react-icons/fa";
@@ -69,7 +73,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
         },
         {
             title: "Makineler",
-            link: "/machines/list",
+            link: "/app/machines/list",
             icon: ReactView(
                 <RxColorWheel size={25} />
             ),
@@ -77,7 +81,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
         },
         {
             title: "İzleme",
-            link: "/lowPerformingStaffController/view",
+            link: "/app/lowPerformingStaffController/view",
             icon: ReactView(
                 <TbHeartRateMonitor size={25} />
             ),
@@ -88,7 +92,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             subMenu: [
                 {
                     title: "Yetkinlik Hedef Girişi",
-                    link: "/competencyTargetDataEntry/view",
+                    link: "/app/competencyTargetDataEntry/view",
                     icon: ReactView(
                         <BiCalendarPlus size={25} />
                     ),
@@ -96,7 +100,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Yetkinlik Gerçekleşme Girişi",
-                    link: "/competencyDataEntry/view",
+                    link: "/app/competencyDataEntry/view",
                     icon: ReactView(
                         <BiCalendarCheck size={25} />
                     ),
@@ -104,7 +108,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Çalışan Yetkinlik Karnesi",
-                    link: "/competencyDataReport/view",
+                    link: "/app/competencyDataReport/view",
                     icon: ReactView(
                         <TbReportAnalytics size={25} />
                     ),
@@ -118,7 +122,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             subMenu: [
                 {
                     title: "Yetkinlikler",
-                    link: "/competency/list",
+                    link: "/app/competency/list",
                     icon: ReactView(
                         <IoGitNetworkOutline size={25} />
                     ),
@@ -126,7 +130,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Yetkinlik Grupları",
-                    link: "/competencyGroup/list",
+                    link: "/app/competencyGroup/list",
                     icon: ReactView(
                         <FaLayerGroup size={25} />
                     ),
@@ -134,7 +138,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Değerlendirme Dönemi",
-                    link: "/competencyEvaluationPeriod/list",
+                    link: "/app/competencyEvaluationPeriod/list",
                     icon: ReactView(
                         <BsCalendar4Week size={25} />
                     ),
@@ -142,7 +146,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Yetkinlik Düzeyleri",
-                    link: "/competencyGrade/list",
+                    link: "/app/competencyGrade/list",
                     icon: ReactView(
                         <FaSignal size={25} />
                     ),
@@ -150,16 +154,16 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Organizasyon Yapısı",
-                    link: "/organizationStructure/view",
+                    link: "/app/organizationStructure/view",
                     icon: ReactView(
                         <VscOrganization size={25} />
                     ),
                     isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" &&
-                        localStorage.getItem("app_based_organization_structure") == "true" ? true : false
+                        localStorage.getItem("/app_based_organization_structure") == "true" ? true : false
                 },
                 {
                     title: "Parametreler",
-                    link: "/parameters/view",
+                    link: "/app/parameters/view",
                     icon: ReactView(
                         <MdOutlineSettings size={25} />
                     ),
@@ -179,7 +183,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                         Text("Pedavalans").fontFamily("Poppins")
                             .foregroundColor(Resources.Colors.themeColor)
                             .fontWeight("400").fontSize("30px"),
-                        Text(JSON.stringify(team)).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
+                        Text(organization?.name).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
                     ).height().width()
                 ).height().width().padding(20),
                 ScrollView({ axes: "cVertical" })(
@@ -221,9 +225,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                 ).paddingTop("1.5rem").height()
                         )
                     ).paddingTop("10px").width("100%"),
-                    Spacer(),
-                    Text("v1.1.0").fontSize("10px").paddingLeft("10px").paddingBottom("5px")
-                )
+                ),
+                HStack({ alignment: cLeading })(Text("v1.1.0").fontSize("10px").paddingLeft("10px").paddingBottom("5px")).height()
             ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
     )
 }

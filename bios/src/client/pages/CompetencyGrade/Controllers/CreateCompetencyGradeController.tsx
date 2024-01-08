@@ -4,6 +4,8 @@ import { Button, TextField } from '@mui/material';
 import { Toast } from '../../../components/Toast';
 import Form from '../Views/Form';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
+import { useGetMe } from '@realmocean/sdk';
+import AppInfo from '../../../../AppInfo';
 
 
 interface IFormData {
@@ -16,6 +18,8 @@ export class CreateCompetencyGradeController extends UIFormController {
 
         const navigate = useNavigate();
 
+        const { me, isLoading: isLoadingGetMe } = useGetMe("console")
+
         const { createDocument, isLoading, isSuccess, error, isError } = CompetencyGrade.CreateCompetencyGrade();
 
         const [form, setForm] = React.useState<IFormData>({
@@ -24,14 +28,15 @@ export class CreateCompetencyGradeController extends UIFormController {
 
         const onSubmit = (e: any) => {
             const id = nanoid();
+            console.log(me?.prefs?.organization)
             e.preventDefault();
             Toast.fire({
                 icon: 'info',
                 title: 'Yetkinlik Düzeyi Oluşturuluyor...'
             })
             createDocument({
+                documentId: id,
                 data: {
-                    $id: id,
                     competency_grade_id: id,
                     competency_grade_name: form.grade_name,
                     tenant_id: "1",

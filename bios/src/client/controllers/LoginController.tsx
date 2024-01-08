@@ -36,7 +36,7 @@ export class LoginController extends UIController {
                 email: form.email,
                 password: form.password
             }, () => {
-                navigate('/dashboard')
+                navigate('/app/dashboard')
             })
         }
 
@@ -51,7 +51,7 @@ export class LoginController extends UIController {
 
         return (
             isLoading ? Fragment() :
-                me != null ? UINavigate('/dashboard') :
+                me != null ? UINavigate('/app/dashboard') :
                     VStack({ alignment: cTop })(
                         ReactView(
                             <Container>

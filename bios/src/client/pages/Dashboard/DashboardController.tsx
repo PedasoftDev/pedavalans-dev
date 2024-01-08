@@ -1,4 +1,4 @@
-import { cTop, cTopLeading, HStack, ReactView, Spinner, UIController, UINavigate, useNavigate, VStack } from '@tuval/forms';
+import { cTop, cTopLeading, Heading, HStack, ReactView, Spinner, UIController, UINavigate, useNavigate, VStack } from '@tuval/forms';
 import React from 'react';
 import { Chart, Series, Export, Tooltip } from 'devextreme-react/chart';
 import { PortalMenu } from '../../components/PortalMenu';
@@ -58,7 +58,7 @@ export class DashboardController extends UIController {
 
     protected BindRouterParams(routerParams?: any): void {
         Services.Databases.get(AppInfo.Name, AppInfo.Database).catch((err) => {
-            err.code === 404 && this.navigate('/setup')
+            err.code === 404 && this.navigate('/app/setup')
         })
     }
 
@@ -72,6 +72,7 @@ export class DashboardController extends UIController {
             isLoading ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     HStack({ alignment: cTopLeading })(
+                        // Heading("Dashboard").width("100%"), 
                         PortalMenu("Dashboard"),
                         VStack({ alignment: cTop })(
                             ReactView(
