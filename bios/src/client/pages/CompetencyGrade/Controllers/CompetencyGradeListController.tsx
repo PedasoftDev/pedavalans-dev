@@ -16,6 +16,7 @@ import React from 'react';
 import { Button, TextField } from '@mui/material';
 import { Views } from '../../../components/Views';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
+import ICompetencyGrade from '../../../interfaces/CompetencyGrade';
 
 export class CompetencyGradeListController extends UIController {
 
@@ -72,11 +73,11 @@ export class CompetencyGradeListController extends UIController {
                                                     Views.GradeCard(grade.competency_grade_name, [
                                                         {
                                                             title: "Düzenle",
-                                                            action: () => navigate(`/competencyGrade/edit/${grade.competency_grade_id}`)
+                                                            action: () => navigate(`/competencyGrade/edit/${grade.$id}`)
                                                         },
                                                         {
                                                             title: "Düzey Skalası",
-                                                            action: () => navigate(`/competencyGrade/level/${grade.competency_grade_id}`)
+                                                            action: () => navigate(`/competencyGrade/level/${grade.$id}`)
                                                         }
                                                     ])
                                                 )

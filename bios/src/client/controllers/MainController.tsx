@@ -1,15 +1,11 @@
 
-import {
-    BiosController,
-    UIView
-} from "@tuval/forms";
-
-
+import { BiosController, UIView } from "@tuval/forms";
 import { Routes } from "../Routes";
-
 
 export class MainController extends BiosController {
     public override LoadBiosView(): UIView {
+        // title
+        window.document.title = "Pedavalans";
         return (
             Routes()
         )

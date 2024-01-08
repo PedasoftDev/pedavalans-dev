@@ -1,10 +1,10 @@
-import { cTop, ReactView, UIFormController, useNavigate, VStack } from '@tuval/forms';
+import { cTop, nanoid, ReactView, UIFormController, useNavigate, VStack } from '@tuval/forms';
 import React from 'react';
 import { Button, TextField } from '@mui/material';
 import { Toast } from '../../../components/Toast';
 import Form from '../Views/Form';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
-import { ID } from '@realmocean/sdk';
+
 
 interface IFormData {
     grade_name: string;
@@ -23,6 +23,7 @@ export class CreateCompetencyGradeController extends UIFormController {
         })
 
         const onSubmit = (e: any) => {
+            const id = nanoid();
             e.preventDefault();
             Toast.fire({
                 icon: 'info',
@@ -30,12 +31,13 @@ export class CreateCompetencyGradeController extends UIFormController {
             })
             createDocument({
                 data: {
-                    competency_grade_id: ID.unique(),
+                    $id: id,
+                    competency_grade_id: id,
                     competency_grade_name: form.grade_name,
                     tenant_id: "1",
                     realm_id: "1"
                 }
-            }, ()=> {
+            }, () => {
                 Toast.fire({
                     icon: 'success',
                     title: 'Yetkinlik Düzeyi Oluşturuldu'

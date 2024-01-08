@@ -10,6 +10,7 @@ import { TbHeartRateMonitor, TbReportAnalytics } from "react-icons/tb";
 import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
 import { MdOutlineSettings } from "react-icons/md";
+import { useGetCurrentTeam } from '@realmocean/sdk';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -44,6 +45,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
         (localStorage.getItem("pedavalans_unit_table_authorization") == "true" &&
             localStorage.getItem("polyvalenceUnitTableAuth") == "responsible_user") || localStorage.getItem("pedavalans_unit_table_authorization") == "false" ? true : false
     )
+
+    const { team, isLoading } = useGetCurrentTeam()
 
 
     const sideBarMenuModel: menuModel[] = [
@@ -168,56 +171,59 @@ export const PortalMenu = (selectedMenuTitle: string) => {
     ]
 
     return (
-        VStack({ alignment: cTop })(
-
-            HStack({ spacing: 15 })(
-                UIImage(CustomIcons.customLogo).width(60),
-                Text("Pedavalans").fontFamily("Poppins")
-                    .foregroundColor(Resources.Colors.themeColor)
-                    .fontWeight("400").fontSize("30px")
-            ).height().width().padding(20),
-            ScrollView({ axes: "cVertical" })(
-                VStack({ alignment: cTop })(
-                    ...ForEach(sideBarMenuModel)((menuItem, index) =>
-                        menuItem.subMenu == null ?
-                            menuItem.isVisible &&
-                            UIRouteLink(menuItem.link)(
-                                HStack({ alignment: cLeading })(
-                                    menuItem.icon,
-                                    Text(menuItem.title).paddingLeft(".5rem")
-                                ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
-                                    .transition("all .2s ease-in-out")
-                                    .background({ default: menuItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: menuItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
-                                    .foregroundColor({ default: menuItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
-                                    .shadow(menuItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
-                            ).paddingTop("0.5rem")
-                            :
-                            menuItem.isVisible &&
-                            VStack({ alignment: cTop })(
-                                HStack({ alignment: cLeading })(
-                                    Text(menuItem.title).textTransform("uppercase").fontWeight("900").fontSize("13px").foregroundColor("#2e5bc7")
-                                ).height().paddingLeft("20px"),
-                                VStack(
-                                    ...ForEach(menuItem.subMenu)(subItem =>
-                                        subItem.isVisible &&
-                                        UIRouteLink(subItem.link)(
-                                            HStack({ alignment: cLeading })(
-                                                subItem.icon,
-                                                Text(subItem.title).paddingLeft(".5rem")
-                                            ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
-                                                .transition("all .2s ease-in-out")
-                                                .background({ default: subItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: subItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
-                                                .foregroundColor({ default: subItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
-                                                .shadow(subItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
-                                        ).paddingTop("0.5rem")
+        isLoading ? VStack() :
+            VStack({ alignment: cTop })(
+                HStack({ spacing: 15 })(
+                    UIImage(CustomIcons.customLogo).width(60),
+                    VStack({ alignment: cLeading })(
+                        Text("Pedavalans").fontFamily("Poppins")
+                            .foregroundColor(Resources.Colors.themeColor)
+                            .fontWeight("400").fontSize("30px"),
+                        Text(JSON.stringify(team)).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
+                    ).height().width()
+                ).height().width().padding(20),
+                ScrollView({ axes: "cVertical" })(
+                    VStack({ alignment: cTop })(
+                        ...ForEach(sideBarMenuModel)((menuItem, index) =>
+                            menuItem.subMenu == null ?
+                                menuItem.isVisible &&
+                                UIRouteLink(menuItem.link)(
+                                    HStack({ alignment: cLeading })(
+                                        menuItem.icon,
+                                        Text(menuItem.title).paddingLeft(".5rem")
+                                    ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
+                                        .transition("all .2s ease-in-out")
+                                        .background({ default: menuItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: menuItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
+                                        .foregroundColor({ default: menuItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
+                                        .shadow(menuItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
+                                ).paddingTop("0.5rem")
+                                :
+                                menuItem.isVisible &&
+                                VStack({ alignment: cTop })(
+                                    HStack({ alignment: cLeading })(
+                                        Text(menuItem.title).textTransform("uppercase").fontWeight("900").fontSize("13px").foregroundColor("#2e5bc7")
+                                    ).height().paddingLeft("20px"),
+                                    VStack(
+                                        ...ForEach(menuItem.subMenu)(subItem =>
+                                            subItem.isVisible &&
+                                            UIRouteLink(subItem.link)(
+                                                HStack({ alignment: cLeading })(
+                                                    subItem.icon,
+                                                    Text(subItem.title).paddingLeft(".5rem")
+                                                ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
+                                                    .transition("all .2s ease-in-out")
+                                                    .background({ default: subItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: subItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
+                                                    .foregroundColor({ default: subItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
+                                                    .shadow(subItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
+                                            ).paddingTop("0.5rem")
+                                        )
                                     )
-                                )
-                            ).paddingTop("1.5rem").height()
-                    )
-                ).paddingTop("10px").width("100%"),
-                Spacer(),
-                Text("v1.1.0").fontSize("10px").paddingLeft("10px").paddingBottom("5px")
-            )
-        ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
+                                ).paddingTop("1.5rem").height()
+                        )
+                    ).paddingTop("10px").width("100%"),
+                    Spacer(),
+                    Text("v1.1.0").fontSize("10px").paddingLeft("10px").paddingBottom("5px")
+                )
+            ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
     )
 }

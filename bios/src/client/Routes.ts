@@ -1,3 +1,4 @@
+import { UpdateCompetencyGradeController } from './pages/CompetencyGrade/Controllers/UpdateCompetencyGradeController';
 import { UIRoute, UIRoutes } from "@tuval/forms"
 import { LayoutController } from "./controllers/LayoutController"
 import { LoginController } from "./controllers/LoginController"
@@ -8,6 +9,7 @@ import { DashboardController } from "./pages/Dashboard/DashboardController"
 import { CompetencyGradeController } from "./pages/CompetencyGrade/Controllers/CompetencyGradeController"
 import { CompetencyGradeListController } from "./pages/CompetencyGrade/Controllers/CompetencyGradeListController"
 import { CreateCompetencyGradeController } from "./pages/CompetencyGrade/Controllers/CreateCompetencyGradeController"
+import { CompetencyGradeLevelController } from './pages/CompetencyGrade/Controllers/CompetencyGradeLevelController';
 
 export const Routes = () => {
     return (
@@ -22,7 +24,9 @@ export const Routes = () => {
                 // competencyGrade
                 UIRoute("competencyGrade", CompetencyGradeController).children(
                     UIRoute("create", CreateCompetencyGradeController),
-                    UIRoute("list", CompetencyGradeListController)
+                    UIRoute("edit/:id", UpdateCompetencyGradeController),
+                    UIRoute("list", CompetencyGradeListController),
+                    UIRoute("level/:id", CompetencyGradeLevelController)
                 ),
 
 
