@@ -1,7 +1,7 @@
-import { cTop, Spinner, State, UIFormController, VStack, UIView, ReactView, nanoid } from '@tuval/forms';
+import { cTop, Spinner, UIFormController, VStack, UIView, ReactView, nanoid, useState, useParams } from '@tuval/forms';
 import Form from '../Views/Form';
 import { Button, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { GridColDef } from '@mui/x-data-grid';
 import Swal from 'sweetalert2';
 import StyledDataGrid from '../../../components/StyledDataGrid';
@@ -11,7 +11,6 @@ import AppInfo from '../../../../AppInfo';
 
 interface IFormData {
     grade_id: string;
-    $id: string;
     grade_level_id: string;
     grade_level_name: string;
     grade_level_number: string;
@@ -19,25 +18,16 @@ interface IFormData {
 
 export class CompetencyGradeLevelController extends UIFormController {
 
-    private grade_id: string;
-
-    @State()
-    public theme: boolean;
-
-    private getTheme() {
-        this.theme = JSON.parse(localStorage.getItem("pedavalans_theme"));
-    }
-
-    protected BindRouterParams({ grade_id }) {
-        this.grade_id = grade_id;
-        this.getTheme()
-    }
-
     public LoadView(): UIView {
 
+        const { id } = useParams();
+
+        useEffect(() => {
+            console.log(id)
+        }, [])
+
         const refreshForm = {
-            grade_id: this.grade_id,
-            $id: "",
+            grade_id: id,
             grade_level_id: "",
             grade_level_name: "",
             grade_level_number: ""
@@ -45,18 +35,22 @@ export class CompetencyGradeLevelController extends UIFormController {
 
         const [form, setForm] = useState<IFormData>(refreshForm)
 
-        const { createDocument, errorCreate, isErrorCreate, isLoadingCreate, isSuccessCreate } = CompetencyGrade.CreateGradeLevel();
+        const [theme] = useState<boolean>(JSON.parse(localStorage.getItem("pedavalans_theme")))
 
-        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(this.grade_id);
+        const { createDocument } = CompetencyGrade.CreateGradeLevel();
 
-        const { updateDocument, errorUpdate, isErrorUpdate, isLoadingUpdate, isSuccessUpdate } = CompetencyGrade.UpdateCompetencyGradeLevel();
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(id);
+
+        const { updateDocument } = CompetencyGrade.UpdateCompetencyGradeLevel();
 
         const onSubmit = (e: any) => {
             e.preventDefault();
             const generatedId = nanoid();
-            form.$id = generatedId;
             form.grade_level_id = generatedId;
-            createDocument({ data: { ...form } }, () => {
+            createDocument({
+                documentId: generatedId,
+                data: { ...form }
+            }, () => {
                 setForm(refreshForm)
                 Toast.fire({
                     title: "Yetkinlik Düzeyi Seviyesi Eklendi",
@@ -75,7 +69,6 @@ export class CompetencyGradeLevelController extends UIFormController {
                 cancelButtonText: 'Hayır, iptal et!'
             }).then((result) => {
                 if (result.isConfirmed) {
-
                     const index = levels.findIndex((level) => level.$id === id)
                     updateDocument({
                         databaseId: AppInfo.Database,
@@ -86,7 +79,6 @@ export class CompetencyGradeLevelController extends UIFormController {
                             is_deleted_grade: true
                         }
                     })
-
                     Toast.fire({
                         title: "Yetkinlik Düzeyi Seviyesi Silindi",
                         icon: "success"
@@ -123,8 +115,6 @@ export class CompetencyGradeLevelController extends UIFormController {
 
             }
         ]
-
-
 
         return (
             VStack({ alignment: cTop })(
@@ -167,12 +157,13 @@ export class CompetencyGradeLevelController extends UIFormController {
                                     </div>
                                     <div style={{
                                         height: "calc(100vh - 300px)",
-                                        width: "calc(100vw - 500px)",
+                                        width: "calc(100vw - 400px)",
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center"
                                     }}>
                                         <StyledDataGrid
+                                            getRowId={(row) => row.$id}
                                             columns={columns}
                                             rows={levels}
                                         />
@@ -181,7 +172,7 @@ export class CompetencyGradeLevelController extends UIFormController {
                             }
                         />
                     )
-            ).padding("30px 20px").background(this.theme ? "rgba(0,0,0,.85)" : "").foregroundColor(this.theme ? "white" : "")
+            ).padding("30px 20px").background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : "")
         )
     }
 }

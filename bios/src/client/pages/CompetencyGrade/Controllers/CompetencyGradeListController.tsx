@@ -7,12 +7,11 @@ import {
     ReactView,
     ScrollView,
     Spinner,
-    State,
     UIController,
     useNavigate,
     VStack,
 } from '@tuval/forms';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, TextField } from '@mui/material';
 import { Views } from '../../../components/Views';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
@@ -25,18 +24,15 @@ export class CompetencyGradeListController extends UIController {
         const navigate = useNavigate();
 
         const { grades, isLoading } = CompetencyGrade.GetCompetencyGrades();
-
-        let competencyGrade: ICompetencyGrade.ICompetencyGrade[] = []
-        const [showingCompetencyGrade, setShowingCompetencyGrade] = React.useState<ICompetencyGrade.ICompetencyGrade[]>([]);
+        const [showingCompetencyGrade, setShowingCompetencyGrade] = useState<ICompetencyGrade.ICompetencyGrade[]>([]);
 
         const search = (filter_text: string) => {
-            setShowingCompetencyGrade(competencyGrade.filter((item) =>
+            setShowingCompetencyGrade(grades.filter((item) =>
                 item["competency_grade_name"].toLowerCase().indexOf(filter_text.toLowerCase()) > -1
             ))
         }
 
-        React.useEffect(() => {
-            competencyGrade = grades;
+        useEffect(() => {
             setShowingCompetencyGrade(grades);
         }, [grades])
 
@@ -73,11 +69,11 @@ export class CompetencyGradeListController extends UIController {
                                                     Views.GradeCard(grade.competency_grade_name, [
                                                         {
                                                             title: "Düzenle",
-                                                            action: () => navigate(`/competencyGrade/edit/${grade.$id}`)
+                                                            action: () => navigate(`/app/competencyGrade/edit/${grade.$id}`)
                                                         },
                                                         {
                                                             title: "Düzey Skalası",
-                                                            action: () => navigate(`/competencyGrade/level/${grade.$id}`)
+                                                            action: () => navigate(`/app/competencyGrade/level/${grade.$id}`)
                                                         }
                                                     ])
                                                 )

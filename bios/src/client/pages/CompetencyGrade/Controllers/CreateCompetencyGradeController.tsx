@@ -18,9 +18,9 @@ export class CreateCompetencyGradeController extends UIFormController {
 
         const navigate = useNavigate();
 
-        const { me, isLoading: isLoadingGetMe } = useGetMe("console")
+        const { me, isLoading } = useGetMe("console")
 
-        const { createDocument, isLoading, isSuccess, error, isError } = CompetencyGrade.CreateCompetencyGrade();
+        const { createDocument } = CompetencyGrade.CreateCompetencyGrade();
 
         const [form, setForm] = React.useState<IFormData>({
             grade_name: ""
@@ -47,12 +47,12 @@ export class CreateCompetencyGradeController extends UIFormController {
                     icon: 'success',
                     title: 'Yetkinlik Düzeyi Oluşturuldu'
                 })
-                navigate("/competencyGrade/list")
+                navigate("/app/competencyGrade/list")
             })
         }
 
         const onCancel = () => {
-            navigate("/competencyGrade/list")
+            navigate("/app/competencyGrade/list")
         }
         return (
             VStack({ alignment: cTop })(

@@ -1,12 +1,6 @@
-namespace ICompetencyGrade {
+import { IRoot } from "./main";
 
-    interface IRoot {
-        $id?: string;
-        $updated_at?: string;
-        $created_at?: string;
-        $updated_by?: string;
-        $created_by?: string;
-    }
+namespace ICompetencyGrade {
 
     export interface ICreateCompetencyGrade {
         competency_grade_name: string;

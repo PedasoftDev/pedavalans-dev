@@ -1,4 +1,4 @@
-import { cTop, VStack, useNavigate, ReactView, Spinner, useParams, Text, UIFormController, UIViewBuilder } from "@tuval/forms";
+import { cTop, VStack, useNavigate, ReactView, Spinner, useParams, UIFormController, UIViewBuilder } from "@tuval/forms";
 import React, { useCallback, useEffect } from "react";
 import Form from "../Views/Form";
 import { Button, TextField } from "@mui/material";
@@ -42,22 +42,20 @@ export class UpdateCompetencyGradeController extends UIFormController {
                                         ...grade,
                                         is_deleted_grade: true
                                     }
-                                })
-                                if (isSuccess) {
+                                }, () => {
                                     Toast.fire({
                                         title: "Yetkinlik Düzeyi Silindi",
                                         icon: "info"
                                     })
-                                    navigate("/competencyGrade/list")
-
-                                }
+                                    navigate("/app/competencyGrade/list")
+                                })
                             }
                         })
                     }, [])
 
 
                     const goBack = () => {
-                        navigate("/competencyGrade/list")
+                        navigate("/app/competencyGrade/list")
                     }
 
                     const onSubmit = (e: any) => {
@@ -82,7 +80,6 @@ export class UpdateCompetencyGradeController extends UIFormController {
 
                     return (
                         VStack({ alignment: cTop })(
-                            Text(JSON.stringify(this.GetFormData())),
                             ReactView(
                                 <Form
                                     title="Tanımlı Yetkinlik Düzeyini Düzenleyin"

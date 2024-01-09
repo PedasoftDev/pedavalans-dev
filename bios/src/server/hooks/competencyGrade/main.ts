@@ -29,12 +29,11 @@ namespace CompetencyGrade {
         return { updateDocument, isLoading, isSuccess, isError, error }
     }
 
-    export const GetGradeLevels = (id): { levels: ICompetencyGrade.ICompetencyGradeLevel[], isLoadingLevels: boolean } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_level",
-            [Query.equal("grade_id", id), Query.equal("is_deleted_level", false)])
-
+    export const GetGradeLevels = (id): { levels: ICompetencyGrade.ICompetencyGradeLevel[], total: Number, isLoadingLevels: boolean } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_level", [Query.equal("grade_id", id), Query.equal("is_deleted_level", false)])
         return {
             levels: documents as any[],
+            total,
             isLoadingLevels: isLoading
         }
     }
