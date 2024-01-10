@@ -15,7 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, TextField } from '@mui/material';
 import { Views } from '../../../components/Views';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
-import ICompetencyGrade from '../../../interfaces/CompetencyGrade';
+import ICompetencyGrade from '../../../interfaces/ICompetencyGrade';
 
 export class CompetencyGradeListController extends UIController {
 

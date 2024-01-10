@@ -138,7 +138,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Değerlendirme Dönemi",
-                    link: "/app/competencyEvaluationPeriod/list",
+                    link: "/app/competency-evaluation-period/list",
                     icon: ReactView(
                         <BsCalendar4Week size={25} />
                     ),

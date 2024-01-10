@@ -15,7 +15,7 @@ import React, { useState, useEffect } from 'react';
 import Form from '../Views/Form';
 import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
-import ICompetencyGrade from '../../../interfaces/CompetencyGrade';
+import ICompetencyGrade from '../../../interfaces/ICompetencyGrade';
 import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';

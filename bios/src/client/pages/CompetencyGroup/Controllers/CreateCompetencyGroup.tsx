@@ -14,7 +14,7 @@ import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 import Form from '../Views/Form';
-import ICompetencyGroup from '../../../interfaces/CompetencyGroup';
+import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
 
 export class CreateCompetencyGroupController extends UIFormController {
 

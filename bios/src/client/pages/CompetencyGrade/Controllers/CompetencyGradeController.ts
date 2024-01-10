@@ -1,34 +1,22 @@
-import { cTopLeading, HStack, State, UIController, UIRouteOutlet, UIScene, useNavigate } from "@tuval/forms";
+import { cTopLeading, HStack, Spinner, UIController, UINavigate, UIRouteOutlet, UIScene, useState, VStack } from "@tuval/forms";
 import { PortalMenu } from "../../../components/PortalMenu";
-import { Services } from "@realmocean/sdk";
-import AppInfo from "../../../../AppInfo";
+import { useGetMe } from "@realmocean/sdk";
 export class CompetencyGradeController extends UIController {
 
-    @State()
-    public theme: boolean;
-
-    private navigate: any;
-
-    private getTheme() {
-        this.theme = JSON.parse(localStorage.getItem("pedavalans_theme"));
-    }
-
-    protected BindRouterParams() {
-        Services.Databases.get(AppInfo.Name, AppInfo.Database).catch((err) => {
-            err.code === 404 && this.navigate('/app/setup')
-        })
-        this.getTheme()
-    }
-
     public LoadView(): any {
-        this.navigate = useNavigate();
+        const [theme] = useState(JSON.parse(localStorage.getItem("pedavalans_theme")))
+
+        const { me, isLoading } = useGetMe("console");
+
         return (
-            UIScene(
-                HStack({ alignment: cTopLeading })(
-                    PortalMenu("Yetkinlik Düzeyleri"),
-                    UIRouteOutlet().width('100%').height('100%').minWidth("")
-                ).background(this.theme ? "rgba(0,0,0,.85)" : "").foregroundColor(this.theme ? "white" : "")
-            )
+            isLoading ? VStack(Spinner()) :
+                me == null ? UINavigate("/login") :
+                    UIScene(
+                        HStack({ alignment: cTopLeading })(
+                            PortalMenu("Yetkinlik Düzeyleri"),
+                            UIRouteOutlet().width('100%').height('100%').minWidth("")
+                        ).background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : "")
+                    )
         )
     }
 }

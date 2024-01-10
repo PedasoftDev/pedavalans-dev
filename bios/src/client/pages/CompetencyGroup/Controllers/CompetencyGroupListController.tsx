@@ -5,7 +5,7 @@ import { Button, IconButton, TextField, Tooltip } from '@mui/material';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Views } from '../../../components/Views';
-import ICompetencyGroup from '../../../interfaces/CompetencyGroup';
+import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 
 export class CompetencyGroupListController extends UIController {

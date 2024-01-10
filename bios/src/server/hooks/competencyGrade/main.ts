@@ -1,4 +1,4 @@
-import ICompetencyGrade from './../../../client/interfaces/CompetencyGrade';
+import ICompetencyGrade from '../../../client/interfaces/ICompetencyGrade';
 import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo';
 

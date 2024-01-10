@@ -327,11 +327,11 @@ const Database: IDatabase = {
             "version": "1.0.0",
             "attributes": [
                 {
-                    "key": "competency_evaluation_period_id",
+                    "key": "evaluation_period_id",
                     "type": "string",
                 },
                 {
-                    "key": "competency_evaluation_period_name",
+                    "key": "evaluation_period_name",
                     "type": "string",
                 },
                 {
@@ -340,7 +340,7 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "is_default_year",
-                    "type": "string",
+                    "type": "string"
                 },
                 {
                     "key": "is_deleted_period",
@@ -355,7 +355,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-
             ]
         },
         {

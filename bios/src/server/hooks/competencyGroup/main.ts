@@ -1,4 +1,4 @@
-import ICompetencyGroup from './../../../client/interfaces/CompetencyGroup';
+import ICompetencyGroup from '../../../client/interfaces/ICompetencyGroup';
 import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo';
 
