@@ -12,6 +12,8 @@ import { CreateCompetencyGradeController } from "./pages/CompetencyGrade/Control
 import { CompetencyGradeLevelController } from './pages/CompetencyGrade/Controllers/CompetencyGradeLevelController';
 import { CompetencyGroupController } from './pages/CompetencyGroup/Controllers/CompetencyGroupController';
 import { CreateCompetencyGroupController } from './pages/CompetencyGroup/Controllers/CreateCompetencyGroup';
+import { CompetencyGroupListController } from './pages/CompetencyGroup/Controllers/CompetencyGroupListController';
+import { UpdateCompetencyGroupController } from './pages/CompetencyGroup/Controllers/UpdateCompetencyGroupController';
 
 export const Routes = () => {
     return (
@@ -24,7 +26,7 @@ export const Routes = () => {
                 UIRoute('dashboard', DashboardController),
 
                 // competencyGrade
-                UIRoute("competencyGrade", CompetencyGradeController).children(
+                UIRoute("competency-grade", CompetencyGradeController).children(
                     UIRoute("create", CreateCompetencyGradeController),
                     UIRoute("edit/:id", UpdateCompetencyGradeController),
                     UIRoute("list", CompetencyGradeListController),
@@ -32,11 +34,10 @@ export const Routes = () => {
                 ),
 
                 // competency group
-                UIRoute("competencyGroup", CompetencyGroupController).children(
+                UIRoute("competency-group", CompetencyGroupController).children(
                     UIRoute("create", CreateCompetencyGroupController),
-                    // UIRoute("edit/:id", UpdateCompetencyGradeController),
-                    // UIRoute("list", CompetencyGradeListController),
-                    // UIRoute("level/:id", CompetencyGradeLevelController)
+                    UIRoute("edit/:id", UpdateCompetencyGroupController),
+                    UIRoute("list", CompetencyGroupListController),
                 ),
 
 

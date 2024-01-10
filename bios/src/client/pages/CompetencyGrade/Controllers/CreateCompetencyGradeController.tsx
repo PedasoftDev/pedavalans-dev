@@ -47,12 +47,12 @@ export class CreateCompetencyGradeController extends UIFormController {
                     icon: 'success',
                     title: 'Yetkinlik Düzeyi Oluşturuldu'
                 })
-                navigate("/app/competencyGrade/list")
+                navigate("/app/competency-grade/list")
             })
         }
 
         const onCancel = () => {
-            navigate("/app/competencyGrade/list")
+            navigate("/app/competency-grade/list")
         }
         return (
             VStack({ alignment: cTop })(

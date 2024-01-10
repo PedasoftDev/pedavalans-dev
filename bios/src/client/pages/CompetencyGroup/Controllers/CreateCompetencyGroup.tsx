@@ -25,7 +25,7 @@ export class CreateCompetencyGroupController extends UIFormController {
     const { grades, isLoading } = CompetencyGrade.GetCompetencyGrades();
     const { createDocument } = CompetencyGroup.CreateCompetencyGroup();
 
-    const [form, setForm] = useState<ICompetencyGroup.ICrateCompetency>({
+    const [form, setForm] = useState<ICompetencyGroup.ICrateCompetencyGroup>({
       competency_group_id: "",
       competency_group_name: "",
       competency_grade_id: "",
@@ -43,7 +43,7 @@ export class CreateCompetencyGroupController extends UIFormController {
         competency_grade_name: grades.find((grade) => grade.competency_grade_id === e.target.value)?.competency_grade_name
       })
     }
-
+    // realm_id ve tenant_id eklenecek
     const onSubmit = (e: any) => {
       e.preventDefault();
       Toast.fire({
@@ -60,7 +60,7 @@ export class CreateCompetencyGroupController extends UIFormController {
           icon: "success",
           title: "Yetkinlik Grubu Oluşturuldu"
         })
-        navigate("/app/competencyGroup/list")
+        navigate("/app/competency-group/list")
       })
     }
 

@@ -47,7 +47,7 @@ export class UpdateCompetencyGradeController extends UIFormController {
                                         title: "Yetkinlik Düzeyi Silindi",
                                         icon: "info"
                                     })
-                                    navigate("/app/competencyGrade/list")
+                                    navigate("/app/competency-grade/list")
                                 })
                             }
                         })
@@ -55,7 +55,7 @@ export class UpdateCompetencyGradeController extends UIFormController {
 
 
                     const goBack = () => {
-                        navigate("/app/competencyGrade/list")
+                        navigate("/app/competency-grade/list")
                     }
 
                     const onSubmit = (e: any) => {
@@ -74,6 +74,7 @@ export class UpdateCompetencyGradeController extends UIFormController {
 
                     useEffect(() => {
                         for (let key in grade) {
+                            if (key.startsWith("$")) continue;
                             this.SetValue(key, grade[key])
                         }
                     }, [])

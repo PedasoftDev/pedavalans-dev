@@ -105,7 +105,7 @@
         "@emotion/react": "^11.11.3",
         "@emotion/styled": "^11.11.0",
         "@mui/material": "^5.15.2",
-        "@realmocean/sdk": "^1.0.62",
+        "@realmocean/sdk": "^1.0.63",
         "@tuval/cg": "^0.0.16",
         "@tuval/core": "^0.0.103",
         "@tuval/forms": "^1.0.133",
@@ -138,6 +138,7 @@
         "webpack-cli": "^4.10.0"
     },
     "dependencies": {
+        "@mui/icons-material": "^5.15.3",
         "@mui/x-data-grid": "^6.18.7",
         "devextreme": "23.2.3",
         "devextreme-react": "23.2.3",

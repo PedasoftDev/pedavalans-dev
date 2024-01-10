@@ -130,7 +130,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Yetkinlik Grupları",
-                    link: "/app/competencyGroup/list",
+                    link: "/app/competency-group/list",
                     icon: ReactView(
                         <FaLayerGroup size={25} />
                     ),
@@ -146,7 +146,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Yetkinlik Düzeyleri",
-                    link: "/app/competencyGrade/list",
+                    link: "/app/competency-grade/list",
                     icon: ReactView(
                         <FaSignal size={25} />
                     ),

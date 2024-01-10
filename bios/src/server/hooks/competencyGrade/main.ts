@@ -17,7 +17,7 @@ namespace CompetencyGrade {
     }
 
     export const GetCompetencyGrades = (): { grades: ICompetencyGrade.ICompetencyGrade[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade")
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade", [Query.equal("is_deleted_grade", false), Query.equal("is_active_grade", true)])
         return {
             grades: documents as any[],
             isLoading: isLoading
