@@ -8,9 +8,9 @@ namespace CompetencyEvaluationPeriod {
         return { createDocument, isLoading, isSuccess, isError, error }
     }
 
-    export const GetCompetencyEvaluationPeriod = (id: string) => {
+    export const GetCompetencyEvaluationPeriod = (id: string): { period: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod, isLoading: boolean } => {
         const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: "competency_evaluation_period", documentId: id })
-        return { document, isLoading }
+        return { period: document as any, isLoading }
     }
 
     export const GetCompetencyEvaluationPeriods = (): { periods: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[], isLoading: boolean, total: Number } => {
@@ -22,13 +22,18 @@ namespace CompetencyEvaluationPeriod {
         }
     }
 
-    export const GetDefaultCompetencyEvaluationPeriod = (): { periods: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[], isLoading: boolean, total: Number } => {
+    export const GetDefaultCompetencyEvaluationPeriod = (): { periods: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[], isLoading: boolean, total: number } => {
         const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_evaluation_period", [Query.equal("is_default_year", "true")])
         return {
             periods: documents as any,
             isLoading,
             total
         }
+    }
+
+    export const UpdateCompetencyEvaluationPeriod = () => {
+        const { updateDocument, isLoading, isSuccess, isError, error } = useUpdateDocument(AppInfo.Name)
+        return { updateDocument, isLoading, isSuccess, isError, error }
     }
 
 }

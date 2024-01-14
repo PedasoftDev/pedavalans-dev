@@ -17,6 +17,7 @@ namespace ICompetencyGroup {
         competency_group_name: string;
         competency_grade_id: string;
         competency_grade_name: string;
+        tenant_id: string;
     }
 }
 

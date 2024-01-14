@@ -604,7 +604,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string",
                 },
-
                 {
                     "key": "is_active",
                     "type": "boolean",
@@ -1183,6 +1182,11 @@ const Database: IDatabase = {
                 {
                     "key": "name",
                     "type": "string"
+                },
+                {
+                    "key": "is_show",
+                    "type": "boolean",
+                    "default": false
                 },
                 {
                     "key": "is_active",

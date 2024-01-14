@@ -14,6 +14,7 @@ import { Toast } from '../../../components/Toast';
 import ICompetencyEvaluationPeriod from '../../../interfaces/ICompetencyEvaluationPeriod';
 import CompetencyEvaluationPeriod from '../../../../server/hooks/competencyEvaluationPeriod/main';
 import { useGetMe } from '@realmocean/sdk';
+import AppInfo from '../../../../AppInfo';
 
 let years = []
 for (let i = 2022; i < 2100; i++) {
@@ -41,6 +42,7 @@ export class CreateCompetencyEvaluationPeriodController extends UIFormController
 
         const { createDocument } = CompetencyEvaluationPeriod.CreateCompetencyEvaluationPeriod();
         const { periods, isLoading: isLoadingPeriods, total } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod();
+        const { updateDocument } = CompetencyEvaluationPeriod.UpdateCompetencyEvaluationPeriod()
 
         const onSubmit = (e: any) => {
             e.preventDefault();
@@ -59,7 +61,22 @@ export class CreateCompetencyEvaluationPeriodController extends UIFormController
                 }
             }, () => {
                 if (form.is_default_year === "true") {
-
+                    for (let i = 0; i < total; i++) {
+                        let data: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod = { ...resetForm, is_deleted_period: false }
+                        for (const key in periods[i]) {
+                            if (key.startsWith("$")) continue;
+                            data[key] = periods[i][key]
+                        }
+                        updateDocument({
+                            databaseId: AppInfo.Database,
+                            collectionId: "competency_evaluation_period",
+                            documentId: data.evaluation_period_id,
+                            data: {
+                                ...data,
+                                is_default_year: "false"
+                            }
+                        })
+                    }
                 }
                 Toast.fire({
                     icon: 'success',

@@ -10,7 +10,7 @@ import { TbHeartRateMonitor, TbReportAnalytics } from "react-icons/tb";
 import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
 import { MdOutlineSettings } from "react-icons/md";
-import { useGetCurrentTeam, useGetMe, useGetOrganization } from '@realmocean/sdk';
+import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -77,7 +77,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             icon: ReactView(
                 <RxColorWheel size={25} />
             ),
-            isVisible: machineBased
+            isVisible: true//machineBased
         },
         {
             title: "İzleme",
@@ -96,7 +96,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <BiCalendarPlus size={25} />
                     ),
-                    isVisible: responsibleUserPolyvalanceTable || localStorage.getItem("polyvalenceUnitTableAuth") === "admin"
+                    isVisible: true
+                    //responsibleUserPolyvalanceTable || localStorage.getItem("polyvalenceUnitTableAuth") === "admin"
                 },
                 {
                     title: "Yetkinlik Gerçekleşme Girişi",
@@ -104,7 +105,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <BiCalendarCheck size={25} />
                     ),
-                    isVisible: responsibleUserPolyvalanceTable || localStorage.getItem("polyvalenceUnitTableAuth") === "admin"
+                    isVisible: true
+                    //responsibleUserPolyvalanceTable || localStorage.getItem("polyvalenceUnitTableAuth") === "admin"
                 },
                 {
                     title: "Çalışan Yetkinlik Karnesi",
@@ -126,7 +128,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <IoGitNetworkOutline size={25} />
                     ),
-                    isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Yetkinlik Grupları",
@@ -134,7 +136,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <FaLayerGroup size={25} />
                     ),
-                    isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Değerlendirme Dönemi",
@@ -142,7 +144,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <BsCalendar4Week size={25} />
                     ),
-                    isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Yetkinlik Düzeyleri",
@@ -150,27 +152,26 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <FaSignal size={25} />
                     ),
-                    isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Organizasyon Yapısı",
-                    link: "/app/organizationStructure/view",
+                    link: "/app/organization-structure/view",
                     icon: ReactView(
                         <VscOrganization size={25} />
                     ),
-                    isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" &&
-                        localStorage.getItem("/app_based_organization_structure") == "true" ? true : false
+                    isVisible: true //localStorage.getItem("polyvalenceUnitTableAuth") == "admin" && localStorage.getItem("/app_based_organization_structure") == "true" ? true : false
                 },
                 {
                     title: "Parametreler",
-                    link: "/app/parameters/view",
+                    link: "/app/parameters",
                     icon: ReactView(
                         <MdOutlineSettings size={25} />
                     ),
-                    isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 }
             ],
-            isVisible: localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+            isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
         }
     ]
 

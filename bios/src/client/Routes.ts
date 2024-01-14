@@ -11,12 +11,16 @@ import { CompetencyGradeListController } from "./pages/CompetencyGrade/Controlle
 import { CreateCompetencyGradeController } from "./pages/CompetencyGrade/Controllers/CreateCompetencyGradeController"
 import { CompetencyGradeLevelController } from './pages/CompetencyGrade/Controllers/CompetencyGradeLevelController';
 import { CompetencyGroupController } from './pages/CompetencyGroup/Controllers/CompetencyGroupController';
-import { CreateCompetencyGroupController } from './pages/CompetencyGroup/Controllers/CreateCompetencyGroup';
+import { CreateCompetencyGroupController } from './pages/CompetencyGroup/Controllers/CreateCompetencyGroupController';
 import { CompetencyGroupListController } from './pages/CompetencyGroup/Controllers/CompetencyGroupListController';
 import { UpdateCompetencyGroupController } from './pages/CompetencyGroup/Controllers/UpdateCompetencyGroupController';
 import { CompetencyEvaluationPeriodController } from './pages/CompetencyEvaluationPeriod/Controllers/CompetencyEvaluationPeriodController';
 import { CreateCompetencyEvaluationPeriodController } from './pages/CompetencyEvaluationPeriod/Controllers/CreateCompetencyEvaluationPeriodController';
 import { CompetencyEvaluationListController } from './pages/CompetencyEvaluationPeriod/Controllers/CompetencyEvaluationPeriodListController';
+import { UpdateCompetenyEvaluationPeriodController } from './pages/CompetencyEvaluationPeriod/Controllers/UpdateCompetencyEvaluationPeriodController';
+import { ParametersController } from './pages/Parameters/ParametersController';
+import { OrganizationStructureController } from './pages/OrganizationStructure/OrganizationStructureController';
+import { OrganizationStructureViewController } from './pages/OrganizationStructure/OrganizationStructureViewController';
 
 export const Routes = () => {
     return (
@@ -46,7 +50,16 @@ export const Routes = () => {
                 // competency evaluation period
                 UIRoute("competency-evaluation-period", CompetencyEvaluationPeriodController).children(
                     UIRoute("create", CreateCompetencyEvaluationPeriodController),
-                    UIRoute("list", CompetencyEvaluationListController)
+                    UIRoute("list", CompetencyEvaluationListController),
+                    UIRoute("edit/:id", UpdateCompetenyEvaluationPeriodController),
+                ),
+
+                // parameters
+                UIRoute('parameters', ParametersController),
+
+                // organization structure
+                UIRoute('organization-structure', OrganizationStructureController).children(
+                    UIRoute('view', OrganizationStructureViewController)
                 ),
 
                 UIRoute('*', NotFoundController),

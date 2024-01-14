@@ -32,6 +32,14 @@ namespace CompetencyGroup {
         }
     }
 
+    export const GetCompetencyGroups = (): { groups: ICompetencyGroup.IGetCompetencyGroup[], isLoading: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.equal("is_deleted_group", false)])
+        return {
+            groups: documents as any,
+            isLoading
+        }
+    }
+
     export const UpdateCompetencyGroup = () => {
         const { updateDocument, isLoading, isSuccess, isError, error } = useUpdateDocument(AppInfo.Name)
         return { updateDocument, isLoading, isSuccess, isError, error }

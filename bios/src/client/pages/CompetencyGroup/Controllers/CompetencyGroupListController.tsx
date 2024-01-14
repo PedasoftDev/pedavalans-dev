@@ -1,4 +1,4 @@
-import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from '@tuval/forms';
+import { HStack, ReactView, Spinner, Text, UIFormController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from '@tuval/forms';
 import React, { useState, useEffect, useCallback } from 'react';
 import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Button, IconButton, TextField, Tooltip } from '@mui/material';
@@ -8,28 +8,22 @@ import { Views } from '../../../components/Views';
 import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 
-export class CompetencyGroupListController extends UIController {
+export class CompetencyGroupListController extends UIFormController {
 
     public LoadView(): UIView {
 
         const navigate = useNavigate();
 
-        const { activeGroups, isLoading } = CompetencyGroup.GetActiveCompetencyGroups();
-        const { passiveGroups } = CompetencyGroup.GetPassiveCompetencyGroups();
-
-        const [filteredRows, setFilteredRows] = useState<ICompetencyGroup.IGetCompetencyGroup[]>([]);
-
-        const [rowsActive, setRowsActive] = useState<boolean>(true);
-
-        const [searchTimer, setSearchTimer] = useState(null);
+        const { groups, isLoading } = CompetencyGroup.GetCompetencyGroups();
 
         return (
             isLoading ? VStack(Spinner()) :
                 UIViewBuilder(() => {
+                    const [filter, setFilter] = useState(null);
+                    const [rowsActive, setRowsActive] = useState<boolean>(true);
 
-                    useEffect(() => {
-                        setFilteredRows(activeGroups);
-                    }, []);
+                    const [searchTimer, setSearchTimer] = useState(null);
+
 
                     useEffect(() => {
                         return () => {
@@ -72,30 +66,13 @@ export class CompetencyGroupListController extends UIController {
 
                     const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
                         const value = e.target.value;
+                        setFilter(value);
+                    }, []);
 
-                        // Önceki timer'ı temizle
-                        if (searchTimer) clearTimeout(searchTimer);
-
-                        // Yeni bir timer başlat
-                        const newTimer = setTimeout(() => {
-                            const filteredRows = activeGroups.filter((row) => {
-                                return row.competency_group_name.toLowerCase().includes(value.toLowerCase()) ||
-                                    row.competency_grade_name.toLowerCase().includes(value.toLowerCase());
-                            });
-                            setFilteredRows(filteredRows);
-                        }, 1000); // 1000 milisaniye = 1 saniye
-
-                        setSearchTimer(newTimer);
-                    }, [activeGroups]);
-
-                    const handleSetActiveRows = useCallback(() => {
-                        if (rowsActive) {
-                            setFilteredRows(passiveGroups)
-                        } else {
-                            setFilteredRows(activeGroups)
-                        }
-                        setRowsActive(!rowsActive)
-                    }, [rowsActive, passiveGroups, activeGroups])
+                    const filteredRows = () => {
+                        return groups.filter(x => x.is_active_group === rowsActive && (!filter || (x.competency_group_name.toLowerCase().indexOf(filter.toLowerCase()) > -1
+                            || x.competency_grade_name.toLowerCase().indexOf(filter.toLowerCase()) > -1)))
+                    }
 
                     return (
                         VStack({ spacing: 15, alignment: cTopLeading })(
@@ -119,7 +96,7 @@ export class CompetencyGroupListController extends UIController {
                                                 <TextField placeholder="Yetkinlik Grubu Arayın..." size="small" fullWidth onChange={handleSearch} />
                                             </div>
                                             <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Yetkinlik Gruplarını Göster`}>
-                                                <IconButton onClick={handleSetActiveRows}>
+                                                <IconButton onClick={() => setRowsActive(!rowsActive)}>
                                                     <FilterAltOutlinedIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -129,7 +106,7 @@ export class CompetencyGroupListController extends UIController {
                                         </div>
                                         <div style={{ height: "calc(100vh - 225px)", width: "calc(100vw - 330px)" }}>
                                             <StyledDataGrid
-                                                rows={filteredRows}
+                                                rows={filteredRows()}
                                                 columns={columns}
                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 getRowId={(row) => row.$id}

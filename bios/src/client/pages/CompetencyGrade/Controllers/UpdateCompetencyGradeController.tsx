@@ -69,6 +69,12 @@ export class UpdateCompetencyGradeController extends UIFormController {
                             collectionId: "competency_grade",
                             documentId: id,
                             data: this.GetFormData()
+                        }, () => {
+                            Toast.fire({
+                                title: "Yetkinlik Düzeyi Düzenlendi",
+                                icon: "success"
+                            })
+                            navigate("/app/competency-grade/list")
                         })
                     }
 

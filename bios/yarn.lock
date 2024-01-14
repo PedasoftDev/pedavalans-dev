@@ -805,6 +805,18 @@
     "style-loader" "^3.3.3"
     "to-string-loader" "^1.2.0"
 
+"@realmocean/ui@^1.0.6":
+  "integrity" "sha512-SupdMkVc30uv1DGvwKyjSpF34qCT5yv2WQifzcXURup7f16+4IUXbxnyvH4RicVbEGpmEVDkXj0F/jfN+9uW6Q=="
+  "resolved" "https://registry.npmjs.org/@realmocean/ui/-/ui-1.0.6.tgz"
+  "version" "1.0.6"
+  dependencies:
+    "@tuval/forms" "^1.0.109"
+    "css-loader" "^6.8.1"
+    "sass" "^1.63.6"
+    "sass-loader" "^13.3.2"
+    "style-loader" "^3.3.3"
+    "to-string-loader" "^1.2.0"
+
 "@storybook/channels@7.6.6":
   "integrity" "sha512-vvo7fBe2WffPonNNOA7Xx7jcHAto8qJYlq+VMysfheXrsRRbhHl3WQOA18Vm8hV9txtqdqk0hwQiXOWvhYVpeQ=="
   "resolved" "https://registry.npmjs.org/@storybook/channels/-/channels-7.6.6.tgz"
@@ -869,7 +881,7 @@
   "resolved" "https://registry.npmjs.org/@tuval/core/-/core-0.0.103.tgz"
   "version" "0.0.103"
 
-"@tuval/forms@^1.0.133":
+"@tuval/forms@^1.0.109", "@tuval/forms@^1.0.133":
   "integrity" "sha512-3l9vm+M5QeQExi7dCE2UMbqoepWPUJNIpvcB3xS11nc2MfdEg/FTMFFMSPprpq61gnLELf6RC1qmBqfy8tfw5Q=="
   "resolved" "https://registry.npmjs.org/@tuval/forms/-/forms-1.0.133.tgz"
   "version" "1.0.133"

@@ -1,52 +1,29 @@
 import { cLeading, cTop, cTopLeading, ForEach, HStack, ReactView, ScrollView, Spinner, UIController, UIViewBuilder, useNavigate, VStack } from "@tuval/forms";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Button, IconButton, TextField, Tooltip } from "@mui/material";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Views } from "../../../components/Views";
-import ICompetencyEvaluationPeriod from "../../../interfaces/ICompetencyEvaluationPeriod";
 
 export class CompetencyEvaluationListController extends UIController {
 
     public LoadView() {
 
-        const navigotor = useNavigate();
+        const navigate = useNavigate();
 
         const { periods, isLoading } = CompetencyEvaluationPeriod.GetCompetencyEvaluationPeriods();
-
-        const [filteredRows, setFilteredRows] = useState<ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[]>([]);
-
-        const [isDefault, setIsDefault] = useState<"true" | "false">("true");
-
-        const [searchTimer, setSearchTimer] = useState(null);
+        const [isDefault, setIsDefault] = useState("true");
+        const [filter, setFilter] = useState(null);
 
         return (
             isLoading ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = e.target.value;
+                        setFilter(e.target.value);
+                    }, []);
 
-                        if (searchTimer) clearTimeout(searchTimer);
-
-                        const newTimer = setTimeout(() => {
-                            const filteredRows = periods.filter(x => x.evaluation_period_name.toLowerCase().indexOf(value.toLowerCase()) > -1);
-                            setFilteredRows(filteredRows);
-                        }, 1000);
-
-                        setSearchTimer(newTimer);
-
-                    }, [isDefault]);
-
-                    useEffect(() => {
-                        return () => {
-                            if (searchTimer) clearTimeout(searchTimer);
-                        };
-                    }, [searchTimer]);
-
-                    useEffect(() => {
-                        setFilteredRows(periods);
-                    }, [])
-
+                    const filteredPeriods = periods.filter(x => x.is_default_year == isDefault && (filter == null ||
+                        x.evaluation_period_name.toLowerCase().indexOf(filter.toLowerCase()) > -1));
 
                     return (
                         isLoading ? VStack(Spinner()) :
@@ -74,7 +51,7 @@ export class CompetencyEvaluationListController extends UIController {
                                                 ).width(),
                                                 VStack(
                                                     ReactView(
-                                                        <Button size="small" fullWidth variant="outlined" onClick={() => navigotor("/app/competency-evaluation-period/create")}>Yeni Değerlendirme Dönemi</Button>
+                                                        <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency-evaluation-period/create")}>Yeni Değerlendirme Dönemi</Button>
                                                     )
                                                 ).width("20%")
                                             )
@@ -83,12 +60,12 @@ export class CompetencyEvaluationListController extends UIController {
                                             HStack({ alignment: cTopLeading })(
                                                 ScrollView({ axes: "cVertical" })(
                                                     HStack({ alignment: cTopLeading })(
-                                                        ...ForEach(periods.filter(x => x.is_default_year == isDefault))(item =>
+                                                        ...ForEach(filteredPeriods)(item =>
                                                             Views.YearCard(item.evaluation_period_year, item.evaluation_period_name, item.is_default_year,
                                                                 [
                                                                     {
                                                                         title: "Düzenle",
-                                                                        action: () => navigotor(`/app/competency-evaluation-period/edit/${item.evaluation_period_id}`)
+                                                                        action: () => navigate(`/app/competency-evaluation-period/edit/${item.evaluation_period_id}`)
                                                                     }
                                                                 ]
                                                             ).margin("0 20px 20px 0")

@@ -36,17 +36,37 @@ export namespace Resources {
         }
     ];
 
-    export const ParameterNames = {
-        PolyvalenceUnitTableAuth: "Polivalans tablolarında yetkilendirme kullanılsın mı?",
-        AppBasedOrganizationStructure: "Uygulama üzerinden organizasyon yapısı kullanılsın mı?",
-        LineBasedCompetency: {
+    export const Parameters = [
+        {
+            name: "Polivalans tablolarında yetkilendirme kullanılsın mı?",
+            localStr: "polyvalence_unit_table_auth",
+            type: "boolean",
+        },
+        {
+            name: "Makine bazlı polivalans yönetimi uygulanacak mı?",
+            localStr: "machine_based_polyvalence_management",
+            type: "boolean",
+        },
+        {
+            name: "Uygulama üzerinden organizasyon yapısı kullanılsın mı?",
+            localStr: "app_based_organization_structure",
+            type: "boolean",
+        },
+        {
             name: "Hat bazlı yetkinlik ilişkilendirmesi kullanılsın mı?",
-            localStr: "line_based_competency_relationship"
-        }
-    }
+            localStr: "line_based_competency_relationship",
+            type: "boolean",
+        },
+        {
+            name: "Birim polivalans tablosu veri girişleri tamamlandığı anda tüm polivalans tablosu veri girişçi ve görebilecek kişilere mail atılsın mı?",
+            localStr: "polyvalence_unit_table_mail",
+            type: "boolean",
+        },
+    ];
 
-    export const GetAppUrl = (link: string) => {
-        return `/app/com.pedasoft.app.pedavalans/${link}`;
-    }
-
+    export const Monitoring = {
+        name: "Yetkinlik performansı kabul kriteri(%)?",
+        localStr: "competency_performance_acceptance_criteria",
+        type: "string",
+    };
 }

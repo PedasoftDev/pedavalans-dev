@@ -1,4 +1,4 @@
-import { ReactView, UIController, UIView, VStack, UINavigate, Spinner, useState, useNavigate, State } from "@tuval/forms";
+import { ReactView, UIController, UIView, VStack, UINavigate, Spinner, useState, useNavigate, State, nanoid } from "@tuval/forms";
 import React, { useRef } from "react";
 import bgImage from "../../../assets/BackgroundImage";
 import { useGetMe, ID, Services } from "@realmocean/sdk";
@@ -9,6 +9,7 @@ import Database from "../../../../server/core/Database";
 import Swal from "sweetalert2";
 import { ConsoleText, ConsoleView, Container, HeaderLabel } from "../Views/SetupView";
 import { Toast } from "../../../components/Toast";
+import { Resources } from "../../../assets/Resources";
 
 
 export class SetupController extends UIController {
@@ -89,6 +90,30 @@ export class SetupController extends UIController {
                         }
                     }
                 }
+                this.pushHelpText("Sistem parametreleri oluşturuluyor...");
+
+                const uuid2 = nanoid();
+                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "monitoring", uuid2, {
+                    "id": uuid2,
+                    "lowest_accepted_average": "0",
+                    "tenant_id": organization.$id,
+                    "is_active": true,
+                    "is_deleted": false,
+                })
+                // for (let k = 0; k < Resources.Parameters.length; k++) {
+                //     const uuid = nanoid();
+                //     const { localStr } = Resources.Parameters[k];
+                //     await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", uuid, {
+                //         "id": uuid,
+                //         "tenant_id": organization.$id,
+                //         "name": localStr,
+                //         "is_active": false,
+                //         "is_show": false,
+                //     })
+                // }
+
+                this.pushHelpText("Sistem parametreleri oluşturuldu.");
+                ul.current?.scrollTo(0, ul.current.scrollHeight);
                 this.pushHelpText("Pedavalans oluşturuldu.");
                 ul.current?.scrollTo(0, ul.current.scrollHeight);
                 this.pushHelpText("Giriş yapılıyor...");

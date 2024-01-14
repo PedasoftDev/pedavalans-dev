@@ -6,6 +6,7 @@ export class MainController extends BiosController {
     public override LoadBiosView(): UIView {
         // title
         window.document.title = "Pedavalans";
+        localStorage.setItem("pedavalans_theme", "false")
         return (
             Routes()
         )

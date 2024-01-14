@@ -5,8 +5,6 @@ import { Toast } from '../../../components/Toast';
 import Form from '../Views/Form';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import { useGetMe } from '@realmocean/sdk';
-import AppInfo from '../../../../AppInfo';
-
 
 interface IFormData {
     grade_name: string;
@@ -28,7 +26,6 @@ export class CreateCompetencyGradeController extends UIFormController {
 
         const onSubmit = (e: any) => {
             const id = nanoid();
-            console.log(me?.prefs?.organization)
             e.preventDefault();
             Toast.fire({
                 icon: 'info',
@@ -39,7 +36,7 @@ export class CreateCompetencyGradeController extends UIFormController {
                 data: {
                     competency_grade_id: id,
                     competency_grade_name: form.grade_name,
-                    tenant_id: "1",
+                    tenant_id: me?.prefs?.organization,
                     realm_id: "1"
                 }
             }, () => {
