@@ -24,6 +24,10 @@ import { useGetMe } from '@realmocean/sdk';
 import AddDepartmentView from './Views/Departments/AddDepartmentView';
 import EditDepartmentView from './Views/Departments/EditDepartmentView';
 import removeDollarProperties from '../../assets/Functions/removeDollarProperties';
+import DepartmentListView from './Views/Departments/DepartmentListView';
+import AddLineView from './Views/Lines/AddLineView';
+import EditLineView from './Views/Lines/EditLineView';
+import OrganizationStructureLine from '../../../server/hooks/organizationStructureLine/main';
 
 const TableClickP = styled.p`
     &:hover {
@@ -41,9 +45,6 @@ export class OrganizationStructureViewController extends UIController {
         // me
         const { me, isLoading: isLoadingMe } = useGetMe("console");
 
-        // departments
-        const { departments, isLoadingDepartments, totalDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
-
         // page state
         const [defaultPage, setDefaultPage] = useState("");
         const addDepartmentPage = () => {
@@ -57,10 +58,21 @@ export class OrganizationStructureViewController extends UIController {
         };
 
 
+        // departments
+        const { departments, isLoadingDepartments, totalDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+        const [departmentActives, setDepartmentActives] = useState(true);
+        const [filterKeyDepartments, setFilterKeyDepartments] = useState("");
+        const [selectedDepartment, setSelectedDepartment] = useState();
+
+        const filteredDepartments = !isLoadingDepartments && departments ?
+            departments.filter(x => x.is_active === departmentActives &&
+                x.name.toLowerCase().indexOf(filterKeyDepartments.toLowerCase()) > -1 ||
+                x.record_id.toLowerCase().indexOf(filterKeyDepartments.toLowerCase()) > -1) : [];
+
+
 
         // line state
-        const [lines, setLines] = useState([]);
-        const [filteredLines, setFilteredLines] = useState([]);
+        const { lines, isLoadingLines, totalLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
         const [selectedLine, setSelectedLine] = useState();
         const [lineActives, setLineActives] = useState(true);
         const lineColumns: GridColDef[] = [
@@ -83,7 +95,7 @@ export class OrganizationStructureViewController extends UIController {
                 flex: 1
             },
             {
-                field: 'created_at',
+                field: '$createdAt',
                 headerName: 'Oluşturulma Tarihi',
                 width: 200,
                 flex: 1,
@@ -96,7 +108,7 @@ export class OrganizationStructureViewController extends UIController {
                 headerName: 'İşlemler',
                 width: 100,
                 renderCell: (params: any) => (
-                    <TableClickP onClick={() => handleEditLine(params.row)}>
+                    <TableClickP onClick={() => handleEditLine(removeDollarProperties(params.row))}>
                         Düzenle
                     </TableClickP>
                 )
@@ -108,17 +120,17 @@ export class OrganizationStructureViewController extends UIController {
             setSelectedLine(line);
         }
 
-        const setAllLines = (lines: any) => {
-            setFilteredLines(lines);
-            setLines(lines);
-        }
+        // const setAllLines = (lines: any) => {
+        //     setFilteredLines(lines);
+        //     setLines(lines);
+        // }
 
-        const handleFilterLines = (event: React.SyntheticEvent) => {
-            const filtered = lines.filter((line: any) =>
-                line.name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1
-            );
-            setFilteredLines(filtered);
-        }
+        // const handleFilterLines = (event: React.SyntheticEvent) => {
+        //     const filtered = lines.filter((line: any) =>
+        //         line.name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1
+        //     );
+        //     setFilteredLines(filtered);
+        // }
 
         const handleSetLines = () => {
 
@@ -368,14 +380,6 @@ export class OrganizationStructureViewController extends UIController {
             isLoadingDepartments || isLoadingMe ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
-                    // department state
-                    const [departmentActives, setDepartmentActives] = useState(true);
-                    const [filterDepartments, setFilterDepartments] = useState("");
-                    const [selectedDepartment, setSelectedDepartment] = useState();
-
-                    const filteredDepartments = () => {
-                        return departments.filter(x => x.is_active === departmentActives && (x.name.toLowerCase().indexOf(filterDepartments.toLowerCase()) > -1 || x.record_id.toLowerCase().indexOf(filterDepartments.toLowerCase()) > -1));
-                    }
 
                     const departmentColumns: GridColDef[] = [
                         {
@@ -415,12 +419,6 @@ export class OrganizationStructureViewController extends UIController {
                         setDefaultPage("editDepartment");
                         setSelectedDepartment(department);
                     }
-
-                    // const setAllDepartments = (departments: any) => {
-                    //     setFilteredDepartments(departments);
-                    //     setDepartments(departments);
-                    // }
-
 
                     return (
                         VStack({ alignment: cTop })(
@@ -552,53 +550,55 @@ export class OrganizationStructureViewController extends UIController {
                                                         </div>
                                                     </div>
                                         }
-                                    </TabPanel>
-                                    <TabPanel value={value} index={3}>
-                                        {
-                                            defaultPage === "addLine" ?
-                                                <AddLineView
-                                                    setDefaultPage={setDefaultPage}
-                                                    setLines={setAllLines}
-                                                />
-                                                :
-                                                defaultPage === "editLine" ?
-                                                    <EditLineView
-                                                        selectedLine={selectedLine}
+                                    </TabPanel>*/}
+                                        <TabPanel value={value} index={3}>
+                                            {
+                                                defaultPage === "addLine" ?
+                                                    <AddLineView
                                                         setDefaultPage={setDefaultPage}
-                                                        setLines={setAllLines}
-                                                        setLinesActives={setLineActives}
+                                                        departments={departments}
+                                                        lines={lines}
                                                     />
                                                     :
-                                                    <div style={{ display: "flex", flexDirection: "column", padding: "5px 0", gap: "5px" }}>
-                                                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                            <div style={{ width: "60%" }}>
-                                                                <TextField size='small' label='Hat Arayın' variant='outlined' fullWidth onChange={handleFilterLines} />
+                                                    defaultPage === "editLine" ?
+                                                        <EditLineView
+                                                            selectedLine={selectedLine}
+                                                            setDefaultPage={setDefaultPage}
+                                                            setLinesActives={setLineActives}
+                                                            departments={departments}
+                                                            lines={lines}
+                                                        />
+                                                        :
+                                                        <div style={{ display: "flex", flexDirection: "column", padding: "5px 0", gap: "5px" }}>
+                                                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                                                <div style={{ width: "60%" }}>
+                                                                    <TextField size='small' label='Hat Arayın' variant='outlined' fullWidth onChange={() => { }} />
+                                                                </div>
+                                                                <div style={{ width: "10%" }}>
+                                                                    {
+                                                                        <Tooltip title={`${lineActives ? "Pasif" : "Aktif"} Hatları Göster`}>
+                                                                            <Button variant='contained' fullWidth onClick={handleSetLines} size='small'><MdDisplaySettings size={20} /></Button>
+                                                                        </Tooltip>
+                                                                    }
+                                                                </div>
+                                                                <div style={{ width: "30%" }}>
+                                                                    <Button variant='contained' fullWidth size='small' onClick={() => setDefaultPage("addLine")}>Hat Ekle</Button>
+                                                                </div>
                                                             </div>
-                                                            <div style={{ width: "10%" }}>
-                                                                {
-                                                                    <Tooltip title={`${lineActives ? "Pasif" : "Aktif"} Hatları Göster`}>
-                                                                        <Button variant='contained' fullWidth onClick={handleSetLines} size='small'><MdDisplaySettings size={20} /></Button>
-                                                                    </Tooltip>
-                                                                }
-                                                            </div>
-                                                            <div style={{ width: "30%" }}>
-                                                                <Button variant='contained' fullWidth size='small' onClick={() => setDefaultPage("addLine")}>Hat Ekle</Button>
+                                                            <div style={{ height: "calc(100vh - 280px)" }}>
+                                                                <StyledDataGrid rows={lines} columns={lineColumns} />
                                                             </div>
                                                         </div>
-                                                        <div style={{ height: "calc(100vh - 280px)" }}>
-                                                            <StyledDataGrid rows={filteredLines} columns={lineColumns} />
-                                                        </div>
-                                                    </div>
-                                        }
-                                    </TabPanel> */}
+                                            }
+                                        </TabPanel>
                                         <TabPanel value={value} index={4}>
-
                                             {
                                                 defaultPage === "addDepartment" ?
                                                     <AddDepartmentView
                                                         setDefaultPage={setDefaultPage}
                                                         departments={departments}
-                                                    /> :
+                                                    />
+                                                    :
                                                     defaultPage === "editDepartment" ?
                                                         <EditDepartmentView
                                                             selectedDepartment={removeDollarProperties(selectedDepartment)}
@@ -607,35 +607,14 @@ export class OrganizationStructureViewController extends UIController {
                                                             setDepartmentsActives={setDepartmentActives}
                                                         />
                                                         :
-                                                        <div style={{ display: "flex", flexDirection: "column", padding: "5px 0", gap: "5px" }}>
-                                                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                                <div style={{ width: "60%" }}>
-                                                                    <TextField
-                                                                        size='small'
-                                                                        label='Departman Arayın'
-                                                                        variant='outlined'
-                                                                        fullWidth
-                                                                        onClick={(e: any) => setFilterDepartments(e.target.value)}
-                                                                    />
-                                                                </div>
-                                                                <div style={{ width: "10%" }}>
-                                                                    {
-                                                                        <Tooltip title={`${departmentActives ? "Pasif" : "Aktif"} Departmanları Göster`}>
-                                                                            <Button variant='contained' fullWidth onClick={() => setDepartmentActives(!departmentActives)} size='small'><MdDisplaySettings size={20} /></Button>
-                                                                        </Tooltip>
-                                                                    }
-                                                                </div>
-                                                                <div style={{ width: "30%" }}>
-                                                                    <Button variant='contained' fullWidth onClick={addDepartmentPage} size='small'>Yeni Departman</Button>
-                                                                </div>
-                                                            </div>
-                                                            <div style={{ height: "calc(100vh - 280px)" }}>
-                                                                <StyledDataGrid
-                                                                    rows={filteredDepartments()}
-                                                                    columns={departmentColumns}
-                                                                />
-                                                            </div>
-                                                        </div>
+                                                        <DepartmentListView
+                                                            setFilterKeyDepartments={setFilterKeyDepartments}
+                                                            setDepartmentActives={setDepartmentActives}
+                                                            departmentActives={departmentActives}
+                                                            addDepartmentPage={addDepartmentPage}
+                                                            filteredDepartments={filteredDepartments}
+                                                            departmentColumns={departmentColumns}
+                                                        />
                                             }
                                         </TabPanel>
                                     </div>
@@ -645,7 +624,5 @@ export class OrganizationStructureViewController extends UIController {
                     )
                 })
         )
-
-
     }
 }

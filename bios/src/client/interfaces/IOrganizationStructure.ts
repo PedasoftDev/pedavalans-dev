@@ -64,7 +64,18 @@ export namespace IOrganizationStructure {
     }
 
     export namespace ILines {
-        export interface ILine {
+
+        export interface ICreateLine {
+            id: string;
+            record_id: string;
+            name: string;
+            tenant_id: string;
+            realm_id: string;
+            department_id: string;
+            department_name: string;
+        }
+
+        export interface ILine extends IRoot {
             id: string;
             tenant_id: string;
             realm_id: string;
