@@ -92,25 +92,27 @@ export class SetupController extends UIController {
                 }
                 this.pushHelpText("Sistem parametreleri oluşturuluyor...");
 
-                const uuid2 = nanoid();
-                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "monitoring", uuid2, {
-                    "id": uuid2,
-                    "lowest_accepted_average": "0",
-                    "tenant_id": organization.$id,
-                    "is_active": true,
-                    "is_deleted": false,
-                })
-                // for (let k = 0; k < Resources.Parameters.length; k++) {
-                //     const uuid = nanoid();
-                //     const { localStr } = Resources.Parameters[k];
-                //     await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", uuid, {
-                //         "id": uuid,
-                //         "tenant_id": organization.$id,
-                //         "name": localStr,
-                //         "is_active": false,
-                //         "is_show": false,
-                //     })
-                // }
+                setTimeout(async () => {
+                    const uuid2 = nanoid();
+                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "monitoring", uuid2, {
+                        "id": uuid2,
+                        "lowest_accepted_average": "0",
+                        "tenant_id": organization.$id,
+                        "is_active": true,
+                        "is_deleted": false,
+                    })
+                    for (let k = 0; k < Resources.Parameters.length; k++) {
+                        const uuid = nanoid();
+                        const { localStr } = Resources.Parameters[k];
+                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", uuid, {
+                            "id": uuid,
+                            "tenant_id": organization.$id,
+                            "name": localStr,
+                            "is_active": false,
+                            "is_show": false,
+                        })
+                    }
+                }, 2000)
 
                 this.pushHelpText("Sistem parametreleri oluşturuldu.");
                 ul.current?.scrollTo(0, ul.current.scrollHeight);
