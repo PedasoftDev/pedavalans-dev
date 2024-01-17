@@ -111,4 +111,44 @@ export namespace IOrganizationStructure {
         }
     }
 
+    export namespace IPositions {
+        export interface ICreatePosition {
+            id: string;
+            tenant_id: string;
+            realm_id: string;
+            record_id: string;
+            name: string;
+        }
+
+        export interface IPosition extends IRoot {
+            id: string;
+            tenant_id: string;
+            realm_id: string;
+            record_id: string;
+            name: string;
+            is_active: boolean;
+            is_deleted: boolean;
+        }
+    }
+
+    export namespace ITitles {
+        export interface ICreateTitle {
+            id: string;
+            tenant_id: string;
+            realm_id: string;
+            record_id: string;
+            name: string;
+        }
+
+        export interface ITitle extends IRoot {
+            id: string;
+            tenant_id: string;
+            realm_id: string;
+            record_id: string;
+            name: string;
+            is_active: boolean;
+            is_deleted: boolean;
+        }
+    }
+
 }

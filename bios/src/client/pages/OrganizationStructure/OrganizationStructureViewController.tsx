@@ -28,6 +28,15 @@ import DepartmentListView from './Views/Departments/DepartmentListView';
 import AddLineView from './Views/Lines/AddLineView';
 import EditLineView from './Views/Lines/EditLineView';
 import OrganizationStructureLine from '../../../server/hooks/organizationStructureLine/main';
+import LineListView from './Views/Lines/LineListView';
+import AddPositionView from './Views/Positions/AddPositionView';
+import EditPositionView from './Views/Positions/EditPositionView';
+import OrganizationStructurePosition from '../../../server/hooks/organizationStructrePosition/main';
+import PositionListView from './Views/Positions/PositionListView';
+import TitleListView from './Views/Titles/TitleListView';
+import OrganizationStructureTitle from '../../../server/hooks/organizationStructureTitle/main';
+import AddTitleView from './Views/Titles/AddTitleView';
+import EditTitleView from './Views/Titles/EditTitleView';
 
 const TableClickP = styled.p`
     &:hover {
@@ -47,9 +56,6 @@ export class OrganizationStructureViewController extends UIController {
 
         // page state
         const [defaultPage, setDefaultPage] = useState("");
-        const addDepartmentPage = () => {
-            setDefaultPage("addDepartment");
-        }
 
         // tab state
         const [value, setValue] = useState(4);
@@ -65,7 +71,7 @@ export class OrganizationStructureViewController extends UIController {
         const [selectedDepartment, setSelectedDepartment] = useState();
 
         const filteredDepartments = !isLoadingDepartments && departments ?
-            departments.filter(x => x.is_active === departmentActives &&
+            departments.filter(x =>
                 x.name.toLowerCase().indexOf(filterKeyDepartments.toLowerCase()) > -1 ||
                 x.record_id.toLowerCase().indexOf(filterKeyDepartments.toLowerCase()) > -1) : [];
 
@@ -73,190 +79,31 @@ export class OrganizationStructureViewController extends UIController {
 
         // line state
         const { lines, isLoadingLines, totalLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
-        const [selectedLine, setSelectedLine] = useState();
         const [lineActives, setLineActives] = useState(true);
-        const lineColumns: GridColDef[] = [
-            {
-                field: 'record_id',
-                headerName: 'Kayıt Kodu',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'name',
-                headerName: 'Hat Adı',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'department_name',
-                headerName: 'Bağlı Olduğu Departman',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: '$createdAt',
-                headerName: 'Oluşturulma Tarihi',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    return Resources.Functions.formatDate(params.value);
-                }
-            },
-            {
-                field: 'actions',
-                headerName: 'İşlemler',
-                width: 100,
-                renderCell: (params: any) => (
-                    <TableClickP onClick={() => handleEditLine(removeDollarProperties(params.row))}>
-                        Düzenle
-                    </TableClickP>
-                )
-            }
-        ];
+        const [filterKeyLines, setFilterKeyLines] = useState("");
+        const [selectedLine, setSelectedLine] = useState();
 
-        const handleEditLine = (line: any) => {
-            setDefaultPage("editLine");
-            setSelectedLine(line);
-        }
-
-        // const setAllLines = (lines: any) => {
-        //     setFilteredLines(lines);
-        //     setLines(lines);
-        // }
-
-        // const handleFilterLines = (event: React.SyntheticEvent) => {
-        //     const filtered = lines.filter((line: any) =>
-        //         line.name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1
-        //     );
-        //     setFilteredLines(filtered);
-        // }
-
-        const handleSetLines = () => {
-
-        }
+        const filteredLines = !isLoadingLines && lines ?
+            lines.filter(x => x.is_active === lineActives &&
+                x.name.toLowerCase().indexOf(filterKeyLines.toLowerCase()) > -1 ||
+                x.record_id.toLowerCase().indexOf(filterKeyLines.toLowerCase()) > -1) : [];
 
 
         // position state
-        const [positions, setPositions] = useState([]);
-        const [filteredPositions, setFilteredPositions] = useState([]);
+        const { positions, isLoadingPositions, totalPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const [selectedPosition, setSelectedPosition] = useState();
         const [positionActives, setPositionActives] = useState(true);
-        const positionColumns: GridColDef[] = [
-            {
-                field: 'record_id',
-                headerName: 'Kayıt Kodu',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'name',
-                headerName: 'Pozisyon Adı',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'created_at',
-                headerName: 'Oluşturulma Tarihi',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    return Resources.Functions.formatDate(params.value);
-                }
-            },
-            {
-                field: 'actions',
-                headerName: 'İşlemler',
-                width: 100,
-                renderCell: (params: any) => (
-                    <TableClickP onClick={() => handleEditPosition(params.row)}>
-                        Düzenle
-                    </TableClickP>
-                )
-            }
-        ];
+        const [filterKeyPositions, setFilterKeyPositions] = useState("");
 
-        const handleFilterPositions = (event: React.SyntheticEvent) => {
-            const filtered = positions.filter((position: any) =>
-                position.name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1
-            );
-            setFilteredPositions(filtered);
-        }
-
-        const handleSetPositions = () => {
-
-        }
-
-        const setAllPositions = (positions: any) => {
-            setFilteredPositions(positions);
-            setPositions(positions);
-        }
-
-        const handleEditPosition = (position: any) => {
-            setDefaultPage("editPosition");
-            setSelectedPosition(position);
-        }
-
+        const filteredPositions = !isLoadingPositions && positions ? positions.filter((position: any) => position.name.toLowerCase().indexOf(filterKeyPositions.toLowerCase()) > -1) : [];
 
         // title states
-        const [titles, setTitles] = useState([]);
-        const [filteredTitles, setFilteredTitles] = useState([]);
+        const { titles, isLoadingTitles, totalTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization);
         const [selectedTitle, setSelectedTitle] = useState();
         const [titleActives, setTitleActives] = useState(true);
-        const titleColumns: GridColDef[] = [
-            {
-                field: 'record_id',
-                headerName: 'Kayıt Kodu',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'name',
-                headerName: 'Ünvan Adı',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'created_at',
-                headerName: 'Oluşturulma Tarihi',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    return Resources.Functions.formatDate(params.value);
-                }
-            },
-            {
-                field: 'actions',
-                headerName: 'İşlemler',
-                width: 100,
-                renderCell: (params: any) => (
-                    <TableClickP onClick={() => handleEditTitle(params.row)}>
-                        Düzenle
-                    </TableClickP>
-                )
-            }
-        ];
+        const [filterKeyTitles, setFilterKeyTitles] = useState("");
 
-        const handleFilterTitles = (event: React.SyntheticEvent) => {
-            const filtered = titles.filter((title: any) =>
-                title.name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1
-            );
-            setFilteredTitles(filtered);
-        }
-
-        const handleSetTitle = () => {
-
-        }
-
-        const setAllTitles = (titles: any) => {
-            setFilteredTitles(titles);
-            setTitles(titles);
-        }
-
-        const handleEditTitle = (title: any) => {
-            setDefaultPage("editTitle");
-            setSelectedTitle(title);
-        }
+        const filteredTitles = !isLoadingTitles && titles ? titles.filter((title: any) => title.name.toLowerCase().indexOf(filterKeyTitles.toLowerCase()) > -1) : [];
 
         // employee states
         const [employees, setEmployees] = useState<IOrganizationStructure.IEmployees.IEmployee[]>([]);
@@ -356,7 +203,7 @@ export class OrganizationStructureViewController extends UIController {
                 }
             },
             {
-                field: 'created_at',
+                field: '$createdAt',
                 headerName: 'Oluşturulma Tarihi',
                 width: 200,
                 flex: 1,
@@ -377,10 +224,10 @@ export class OrganizationStructureViewController extends UIController {
         ];
 
         return (
-            isLoadingDepartments || isLoadingMe ? VStack(Spinner()) :
+            isLoadingMe || isLoadingDepartments || isLoadingLines || isLoadingPositions || isLoadingTitles ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
-
+                    // departments
                     const departmentColumns: GridColDef[] = [
                         {
                             field: 'record_id',
@@ -408,7 +255,7 @@ export class OrganizationStructureViewController extends UIController {
                             headerName: 'İşlemler',
                             width: 100,
                             renderCell: (params: any) => (
-                                <TableClickP onClick={() => handleEditDepartment(params.row)}>
+                                <TableClickP onClick={() => handleEditDepartment(removeDollarProperties(params.row))}>
                                     Düzenle
                                 </TableClickP>
                             )
@@ -419,6 +266,136 @@ export class OrganizationStructureViewController extends UIController {
                         setDefaultPage("editDepartment");
                         setSelectedDepartment(department);
                     }
+
+
+                    // lines
+                    const lineColumns: GridColDef[] = [
+                        {
+                            field: 'record_id',
+                            headerName: 'Kayıt Kodu',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: 'name',
+                            headerName: 'Hat Adı',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: 'department_name',
+                            headerName: 'Bağlı Olduğu Departman',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: '$createdAt',
+                            headerName: 'Oluşturulma Tarihi',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                return Resources.Functions.formatDate(params.value);
+                            }
+                        },
+                        {
+                            field: 'actions',
+                            headerName: 'İşlemler',
+                            width: 100,
+                            renderCell: (params: any) => (
+                                <TableClickP onClick={() => handleEditLine(removeDollarProperties(params.row))}>
+                                    Düzenle
+                                </TableClickP>
+                            )
+                        }
+                    ];
+
+                    const handleEditLine = (line: any) => {
+                        setDefaultPage("editLine");
+                        setSelectedLine(line);
+                    }
+
+
+                    // positions
+                    const positionColumns: GridColDef[] = [
+                        {
+                            field: 'record_id',
+                            headerName: 'Kayıt Kodu',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: 'name',
+                            headerName: 'Pozisyon Adı',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: '$createdAt',
+                            headerName: 'Oluşturulma Tarihi',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                return Resources.Functions.formatDate(params.value);
+                            }
+                        },
+                        {
+                            field: 'actions',
+                            headerName: 'İşlemler',
+                            width: 100,
+                            renderCell: (params: any) => (
+                                <TableClickP onClick={() => handleEditPosition(removeDollarProperties(params.row))}>
+                                    Düzenle
+                                </TableClickP>
+                            )
+                        }
+                    ];
+
+                    const handleEditPosition = (position: any) => {
+                        setDefaultPage("editPosition");
+                        setSelectedPosition(position);
+                    }
+
+
+                    // titles
+                    const titleColumns: GridColDef[] = [
+                        {
+                            field: 'record_id',
+                            headerName: 'Kayıt Kodu',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: 'name',
+                            headerName: 'Ünvan Adı',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: '$createdAt',
+                            headerName: 'Oluşturulma Tarihi',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                return Resources.Functions.formatDate(params.value);
+                            }
+                        },
+                        {
+                            field: 'actions',
+                            headerName: 'İşlemler',
+                            width: 100,
+                            renderCell: (params: any) => (
+                                <TableClickP onClick={() => handleEditTitle(removeDollarProperties(params.row))}>
+                                    Düzenle
+                                </TableClickP>
+                            )
+                        }
+                    ];
+
+                    const handleEditTitle = (title: any) => {
+                        setDefaultPage("editTitle");
+                        setSelectedTitle(title);
+                    }
+
 
                     return (
                         VStack({ alignment: cTop })(
@@ -474,83 +451,60 @@ export class OrganizationStructureViewController extends UIController {
         
                                         }
                                     </TabPanel>
-                                    <TabPanel value={value} index={1}>
-                                        {
-                                            defaultPage === "addTitle" ?
-                                                <AddTitleView
-                                                    setDefaultPage={setDefaultPage}
-                                                    setTitles={setAllTitles}
-                                                />
-                                                :
-                                                defaultPage === "editTitle" ?
-                                                    <EditTitleView
-                                                        selectedTitle={selectedTitle}
+                                     */}
+                                        <TabPanel value={value} index={1}>
+                                            {
+                                                defaultPage === "addTitle" ?
+                                                    <AddTitleView
                                                         setDefaultPage={setDefaultPage}
-                                                        setTitles={setAllTitles}
-                                                        setTitlesActives={setTitleActives}
+                                                        setActive={setTitleActives}
+                                                        titles={titles}
                                                     />
                                                     :
-                                                    <div style={{ display: "flex", flexDirection: "column", padding: "5px 0", gap: "5px" }}>
-                                                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                            <div style={{ width: "60%" }}>
-                                                                <TextField size='small' label='Ünvan Arayın' variant='outlined' fullWidth onChange={handleFilterTitles} />
-                                                            </div>
-                                                            <div style={{ width: "10%" }}>
-                                                                {
-                                                                    <Tooltip title={`${titleActives ? "Pasif" : "Aktif"} Ünvanları Göster`}>
-                                                                        <Button variant='contained' fullWidth onClick={handleSetTitle} size='small'><MdDisplaySettings size={20} /></Button>
-                                                                    </Tooltip>
-                                                                }
-                                                            </div>
-                                                            <div style={{ width: "30%" }}>
-                                                                <Button variant='contained' fullWidth size='small' onClick={() => setDefaultPage("addTitle")}>Yeni Ünvan</Button>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ height: "calc(100vh - 280px)" }}>
-                                                            <StyledDataGrid rows={filteredTitles} columns={titleColumns} />
-                                                        </div>
-                                                    </div>
-                                        }
-        
-                                    </TabPanel>
-                                    <TabPanel value={value} index={2}>
-                                        {
-                                            defaultPage === "addPosition" ?
-                                                <AddPositionView
-                                                    setDefaultPage={setDefaultPage}
-                                                    setPositions={setAllPositions}
-                                                />
-                                                :
-                                                defaultPage === "editPosition" ?
-                                                    <EditPositionView
-                                                        selectedPosition={selectedPosition}
+                                                    defaultPage === "editTitle" ?
+                                                        <EditTitleView
+                                                            selectedTitle={selectedTitle}
+                                                            setDefaultPage={setDefaultPage}
+                                                            setActive={setTitleActives}
+                                                            titles={titles}
+                                                        />
+                                                        :
+                                                        <TitleListView
+                                                            titles={filteredTitles}
+                                                            setDefaultPage={setDefaultPage}
+                                                            active={titleActives}
+                                                            columns={titleColumns}
+                                                            setActive={setTitleActives}
+                                                            setFilter={setFilterKeyTitles}
+                                                        />
+                                            }
+
+                                        </TabPanel>
+                                        <TabPanel value={value} index={2}>
+                                            {
+                                                defaultPage === "addPosition" ?
+                                                    <AddPositionView
                                                         setDefaultPage={setDefaultPage}
-                                                        setPositions={setAllPositions}
-                                                        setPositionActives={setPositionActives}
+                                                        positions={positions}
                                                     />
                                                     :
-                                                    <div style={{ display: "flex", flexDirection: "column", padding: "5px 0", gap: "5px" }}>
-                                                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                            <div style={{ width: "60%" }}>
-                                                                <TextField size='small' label='Pozisyon Arayın' variant='outlined' fullWidth onChange={handleFilterPositions} />
-                                                            </div>
-                                                            <div style={{ width: "10%" }}>
-                                                                {
-                                                                    <Tooltip title={`${positionActives ? "Pasif" : "Aktif"} Pozisyonları Göster`}>
-                                                                        <Button variant='contained' fullWidth onClick={handleSetPositions} size='small'><MdDisplaySettings size={20} /></Button>
-                                                                    </Tooltip>
-                                                                }
-                                                            </div>
-                                                            <div style={{ width: "30%" }}>
-                                                                <Button variant='contained' fullWidth size='small' onClick={() => setDefaultPage("addPosition")}>Yeni Pozisyon</Button>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ height: "calc(100vh - 280px)" }}>
-                                                            <StyledDataGrid rows={filteredPositions} columns={positionColumns} />
-                                                        </div>
-                                                    </div>
-                                        }
-                                    </TabPanel>*/}
+                                                    defaultPage === "editPosition" ?
+                                                        <EditPositionView
+                                                            selectedPosition={selectedPosition}
+                                                            setDefaultPage={setDefaultPage}
+                                                            setActive={setPositionActives}
+                                                        />
+                                                        :
+                                                        <PositionListView
+                                                            active={positionActives}
+                                                            setActives={setPositionActives}
+                                                            setDefaultPage={setDefaultPage}
+                                                            positions={filteredPositions}
+                                                            columns={positionColumns}
+                                                            setFilterKey={setFilterKeyPositions}
+                                                        />
+                                            }
+                                        </TabPanel>
                                         <TabPanel value={value} index={3}>
                                             {
                                                 defaultPage === "addLine" ?
@@ -569,26 +523,14 @@ export class OrganizationStructureViewController extends UIController {
                                                             lines={lines}
                                                         />
                                                         :
-                                                        <div style={{ display: "flex", flexDirection: "column", padding: "5px 0", gap: "5px" }}>
-                                                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                                <div style={{ width: "60%" }}>
-                                                                    <TextField size='small' label='Hat Arayın' variant='outlined' fullWidth onChange={() => { }} />
-                                                                </div>
-                                                                <div style={{ width: "10%" }}>
-                                                                    {
-                                                                        <Tooltip title={`${lineActives ? "Pasif" : "Aktif"} Hatları Göster`}>
-                                                                            <Button variant='contained' fullWidth onClick={handleSetLines} size='small'><MdDisplaySettings size={20} /></Button>
-                                                                        </Tooltip>
-                                                                    }
-                                                                </div>
-                                                                <div style={{ width: "30%" }}>
-                                                                    <Button variant='contained' fullWidth size='small' onClick={() => setDefaultPage("addLine")}>Hat Ekle</Button>
-                                                                </div>
-                                                            </div>
-                                                            <div style={{ height: "calc(100vh - 280px)" }}>
-                                                                <StyledDataGrid rows={lines} columns={lineColumns} />
-                                                            </div>
-                                                        </div>
+                                                        <LineListView
+                                                            lines={filteredLines}
+                                                            columns={lineColumns}
+                                                            active={lineActives}
+                                                            setActives={setLineActives}
+                                                            setFilterKey={setFilterKeyLines}
+                                                            setDefaultPage={setDefaultPage}
+                                                        />
                                             }
                                         </TabPanel>
                                         <TabPanel value={value} index={4}>
@@ -601,19 +543,19 @@ export class OrganizationStructureViewController extends UIController {
                                                     :
                                                     defaultPage === "editDepartment" ?
                                                         <EditDepartmentView
-                                                            selectedDepartment={removeDollarProperties(selectedDepartment)}
+                                                            selectedDepartment={selectedDepartment}
                                                             setDefaultPage={setDefaultPage}
                                                             departments={departments}
                                                             setDepartmentsActives={setDepartmentActives}
                                                         />
                                                         :
                                                         <DepartmentListView
+                                                            departments={filteredDepartments}
+                                                            columns={departmentColumns}
+                                                            active={departmentActives}
+                                                            setActives={setDepartmentActives}
                                                             setFilterKeyDepartments={setFilterKeyDepartments}
-                                                            setDepartmentActives={setDepartmentActives}
-                                                            departmentActives={departmentActives}
-                                                            addDepartmentPage={addDepartmentPage}
-                                                            filteredDepartments={filteredDepartments}
-                                                            departmentColumns={departmentColumns}
+                                                            setDefaultPage={setDefaultPage}
                                                         />
                                             }
                                         </TabPanel>
