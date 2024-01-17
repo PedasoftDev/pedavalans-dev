@@ -10,6 +10,7 @@ import Swal from "sweetalert2";
 import { ConsoleText, ConsoleView, Container, HeaderLabel } from "../Views/SetupView";
 import { Toast } from "../../../components/Toast";
 import { Resources } from "../../../assets/Resources";
+import { Umay } from "@tuval/core";
 
 
 export class SetupController extends UIController {
@@ -67,32 +68,78 @@ export class SetupController extends UIController {
                 const database = await Services.Databases.create(realm.$id, AppInfo.Database, AppInfo.Database);
                 this.pushHelpText("Database oluşturuldu: " + database.name);
                 const collections = Database.collections;
+                const tasks = new Umay();
+                const crashedStringTasks: { projectId: string, databaseId: string, collectionId: string, key: string, size: number, required: boolean }[] = []
+                const crashedTasksInteger: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean, xdefault?: boolean }[] = []
                 for (let i = 0; i < collections.length; i++) {
-                    const collection = collections[i];
-                    ul.current?.scrollTo(0, ul.current.scrollHeight);
-                    this.pushHelpText("Tablo oluşturuluyor: " + collection.name);
-                    const { id, name, attributes, description, version } = collection;
-                    const col = await Services.Databases.createCollection(AppInfo.Name, database.$id, id, name, [], false);
-                    this.pushHelpText("Tablo oluşturuldu: " + col.name);
-                    ul.current?.scrollTo(0, ul.current.scrollHeight);
-                    this.pushHelpText(description.tr);
-                    for (let j = 0; j < attributes.length; j++) {
-                        const { key, type } = attributes[j];
-                        switch (type) {
-                            case "string":
-                                console.log(name, key);
-                                await Services.Databases.createStringAttribute(AppInfo.Name, database.$id, col.$id, key, 256, false);
-                                break;
-                            case "boolean":
-                                console.log(name, key);
-                                await Services.Databases.createBooleanAttribute(AppInfo.Name, database.$id, col.$id, key, false, key && key.startsWith("is_active") ? true : false);
-                                break;
+                    tasks.Task(async () => {
+                        const collection = collections[i];
+                        ul.current?.scrollTo(0, ul.current.scrollHeight);
+                        this.pushHelpText("Tablo oluşturuluyor: " + collection.name);
+                        const { id, name, attributes, description, version } = collection;
+                        const col = await Services.Databases.createCollection(AppInfo.Name, database.$id, id, name, [], false);
+                        this.pushHelpText("Tablo oluşturuldu: " + col.name);
+                        ul.current?.scrollTo(0, ul.current.scrollHeight);
+                        this.pushHelpText(description.tr);
+                        for (let j = 0; j < attributes.length; j++) {
+                            const { key, type } = attributes[j];
+                            switch (type) {
+                                case "string":
+                                    try {
+                                        console.log(name, key);
+                                        await Services.Databases.createStringAttribute(AppInfo.Name, database.$id, col.$id, key, 256, false);
+                                        break;
+                                    } catch (error) {
+                                        console.log(error);
+                                        crashedStringTasks.push({
+                                            projectId: AppInfo.Name,
+                                            databaseId: database.$id,
+                                            collectionId: col.$id,
+                                            key: key,
+                                            size: 256,
+                                            required: false
+                                        })
+                                    }
+                                case "boolean":
+                                    try {
+                                        console.log(name, key);
+                                        await Services.Databases.createBooleanAttribute(AppInfo.Name, database.$id, col.$id, key, false, key && key.startsWith("is_active") ? true : false);
+                                        break;
+                                    } catch (error) {
+                                        console.log(error);
+                                        crashedTasksInteger.push({
+                                            projectId: AppInfo.Name,
+                                            databaseId: database.$id,
+                                            collectionId: col.$id,
+                                            key: key,
+                                            required: false,
+                                            xdefault: key && key.startsWith("is_active") ? true : false
+                                        })
+                                    }
+                            }
                         }
-                    }
+                    })
+                    tasks.Wait(2);
                 }
-                this.pushHelpText("Sistem parametreleri oluşturuluyor...");
+                tasks.Wait(1);
 
-                setTimeout(async () => {
+
+                tasks.Task(async () => {
+                    for (let i = 0; i < crashedStringTasks.length; i++) {
+                        const { projectId, databaseId, collectionId, key, size, required } = crashedStringTasks[i];
+                        await Services.Databases.createStringAttribute(projectId, databaseId, collectionId, key, size, required);
+                    }
+                })
+                tasks.Wait(1);
+                tasks.Task(async () => {
+                    for (let i = 0; i < crashedTasksInteger.length; i++) {
+                        const { projectId, databaseId, collectionId, key, required, xdefault } = crashedTasksInteger[i];
+                        await Services.Databases.createBooleanAttribute(projectId, databaseId, collectionId, key, required, xdefault);
+                    }
+                })
+                tasks.Wait(1);
+
+                tasks.Task(async () => {
                     const uuid2 = nanoid();
                     await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "monitoring", uuid2, {
                         "id": uuid2,
@@ -112,21 +159,26 @@ export class SetupController extends UIController {
                             "is_show": false,
                         })
                     }
-                }, 2000)
-
-                this.pushHelpText("Sistem parametreleri oluşturuldu.");
-                ul.current?.scrollTo(0, ul.current.scrollHeight);
-                this.pushHelpText("Pedavalans oluşturuldu.");
-                ul.current?.scrollTo(0, ul.current.scrollHeight);
-                this.pushHelpText("Giriş yapılıyor...");
-                ul.current?.scrollTo(0, ul.current.scrollHeight);
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Pedavalans oluşturuldu'
                 })
-                setTimeout(() => {
+                tasks.Wait(1);
+
+                tasks.Task(async () => {
+                    this.pushHelpText("Sistem parametreleri oluşturuldu.");
+                    ul.current?.scrollTo(0, ul.current.scrollHeight);
+                    this.pushHelpText("Pedavalans oluşturuldu.");
+                    ul.current?.scrollTo(0, ul.current.scrollHeight);
+                    this.pushHelpText("Giriş yapılıyor...");
+                    ul.current?.scrollTo(0, ul.current.scrollHeight);
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Pedavalans oluşturuldu'
+                    })
+                })
+                tasks.Wait(1);
+                tasks.Task(async () => {
                     this.navigate('/app/dashboard');
-                }, 3000);
+                })
+                tasks.Run();
             } catch (error: any) {
                 console.log(error);
                 Swal.fire({
