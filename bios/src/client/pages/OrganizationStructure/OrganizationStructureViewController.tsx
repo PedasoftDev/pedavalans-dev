@@ -37,6 +37,10 @@ import TitleListView from './Views/Titles/TitleListView';
 import OrganizationStructureTitle from '../../../server/hooks/organizationStructureTitle/main';
 import AddTitleView from './Views/Titles/AddTitleView';
 import EditTitleView from './Views/Titles/EditTitleView';
+import AddEmployeeView from './Views/Employees/AddEmployeeView';
+import EditEmployeeView from './Views/Employees/EditEmployeeView';
+import EmployeeListView from './Views/Employees/EmployeeListView';
+import OrganizationStructureEmployee from '../../../server/hooks/organizationStructureEmployee/main';
 
 const TableClickP = styled.p`
     &:hover {
@@ -65,7 +69,7 @@ export class OrganizationStructureViewController extends UIController {
 
 
         // departments
-        const { departments, isLoadingDepartments, totalDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+        const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const [departmentActives, setDepartmentActives] = useState(true);
         const [filterKeyDepartments, setFilterKeyDepartments] = useState("");
         const [selectedDepartment, setSelectedDepartment] = useState();
@@ -78,7 +82,7 @@ export class OrganizationStructureViewController extends UIController {
 
 
         // line state
-        const { lines, isLoadingLines, totalLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+        const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
         const [lineActives, setLineActives] = useState(true);
         const [filterKeyLines, setFilterKeyLines] = useState("");
         const [selectedLine, setSelectedLine] = useState();
@@ -90,7 +94,7 @@ export class OrganizationStructureViewController extends UIController {
 
 
         // position state
-        const { positions, isLoadingPositions, totalPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
+        const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const [selectedPosition, setSelectedPosition] = useState();
         const [positionActives, setPositionActives] = useState(true);
         const [filterKeyPositions, setFilterKeyPositions] = useState("");
@@ -98,7 +102,7 @@ export class OrganizationStructureViewController extends UIController {
         const filteredPositions = !isLoadingPositions && positions ? positions.filter((position: any) => position.name.toLowerCase().indexOf(filterKeyPositions.toLowerCase()) > -1) : [];
 
         // title states
-        const { titles, isLoadingTitles, totalTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization);
+        const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization);
         const [selectedTitle, setSelectedTitle] = useState();
         const [titleActives, setTitleActives] = useState(true);
         const [filterKeyTitles, setFilterKeyTitles] = useState("");
@@ -106,125 +110,21 @@ export class OrganizationStructureViewController extends UIController {
         const filteredTitles = !isLoadingTitles && titles ? titles.filter((title: any) => title.name.toLowerCase().indexOf(filterKeyTitles.toLowerCase()) > -1) : [];
 
         // employee states
-        const [employees, setEmployees] = useState<IOrganizationStructure.IEmployees.IEmployee[]>([]);
-        const [filteredEmployees, setFilteredEmployees] = useState<IOrganizationStructure.IEmployees.IEmployee[]>([]);
+        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const [selectedEmployee, setSelectedEmployee] = useState<IOrganizationStructure.IEmployees.IEmployee>();
         const [employeeActives, setEmployeeActives] = useState<boolean>(true);
+        const [filterKeyEmployees, setFilterKeyEmployees] = useState<string>("");
 
-        const handleFilterEmployees = (event: React.SyntheticEvent) => {
-            const filtered = employees.filter((employee) =>
-                employee.first_name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1 ||
-                employee.last_name.toLowerCase().indexOf((event.target as HTMLInputElement).value.toLowerCase()) > -1
-            );
-            setFilteredEmployees(filtered);
-        }
+        const filteredEmployees = !isLoadingEmployees && employees ? employees.filter((employee) =>
+            employee.first_name.toLowerCase().indexOf(filterKeyEmployees.toLowerCase()) > -1 ||
+            employee.last_name.toLowerCase().indexOf(filterKeyEmployees.toLowerCase()) > -1
+        ) : [];
 
-        const handleSetEmployees = () => {
 
-        }
 
-        const setAllEmployees = (employees: IOrganizationStructure.IEmployees.IEmployee[]) => {
-            setFilteredEmployees(employees);
-            setEmployees(employees);
-        }
-
-        const handleEditEmployee = (employee: IOrganizationStructure.IEmployees.IEmployee) => {
-            setDefaultPage("editEmployee");
-            setSelectedEmployee(employee);
-        }
-
-        const employeeColumns: GridColDef[] = [
-            {
-                field: 'first_name',
-                headerName: 'İsim',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'last_name',
-                headerName: 'Soyisim',
-                width: 200,
-                flex: 1
-            },
-            {
-                field: 'title_id',
-                headerName: 'Ünvan',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    const title = titles.find((title: any) => title.id === params.value);
-                    if (title) {
-                        return title.name;
-                    } else {
-                        return "";
-                    }
-                }
-            },
-            {
-                field: 'position_id',
-                headerName: 'Pozisyon',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    const position = positions.find((position: any) => position.id === params.value);
-                    if (position) {
-                        return position.name;
-                    } else {
-                        return "";
-                    }
-                }
-            },
-            {
-                field: 'line_id',
-                headerName: 'Hat',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    const line = lines.find((line: any) => line.id === params.value);
-                    if (line) {
-                        return line.name;
-                    } else {
-                        return "";
-                    }
-                }
-            },
-            {
-                field: 'department_id',
-                headerName: 'Departman',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    const department = departments.find((department: any) => department.id === params.value);
-                    if (department) {
-                        return department.name;
-                    } else {
-                        return "";
-                    }
-                }
-            },
-            {
-                field: '$createdAt',
-                headerName: 'Oluşturulma Tarihi',
-                width: 200,
-                flex: 1,
-                valueGetter: (params: any) => {
-                    return Resources.Functions.formatDate(params.value);
-                }
-            },
-            {
-                field: 'actions',
-                headerName: 'İşlemler',
-                width: 100,
-                renderCell: (params: any) => (
-                    <TableClickP onClick={() => handleEditEmployee(params.row)}>
-                        Düzenle
-                    </TableClickP>
-                )
-            }
-        ];
 
         return (
-            isLoadingMe || isLoadingDepartments || isLoadingLines || isLoadingPositions || isLoadingTitles ? VStack(Spinner()) :
+            isLoadingMe || isLoadingDepartments || isLoadingLines || isLoadingPositions || isLoadingTitles || isLoadingEmployees ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     // departments
@@ -396,6 +296,101 @@ export class OrganizationStructureViewController extends UIController {
                         setSelectedTitle(title);
                     }
 
+                    // employees
+                    const employeeColumns: GridColDef[] = [
+                        {
+                            field: 'first_name',
+                            headerName: 'İsim',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: 'last_name',
+                            headerName: 'Soyisim',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
+                            field: 'title_id',
+                            headerName: 'Ünvan',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                const title = titles.find((title: any) => title.id === params.value);
+                                if (title) {
+                                    return title.name;
+                                } else {
+                                    return "";
+                                }
+                            }
+                        },
+                        {
+                            field: 'position_id',
+                            headerName: 'Pozisyon',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                const position = positions.find((position: any) => position.id === params.value);
+                                if (position) {
+                                    return position.name;
+                                } else {
+                                    return "";
+                                }
+                            }
+                        },
+                        {
+                            field: 'line_id',
+                            headerName: 'Hat',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                const line = lines.find((line: any) => line.id === params.value);
+                                if (line) {
+                                    return line.name;
+                                } else {
+                                    return "";
+                                }
+                            }
+                        },
+                        {
+                            field: 'department_id',
+                            headerName: 'Departman',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                const department = departments.find((department: any) => department.id === params.value);
+                                if (department) {
+                                    return department.name;
+                                } else {
+                                    return "";
+                                }
+                            }
+                        },
+                        {
+                            field: '$createdAt',
+                            headerName: 'Oluşturulma Tarihi',
+                            width: 200,
+                            flex: 1,
+                            valueGetter: (params: any) => {
+                                return Resources.Functions.formatDate(params.value);
+                            }
+                        },
+                        {
+                            field: 'actions',
+                            headerName: 'İşlemler',
+                            width: 100,
+                            renderCell: (params: any) => (
+                                <TableClickP onClick={() => handleEditEmployee(removeDollarProperties(params.row))}>
+                                    Düzenle
+                                </TableClickP>
+                            )
+                        }
+                    ];
+
+                    const handleEditEmployee = (employee: IOrganizationStructure.IEmployees.IEmployee) => {
+                        setDefaultPage("editEmployee");
+                        setSelectedEmployee(employee);
+                    }
 
                     return (
                         VStack({ alignment: cTop })(
@@ -412,46 +407,43 @@ export class OrganizationStructureViewController extends UIController {
                                             <AntTab label="Hatlar" {...a11yProps(3)} />
                                             <AntTab label="Departmanlar" {...a11yProps(4)} />
                                         </AntTabs>
-                                        {/* <TabPanel value={value} index={0}>
-                                        {
-        
-                                            defaultPage === "addEmployee" ?
-                                                <AddEmployeeView
-                                                    setDefaultPage={setDefaultPage}
-                                                    setEmployees={setAllEmployees}
-                                                    departments={departments}
-                                                    positions={positions}
-                                                    lines={lines}
-                                                    titles={titles}
-                                                    employees={employees}
-                                                />
-                                                :
-                                                defaultPage === "editEmployee" ?
-                                                    <EditEmployeeView
-                                                        selectedEmployee={selectedEmployee}
+                                        <TabPanel value={value} index={0}>
+                                            {
+                                                defaultPage === "addEmployee" ?
+                                                    <AddEmployeeView
                                                         setDefaultPage={setDefaultPage}
-                                                        setEmployees={setAllEmployees}
-                                                        setEmployeesActives={setEmployeeActives}
-                                                        departments={departments}
-                                                        positions={positions}
-                                                        lines={lines}
-                                                        titles={titles}
-                                                        employees={employees}
+                                                        setActive={setEmployeeActives}
+                                                        employees={employees.filter((employee) => employee.is_active === true)}
+                                                        departments={departments.filter((department) => department.is_active === true)}
+                                                        lines={lines.filter((line) => line.is_active === true)}
+                                                        positions={positions.filter((position) => position.is_active === true)}
+                                                        titles={titles.filter((title) => title.is_active === true)}
                                                     />
                                                     :
-                                                    <EmployeeListView
-                                                        employees={filteredEmployees}
-                                                        setDefaultPage={setDefaultPage}
-                                                        setEmployees={setAllEmployees}
-                                                        employeeActives={employeeActives}
-                                                        employeeColumns={employeeColumns}
-                                                        handleFilterEmployees={handleFilterEmployees}
-                                                        handleSetEmployees={handleSetEmployees}
-                                                    />
-        
-                                        }
-                                    </TabPanel>
-                                     */}
+                                                    defaultPage === "editEmployee" ?
+                                                        <EditEmployeeView
+                                                            active={employeeActives}
+                                                            setActive={setEmployeeActives}
+                                                            selectedEmployee={selectedEmployee}
+                                                            setDefaultPage={setDefaultPage}
+                                                            employees={employees.filter((employee) => employee.is_active === true)}
+                                                            departments={departments.filter((department) => department.is_active === true)}
+                                                            lines={lines.filter((line) => line.is_active === true)}
+                                                            positions={positions.filter((position) => position.is_active === true)}
+                                                            titles={titles.filter((title) => title.is_active === true)}
+                                                        />
+                                                        :
+                                                        <EmployeeListView
+                                                            employees={filteredEmployees}
+                                                            columns={employeeColumns}
+                                                            active={employeeActives}
+                                                            setActives={setEmployeeActives}
+                                                            setFilterKey={setFilterKeyEmployees}
+                                                            setDefaultPage={setDefaultPage}
+                                                        />
+                                            }
+                                        </TabPanel>
+
                                         <TabPanel value={value} index={1}>
                                             {
                                                 defaultPage === "addTitle" ?

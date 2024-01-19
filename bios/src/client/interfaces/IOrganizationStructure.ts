@@ -5,6 +5,7 @@ export namespace IOrganizationStructure {
     export namespace IEmployees {
 
         export interface ICreateEmployee {
+            id: string;
             first_name: string;
             last_name: string;
             title_id: string;
@@ -12,9 +13,11 @@ export namespace IOrganizationStructure {
             line_id: string;
             manager_id: string;
             department_id: string;
+            tenant_id: string;
+            realm_id: string;
         }
 
-        export interface IUpdateEmployee {
+        export interface IEmployee extends IRoot {
             id: string;
             first_name: string;
             last_name: string;
@@ -24,22 +27,9 @@ export namespace IOrganizationStructure {
             line_id: string;
             department_id: string;
             is_active: boolean;
-        }
-
-        export interface IEmployee {
-            id: string;
-            first_name: string;
-            last_name: string;
-            title_id: string;
-            position_id: string;
-            manager_id: string;
-            line_id: string;
-            department_id: string;
-            is_active: boolean;
-        }
-
-        export interface IDeleteEmployee {
-            id: string;
+            is_deleted: boolean;
+            tenant_id: string;
+            realm_id: string;
         }
 
     }
