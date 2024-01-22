@@ -32,11 +32,11 @@ namespace CompetencyGroup {
         }
     }
 
-    export const GetCompetencyGroups = (): { groups: ICompetencyGroup.IGetCompetencyGroup[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.equal("is_deleted_group", false)])
+    export const GetList = (tenant_id: string): { groups: ICompetencyGroup.IGetCompetencyGroup[], isLoadingGroups: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.equal("is_deleted_group", false), Query.equal("tenant_id", tenant_id)])
         return {
             groups: documents as any,
-            isLoading
+            isLoadingGroups: isLoading
         }
     }
 

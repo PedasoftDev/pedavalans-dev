@@ -90,7 +90,6 @@ const Database: IDatabase = {
                     "key": "realm_id",
                     "type": "string"
                 },
-
             ]
         },
         {

@@ -7,17 +7,19 @@ import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Views } from '../../../components/Views';
 import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
+import { useGetMe } from '@realmocean/sdk';
 
 export class CompetencyGroupListController extends UIFormController {
 
     public LoadView(): UIView {
 
         const navigate = useNavigate();
+        const { me, isLoading } = useGetMe("console");
 
-        const { groups, isLoading } = CompetencyGroup.GetCompetencyGroups();
+        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
 
         return (
-            isLoading ? VStack(Spinner()) :
+            isLoading || isLoadingGroups ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [filter, setFilter] = useState(null);
                     const [rowsActive, setRowsActive] = useState<boolean>(true);

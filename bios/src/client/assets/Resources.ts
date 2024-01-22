@@ -48,11 +48,6 @@ export namespace Resources {
             type: "boolean",
         },
         {
-            name: "Uygulama üzerinden organizasyon yapısı kullanılsın mı?",
-            localStr: "app_based_organization_structure",
-            type: "boolean",
-        },
-        {
             name: "Hat bazlı yetkinlik ilişkilendirmesi kullanılsın mı?",
             localStr: "line_based_competency_relationship",
             type: "boolean",
