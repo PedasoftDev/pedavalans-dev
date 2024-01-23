@@ -22,6 +22,8 @@ import { ParametersController } from './pages/Parameters/ParametersController';
 import { OrganizationStructureController } from './pages/OrganizationStructure/OrganizationStructureController';
 import { OrganizationStructureViewController } from './pages/OrganizationStructure/OrganizationStructureViewController';
 import { CreateCompetencyController } from './pages/Competency/Controllers/CreateCompetencyController';
+import { CompetencyController } from './pages/Competency/Controllers/CompetencyController';
+import { CompetencyListController } from './pages/Competency/Controllers/CompetencyListController';
 
 export const Routes = () => {
     return (
@@ -64,7 +66,10 @@ export const Routes = () => {
                 ),
 
                 // competency
-                UIRoute("competency", CreateCompetencyController),
+                UIRoute("competency", CompetencyController).children(
+                    UIRoute("create", CreateCompetencyController),
+                    UIRoute("list", CompetencyListController)
+                ),
 
                 UIRoute('*', NotFoundController),
             ),

@@ -1,4 +1,4 @@
-import { ReactView, Spinner, State, UIController, UIView, VStack, cTop, useNavigate } from "@tuval/forms";
+import { ReactView, Spinner, UIController, UIView, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
 import React, { useState, useEffect } from "react";
 import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
@@ -10,6 +10,10 @@ import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import { Toast } from "../../../components/Toast";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import Form from "../Views/Form";
+import Competency from "../../../../server/hooks/competency/main";
+import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
+import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 
 
 const formReset: ICompetency.ICreateCompetency = {
@@ -31,11 +35,22 @@ export class CreateCompetencyController extends UIController {
 
         const navigate = useNavigate();
 
+        const [form, setForm] = useState<ICompetency.ICreateCompetency>(formReset);
+
+        const [competencyGroupId, setCompetencyGroupId] = useState<string>("1");
+
+
         const { me, isLoading } = useGetMe("console");
         const { departments, isLoadingDepartments, totalDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
+        const { group, isLoading: isLoadingGroup } = CompetencyGroup.GetCompetencyGroup(competencyGroupId);
+        const { grade, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrade(group ? group.competency_grade_id : "")
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(grade ? grade.competency_grade_id : "")
 
-        const [form, setForm] = useState<ICompetency.ICreateCompetency>(formReset);
+
+        const { createCompetency, errorCreateCompetency, isErrorCreateCompetency, isLoadingCreateCompetency, isSuccessCreateCompetency } = Competency.Create();
+        const { createCompetencyDepartment, errorCreateCompetencyDepartment, isErrorCreateCompetencyDepartment, isLoadingCreateCompetencyDepartment, isSuccessCreateCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
+        const { createCompetencyGradeValue, errorCreateCompetencyGradeValue, isErrorCreateCompetencyGradeValue, isLoadingCreateCompetencyGradeValue } = CompetencyGradeValue.CreateCompetencyGradeValue();
 
         const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
@@ -86,6 +101,7 @@ export class CreateCompetencyController extends UIController {
                 [e.target.name as string]: e.target.value,
                 competency_group_name: group?.competency_group_name
             })
+            setCompetencyGroupId(e.target.value)
         }
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,10 +118,50 @@ export class CreateCompetencyController extends UIController {
                 title: "Yetkinlik ekleniyor...",
                 timer: 5000,
             })
+
             const formSelectedDepartments = departments.filter((department) => selectedDepartments.includes(department.id)).map((department) => ({
                 competency_department_id: department.id,
                 competency_department_name: department.name
             }))
+
+            const competency_id: string = nanoid();
+            createCompetency({
+                documentId: competency_id,
+                data: {
+                    ...form,
+                    competency_id: competency_id,
+                    tenant_id: me?.prefs?.organization
+                }
+            }, () => {
+                for (let i = 0; i < formSelectedDepartments.length; i++) {
+                    const comp_dep_id = nanoid();
+                    createCompetencyDepartment({
+                        documentId: comp_dep_id,
+                        data: {
+                            competency_department_table_id: comp_dep_id,
+                            competency_department_id: formSelectedDepartments[i].competency_department_id,
+                            competency_department_name: formSelectedDepartments[i].competency_department_name,
+                            competency_id: competency_id,
+                            tenant_id: me?.prefs?.organization
+                        }
+                    })
+                }
+
+                for (let i = 0; i < levels.length; i++) {
+                    const comp_grade_level_id = nanoid();
+                    createCompetencyGradeValue({
+                        documentId: comp_grade_level_id,
+                        data: {
+                            competency_grade_value_id: comp_grade_level_id,
+                            grade_level_id: levels[i].grade_level_id,
+                            grade_level_name: levels[i].grade_level_name,
+                            grade_level_number: levels[i].grade_level_number,
+                            competency_id: competency_id,
+                            tenant_id: me?.prefs?.organization
+                        }
+                    })
+                }
+            })
             // PolivalansBrokerClient.CreateCompetency(form).then((response) => {
             //     if (lineBasedCompetency) {
             //         const lineRelationData: ILines.ICreateOrUpdateCompetencyLineRelation = {
