@@ -44,13 +44,13 @@ export class CreateCompetencyController extends UIController {
         const { departments, isLoadingDepartments, totalDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { group, isLoading: isLoadingGroup } = CompetencyGroup.GetCompetencyGroup(competencyGroupId);
-        const { grade, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrade(group ? group.competency_grade_id : "")
-        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(grade ? grade.competency_grade_id : "")
+        const { grade, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrade(group ? group.competency_grade_id : "1")
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(grade ? grade.competency_grade_id : "1")
 
 
-        const { createCompetency, errorCreateCompetency, isErrorCreateCompetency, isLoadingCreateCompetency, isSuccessCreateCompetency } = Competency.Create();
-        const { createCompetencyDepartment, errorCreateCompetencyDepartment, isErrorCreateCompetencyDepartment, isLoadingCreateCompetencyDepartment, isSuccessCreateCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
-        const { createCompetencyGradeValue, errorCreateCompetencyGradeValue, isErrorCreateCompetencyGradeValue, isLoadingCreateCompetencyGradeValue } = CompetencyGradeValue.CreateCompetencyGradeValue();
+        const { createCompetency } = Competency.Create();
+        const { createCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
+        const { createCompetencyGradeValue } = CompetencyGradeValue.CreateCompetencyGradeValue();
 
         const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
@@ -161,6 +161,13 @@ export class CreateCompetencyController extends UIController {
                         }
                     })
                 }
+                Toast.fire({
+                    icon: "success",
+                    title: "Yetkinlik başarıyla oluşturuldu."
+                });
+                setTimeout(() => {
+                    navigate("/app/competency/list");
+                }, 2000)
             })
             // PolivalansBrokerClient.CreateCompetency(form).then((response) => {
             //     if (lineBasedCompetency) {
@@ -193,7 +200,7 @@ export class CreateCompetencyController extends UIController {
         }
 
         const onCancel = () => {
-            navigate("competency/list");
+            navigate("/app/competency/list");
         }
 
         return (

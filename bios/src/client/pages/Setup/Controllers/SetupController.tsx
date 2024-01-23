@@ -70,7 +70,7 @@ export class SetupController extends UIController {
                 const collections = Database.collections;
                 const tasks = new Umay();
                 const crashedStringTasks: { projectId: string, databaseId: string, collectionId: string, key: string, size: number, required: boolean }[] = []
-                const crashedTasksInteger: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean, xdefault?: boolean }[] = []
+                const crashedBoolanTasks: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean, xdefault?: boolean }[] = []
                 for (let i = 0; i < collections.length; i++) {
                     tasks.Task(async () => {
                         const collection = collections[i];
@@ -107,7 +107,7 @@ export class SetupController extends UIController {
                                         break;
                                     } catch (error) {
                                         console.log(error);
-                                        crashedTasksInteger.push({
+                                        crashedBoolanTasks.push({
                                             projectId: AppInfo.Name,
                                             databaseId: database.$id,
                                             collectionId: col.$id,
@@ -132,8 +132,8 @@ export class SetupController extends UIController {
                 })
                 tasks.Wait(1);
                 tasks.Task(async () => {
-                    for (let i = 0; i < crashedTasksInteger.length; i++) {
-                        const { projectId, databaseId, collectionId, key, required, xdefault } = crashedTasksInteger[i];
+                    for (let i = 0; i < crashedBoolanTasks.length; i++) {
+                        const { projectId, databaseId, collectionId, key, required, xdefault } = crashedBoolanTasks[i];
                         await Services.Databases.createBooleanAttribute(projectId, databaseId, collectionId, key, required, xdefault);
                     }
                 })
