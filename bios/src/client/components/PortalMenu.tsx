@@ -64,7 +64,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
         },
         {
             title: "Birim Polivalans",
-            link: "/app/polyvalenceUnit/list",
+            link: "/app/polyvalence-unit/list",
             icon: ReactView(
                 <RxTable size={25} />
                 //import { FaRegObjectGroup } from "react-icons/fa";

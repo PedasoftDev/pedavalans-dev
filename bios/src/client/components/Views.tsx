@@ -1,4 +1,4 @@
-import { Color, ForEach, HStack, Icon, Spacer, Text, TextAlignment, UIContextMenu, VStack, cLeading, cTop } from "@tuval/forms";
+import { Color, ForEach, HStack, Icon, Spacer, Text, TextAlignment, UIButton, UIContextMenu, UIRouteLink, VStack, cLeading, cTop } from "@tuval/forms";
 import React from "react";
 
 export namespace Views {
@@ -94,5 +94,74 @@ export namespace Views {
             .shadow("rgb(0 0 0 / 24%) 0px 3px 8px")
             .background({ default: "", hover: "rgba(137, 199, 245, .3)" })
             .transition(".6s")
+            .cornerRadius(10)
+
+
+    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, items: { title: string, action: Function }[]) =>
+        VStack({ alignment: cTop, spacing: 10 })(
+            HStack(
+                VStack({ alignment: cLeading })(
+                    PedaText("Polivalans Tablosu").fontSize("10px").foregroundColor("gray"),
+                    PedaText(table_name)
+                ),
+                Spacer(),
+                UIContextMenu(
+                    ...ForEach(items)((item) =>
+                        item.title == "Sil" ?
+                            VStack({ alignment: cLeading })(
+                                PedaText(item.title).foregroundColor(Color.red)
+                            ).width("100%")
+                                .onClick(() => item.action())
+                            :
+                            VStack({ alignment: cLeading })(
+                                PedaText(item.title)
+                            ).width("100%")
+                                .onClick(() => item.action())
+                    )
+                )(
+                    Icon("\\e5d4")
+                        .background({ hover: "#dddddd" })
+                        .cursor("pointer")
+                        .cornerRadius("50%")
+                        .padding(5)
+                )
+            ).height(),
+            HStack({ alignment: cLeading })(
+                VStack({ alignment: cLeading })(
+                    PedaText("Departman").fontSize("10px").foregroundColor("gray"),
+                    PedaText(department_name)
+                )
+            ).height(),
+            HStack({ alignment: cLeading })(
+                VStack({ alignment: cLeading })(
+                    PedaText("Değerlendirme Sıklığı").fontSize("10px").foregroundColor("gray"),
+                    PedaText(period_name)
+                )
+            ).height()
+        ).width(350)
+            .height(150)
+            .padding(12)
+            .shadow("rgba(0, 0, 0, 0.35) 0px 5px 15px")
+            .cornerRadius(10)
+
+    export const NewPolyvalenceUnitCard = (link: string) =>
+        VStack(
+            UIRouteLink(
+                link
+            )(
+                UIButton(
+                    Icon("\\e39d").size(18).paddingRight("5px"),
+                    PedaText("Yeni Tablo Ekleyin")
+                )
+                    .padding("10px 15px 10px 10px")
+                    .cornerRadius(5)
+                    .foregroundColor({ hover: Color.gray400 })
+            )
+        ).width(350)
+            .height(150)
+            .transition(".5s")
+            .padding(12)
+            .background({ hover: "rgba(0,0,0,0.05)" })
+            .border("1px dashed gray")
             .cornerRadius(10)
 }

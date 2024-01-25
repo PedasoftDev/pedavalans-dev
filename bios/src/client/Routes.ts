@@ -25,6 +25,8 @@ import { CreateCompetencyController } from './pages/Competency/Controllers/Creat
 import { CompetencyController } from './pages/Competency/Controllers/CompetencyController';
 import { CompetencyListController } from './pages/Competency/Controllers/CompetencyListController';
 import { UpdateCompetencyController } from './pages/Competency/Controllers/UpdateCompetencyController';
+import { PolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/PolyvalenceUnitController';
+import { PolyvalenceUnitListController } from './pages/PolyvalenceUnit/Controllers/PolyvalenceUnitListController';
 
 export const Routes = () => {
     return (
@@ -73,6 +75,14 @@ export const Routes = () => {
                     UIRoute("edit/:id", UpdateCompetencyController)
                 ),
 
+                // polyvalence unit
+                UIRoute('polyvalence-unit', PolyvalenceUnitController).children(
+                    UIRoute('create', PolyvalenceUnitController),
+                    UIRoute('edit/:id', PolyvalenceUnitController),
+                    UIRoute('list', PolyvalenceUnitListController),
+                ),
+
+                // not found
                 UIRoute('*', NotFoundController),
             ),
 

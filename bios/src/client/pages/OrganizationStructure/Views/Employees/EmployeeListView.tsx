@@ -1,8 +1,9 @@
 import { Button, TextField, Tooltip } from '@mui/material'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import { GridColDef } from '@mui/x-data-grid'
 import React from 'react'
 import { MdDisplaySettings } from 'react-icons/md'
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
+import StyledDataGrid from '../../../../components/StyledDataGrid'
 
 const EmployeeListView = (
     props: {
@@ -32,7 +33,7 @@ const EmployeeListView = (
                 </div>
             </div>
             <div style={{ height: "calc(100vh - 280px)" }}>
-                <DataGrid rows={props.employees.filter(x => x.is_active === props.active)} columns={props.columns} />
+                <StyledDataGrid rows={props.employees.filter(x => x.is_active === props.active)} columns={props.columns} />
             </div>
         </div>
     )
