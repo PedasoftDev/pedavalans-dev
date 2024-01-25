@@ -70,7 +70,7 @@ export class SetupController extends UIController {
                 const collections = Database.collections;
                 const tasks = new Umay();
                 const crashedStringTasks: { projectId: string, databaseId: string, collectionId: string, key: string, size: number, required: boolean }[] = []
-                const crashedBoolanTasks: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean, xdefault?: boolean }[] = []
+                const crashedBooleanTasks: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean, xdefault?: boolean }[] = []
                 for (let i = 0; i < collections.length; i++) {
                     tasks.Task(async () => {
                         const collection = collections[i];
@@ -99,6 +99,7 @@ export class SetupController extends UIController {
                                             size: 256,
                                             required: false
                                         })
+                                        break;
                                     }
                                 case "boolean":
                                     try {
@@ -107,7 +108,7 @@ export class SetupController extends UIController {
                                         break;
                                     } catch (error) {
                                         console.log(error);
-                                        crashedBoolanTasks.push({
+                                        crashedBooleanTasks.push({
                                             projectId: AppInfo.Name,
                                             databaseId: database.$id,
                                             collectionId: col.$id,
@@ -115,6 +116,7 @@ export class SetupController extends UIController {
                                             required: false,
                                             xdefault: key && key.startsWith("is_active") ? true : false
                                         })
+                                        break;
                                     }
                             }
                         }
@@ -126,14 +128,16 @@ export class SetupController extends UIController {
 
                 tasks.Task(async () => {
                     for (let i = 0; i < crashedStringTasks.length; i++) {
+                        console.log(crashedStringTasks[i]);
                         const { projectId, databaseId, collectionId, key, size, required } = crashedStringTasks[i];
                         await Services.Databases.createStringAttribute(projectId, databaseId, collectionId, key, size, required);
                     }
                 })
                 tasks.Wait(1);
                 tasks.Task(async () => {
-                    for (let i = 0; i < crashedBoolanTasks.length; i++) {
-                        const { projectId, databaseId, collectionId, key, required, xdefault } = crashedBoolanTasks[i];
+                    for (let i = 0; i < crashedBooleanTasks.length; i++) {
+                        console.log(crashedBooleanTasks[i]);
+                        const { projectId, databaseId, collectionId, key, required, xdefault } = crashedBooleanTasks[i];
                         await Services.Databases.createBooleanAttribute(projectId, databaseId, collectionId, key, required, xdefault);
                     }
                 })

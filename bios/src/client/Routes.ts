@@ -24,6 +24,7 @@ import { OrganizationStructureViewController } from './pages/OrganizationStructu
 import { CreateCompetencyController } from './pages/Competency/Controllers/CreateCompetencyController';
 import { CompetencyController } from './pages/Competency/Controllers/CompetencyController';
 import { CompetencyListController } from './pages/Competency/Controllers/CompetencyListController';
+import { UpdateCompetencyController } from './pages/Competency/Controllers/UpdateCompetencyController';
 
 export const Routes = () => {
     return (
@@ -68,7 +69,8 @@ export const Routes = () => {
                 // competency
                 UIRoute("competency", CompetencyController).children(
                     UIRoute("create", CreateCompetencyController),
-                    UIRoute("list", CompetencyListController)
+                    UIRoute("list", CompetencyListController),
+                    UIRoute("edit/:id", UpdateCompetencyController)
                 ),
 
                 UIRoute('*', NotFoundController),
