@@ -69,7 +69,7 @@ export class PolyvalenceUnitListController extends UIController {
                                         ReactView(
                                             <Button size="small" fullWidth variant="outlined" onClick={() =>
                                                 // navigate(isAdmin ? "/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add" : "/app/com.pedasoft.app.pedavalans/")}>Yeni Tablo</Button>
-                                                navigate("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add")}>Yeni Tablo</Button>
+                                                navigate("/app/polyvalence-unit/create")}>Yeni Tablo</Button>
                                         )
                                     ).width("20%")
                                 ),
@@ -111,14 +111,14 @@ export class PolyvalenceUnitListController extends UIController {
                                                 ).margin("0 20px 20px 0")
                                             ),
                                             // isAdmin ? Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add").margin("0 20px 20px 0") : null
-                                            Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add").margin("0 20px 20px 0")
+                                            Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create").margin("0 20px 20px 0")
 
                                         ).wrap("wrap").paddingTop("10px")
                                     )
                                     :
                                     HStack({ alignment: cCenter })(
                                         // isAdmin ? Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add") : null
-                                        Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add")
+                                        Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create")
                                     )
                             ).marginBottom("10px")
                         ).padding("0 20px")
