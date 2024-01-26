@@ -28,6 +28,7 @@ import { UpdateCompetencyController } from './pages/Competency/Controllers/Updat
 import { PolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/PolyvalenceUnitController';
 import { PolyvalenceUnitListController } from './pages/PolyvalenceUnit/Controllers/PolyvalenceUnitListController';
 import { CreatePolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/CreatePolyvalenceUnitController';
+import { UpdatePolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/UpdatePolyvalenceUnitController';
 
 export const Routes = () => {
     return (
@@ -79,7 +80,7 @@ export const Routes = () => {
                 // polyvalence unit
                 UIRoute('polyvalence-unit', PolyvalenceUnitController).children(
                     UIRoute('create', CreatePolyvalenceUnitController),
-                    UIRoute('edit/:id', PolyvalenceUnitController),
+                    UIRoute('edit/:id', UpdatePolyvalenceUnitController),
                     UIRoute('list', PolyvalenceUnitListController),
                 ),
 

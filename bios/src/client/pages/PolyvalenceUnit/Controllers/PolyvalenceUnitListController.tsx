@@ -80,7 +80,6 @@ export class PolyvalenceUnitListController extends UIController {
                                         HStack({ alignment: cTop })(
                                             ...ForEach(filteredPolyvalenceUnitList.filter(x => x.is_active_table === isActive))(item =>
                                                 Views.PolyvalenceUnitCard(item.polyvalence_table_name, item.polyvalence_department_name, item.polyvalence_evaluation_frequency,
-                                                    // isAdmin ?
                                                     [
                                                         {
                                                             title: "Excel'e Aktar",
@@ -90,24 +89,9 @@ export class PolyvalenceUnitListController extends UIController {
                                                         },
                                                         {
                                                             title: "Düzenle",
-                                                            action: () => navigate(`/app/com.pedasoft.app.pedavalans/polyvalenceUnit/edit/${item.polyvalence_table_id}`)
+                                                            action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
                                                         },
-                                                        {
-                                                            title: "Sil",
-                                                            action: () => navigate(`/app/com.pedasoft.app.pedavalans/polyvalenceUnit/delete/${item.polyvalence_table_id}`)
-                                                        }
                                                     ]
-                                                    // :
-                                                    // [
-                                                    //     {
-                                                    //         title: "Düzenle",
-                                                    //         action: () => navigotor(`/app/com.pedasoft.app.pedavalans/polyvalenceUnit/edit/${item.polyvalence_table_id}`)
-                                                    //     },
-                                                    //     {
-                                                    //         title: "Excel'e Aktar",
-                                                    //         action: () => this.ShowDialog(item.polyvalence_table_id)
-                                                    //     },
-                                                    // ]
                                                 ).margin("0 20px 20px 0")
                                             ),
                                             // isAdmin ? Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add").margin("0 20px 20px 0") : null

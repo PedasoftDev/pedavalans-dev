@@ -1,8 +1,8 @@
 import {
     cTop,
+    nanoid,
     ReactView,
     Spinner,
-    State,
     UIController,
     UIView,
     UIViewBuilder,
@@ -16,9 +16,10 @@ import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
 import StyledDataGrid from '../../../components/StyledDataGrid';
-import { useGetCurrentTeam, useGetMe, useGetTeamMembership, useListTeamMemberships } from '@realmocean/sdk';
+import { useGetMe, useListTeamMemberships } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import AppInfo from '../../../../AppInfo';
+import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
 
 // Değerlendirme Sıklığı için
 const evaluationFrequency = [
@@ -60,8 +61,9 @@ export class CreatePolyvalenceUnitController extends UIController {
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const { memberships, isLoading: isLoadingTeam } = useListTeamMemberships(AppInfo.Name, me?.prefs?.organization)
+        const { memberships, isLoading: isLoadingTeam } = useListTeamMemberships(AppInfo.Name, me?.prefs?.organization);
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+        const { createPolyvalenceUnit, errorPolyvalenceUnit, isErrorPolyvalenceUnit, isLoadingPolyvalenceUnit, isSuccessPolyvalenceUnit } = PolyvalenceUnit.Create();
 
         return (
             isLoading || isLoadingTeam || isLoadingDepartments ? VStack(Spinner()) :
@@ -97,6 +99,17 @@ export class CreatePolyvalenceUnitController extends UIController {
 
                     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                         e.preventDefault();
+                        const id: string = nanoid();
+                        createPolyvalenceUnit({
+                            documentId: id,
+                            data: {
+                                ...form,
+                                polyvalence_table_id: id,
+                                tenant_id: me?.prefs?.organization
+                            }
+                        }, () => {
+                            responseFunc();
+                        })
                         // const selectedPolvalenceTableDataResponsibleEmployees = accounts.filter((account) => selectedResponsibleAccounts.includes(account.id)).map((account) => {
                         //     return {
                         //         "responsible_employee_id": account.id,

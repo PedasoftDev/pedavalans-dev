@@ -10,13 +10,32 @@ namespace PolyvalenceUnit {
         }
     }
 
-    export const Create = (): { createPolyvalenceUnit, errorPolyvalenceUnit: { message: string }, isErrorPolyvalenceUnit: boolean, isLoadingPolyvalenceUnit: boolean, isSuccessPolyvalenceUnit: boolean } => {
+    export const Create = () => {
         const { createDocument, error, isError, isLoading, isSuccess } = useCreateDocument(AppInfo.Name, AppInfo.Database, "polyvalence_unit_table")
         return {
             createPolyvalenceUnit: createDocument,
             errorPolyvalenceUnit: error,
             isErrorPolyvalenceUnit: isError,
             isLoadingPolyvalenceUnit: isLoading,
+            isSuccessPolyvalenceUnit: isSuccess
+        }
+    }
+
+    export const Get = (id: string): { polyvalenceUnit: IPolyvalenceUnit.IPolyvalenceUnit, isLoadingPolyvalenceUnit: boolean } => {
+        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: "polyvalence_unit_table", documentId: id })
+        return {
+            polyvalenceUnit: document as any,
+            isLoadingPolyvalenceUnit: isLoading
+        }
+    }
+
+    export const Update = () => {
+        const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name)
+        return {
+            updatePolyvalenceUnit: updateDocument,
+            errorPolyvalenceUnit: error,
+            isErrorPolyvalenceUnit: isError,
+            isLoadingPolyvalenceUnitUpdate: isLoading,
             isSuccessPolyvalenceUnit: isSuccess
         }
     }
