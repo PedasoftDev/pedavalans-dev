@@ -14,6 +14,10 @@ import Competency from "../../../../server/hooks/competency/main";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
 import AppInfo from "../../../../AppInfo";
+import Parameters from "../../../../server/hooks/parameters/main";
+import { Resources } from "../../../assets/Resources";
+import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
+import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
 
 const formReset: ICompetency.ICompetency = {
     competency_id: "",
@@ -44,8 +48,18 @@ export class UpdateCompetencyController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { competency, isLoadingCompetency } = Competency.Get(id)
         const { updateCompetency } = Competency.Update();
+
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
+
+        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+        const { createCompetencyLineRelation, error, isError, isLoading: isLoadingCreateLineRelation, isSuccess } = CompetencyLineRelation.Create();
+        const { competencyLineRelation, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetByCompetencyId(id, me?.prefs?.organization);
+        const { updateCompetencyLineRelation } = CompetencyLineRelation.Update();
+
+        // lines
+        const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+
         const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByCompetencyId(competency?.competency_id);
         const { updateCompetencyDepartment } = CompetencyDepartment.Update();
         const { createCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
@@ -53,18 +67,14 @@ export class UpdateCompetencyController extends UIController {
 
 
         return (
-            isLoading || isLoadingCompetency || isLoadingDepartments || isLoadingGroups || isLoadingCompetencyDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingCompetency || isLoadingDepartments || isLoadingGroups || isLoadingCompetencyDepartments || isLoadingCompetencyLineRelation || isLoadingLines ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<ICompetency.ICompetency>(formReset)
                     const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
                     const [isActive, setIsActive] = useState<boolean>(true);
 
-                    // // lines
-                    // const [lines, setLines] = useState<ILines.ILine[]>([]);
-                    // const [selectedLines, setSelectedLines] = useState<string[]>([]);
-
-                    // const [lineBasedCompetency, setLineBasedCompetency] = useState<boolean>(isLineBasedCompetencyActive);
+                    const [selectedLines, setSelectedLines] = useState<string[]>([]);
 
                     const lineColumns: GridColDef[] = [
                         {
@@ -88,25 +98,13 @@ export class UpdateCompetencyController extends UIController {
                         }
                     ];
 
-                    // useEffect(() => {
-                    //     Promise.all([
-                    //         PolivalansBrokerClient.GetCompetencyGroupsByActive(),
-                    //         PolivalansBrokerClient.GetCompetency(this.id),
-                    //         PolivalansBrokerClient.GetActiveOrganizationLines(),
-                    //         PolivalansBrokerClient.GetCompetencyLineRelationByCompetencyId(this.id)
-                    //     ]).then((response) => {
-                    //         const [groups, competency, lines, selectedLinesRes] = response;
-                    //         setCompetencyGroups(groups)
-                    //         setForm(competency)
-                    //         setLines(lines)
-                    //         setSelectedLines(selectedLinesRes)
-                    //         setSelectedDepartments(competency.competency_departments.map((department) => department.competency_department_id))
-                    //         setIsActive(competency.is_active_competency == "true" ? true : false)
-                    //     })
-                    // }, [])
                     useEffect(() => {
                         setForm(removeDollarProperties(competency))
                         setSelectedDepartments(competencyDepartments.map((department) => department.competency_department_id))
+                        if (lineBased[0]?.is_active) {
+                            setSelectedLines(competencyLineRelation.map((line) => line.line_id))
+                        }
+                        setIsActive(competency.is_active_competency)
                     }, [])
 
                     const handleChangeGroup = (e: SelectChangeEvent<string>) => {
@@ -146,6 +144,22 @@ export class UpdateCompetencyController extends UIController {
                             }
                         })
 
+                        if (lineBased[0]?.is_active) {
+                            competencyLineRelation.map((line) => {
+                                if (!selectedLines.includes(line.line_id)) {
+                                    updateCompetencyLineRelation({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: "competency_line_relation",
+                                        documentId: line.$id,
+                                        data: {
+                                            ...removeDollarProperties(line),
+                                            is_deleted: true
+                                        }
+                                    })
+                                }
+                            })
+                        }
+
                         selectedDepartments.map((department) => {
                             if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
                                 const createDepId = nanoid();
@@ -162,6 +176,24 @@ export class UpdateCompetencyController extends UIController {
                             }
                         })
 
+                        if (lineBased[0]?.is_active) {
+                            selectedLines.map((line) => {
+                                if (!competencyLineRelation.map((line) => line.line_id).includes(line)) {
+                                    const createLineId = nanoid();
+                                    createCompetencyLineRelation({
+                                        documentId: createLineId,
+                                        data: {
+                                            id: createLineId,
+                                            competency_id: id,
+                                            competency_target_value: "",
+                                            line_id: line,
+                                            tenant_id: me?.prefs?.organization
+                                        }
+                                    })
+                                }
+                            })
+                        }
+
                         updateCompetency({
                             databaseId: AppInfo.Database,
                             collectionId: "competency",
@@ -174,36 +206,6 @@ export class UpdateCompetencyController extends UIController {
                             });
                             navigate("/app/competency/list");
                         })
-
-
-                        // form.competency_departments = selectedCompetencyDepartments;
-                        // PolivalansBrokerClient.UpdateCompetency(form).then((response) => {
-                        //     if (lineBasedCompetency) {
-                        //         const lineRelationData: ILines.ICreateOrUpdateCompetencyLineRelation = {
-                        //             competency_id: form.competency_id,
-                        //             created_at: new Date().toISOString(),
-                        //             line_ids: selectedLines,
-                        //         }
-                        //         PolivalansBrokerClient.CreateOrUpdateCompetencyLineRelation(lineRelationData).then((response) => {
-                        //             Toast.fire({
-                        //                 icon: "success",
-                        //                 title: "Yetkinlik başarıyla düzenlendi."
-                        //             });
-                        //             navigate("/app/competency/list");
-                        //         })
-                        //     } else {
-                        //         Toast.fire({
-                        //             icon: "success",
-                        //             title: "Yetkinlik başarıyla düzenlendi."
-                        //         });
-                        //         navigate("/app/competency/list");
-                        //     }
-                        // }).catch((error) => {
-                        //     Toast.fire({
-                        //         icon: "error",
-                        //         title: "Yetkinlik düzenlenirken bir hata oluştu."
-                        //     })
-                        // })
                     }
 
                     const onCancel = () => {
@@ -296,8 +298,8 @@ export class UpdateCompetencyController extends UIController {
                                                     columnHeaderHeight={30}
                                                 />
                                             </div>
-                                            {/* {
-                                                lineBasedCompetency &&
+                                            {
+                                                lineBased[0]?.is_active &&
                                                 <div style={{
                                                     height: "280px",
                                                     width: "100%",
@@ -306,7 +308,7 @@ export class UpdateCompetencyController extends UIController {
                                                     gap: "5px",
                                                 }}>
                                                     <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Hatları</Typography>
-                                                    <Views.StyledDataGrid
+                                                    <StyledDataGrid
                                                         // çoklu id ye göre filtreleme yapılacak
                                                         rows={lines.filter((line) => selectedDepartments.indexOf(line.department_id) > -1)}
                                                         columns={lineColumns}
@@ -322,7 +324,7 @@ export class UpdateCompetencyController extends UIController {
                                                         columnHeaderHeight={30}
                                                     />
                                                 </div>
-                                            } */}
+                                            }
                                             <FormControlLabel
                                                 sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
                                                 onChange={(e: any) => setForm({ ...form, is_active_competency: e.target.checked })}
