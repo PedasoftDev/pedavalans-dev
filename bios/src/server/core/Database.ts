@@ -407,6 +407,42 @@ const Database: IDatabase = {
             ]
         },
         {
+            "id": "polyvalence_unit_table_line_rel",
+            "name": "Polyvalence Unit Table Line Relation",
+            "description": {
+                "en": "Polyvalence Unit Table Line Relation is a collection of polyvalence unit table line relations.",
+                "tr": "Çok yönlü birim tablo hat ilişkilerinin koleksiyonudur."
+            },
+            "version": "1.0.0",
+            "attributes": [
+                {
+                    "key": "polyvalence_table_line_relation_id",
+                    "type": "string",
+                },
+                {
+                    "key": "polyvalence_table_id",
+                    "type": "string",
+                },
+                {
+                    "key": "line_id",
+                    "type": "string",
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                },
+                {
+                    "key": "realm_id",
+                    "type": "string"
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false
+                }
+            ]
+        },
+        {
             "id": "polyvalence_unit_table_data_respon",
             "name": "Polyvalence Unit Table Data Responsible",
             "description": {

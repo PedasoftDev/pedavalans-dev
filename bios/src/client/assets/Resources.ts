@@ -59,6 +59,13 @@ export namespace Resources {
         },
     ];
 
+    export const ParameterLocalStr = {
+        polyvalence_unit_table_auth: "polyvalence_unit_table_auth",
+        machine_based_polyvalence_management: "machine_based_polyvalence_management",
+        line_based_competency_relationship: "line_based_competency_relationship",
+        polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
+    }
+
     export const Monitoring = {
         name: "Yetkinlik performansı kabul kriteri(%)?",
         localStr: "competency_performance_acceptance_criteria",

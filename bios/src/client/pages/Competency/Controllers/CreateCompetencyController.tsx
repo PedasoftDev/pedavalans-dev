@@ -14,6 +14,9 @@ import Competency from "../../../../server/hooks/competency/main";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
+import Parameters from "../../../../server/hooks/parameters/main";
+import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
+import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 
 
 const formReset: ICompetency.ICreateCompetency = {
@@ -54,11 +57,12 @@ export class CreateCompetencyController extends UIController {
 
         const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
-        // const [lineBasedCompetency, setLineBasedCompetency] = useState<boolean>(isLineBasedCompetencyActive);
+        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+        const { createCompetencyLineRelation, error, isError, isLoading: isLoadingCreateLineRelation, isSuccess } = CompetencyLineRelation.Create()
 
         // lines
-        // const [lines, setLines] = useState<ILines.ILine[]>([]);
-        // const [selectedLines, setSelectedLines] = useState<string[]>([]);
+        const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+        const [selectedLines, setSelectedLines] = useState<string[]>([]);
 
 
         const departmentColumns: GridColDef[] = [
@@ -81,18 +85,6 @@ export class CreateCompetencyController extends UIController {
                 flex: 1,
             }
         ];
-
-        // useEffect(() => {
-        //     Promise.all([
-        //         PolivalansBrokerClient.GetCompetencyGroupsByActive(),
-        //         PolivalansBrokerClient.GetActiveOrganizationLines(),
-        //     ]).then((response) => {
-        //         const [groups, lines] = response;
-        //         setCompetencyGroups(groups)
-        //         setLines(lines)
-        //         this.isLoading = false;
-        //     })
-        // }, [])
 
         const handleChangeGroup = (e: SelectChangeEvent<string>) => {
             const group = groups.find((group) => group.competency_group_id === e.target.value)
@@ -161,6 +153,23 @@ export class CreateCompetencyController extends UIController {
                         }
                     })
                 }
+
+                if (lineBased[0]?.is_active) {
+                    for (let i = 0; i < selectedLines.length; i++) {
+                        const comp_line_relation_id = nanoid();
+                        createCompetencyLineRelation({
+                            documentId: comp_line_relation_id,
+                            data: {
+                                id: comp_line_relation_id,
+                                competency_id: competency_id,
+                                line_id: selectedLines[i],
+                                tenant_id: me?.prefs?.organization
+                            }
+
+                        })
+                    }
+                }
+
                 Toast.fire({
                     icon: "success",
                     title: "Yetkinlik başarıyla oluşturuldu."
@@ -169,34 +178,6 @@ export class CreateCompetencyController extends UIController {
                     navigate("/app/competency/list");
                 }, 2000)
             })
-            // PolivalansBrokerClient.CreateCompetency(form).then((response) => {
-            //     if (lineBasedCompetency) {
-            //         const lineRelationData: ILines.ICreateOrUpdateCompetencyLineRelation = {
-            //             competency_id: response,
-            //             created_at: new Date().toISOString(),
-            //             line_ids: selectedLines,
-            //         }
-            //         PolivalansBrokerClient.CreateOrUpdateCompetencyLineRelation(lineRelationData).then((response) => {
-            //             Toast.fire({
-            //                 icon: "success",
-            //                 title: "Yetkinlik başarıyla oluşturuldu."
-            //             });
-            //             navigate("competency/list");
-            //         })
-            //     } else {
-            //         Toast.fire({
-            //             icon: "success",
-            //             title: "Yetkinlik başarıyla oluşturuldu."
-            //         });
-            //         navigate("competency/list");
-            //     }
-
-            // }).catch((error) => {
-            //     Toast.fire({
-            //         icon: "error",
-            //         title: "Yetkinlik eklenirken bir hata oluştu."
-            //     })
-            // })
         }
 
         const onCancel = () => {
@@ -205,7 +186,7 @@ export class CreateCompetencyController extends UIController {
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingDepartments || isLoadingGroups ? VStack(Spinner()) :
+                isLoading || isLoadingDepartments || isLoadingGroups || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
                     ReactView(
                         <Form
                             title="Yeni Yetkinlik Ekleyin"
@@ -258,8 +239,8 @@ export class CreateCompetencyController extends UIController {
 
                                         />
                                     </div>
-                                    {/* {
-                                        lineBasedCompetency &&
+                                    {
+                                        lineBased[0]?.is_active &&
 
                                         <div style={{
                                             height: "280px",
@@ -269,7 +250,7 @@ export class CreateCompetencyController extends UIController {
                                             gap: "5px",
                                         }}>
                                             <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Hatları</Typography>
-                                            <Views.StyledDataGrid
+                                            <StyledDataGrid
                                                 // çoklu id ye göre filtreleme yapılacak
                                                 rows={lines.filter((line) => selectedDepartments.indexOf(line.department_id) > -1)}
                                                 columns={lineColumns}
@@ -286,7 +267,7 @@ export class CreateCompetencyController extends UIController {
                                             />
                                         </div>
 
-                                    } */}
+                                    }
                                     <div style={{
                                         display: "flex", gap: "10px", flexDirection: "column", marginTop: "10px"
                                     }}>

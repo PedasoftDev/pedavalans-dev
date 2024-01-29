@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     cTop,
+    nanoid,
     ReactView,
     Spinner,
     UIController,
@@ -21,6 +22,10 @@ import OrganizationStructureDepartment from '../../../../server/hooks/organizati
 import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
+import OrganizationStructureLine from '../../../../server/hooks/organizationStructureLine/main';
+import Parameters from '../../../../server/hooks/parameters/main';
+import { Resources } from '../../../assets/Resources';
+import PolyvalenceUnitTableLineRelation from '../../../../server/hooks/polyvalenceUnitTableLineRelation/main';
 
 const formReset = {
     polyvalence_table_id: "",
@@ -46,8 +51,19 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
         const { updatePolyvalenceUnit, errorPolyvalenceUnit, isErrorPolyvalenceUnit, isLoadingPolyvalenceUnitUpdate, isSuccessPolyvalenceUnit } = PolyvalenceUnit.Update();
 
+        // lines
+        const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+
+        const { lineRelation, isLoading: isLoadingLineRelation } = PolyvalenceUnitTableLineRelation.GetByPolyvalenceUnitId(id, me?.prefs?.organization)
+        const { updatePolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Update();
+        const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
+
+        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+
+
         return (
-            isLoading || isLoadingTeam || isLoadingDepartments || isLoadingPolyvalenceUnit ? VStack(Spinner()) :
+            isLoading || isLoadingTeam || isLoadingDepartments || isLoadingPolyvalenceUnit
+                || isLoadingParameter || isLoadingLines || isLoadingLineRelation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(formReset)
@@ -56,9 +72,6 @@ export class UpdatePolyvalenceUnitController extends UIController {
 
                     const [selectedViewerAccounts, setSelectedViewerAccounts] = useState<string[]>([]);
 
-                    // const [lineBasedCompetency, setLineBasedCompetency] = useState<boolean>(isLineBasedCompetencyActive);
-
-                    const [lines, setLines] = useState<any[]>([]);
                     const [selectedLine, setSelectedLine] = useState<string>("");
 
 
@@ -74,6 +87,30 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
+                            if (lineBased[0]?.is_active) {
+                                if (lineRelation.length == 0) {
+                                    const documentId = nanoid();
+                                    createPolyvalenceUnitLineRelation({
+                                        documentId: documentId,
+                                        data: {
+                                            polyvalence_table_line_relation_id: documentId,
+                                            polyvalence_table_id: id,
+                                            line_id: selectedLine,
+                                            tenant_id: me?.prefs?.organization,
+                                        }
+                                    })
+                                } else {
+                                    updatePolyvalenceUnitLineRelation({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: "polyvalence_unit_table_line_rel",
+                                        documentId: lineRelation[0]?.polyvalence_table_line_relation_id,
+                                        data: {
+                                            ...removeDollarProperties(lineRelation[0]),
+                                            line_id: selectedLine
+                                        }
+                                    })
+                                }
+                            }
                             Toast.fire({
                                 icon: 'success',
                                 title: 'Polivalans tablosu güncellendi!'
@@ -156,7 +193,12 @@ export class UpdatePolyvalenceUnitController extends UIController {
                         //         this.canView = true;
                         //     }
                         // })
+
                         setForm(removeDollarProperties(polyvalenceUnit))
+                        if (lineBased[0]?.is_active) {
+                            setSelectedLine(lineRelation[0]?.line_id)
+
+                        }
                     }, [])
 
                     return (
@@ -202,8 +244,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     ))}
                                                 </Select>
                                             </FormControl>
-                                            {/* {
-                                                lineBasedCompetency && lines &&
+                                            {
+                                                lineBased[0]?.is_active &&
                                                 <FormControl fullWidth size="small">
                                                     <InputLabel>Bağlı Hat</InputLabel>
                                                     <Select
@@ -219,7 +261,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                         ))}
                                                     </Select>
                                                 </FormControl>
-                                            } */}
+                                            }
                                             {/* <div style={{
                                                 height: "250px",
                                                 width: "100%",

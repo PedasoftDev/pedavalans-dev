@@ -8,7 +8,7 @@ namespace OrganizationStructureLine {
         return { createDocument, isLoading, isSuccess, isError, error }
     }
 
-    export const GetList = (tenant_id: string) => {
+    export const GetList = (tenant_id: string): { lines: IOrganizationStructure.ILines.ILine[], isLoadingLines: boolean, totalLines: number } => {
         const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_line", [Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
         return {
             lines: documents as any,

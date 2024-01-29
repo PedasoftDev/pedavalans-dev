@@ -9,7 +9,7 @@ import {
     useNavigate,
     VStack,
 } from '@tuval/forms';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import Form from '../Views/Form';
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { GridColDef, trTR } from '@mui/x-data-grid';
@@ -20,6 +20,10 @@ import { useGetMe, useListTeamMemberships } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
+import OrganizationStructureLine from '../../../../server/hooks/organizationStructureLine/main';
+import { Resources } from '../../../assets/Resources';
+import Parameters from '../../../../server/hooks/parameters/main';
+import PolyvalenceUnitTableLineRelation from '../../../../server/hooks/polyvalenceUnitTableLineRelation/main';
 
 // Değerlendirme Sıklığı için
 const evaluationFrequency = [
@@ -39,24 +43,6 @@ const evaluationFrequency = [
 
 export class CreatePolyvalenceUnitController extends UIController {
 
-    //   protected BindRouterParams(): void {
-    //     this.isLoading = true;
-    //     const orgProvider = useOrganizationService();
-    //     orgProvider.getAccounts().then((response) => {
-    //       accounts = response.map((account) => ({
-    //         ...account,
-    //         id: account.Id
-    //       }))
-    //     })
-    //     if (isLineBasedCompetencyActive) {
-    //       PolivalansBrokerClient.GetActiveOrganizationLines().then((response) => {
-    //         this.lines = response
-    //       })
-    //     }
-    //     this.isLoading = false;
-    //   }
-
-
     public LoadView(): UIView {
 
         const navigate = useNavigate();
@@ -64,9 +50,15 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { memberships, isLoading: isLoadingTeam } = useListTeamMemberships(AppInfo.Name, me?.prefs?.organization);
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { createPolyvalenceUnit, errorPolyvalenceUnit, isErrorPolyvalenceUnit, isLoadingPolyvalenceUnit, isSuccessPolyvalenceUnit } = PolyvalenceUnit.Create();
+        const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
+
+        // lines
+        const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+
+        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
 
         return (
-            isLoading || isLoadingTeam || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingTeam || isLoadingDepartments || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<IPolyvalenceUnit.ICreatePolyvalenceUnit>({
@@ -82,8 +74,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                     const [selectedResponsibleAccounts, setSelectedResponsibleAccounts] = useState<string[]>([])
                     const [selectedViewerAccounts, setSelectedViewerAccounts] = useState<string[]>([])
 
-                    // const [lineBasedCompetency, setLineBasedCompetency] = useState<boolean>(isLineBasedCompetencyActive);
-                    // const [selectedLine, setSelectedLine] = useState<string>("")
+                    const [selectedLine, setSelectedLine] = useState<string>("")
 
                     const responseFunc = useCallback(() => {
                         Toast.fire({
@@ -108,7 +99,17 @@ export class CreatePolyvalenceUnitController extends UIController {
                                 tenant_id: me?.prefs?.organization
                             }
                         }, () => {
-                            responseFunc();
+                            const documentId: string = nanoid();
+                            createPolyvalenceUnitLineRelation({
+                                documentId: documentId,
+                                data: {
+                                    polyvalence_table_id: id,
+                                    line_id: selectedLine,
+                                    tenant_id: me?.prefs?.organization
+                                }
+                            }, () => {
+                                responseFunc();
+                            })
                         })
                         // const selectedPolvalenceTableDataResponsibleEmployees = accounts.filter((account) => selectedResponsibleAccounts.includes(account.id)).map((account) => {
                         //     return {
@@ -122,22 +123,6 @@ export class CreatePolyvalenceUnitController extends UIController {
                         //         "viewer_employee_name": account.Name
                         //     }
                         // });
-
-                        // PolivalansBrokerClient.CreatePolyvalenceUnit(form.polyvalence_table_name, form.polyvalence_department_id, form.polyvalence_department_name,
-                        //     selectedPolvalenceTableDataResponsibleEmployees, selectedPolvalenceTableDataViewerEmployees, form.frequency).then((response) => {
-                        //         if (lineBasedCompetency) {
-                        //             const data = {
-                        //                 "polyvalence_table_id": response.id,
-                        //                 "line_id": selectedLine,
-                        //                 "created_at": new Date().toISOString(),
-                        //             }
-                        //             PolivalansBrokerClient.CreatePolyvalenceUnitTableLineRelation(data).then((response) => {
-                        //                 responseFunc();
-                        //             })
-                        //         } else {
-                        //             responseFunc();
-                        //         }
-                        //     })
                     }
 
                     const accountColumns = [
@@ -196,24 +181,24 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                     ))}
                                                 </Select>
                                             </FormControl>
-                                            {/* {
-                                                        lineBasedCompetency && this.lines &&
-                                                        <FormControl fullWidth size="small">
-                                                            <InputLabel>Bağlı Hat</InputLabel>
-                                                            <Select
-                                                                name="line"
-                                                                value={selectedLine}
-                                                                label="Bağlı Hat"
-                                                                onChange={(e) => setSelectedLine(e.target.value)}
-                                                                size="small"
-                                                                required
-                                                            >
-                                                                {this.lines.filter(x => x.department_id == form.polyvalence_department_id).map((lines) => (
-                                                                    <MenuItem value={lines.id} key={lines.id}>{lines.name}</MenuItem>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    } */}
+                                            {
+                                                lineBased[0]?.is_active &&
+                                                <FormControl fullWidth size="small">
+                                                    <InputLabel>Bağlı Hat</InputLabel>
+                                                    <Select
+                                                        name="line"
+                                                        value={selectedLine}
+                                                        label="Bağlı Hat"
+                                                        onChange={(e) => setSelectedLine(e.target.value)}
+                                                        size="small"
+                                                        required
+                                                    >
+                                                        {lines.filter(x => x.department_id == form.polyvalence_department_id).map((lines) => (
+                                                            <MenuItem value={lines.id} key={lines.id}>{lines.name}</MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            }
                                             {/* <div style={{
                                                         height: "250px",
                                                         width: "100%",
