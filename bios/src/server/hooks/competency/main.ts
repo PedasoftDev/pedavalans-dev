@@ -1,4 +1,3 @@
-import ICompetencyEvaluationPeriod from '../../../client/interfaces/ICompetencyEvaluationPeriod';
 import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo';
 import ICompetency from '../../../client/interfaces/ICompetency';

@@ -30,7 +30,6 @@ const formReset: ICompetency.ICreateCompetency = {
     tenant_id: "",
 }
 
-// const isLineBasedCompetencyActive = localStorage.getItem(Resources.ParameterNames.LineBasedCompetency.localStr) == "true" ? true : false;
 
 export class CreateCompetencyController extends UIController {
 

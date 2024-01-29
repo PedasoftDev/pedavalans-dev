@@ -19,7 +19,7 @@ namespace OrganizationStructureLine {
 
     export const Update = () => {
         const { updateDocument, isLoading, isSuccess, isError, error } = useUpdateDocument(AppInfo.Name)
-        return { updateDocument, isLoading, isSuccess, isError, error }
+        return { updateLine: updateDocument, isLoading, isSuccess, isError, error }
     }
 }
 

@@ -16,6 +16,14 @@ namespace CompetencyLineRelation {
         return { competencyLineRelation: documents as any, isLoading }
     }
 
+    export const GetByLineId = (lineId: string, tenant_id: string): {
+        competencyLineRelation: ICompetencyLineRelation.ICompetencyLineRelation[],
+        isLoading: boolean
+    } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_line_relation", [Query.equal("line_id", lineId), Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false)])
+        return { competencyLineRelation: documents as any, isLoading }
+    }
+
     export const Update = () => {
         const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name)
         return { updateCompetencyLineRelation: updateDocument, error, isError, isLoading, isSuccess }

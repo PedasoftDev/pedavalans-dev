@@ -30,6 +30,14 @@ namespace CompetencyDepartment {
             isLoadingCompetencyDepartments: isLoading
         }
     }
+    
+    export const GetByDepartmentId = (department_id: string): { competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[], isLoadingCompetencyDepartments: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("competency_department_id", department_id), Query.equal("is_deleted", false)])
+        return {
+            competencyDepartments: documents as any,
+            isLoadingCompetencyDepartments: isLoading
+        }
+    }
 
     export const Update = (): {
         updateCompetencyDepartment: ({ databaseId, collectionId, documentId, data, permissions }: {
