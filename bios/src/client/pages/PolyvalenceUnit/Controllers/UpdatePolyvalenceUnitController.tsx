@@ -12,7 +12,7 @@ import {
     VStack,
 } from '@tuval/forms';
 import Form from '../Views/Form';
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField, Typography } from '@mui/material';
 import { trTR } from '@mui/x-data-grid';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
@@ -26,6 +26,7 @@ import OrganizationStructureLine from '../../../../server/hooks/organizationStru
 import Parameters from '../../../../server/hooks/parameters/main';
 import { Resources } from '../../../assets/Resources';
 import PolyvalenceUnitTableLineRelation from '../../../../server/hooks/polyvalenceUnitTableLineRelation/main';
+import Swal from 'sweetalert2';
 
 const formReset = {
     polyvalence_table_id: "",
@@ -66,7 +67,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
                 || isLoadingParameter || isLoadingLines || isLoadingLineRelation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
-                    const [form, setForm] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(formReset)
+                    const [form, setForm] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(formReset);
+                    const [isActive, setIsActive] = useState<boolean>(true);
 
                     const [selectedResponsibleAccounts, setSelectedResponsibleAccounts] = useState<string[]>([]);
 
@@ -154,7 +156,32 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             headerName: "Soyadı",
                             flex: 1
                         },
-                    ]
+                    ];
+
+                    const onDelete = () => {
+                        Swal.fire({
+                            title: 'Emin misiniz?',
+                            text: "Bu polivalans tablosunu silmek istediğinizden emin misiniz?",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Evet, sil!',
+                            cancelButtonText: 'Hayır'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                updatePolyvalenceUnit({
+                                    databaseId: AppInfo.Database,
+                                    collectionId: "polyvalence_unit_table",
+                                    documentId: id,
+                                    data: {
+                                        ...form,
+                                        is_deleted_table: true
+                                    }
+                                })
+                            }
+                        })
+                    }
 
                     useEffect(() => {
                         // Promise.all([
@@ -197,8 +224,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
                         setForm(removeDollarProperties(polyvalenceUnit))
                         if (lineBased[0]?.is_active) {
                             setSelectedLine(lineRelation[0]?.line_id)
-
                         }
+                        setIsActive(polyvalenceUnit.is_active_table)
                     }, [])
 
                     return (
@@ -323,8 +350,19 @@ export class UpdatePolyvalenceUnitController extends UIController {
 
                                                 </Select>
                                             </FormControl>
+                                            <FormControlLabel
+                                                sx={{ width: "100%", alignContent: "end" }}
+                                                onChange={(e: any) => setForm({ ...form, is_active_table: e.target.checked })}
+                                                value={form.is_active_table}
+                                                control={<Switch color="primary" checked={form.is_active_table} />}
+                                                label="Aktif mi?"
+                                                labelPlacement="start"
+                                            />
                                             <div style={{ display: "flex", gap: "10px", flexDirection: "column", marginTop: "8px" }}>
                                                 <Button type="submit" variant="contained" color="primary" size="small">Güncelle</Button>
+                                                {!isActive &&
+                                                    <Button variant="contained" color="error" size="small" onClick={onDelete}>Sil</Button>
+                                                }
                                                 <Button variant="contained" color="info" size="small" onClick={onCancel}>İptal</Button>
                                             </div>
                                         </form>

@@ -14,10 +14,11 @@ import { useGetMe } from '@realmocean/sdk';
 import ICompetency from '../../../../interfaces/ICompetency';
 import ICompetencyLineRelation from '../../../../interfaces/ICompetencyLineRelation';
 import CompetencyGradeValue from '../../../../../server/hooks/competencyGradeValue/main';
-import { ReactView, Spinner, UIViewBuilder, VStack } from '@tuval/forms';
+import { ReactView, Spinner, UIViewBuilder, VStack, nanoid } from '@tuval/forms';
 import Competency from '../../../../../server/hooks/competency/main';
 import CompetencyDepartment from '../../../../../server/hooks/competencyDepartment/main';
 import CompetencyLineRelation from '../../../../../server/hooks/competencyLineRelation/main';
+import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
 
 const formLineState: IOrganizationStructure.ILines.ILine = {
     id: "",
@@ -50,7 +51,9 @@ const EditLineView = (props: {
 
     const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByDepartmentId(formLine.department_id === "" ? "0" : formLine.department_id);
 
-    const { competencyLineRelation, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetByLineId(props.selectedLine.id, me?.prefs?.organization)
+    const { competencyLineRelation, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetByLineId(props.selectedLine.id, me?.prefs?.organization);
+    const { updateCompetencyLineRelation } = CompetencyLineRelation.Update();
+    const { createCompetencyLineRelation } = CompetencyLineRelation.Create();
 
 
     const { competencyList, isLoadingCompetencyList, totalCompetencyList } = Competency.GetList(me?.prefs?.organization);
@@ -171,11 +174,54 @@ const EditLineView = (props: {
                             documentId: formLine.id,
                             data: formLine
                         }, () => {
-                            Toast.fire({
-                                icon: "success",
-                                title: "Hat başarıyla düzenlendi!",
-                            })
-                            onReset();
+                            if (lineBased[0]?.is_active) {
+                                competencyLineRelation.forEach((competency) => {
+                                    if (!selectedCompetencies.includes(competency.competency_id)) {
+                                        updateCompetencyLineRelation({
+                                            databaseId: AppInfo.Database,
+                                            collectionId: "competency_line_relation",
+                                            documentId: competency.id,
+                                            data: {
+                                                ...competency,
+                                                is_deleted: true
+                                            }
+                                        })
+                                    }
+                                })
+                                selectedCompetencies.forEach((competencyId) => {
+                                    if (!competencyLineRelation.some((competency) => competency.competency_id == competencyId)) {
+                                        const docId = nanoid();
+                                        createCompetencyLineRelation({
+                                            documentId: docId,
+                                            data: {
+                                                id: docId,
+                                                competencyId: competencyId,
+                                                competency_target_value: selectedCompetencyValues.find((competency) => competency.competency_id == competencyId)?.competency_target_value ?? "",
+                                                line_id: formLine.id,
+                                                tenant_id: me?.prefs?.organization,
+                                            }
+                                        })
+                                    } else {
+                                        const competencyLineRelationItem = removeDollarProperties(selectedCompetencyValues.find((competency) => competency.competency_id == competencyId));
+                                        updateCompetencyLineRelation({
+                                            databaseId: AppInfo.Database,
+                                            collectionId: "competency_line_relation",
+                                            documentId: competencyLineRelationItem?.id ?? "",
+                                            data: {
+                                                ...competencyLineRelationItem,
+                                                competency_target_value: selectedCompetencyValues.find((competency) => competency.competency_id == competencyId)?.competency_target_value ?? "",
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                            setTimeout(() => {
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Hat başarıyla düzenlendi!",
+                                })
+                                onReset();
+                            }, 500);
                         })
                         // TODO: Polivalans Broker
                         // PolivalansBrokerClient.UpdateOrganizationStructureLine(formLine).then((response) => {
