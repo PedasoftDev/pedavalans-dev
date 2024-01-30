@@ -92,7 +92,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             subMenu: [
                 {
                     title: "Yetkinlik Hedef Girişi",
-                    link: "/app/competencyTargetDataEntry/view",
+                    link: "/app/competency-target-data-entry/view",
                     icon: ReactView(
                         <BiCalendarPlus size={25} />
                     ),

@@ -1,9 +1,10 @@
 import { cCenter, cLeading, cTop, cTopLeading, ForEach, HStack, ReactView, ScrollView, Spinner, UIController, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
 import React, { useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { Button, IconButton, TextField, Tooltip } from '@mui/material';
 import { Views } from '../../../components/Views';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
 import { useGetMe } from '@realmocean/sdk';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 
 
 export class PolyvalenceUnitListController extends UIController {
@@ -65,6 +66,13 @@ export class PolyvalenceUnitListController extends UIController {
                                             <TextField label="Tablo Arayın" onChange={(e) => setSearchText(e.target.value)} fullWidth size="small" />
                                         )
                                     ).width("80%"),
+                                    ReactView(
+                                        <Tooltip title={`${isActive ? "Pasif" : "Aktif"} Yetkinlik Gruplarını Göster`}>
+                                            <IconButton onClick={() => setIsActive(!isActive)}>
+                                                <FilterAltOutlinedIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                    ),
                                     VStack(
                                         ReactView(
                                             <Button size="small" fullWidth variant="outlined" onClick={() =>

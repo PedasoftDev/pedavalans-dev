@@ -29,6 +29,8 @@ import { PolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/P
 import { PolyvalenceUnitListController } from './pages/PolyvalenceUnit/Controllers/PolyvalenceUnitListController';
 import { CreatePolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/CreatePolyvalenceUnitController';
 import { UpdatePolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/UpdatePolyvalenceUnitController';
+import { CompetencyTargetDataEntryController } from './pages/CompetencyTargetDataEntry/Controllers/CompetencyTargetDataEntryController';
+import { CompetencyTargetDataEntryViewController } from './pages/CompetencyTargetDataEntry/Controllers/CompetencyTargetDataEntryViewController';
 
 export const Routes = () => {
     return (
@@ -82,6 +84,11 @@ export const Routes = () => {
                     UIRoute('create', CreatePolyvalenceUnitController),
                     UIRoute('edit/:id', UpdatePolyvalenceUnitController),
                     UIRoute('list', PolyvalenceUnitListController),
+                ),
+
+                // competency target data entry
+                UIRoute('competency-target-data-entry', CompetencyTargetDataEntryController).children(
+                    UIRoute('view', CompetencyTargetDataEntryViewController)
                 ),
 
                 // not found
