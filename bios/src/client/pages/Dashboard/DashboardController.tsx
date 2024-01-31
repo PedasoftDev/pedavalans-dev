@@ -58,7 +58,7 @@ export class DashboardController extends UIController {
 
     public LoadView() {
 
-        const { me, isLoading } = useGetMe(AppInfo.Name);
+        const { me, isLoading } = useGetMe("console");
         const { required, isLoading: isLoadingDb } = Main.SetupRequired();
 
         const navigate = useNavigate();

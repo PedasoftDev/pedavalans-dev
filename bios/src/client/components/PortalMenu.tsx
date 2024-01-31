@@ -1,5 +1,5 @@
 import { int } from '@tuval/core';
-import { useState, cLeading, cTop, ForEach, Text, HStack, Spacer, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView } from '@tuval/forms';
+import { useState, cLeading, cTop, ForEach, Text, HStack, Spacer, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder } from '@tuval/forms';
 import { Resources } from '../assets/Resources';
 import React from 'react';
 import { RxDashboard, RxTable, RxColorWheel } from "react-icons/rx";
@@ -48,7 +48,6 @@ export const PortalMenu = (selectedMenuTitle: string) => {
 
     const { me, isLoading } = useGetMe("console")
 
-    const { organization } = useGetOrganization({ organizationId: me?.prefs?.organization })
 
     // hiding
 
@@ -173,7 +172,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             ],
             isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
         }
-    ]
+    ];
 
     return (
         isLoading ? VStack() :
@@ -184,7 +183,10 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                         Text("Pedavalans").fontFamily("Poppins")
                             .foregroundColor(Resources.Colors.themeColor)
                             .fontWeight("400").fontSize("30px"),
-                        Text(organization?.name).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
+                        UIViewBuilder(() => {
+                            const { organization } = useGetOrganization({ organizationId: me?.prefs?.organization })
+                            return Text(organization?.name).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
+                        })
                     ).height().width()
                 ).height().width().padding(20),
                 ScrollView({ axes: "cVertical" })(

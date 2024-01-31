@@ -8,6 +8,7 @@ namespace Main {
         return { database, isLoading }
     }
 
+    // todo
     export const SetupRequired = () => {
         const { database, isLoading, isError, error } = useGetDatabase(AppInfo.Name, AppInfo.Database);
         if (!isLoading && isError) {
@@ -36,7 +37,7 @@ namespace Main {
             }
 
         });
-        
+
     }
 
     export const CreateRealm = (orgId: string) => {
