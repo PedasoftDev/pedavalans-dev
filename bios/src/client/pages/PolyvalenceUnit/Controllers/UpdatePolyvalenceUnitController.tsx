@@ -178,6 +178,12 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                         ...form,
                                         is_deleted_table: true
                                     }
+                                }, () => {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Polivalans tablosu silindi!'
+                                    })
+                                    navigate("/app/polyvalence-unit/list")
                                 })
                             }
                         })
