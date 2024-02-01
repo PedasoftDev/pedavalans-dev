@@ -4,6 +4,7 @@ export const Container = styled.div`
     display: flex;
     width: calc(100vw - 290px);
     height: calc(100vh - 70px);
+    padding: 5px 0;
 `;
 
 export const LeftContainer = styled.div`

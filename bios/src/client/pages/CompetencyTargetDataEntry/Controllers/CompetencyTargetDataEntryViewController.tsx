@@ -64,6 +64,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                 </Select>
                                             </FormControl>
                                         </LeftContainerHeader>
+
                                     </LeftContainer>
                                     <RightContainer>
                                         <RightContainerHeader>
@@ -73,7 +74,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                     </RightContainer>
                                 </Container>
                             )
-                        )
+                        ).padding("0 20px")
                     )
                 })
         )
