@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
     display: flex;
-    width: calc(100vw - 290px);
+    width: calc(100vw - 330px);
     height: calc(100vh - 70px);
     padding: 5px 0;
 `;
@@ -22,7 +22,9 @@ export const RightContainer = styled.div`
     flex-direction: column;
     width: 60%;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden;    
+    padding: 10px;
+    gap: 10px;
 `;
 
 export const LeftContainerHeader = styled.div`
@@ -35,11 +37,12 @@ export const LeftContainerHeader = styled.div`
 `;
 
 export const RightContainerHeader = styled.div`
-    display: flex;
-    height: 50px;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
+display: flex;
+flex-direction: column;
+gap: 10px;
+width: 100%;
+justify-content: center;
+align-items: center;
 `;
 
 export const LeftContainerContent = styled.div`
@@ -51,7 +54,8 @@ export const LeftContainerContent = styled.div`
     overflow-x: hidden;
     padding: 10px;
     gap: 10px;
-    `;
+    border-radius: 5px;
+    border: 1px solid rgb(211 211 211 / 48%);`;
 
 export const LeftContainerContentItem = styled.div<{ selected: boolean }>`
     display: flex;
@@ -63,4 +67,5 @@ export const LeftContainerContentItem = styled.div<{ selected: boolean }>`
     gap: 10px;
     align-items: center;
     cursor: pointer !important;
+    color: ${({ selected }) => selected ? '#3BA2EE' : ''};
 `;

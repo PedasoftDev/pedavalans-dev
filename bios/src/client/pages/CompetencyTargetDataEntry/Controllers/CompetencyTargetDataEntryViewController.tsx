@@ -4,7 +4,7 @@ import { Container, LeftContainer, LeftContainerContent, LeftContainerContentIte
 import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
-import { useGetMe } from "@realmocean/sdk";
+import { Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
@@ -14,6 +14,14 @@ import getYearPeriods from "../../../assets/Functions/getYearPeriods";
 import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
 import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
 import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
+import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import { GridColDef } from "@mui/x-data-grid";
+import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
+import Competency from "../../../../server/hooks/competency/main";
+import ICompetency from "../../../interfaces/ICompetency";
+import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
+import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -30,21 +38,30 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
 export class CompetencyTargetDataEntryViewController extends UIController {
 
     public LoadView(): UIView {
+
+        const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
+
         const navigate = useNavigate();
-        const { me, isLoading, error, isError } = useGetMe("console");
+        const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod();
-        const { employees, isLoadingEmployees, totalEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
+        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
+        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
+        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
+        const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
+        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+
 
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingEmployees ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
-                    const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-                    const [selectedEmployee, setSelectedEmployee] = useState<number>(-1);
+                    const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
+                    const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+                    const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
 
                     const onChangeTable = (e: SelectChangeEvent<string>) => {
                         const table = polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
@@ -65,15 +82,62 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                         }
                     }
 
-                    const selectEmployee = (index: number) => {
-                        if (selectedEmployee === index) {
-                            setSelectedEmployee(-1);
+                    const selectEmployee = (id: string) => {
+                        if (selectedEmployeeId === id) {
+                            setSelectedEmployeeId("");
                         } else {
-                            setSelectedEmployee(index);
+                            setSelectedEmployeeId(id);
+                            getCompetencies(id);
                         }
                     }
 
+                    const columns: GridColDef[] = [
+                        { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
+                        {
+                            field: "competency_target_value", headerName: "Hedef Değer", width: 150, minWidth: 150,
+                            renderCell: (params) => (
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        name="competency_target_value"
+                                        value={selectedGroupId}
+                                        onChange={(e) => console.log(e.target.value)}
+                                        size="small"
+                                        required
+                                    >
+                                        {competencyGradeValueList.filter(x => x.competency_id === params.row.competency_id)
+                                            .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
+                                            .map((value) => (
+                                                <MenuItem value={value.grade_level_number} key={value.competency_grade_value_id}>{value.grade_level_number}</MenuItem>
+                                            ))}
+                                    </Select>
+                                </FormControl>
 
+                            )
+                        },
+                    ];
+
+                    const getCompetencies = (employee_id: string) => {
+                        const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
+                        const appendToSelectedCompetencyList = [];
+                        competencyList.forEach((competency) => {
+                            competencyDepartments.forEach((department) => {
+                                if (competency.competency_id === department.competency_id) {
+                                    const listItem = removeDollarProperties(competency);
+                                    appendToSelectedCompetencyList.push({
+                                        ...listItem,
+                                        employee_id: employee_id,
+                                        employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
+                                        polyvalence_table_id: selectedTable.polyvalence_table_id,
+                                        polyvalence_table_name: selectedTable.polyvalence_table_name,
+                                        competency_evaluation_period: selectedPeriod,
+                                        competency_department_id: department.competency_department_id,
+                                        competency_department_name: department.competency_department_name,
+                                    })
+                                }
+                            })
+                        })
+                        setSelectedCompetencyList(appendToSelectedCompetencyList);
+                    }
 
 
                     useEffect(() => {
@@ -137,22 +201,52 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                             selectedTable && selectedPeriod &&
                                             <LeftContainerContent>
                                                 {
-                                                    employees.filter((employee) => employee.department_id === selectedTable.polyvalence_department_id).map((employee, i) =>
-                                                        <LeftContainerContentItem key={employee.$id} selected={selectedEmployee === i} onClick={() => selectEmployee(i)}>
-                                                            <IoPersonCircleOutline size={25} {...(selectedEmployee === i && { color: "#3BA2EE" })} />
-                                                            {employee.first_name} {employee.last_name}
-                                                        </LeftContainerContentItem>
-                                                    )
+                                                    employees
+                                                        .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
+                                                        .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                                                        .map((employee, i) =>
+                                                            <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.id} onClick={() => selectEmployee(employee.id)}>
+                                                                <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.id && { color: "#3BA2EE" })} />
+                                                                {employee.first_name} {employee.last_name}
+                                                            </LeftContainerContentItem>
+                                                        )
                                                 }
                                             </LeftContainerContent>
                                         }
                                     </LeftContainer>
-                                    <RightContainer>
-                                        <RightContainerHeader>
-
-                                        </RightContainerHeader>
-
-                                    </RightContainer>
+                                    {
+                                        selectedTable && selectedPeriod && selectedEmployeeId &&
+                                        <RightContainer>
+                                            <RightContainerHeader>
+                                                <FormControl fullWidth size="small">
+                                                    <InputLabel>Yetkinlik Grubu</InputLabel>
+                                                    <Select
+                                                        name="group"
+                                                        value={selectedGroupId}
+                                                        label="Yetkinlik Grubu"
+                                                        onChange={(e) => setSelectedGroupId(e.target.value)}
+                                                        size="small"
+                                                        required
+                                                    >
+                                                        {groups.map((group, i) => (
+                                                            <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </RightContainerHeader>
+                                            <div style={{
+                                                height: "calc(100vh - 120px)",
+                                                width: "100%",
+                                                padding: "0 20px"
+                                            }}>
+                                                <StyledDataGrid
+                                                    columns={columns}
+                                                    rows={selectedCompetencyList}
+                                                    getRowId={(row) => row.competency_id}
+                                                />
+                                            </div>
+                                        </RightContainer>
+                                    }
                                 </Container>
                             )
                         ).padding("0 20px")

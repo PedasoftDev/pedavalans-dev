@@ -9,7 +9,7 @@ export class CompetencyTargetDataEntryController extends UIController {
             UIScene(
                 HStack({ alignment: cTopLeading })(
                     PortalMenu("Yetkinlik Hedef Girişi"),
-                    UIRouteOutlet().width('100%').height('100%').minWidth("")
+                    UIRouteOutlet().width('100%').height('100%')
                 ).background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : "")
             )
         )
