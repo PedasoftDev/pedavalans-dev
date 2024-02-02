@@ -22,6 +22,7 @@ import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
+import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -40,6 +41,8 @@ export class CompetencyTargetDataEntryViewController extends UIController {
     public LoadView(): UIView {
 
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
+        const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
+        const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
@@ -50,6 +53,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+        const { employeeCompetencyValue, isLoadingEmployeeCompetencyValue } = EmployeeCompetencyValue.GetByEmployeeIdEvaluationPeriod(selectedEmployeeId, selectedPeriod, me?.prefs?.organization);
 
 
 
@@ -58,8 +62,6 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                 UIViewBuilder(() => {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
-                    const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-                    const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
 
@@ -125,7 +127,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                             )
                         },
                     ];
- 
+
                     const getCompetencies = (employee_id: string) => {
                         const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
                         const appendToSelectedCompetencyList = [];
@@ -142,6 +144,9 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                         competency_evaluation_period: selectedPeriod,
                                         competency_department_id: department.competency_department_id,
                                         competency_department_name: department.competency_department_name,
+                                        competency_target_value: employeeCompetencyValue.find((value) => {
+                                            return value.competency_id === listItem.competency_id
+                                        })?.competency_target_value || null
                                     })
                                 }
                             })
