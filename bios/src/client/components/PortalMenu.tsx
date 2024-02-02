@@ -100,7 +100,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Yetkinlik Gerçekleşme Girişi",
-                    link: "/app/competencyDataEntry/view",
+                    link: "/app/competency-real-data-entry/view",
                     icon: ReactView(
                         <BiCalendarCheck size={25} />
                     ),

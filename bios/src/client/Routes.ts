@@ -31,6 +31,8 @@ import { CreatePolyvalenceUnitController } from './pages/PolyvalenceUnit/Control
 import { UpdatePolyvalenceUnitController } from './pages/PolyvalenceUnit/Controllers/UpdatePolyvalenceUnitController';
 import { CompetencyTargetDataEntryController } from './pages/CompetencyTargetDataEntry/Controllers/CompetencyTargetDataEntryController';
 import { CompetencyTargetDataEntryViewController } from './pages/CompetencyTargetDataEntry/Controllers/CompetencyTargetDataEntryViewController';
+import { CompetencyRealDataEntryController } from './pages/CompetencyRealDataEntry/Controllers/CompetencyRealDataEntryController';
+import { CompetencyRealDataEntryViewController } from './pages/CompetencyRealDataEntry/Controllers/CompetencyRealDataEntryViewController';
 
 export const Routes = () => {
     return (
@@ -89,6 +91,11 @@ export const Routes = () => {
                 // competency target data entry
                 UIRoute('competency-target-data-entry', CompetencyTargetDataEntryController).children(
                     UIRoute('view', CompetencyTargetDataEntryViewController)
+                ),
+
+                // competency real data entry
+                UIRoute('competency-real-data-entry', CompetencyRealDataEntryController).children(
+                    UIRoute('view', CompetencyRealDataEntryViewController)
                 ),
 
                 // not found

@@ -16,7 +16,7 @@ import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPerio
 import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, trTR } from "@mui/x-data-grid";
 import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
@@ -48,7 +48,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
-        const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
+        const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
 
 
@@ -99,8 +99,18 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 <FormControl fullWidth size="small">
                                     <Select
                                         name="competency_target_value"
-                                        value={selectedGroupId}
-                                        onChange={(e) => console.log(e.target.value)}
+                                        value={params.value}
+                                        onChange={(e) => {
+                                            setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
+                                                if (competency.competency_id === params.row.competency_id) {
+                                                    return {
+                                                        ...competency,
+                                                        competency_target_value: e.target.value
+                                                    }
+                                                }
+                                                return competency;
+                                            }))
+                                        }}
                                         size="small"
                                         required
                                     >
@@ -115,7 +125,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                             )
                         },
                     ];
-
+ 
                     const getCompetencies = (employee_id: string) => {
                         const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
                         const appendToSelectedCompetencyList = [];
@@ -136,6 +146,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 }
                             })
                         })
+                        console.log(appendToSelectedCompetencyList)
                         setSelectedCompetencyList(appendToSelectedCompetencyList);
                     }
 
@@ -243,6 +254,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                     columns={columns}
                                                     rows={selectedCompetencyList}
                                                     getRowId={(row) => row.competency_id}
+                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
                                             </div>
                                         </RightContainer>
