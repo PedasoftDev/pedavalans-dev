@@ -33,6 +33,8 @@ import { CompetencyTargetDataEntryController } from './pages/CompetencyTargetDat
 import { CompetencyTargetDataEntryViewController } from './pages/CompetencyTargetDataEntry/Controllers/CompetencyTargetDataEntryViewController';
 import { CompetencyRealDataEntryController } from './pages/CompetencyRealDataEntry/Controllers/CompetencyRealDataEntryController';
 import { CompetencyRealDataEntryViewController } from './pages/CompetencyRealDataEntry/Controllers/CompetencyRealDataEntryViewController';
+import { CompetencyReportDataController } from './pages/CompetencyReportData/Controllers/CompetencyReportDataController';
+import { CompetencyReportDataViewController } from './pages/CompetencyReportData/Controllers/CompetencyReportDataViewController';
 
 export const Routes = () => {
     return (
@@ -96,6 +98,10 @@ export const Routes = () => {
                 // competency real data entry
                 UIRoute('competency-real-data-entry', CompetencyRealDataEntryController).children(
                     UIRoute('view', CompetencyRealDataEntryViewController)
+                ),
+                // competency report data
+                UIRoute('competency-report-data', CompetencyReportDataController).children(
+                    UIRoute('view', CompetencyReportDataViewController)
                 ),
 
                 // not found

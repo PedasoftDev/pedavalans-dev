@@ -1,5 +1,5 @@
 import { int } from '@tuval/core';
-import { useState, cLeading, cTop, ForEach, Text, HStack, Spacer, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder } from '@tuval/forms';
+import { useState, cLeading, cTop, ForEach, Text, HStack, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder } from '@tuval/forms';
 import { Resources } from '../assets/Resources';
 import React from 'react';
 import { RxDashboard, RxTable, RxColorWheel } from "react-icons/rx";
@@ -109,7 +109,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Çalışan Yetkinlik Karnesi",
-                    link: "/app/competencyDataReport/view",
+                    link: "/app/competency-report-data/view",
                     icon: ReactView(
                         <TbReportAnalytics size={25} />
                     ),

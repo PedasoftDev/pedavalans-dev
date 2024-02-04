@@ -22,6 +22,7 @@ import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPerio
 import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
 import ICompetency from "../../../interfaces/ICompetency";
+import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -39,6 +40,8 @@ export class CompetencyRealDataEntryViewController extends UIController {
     public LoadView(): UIView {
 
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
+        const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+        const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
@@ -49,13 +52,12 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+        const { employeeCompetencyValue, isLoadingEmployeeCompetencyValue } = EmployeeCompetencyValue.GetByEmployeeIdEvaluationPeriod(selectedEmployeeId, selectedPeriod, selectedTable.polyvalence_table_id, me?.prefs?.organization);
 
         return (
             isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
-                    const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-                    const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
 

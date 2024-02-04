@@ -53,7 +53,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
-        const { employeeCompetencyValue, isLoadingEmployeeCompetencyValue } = EmployeeCompetencyValue.GetByEmployeeIdEvaluationPeriod(selectedEmployeeId, selectedPeriod, me?.prefs?.organization);
+        const { employeeCompetencyValue, isLoadingEmployeeCompetencyValue } = EmployeeCompetencyValue.GetByEmployeeIdEvaluationPeriod(selectedEmployeeId, selectedPeriod, selectedTable.polyvalence_table_id, me?.prefs?.organization);
 
 
 
