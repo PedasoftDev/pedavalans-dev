@@ -1,28 +1,30 @@
-import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, useNavigate } from "@tuval/forms";
-import { Views } from "../../../components/Views";
-import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../../CompetencyTargetDataEntry/Views/View";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
-import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
+import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../../CompetencyTargetDataEntry/Views/View";
+import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
-import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
-import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
-import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
-import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
-import Competency from "../../../../server/hooks/competency/main";
-import { useGetMe } from "@realmocean/sdk";
-import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import StyledDataGrid from "../../../components/StyledDataGrid";
-import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import { Toast } from "../../../components/Toast";
-import { GridColDef, trTR } from "@mui/x-data-grid";
-import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
-import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
-import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
+import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
+import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
+import { IoPersonCircleOutline } from "react-icons/io5";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
+import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
+import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
+import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
+import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import { GridColDef, trTR } from "@mui/x-data-grid";
+import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
+import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
+import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
+import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
+import AppInfo from "../../../../AppInfo";
+import { TbPencilPlus } from "react-icons/tb";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -34,14 +36,15 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     polyvalence_evaluation_frequency: "",
     realm_id: "",
     tenant_id: ""
-};
+}
 
 export class CompetencyRealDataEntryViewController extends UIController {
+
     public LoadView(): UIView {
 
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
-        const [selectedPeriod, setSelectedPeriod] = useState<string>("");
         const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
+        const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
@@ -52,20 +55,55 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
-        const { employeeCompetencyValue, isLoadingEmployeeCompetencyValue } = EmployeeCompetencyValue.GetByEmployeeIdEvaluationPeriod(selectedEmployeeId, selectedPeriod, selectedTable.polyvalence_table_id, me?.prefs?.organization);
+        const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
+        const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
+
 
         return (
             isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
+
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
+                    const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
+
+                    // MUI Dialog
+                    const [openDialog, setOpenDialog] = useState(false);
+                    const [description, setDescription] = useState("");
+                    const [selectedCompetencyId, setSelectedCompetencyId] = useState("");
+
+                    const handleClickOpenDialog = (description: string, competency_id: string) => {
+                        const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === competency_id);
+                        if (alreadyExist && alreadyExist?.competency_real_value) {
+                            setDescription(description);
+                            setSelectedCompetencyId(competency_id)
+                            setOpenDialog(true);
+                        } else {
+                            Toast.fire({
+                                icon: "warning",
+                                text: "Bu yetkinlik için bir gerçekleşme değeri girilmemiştir.",
+                                titleText: "Lütfen önce değer giriniz."
+                            })
+                            return;
+                        }
+                    };
+
+                    const handleCloseDialog = () => {
+                        setOpenDialog(false);
+                        setDescription("");
+                        setSelectedCompetencyId("");
+                    };
 
                     const onChangeTable = (e: SelectChangeEvent<string>) => {
                         const table = polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
                         const periodYear = Number(periods[0].evaluation_period_year);
                         setSelectedTable(table)
                         setSelectedPeriod("")
+                        setSelectedEmployeeId("")
+                        setSelectedGroupId("")
+                        setSelectedCompetencyList([])
+                        setEmployeeCompetencyValue([])
                         if (table.polyvalence_evaluation_frequency == "Yıl") {
                             setDataYear(getYearPeriods(periodYear))
                         }
@@ -89,30 +127,134 @@ export class CompetencyRealDataEntryViewController extends UIController {
                         }
                     }
 
+                    const handleSubmitDialog = (e) => {
+                        e.preventDefault();
+
+                        if (description === "") {
+                            Toast.fire({
+                                icon: "warning",
+                                title: "Açıklama boş bırakılamaz."
+                            })
+                            return;
+                        }
+                        const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === selectedCompetencyId);
+                        updateEmployeeCompetencyValue({
+                            databaseId: AppInfo.Database,
+                            collectionId: "employee_competency_value",
+                            documentId: alreadyExist?.employee_competency_value_id,
+                            data: {
+                                ...removeDollarProperties(alreadyExist),
+                                competency_value_desc: description,
+                            }
+                        }, () => {
+                            Toast.fire({
+                                icon: "success",
+                                title: "Açıklama güncellendi.",
+                                timer: 1000
+                            })
+                            setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
+                                if (competency.competency_id === selectedCompetencyId) {
+                                    return {
+                                        ...competency,
+                                        competency_value_desc: description,
+                                    }
+                                }
+                                return competency;
+                            }));
+                            setEmployeeCompetencyValue(employeeCompetencyValue.map((value) => {
+                                if (value.competency_id === selectedCompetencyId) {
+                                    return {
+                                        ...value,
+                                        competency_value_desc: description,
+                                    }
+                                }
+                                return value;
+                            }));
+                        })
+
+                        handleCloseDialog();
+                    }
+
                     const columns: GridColDef[] = [
                         { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
+                        { field: "competency_target_value", headerName: "Hedef Değer", align: "center", width: 100, minWidth: 100 },
                         {
-                            headerName: "Hedef Değer",
-                            field: "competency_target_value",
-                            width: 150
-                        },
-                        {
-                            field: "competency_real_value", headerName: "Dönem Sonucu", width: 150, minWidth: 150,
+                            field: "competency_real_value", headerName: "Gerçekleşme Değeri", width: 150, minWidth: 150,
                             renderCell: (params) => (
                                 <FormControl fullWidth size="small">
                                     <Select
                                         name="competency_real_value"
                                         value={params.value}
                                         onChange={(e) => {
+                                            const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === params.row.competency_id);
+                                            if (alreadyExist) {
+                                                updateEmployeeCompetencyValue({
+                                                    databaseId: AppInfo.Database,
+                                                    collectionId: "employee_competency_value",
+                                                    documentId: alreadyExist?.employee_competency_value_id,
+                                                    data: {
+                                                        ...removeDollarProperties(alreadyExist),
+                                                        competency_real_value: e.target.value,
+                                                    }
+                                                }, () => {
+                                                    Toast.fire({
+                                                        icon: "success",
+                                                        title: "Değer güncellendi.",
+                                                        timer: 1000
+                                                    })
+                                                    setEmployeeCompetencyValue(employeeCompetencyValue.map((value) => {
+                                                        if (value.competency_id === params.row.competency_id) {
+                                                            return {
+                                                                ...value,
+                                                                competency_real_value: e.target.value,
+                                                            }
+                                                        }
+                                                        return value;
+                                                    }));
+                                                })
+                                            } else {
+                                                const docId: string = nanoid();
+                                                const createObj: IEmployeeCompetencyValue.IEmployeeCompetencyValue = {
+                                                    employee_competency_value_id: docId,
+                                                    competency_department_id: selectedTable.polyvalence_department_id,
+                                                    competency_department_name: selectedTable.polyvalence_department_name,
+                                                    competency_evaluation_period: selectedPeriod,
+                                                    competency_id: params.row.competency_id,
+                                                    competency_name: params.row.competency_name,
+                                                    competency_target_value: "",
+                                                    competency_real_value: e.target.value,
+                                                    competency_value_desc: "",
+                                                    employee_id: selectedEmployeeId,
+                                                    employee_name: employees.find((employee) => employee.id === selectedEmployeeId)?.first_name
+                                                        + " " + employees.find((employee) => employee.id === selectedEmployeeId)?.last_name,
+                                                    polyvalence_table_id: selectedTable.polyvalence_table_id,
+                                                    polyvalence_table_name: selectedTable.polyvalence_table_name,
+                                                    tenant_id: me?.prefs?.organization,
+                                                    realm_id: me?.prefs?.organization,
+                                                    is_deleted_competency_value: false,
+                                                    is_active_competency_value: true
+                                                }
+                                                createEmployeeCompetencyValue({
+                                                    documentId: docId,
+                                                    data: createObj
+                                                }, () => {
+                                                    Toast.fire({
+                                                        icon: "success",
+                                                        title: "Değer eklendi.",
+                                                        timer: 1000
+                                                    })
+                                                    setEmployeeCompetencyValue([...employeeCompetencyValue, createObj]);
+                                                })
+                                            }
                                             setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
                                                 if (competency.competency_id === params.row.competency_id) {
                                                     return {
                                                         ...competency,
-                                                        competency_real_value: e.target.value
+                                                        competency_real_value: e.target.value,
                                                     }
                                                 }
                                                 return competency;
-                                            }))
+                                            }));
                                         }}
                                         size="small"
                                         required
@@ -128,34 +270,49 @@ export class CompetencyRealDataEntryViewController extends UIController {
                             )
                         },
                         {
-                            headerName: "Açıklama",
-                            field: "competency_real_value_description",
-                            width: 150,
-                            minWidth: 150,
+                            field: "competency_value_desc", headerName: "Açıklama", width: 100, minWidth: 100,
+                            renderCell: (params) => (
+                                <Button variant="text" fullWidth onClick={() => {
+                                    handleClickOpenDialog(params.row.competency_value_desc, params.row.competency_id)
+                                }}>
+                                    <TbPencilPlus size={20} color="#3BA2EE" />
+                                </Button>
+                            )
                         }
                     ];
 
-                    const getCompetencies = (employee_id: string) => {
+                    const getCompetencies = async (employee_id: string) => {
                         const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
                         const appendToSelectedCompetencyList = [];
-                        competencyList.forEach((competency) => {
-                            competencyDepartments.forEach((department) => {
-                                if (competency.competency_id === department.competency_id) {
-                                    const listItem = removeDollarProperties(competency);
-                                    appendToSelectedCompetencyList.push({
-                                        ...listItem,
-                                        employee_id: employee_id,
-                                        employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
-                                        polyvalence_table_id: selectedTable.polyvalence_table_id,
-                                        polyvalence_table_name: selectedTable.polyvalence_table_name,
-                                        competency_evaluation_period: selectedPeriod,
-                                        competency_department_id: department.competency_department_id,
-                                        competency_department_name: department.competency_department_name,
+                        await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
+                            [
+                                Query.equal("employee_id", employee_id), Query.equal("competency_evaluation_period", selectedPeriod),
+                                Query.equal("polyvalence_table_id", selectedTable.polyvalence_table_id), Query.equal("is_deleted_competency_value", false),
+                                Query.equal("tenant_id", me?.prefs?.organization)
+                            ]).then((res) => {
+                                setEmployeeCompetencyValue(res.documents as any[]);
+                                competencyList.forEach((competency) => {
+                                    competencyDepartments.forEach((department) => {
+                                        if (competency.competency_id === department.competency_id) {
+                                            const listItem = removeDollarProperties(competency);
+                                            const competencyData: IEmployeeCompetencyValue.IEmployeeCompetencyValue = res.documents.find((value) => value.competency_id === listItem.competency_id) as any;
+                                            appendToSelectedCompetencyList.push({
+                                                ...listItem,
+                                                employee_id: employee_id,
+                                                employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
+                                                polyvalence_table_id: selectedTable.polyvalence_table_id,
+                                                polyvalence_table_name: selectedTable.polyvalence_table_name,
+                                                competency_evaluation_period: selectedPeriod,
+                                                competency_department_id: department.competency_department_id,
+                                                competency_department_name: department.competency_department_name,
+                                                competency_target_value: competencyData ? competencyData?.competency_target_value : "",
+                                                competency_real_value: competencyData ? competencyData?.competency_real_value : "",
+                                                competency_value_desc: competencyData ? competencyData?.competency_value_desc : "",
+                                            })
+                                        }
                                     })
-                                }
+                                })
                             })
-                        })
-                        console.log(appendToSelectedCompetencyList)
                         setSelectedCompetencyList(appendToSelectedCompetencyList);
                     }
 
@@ -180,7 +337,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     return (
                         VStack(
                             HStack({ alignment: cLeading })(
-                                Views.Title("Yetkinlik Mevcut Değer Girişi").paddingTop("10px")
+                                Views.Title("Yetkinlik Gerçekleşme Girişi").paddingTop("10px")
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             ReactView(
                                 <Container>
@@ -207,7 +364,13 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                     name="evaluation_period"
                                                     value={selectedPeriod}
                                                     label="Değerlendirme Dönemi"
-                                                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setSelectedPeriod(e.target.value);
+                                                        setSelectedEmployeeId("")
+                                                        setSelectedGroupId("")
+                                                        setSelectedCompetencyList([])
+                                                        setEmployeeCompetencyValue([])
+                                                    }}
                                                     size="small"
                                                     required
                                                 >
@@ -268,12 +431,33 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                             </div>
                                         </RightContainer>
                                     }
+                                    <Dialog
+                                        open={openDialog}
+                                        onClose={handleCloseDialog}>
+                                        <form onSubmit={handleSubmitDialog} style={{ width: "400px" }}>
+                                            <DialogTitle>Açıklama Giriniz</DialogTitle>
+                                            <DialogContent>
+                                                <TextField
+                                                    rows={4}
+                                                    multiline
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    required
+                                                    value={description}
+                                                    onChange={(e) => setDescription(e.target.value)}
+                                                />
+                                            </DialogContent>
+                                            <DialogActions>
+                                                <Button onClick={handleCloseDialog}>İptal</Button>
+                                                <Button type="submit">Açıklamayı Kaydet</Button>
+                                            </DialogActions>
+                                        </form>
+                                    </Dialog>
                                 </Container>
                             )
                         ).padding("0 20px")
                     )
                 })
-
         )
     }
 }

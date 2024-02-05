@@ -2,12 +2,16 @@ import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDo
 import AppInfo from '../../../AppInfo';
 
 namespace EmployeeCompetencyValue {
-    export const GetByEmployeeIdEvaluationPeriod = (employeeId: string, competency_evaluation_period: string, polyvalence_table_id: string, tenant_id: string) => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
-            [Query.equal("employee_id", employeeId), Query.equal("competency_evaluation_period", competency_evaluation_period),
-            Query.equal("polyvalence_table_id", polyvalence_table_id), Query.equal("is_deleted_competency_value", false), Query.equal("tenant_id", tenant_id)]);
-        return { employeeCompetencyValue: documents, isLoadingEmployeeCompetencyValue: isLoading };
-    };
+
+    export const Create = () => {
+        const { createDocument, error, isError, isLoading, isSuccess } = useCreateDocument(AppInfo.Name, AppInfo.Database, "employee_competency_value");
+        return { createEmployeeCompetencyValue: createDocument, errorCreateEmployeeCompetencyValue: error, isErrorCreateEmployeeCompetencyValue: isError, isLoadingCreateEmployeeCompetencyValue: isLoading, isSuccessCreateEmployeeCompetencyValue: isSuccess };
+    }
+
+    export const Update = () => {
+        const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name);
+        return { updateEmployeeCompetencyValue: updateDocument, errorUpdateEmployeeCompetencyValue: error, isErrorUpdateEmployeeCompetencyValue: isError, isLoadingUpdateEmployeeCompetencyValue: isLoading, isSuccessUpdateEmployeeCompetencyValue: isSuccess };
+    }
 }
 
 export default EmployeeCompetencyValue;

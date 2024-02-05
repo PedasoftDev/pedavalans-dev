@@ -1,27 +1,29 @@
-import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, useNavigate } from "@tuval/forms";
-import { Views } from "../../../components/Views";
-import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../../CompetencyTargetDataEntry/Views/View";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
-import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
+import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../../CompetencyTargetDataEntry/Views/View";
+import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
-import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
-import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
-import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
-import Competency from "../../../../server/hooks/competency/main";
-import { useGetMe } from "@realmocean/sdk";
-import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import StyledDataGrid from "../../../components/StyledDataGrid";
-import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import { Toast } from "../../../components/Toast";
-import { GridColDef, trTR } from "@mui/x-data-grid";
-import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
-import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
-import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
+import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
+import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
+import { IoPersonCircleOutline } from "react-icons/io5";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
+import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
+import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
+import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
+import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import { GridColDef, trTR } from "@mui/x-data-grid";
+import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
+import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
+import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
+import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
+import AppInfo from "../../../../AppInfo";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -33,14 +35,15 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     polyvalence_evaluation_frequency: "",
     realm_id: "",
     tenant_id: ""
-};
+}
 
 export class CompetencyReportDataViewController extends UIController {
+
     public LoadView(): UIView {
 
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
-        const [selectedPeriod, setSelectedPeriod] = useState<string>("");
         const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
+        const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
@@ -50,20 +53,26 @@ export class CompetencyReportDataViewController extends UIController {
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
-        const { employeeCompetencyValue, isLoadingEmployeeCompetencyValue } = EmployeeCompetencyValue.GetByEmployeeIdEvaluationPeriod(selectedEmployeeId, selectedPeriod, selectedTable.polyvalence_table_id, me?.prefs?.organization);
+
 
         return (
             isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
+
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
+                    const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
 
                     const onChangeTable = (e: SelectChangeEvent<string>) => {
                         const table = polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
                         const periodYear = Number(periods[0].evaluation_period_year);
                         setSelectedTable(table)
                         setSelectedPeriod("")
+                        setSelectedEmployeeId("")
+                        setSelectedGroupId("")
+                        setSelectedCompetencyList([])
+                        setEmployeeCompetencyValue([])
                         if (table.polyvalence_evaluation_frequency == "Yıl") {
                             setDataYear(getYearPeriods(periodYear))
                         }
@@ -89,31 +98,73 @@ export class CompetencyReportDataViewController extends UIController {
 
                     const columns: GridColDef[] = [
                         { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
-                        { field: "competency_target_value", headerName: "Hedef Değer", width: 150, minWidth: 150 },
-                        { field: "competency_real_value", headerName: "Dönem Sonucu", width: 150, minWidth: 150 },
-                        { field: "competency_real_value_description", headerName: "Yüzdelik", width: 150, minWidth: 150 }
+                        { field: "competency_target_value", headerName: "Hedef Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150 },
+                        { field: "competency_real_value", headerName: "Gerçekleşen Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150 },
+                        {
+                            field: "value", headerName: "Dönem Ortalaması", width: 150, minWidth: 150,
+                            align: "center",  headerAlign: "center",
+                            renderCell: (params) => {
+                                const average = params.row.competency_real_value / params.row.competency_target_value * 100;
+                                let averageIcon: string = "";
+                                switch (true) {
+                                    case (average < 20):
+                                        averageIcon = "☹️";
+                                        break;
+                                    case (average >= 20 && average < 40):
+                                        averageIcon = "🙁";
+                                        break;
+                                    case (average >= 40 && average < 60):
+                                        averageIcon = "😐";
+                                        break;
+                                    case (average >= 60 && average < 80):
+                                        averageIcon = "🙂";
+                                        break;
+                                    case (average >= 80):
+                                        averageIcon = "😄";
+                                        break;
+                                    default:
+                                        averageIcon = "";
+                                }
+                                return <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                    <div style={{ fontSize: "20px"}}>{averageIcon}</div>
+                                    <div style={{ marginLeft: "5px", fontSize: "14px" }}>{average.toFixed(2)}%</div>
+                                </div>;
+                            }
+                        },
                     ];
 
-                    const getCompetencies = (employee_id: string) => {
+                    const getCompetencies = async (employee_id: string) => {
                         const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
                         const appendToSelectedCompetencyList = [];
-                        competencyList.forEach((competency) => {
-                            competencyDepartments.forEach((department) => {
-                                if (competency.competency_id === department.competency_id) {
-                                    const listItem = removeDollarProperties(competency);
-                                    appendToSelectedCompetencyList.push({
-                                        ...listItem,
-                                        employee_id: employee_id,
-                                        employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
-                                        polyvalence_table_id: selectedTable.polyvalence_table_id,
-                                        polyvalence_table_name: selectedTable.polyvalence_table_name,
-                                        competency_evaluation_period: selectedPeriod,
-                                        competency_department_id: department.competency_department_id,
-                                        competency_department_name: department.competency_department_name,
+                        await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
+                            [
+                                Query.equal("employee_id", employee_id), Query.equal("competency_evaluation_period", selectedPeriod),
+                                Query.equal("polyvalence_table_id", selectedTable.polyvalence_table_id), Query.equal("is_deleted_competency_value", false),
+                                Query.equal("tenant_id", me?.prefs?.organization)
+                            ]).then((res) => {
+                                setEmployeeCompetencyValue(res.documents as any[]);
+                                competencyList.forEach((competency) => {
+                                    competencyDepartments.forEach((department) => {
+                                        if (competency.competency_id === department.competency_id) {
+                                            const listItem = removeDollarProperties(competency);
+                                            const competencyData: IEmployeeCompetencyValue.IEmployeeCompetencyValue = res.documents.find((value) => value.competency_id === listItem.competency_id) as any;
+                                            appendToSelectedCompetencyList.push({
+                                                ...listItem,
+                                                employee_id: employee_id,
+                                                employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
+                                                polyvalence_table_id: selectedTable.polyvalence_table_id,
+                                                polyvalence_table_name: selectedTable.polyvalence_table_name,
+                                                competency_evaluation_period: selectedPeriod,
+                                                competency_department_id: department.competency_department_id,
+                                                competency_department_name: department.competency_department_name,
+                                                competency_target_value: competencyData ? competencyData?.competency_target_value : "",
+                                                competency_real_value: competencyData ? competencyData?.competency_real_value : "",
+                                                competency_value_desc: competencyData ? competencyData?.competency_value_desc : "",
+                                            })
+                                        }
                                     })
-                                }
+                                })
                             })
-                        })
                         console.log(appendToSelectedCompetencyList)
                         setSelectedCompetencyList(appendToSelectedCompetencyList);
                     }
@@ -139,7 +190,7 @@ export class CompetencyReportDataViewController extends UIController {
                     return (
                         VStack(
                             HStack({ alignment: cLeading })(
-                                Views.Title("Çalışan Yetkinlik Karnesi").paddingTop("10px")
+                                Views.Title("Çalışan Yetkinlik Girişi").paddingTop("10px")
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             ReactView(
                                 <Container>
@@ -166,7 +217,13 @@ export class CompetencyReportDataViewController extends UIController {
                                                     name="evaluation_period"
                                                     value={selectedPeriod}
                                                     label="Değerlendirme Dönemi"
-                                                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setSelectedPeriod(e.target.value);
+                                                        setSelectedEmployeeId("")
+                                                        setSelectedGroupId("")
+                                                        setSelectedCompetencyList([])
+                                                        setEmployeeCompetencyValue([])
+                                                    }}
                                                     size="small"
                                                     required
                                                 >
@@ -232,7 +289,6 @@ export class CompetencyReportDataViewController extends UIController {
                         ).padding("0 20px")
                     )
                 })
-
         )
     }
 }
