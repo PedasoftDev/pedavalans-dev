@@ -1,3 +1,19 @@
+#portal-menu::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+  background-color: #F5F5F5 !important;
+  border-radius: 10px !important;
+}
+
+#portal-menu::-webkit-scrollbar {
+  width: 7px !important;
+  background-color: #F5F5F5 !important;
+}
+
+#portal-menu::-webkit-scrollbar-thumb {
+  border-radius: 10px !important;
+  background-color: rgba(0, 0, 0, .3) !important;
+}
+
 @import './theme';
 @import './overrides';
 @import './sizes';
@@ -41,21 +57,6 @@
   }
 }
 
-body::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
-  background-color: #F5F5F5 !important;
-  border-radius: 10px !important;
-}
-
-body::-webkit-scrollbar {
-  width: 7px !important;
-  background-color: #F5F5F5 !important;
-}
-
-body::-webkit-scrollbar-thumb {
-  border-radius: 10px !important;
-  background-color: rgba(0, 0, 0, .3) !important;
-}
 
 html,
 body {
