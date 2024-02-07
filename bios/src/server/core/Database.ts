@@ -1229,6 +1229,43 @@ const Database: IDatabase = {
                     "default": false
                 }
             ]
+        },
+        {
+            "id": "account_relation",
+            "name": "Account Relation",
+            "description": {
+                "en": "Account Relation is a collection of account relations.",
+                "tr": "Hesap ilişkilerinin koleksiyonudur."
+            },
+            "version": "1.0.0",
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string"
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string"
+                },
+                {
+                    "key": "account_id",
+                    "type": "string"
+                },
+                {
+                    "key": "is_admin",
+                    "type": "boolean",
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false
+                }
+            ]
         }
     ]
 }

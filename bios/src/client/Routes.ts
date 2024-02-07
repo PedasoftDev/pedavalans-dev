@@ -18,9 +18,9 @@ import { CompetencyEvaluationPeriodController } from './pages/CompetencyEvaluati
 import { CreateCompetencyEvaluationPeriodController } from './pages/CompetencyEvaluationPeriod/Controllers/CreateCompetencyEvaluationPeriodController';
 import { CompetencyEvaluationListController } from './pages/CompetencyEvaluationPeriod/Controllers/CompetencyEvaluationPeriodListController';
 import { UpdateCompetenyEvaluationPeriodController } from './pages/CompetencyEvaluationPeriod/Controllers/UpdateCompetencyEvaluationPeriodController';
-import { ParametersController } from './pages/Parameters/ParametersController';
-import { OrganizationStructureController } from './pages/OrganizationStructure/OrganizationStructureController';
-import { OrganizationStructureViewController } from './pages/OrganizationStructure/OrganizationStructureViewController';
+import { ParametersController } from './pages/Parameters/Controllers/ParametersController';
+import { OrganizationStructureController } from './pages/OrganizationStructure/Controllers/OrganizationStructureController';
+import { OrganizationStructureViewController } from './pages/OrganizationStructure/Controllers/OrganizationStructureViewController';
 import { CreateCompetencyController } from './pages/Competency/Controllers/CreateCompetencyController';
 import { CompetencyController } from './pages/Competency/Controllers/CompetencyController';
 import { CompetencyListController } from './pages/Competency/Controllers/CompetencyListController';

@@ -1,6 +1,6 @@
 
 import { cTopLeading, HStack, State, UIController, UIRouteOutlet, UIScene, useState } from '@tuval/forms';
-import { PortalMenu } from '../../components/PortalMenu';
+import { PortalMenu } from '../../../components/PortalMenu';
 export class OrganizationStructureController extends UIController {
 
     public LoadView(): any {

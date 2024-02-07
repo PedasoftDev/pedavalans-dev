@@ -16,19 +16,19 @@ import {
     useState,
     VStack,
 } from '@tuval/forms';
-import { PortalMenu } from '../../components/PortalMenu';
-import { Views } from '../../components/Views';
-import Button from '../../components/Button';
+import { PortalMenu } from '../../../components/PortalMenu';
+import { Views } from '../../../components/Views';
+import Button from '../../../components/Button';
 import React from 'react';
-import { Resources } from '../../assets/Resources';
+import { Resources } from '../../../assets/Resources';
 import { Switch, TextField } from '@mui/material';
-import Parameters from '../../../server/hooks/parameters/main';
-import Monitoring from '../../../server/hooks/monitoring/main';
+import Parameters from '../../../../server/hooks/parameters/main';
+import Monitoring from '../../../../server/hooks/monitoring/main';
 import { useGetMe } from '@realmocean/sdk';
-import AppInfo from '../../../AppInfo';
-import IParameters from '../../interfaces/IParameters';
-import removeDollarProperties from '../../assets/Functions/removeDollarProperties';
-import { Toast } from '../../components/Toast';
+import AppInfo from '../../../../AppInfo';
+import IParameters from '../../../interfaces/IParameters';
+import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
+import { Toast } from '../../../components/Toast';
 
 export class ParametersController extends UIFormController {
 

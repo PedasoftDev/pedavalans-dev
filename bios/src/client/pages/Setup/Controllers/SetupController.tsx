@@ -152,6 +152,13 @@ export class SetupController extends UIController {
                         "is_active": true,
                         "is_deleted": false,
                     })
+                    const accountRelId = nanoid();
+                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "account_relation", accountRelId, {
+                        "id": accountRelId,
+                        "tenant_id": organization.$id,
+                        "account_id": me.$id,
+                        "is_admin": true
+                    })
                     for (let k = 0; k < Resources.Parameters.length; k++) {
                         const uuid = nanoid();
                         const { localStr } = Resources.Parameters[k];
