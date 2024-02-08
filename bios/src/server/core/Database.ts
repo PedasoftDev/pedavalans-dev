@@ -1244,6 +1244,14 @@ const Database: IDatabase = {
                     "type": "string"
                 },
                 {
+                    "key": "first_name",
+                    "type": "string"
+                },
+                {
+                    "key": "last_name",
+                    "type": "string"
+                },
+                {
                     "key": "tenant_id",
                     "type": "string"
                 },

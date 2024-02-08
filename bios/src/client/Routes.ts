@@ -35,8 +35,8 @@ import { CompetencyRealDataEntryController } from './pages/CompetencyRealDataEnt
 import { CompetencyRealDataEntryViewController } from './pages/CompetencyRealDataEntry/Controllers/CompetencyRealDataEntryViewController';
 import { CompetencyReportDataController } from './pages/CompetencyReportData/Controllers/CompetencyReportDataController';
 import { CompetencyReportDataViewController } from './pages/CompetencyReportData/Controllers/CompetencyReportDataViewController';
-import { SettingsController } from './pages/Settings/Controllers/SettingsController';
-import { SettingsViewController } from './pages/Settings/Controllers/SettingsViewController';
+import { AccountManagementController } from './pages/AccountManagement/Controllers/AccountManagementController';
+import { AccountManagementViewController } from './pages/AccountManagement/Controllers/AccountManagementViewController';
 
 export const Routes = () => {
     return (
@@ -107,8 +107,8 @@ export const Routes = () => {
                 ),
 
                 // settings
-                UIRoute('settings', SettingsController).children(
-                    UIRoute('view', SettingsViewController)
+                UIRoute('account-management', AccountManagementController).children(
+                    UIRoute('view', AccountManagementViewController)
                 ),
 
                 // not found

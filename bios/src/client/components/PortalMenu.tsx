@@ -1,7 +1,7 @@
 import { int } from '@tuval/core';
 import { useState, cLeading, cTop, ForEach, Text, HStack, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder } from '@tuval/forms';
 import { Resources } from '../assets/Resources';
-import React, { Fragment } from 'react';
+import React from 'react';
 import { RxDashboard, RxTable, RxColorWheel } from "react-icons/rx";
 import { IoGitNetworkOutline } from "react-icons/io5";
 import { FaLayerGroup, FaSignal } from "react-icons/fa";
@@ -9,9 +9,9 @@ import { BsCalendar4Week } from "react-icons/bs";
 import { TbHeartRateMonitor, TbReportAnalytics } from "react-icons/tb";
 import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
-import { MdOutlineSettings } from "react-icons/md";
 import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import { TiFlowParallel } from "react-icons/ti";
+import { MdOutlineManageAccounts } from "react-icons/md";
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -164,17 +164,17 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: "Parametreler",
-                    link: "/app/parameters/view",
+                    link: "/app/parameters",
                     icon: ReactView(
                         <TiFlowParallel size={25} />
                     ),
                     isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
-                    title: "Ayarlar",
-                    link: "/app/settings/view",
+                    title: "Hesap Yönetimi",
+                    link: "/app/account-management/view",
                     icon: ReactView(
-                        <MdOutlineSettings size={25} />
+                        <MdOutlineManageAccounts size={25} />
                     ),
                     isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 }
@@ -198,55 +198,45 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                         })
                     ).height().width()
                 ).height().width().padding(20),
-                VStack(
-                    ReactView(
-                        <div id='portal-menu' style={{ height: "calc(100vh - 124px)", overflowY: "auto" }}>
-                            <Fragment>
-                                {
-                                    VStack({ alignment: cTop })(
-                                        ...ForEach(sideBarMenuModel)((menuItem, index) =>
-                                            menuItem.subMenu == null ?
-                                                menuItem.isVisible &&
-                                                UIRouteLink(menuItem.link)(
-                                                    HStack({ alignment: cLeading })(
-                                                        menuItem.icon,
-                                                        Text(menuItem.title).paddingLeft(".5rem")
-                                                    ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
-                                                        .transition("all .2s ease-in-out")
-                                                        .background({ default: menuItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: menuItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
-                                                        .foregroundColor({ default: menuItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
-                                                        .shadow(menuItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
-                                                ).paddingTop("0.5rem")
-                                                :
-                                                menuItem.isVisible &&
-                                                VStack({ alignment: cTop })(
-                                                    HStack({ alignment: cLeading })(
-                                                        Text(menuItem.title).textTransform("uppercase").fontWeight("900").fontSize("13px").foregroundColor("#2e5bc7")
-                                                    ).height().paddingLeft("20px"),
-                                                    VStack(
-                                                        ...ForEach(menuItem.subMenu)(subItem =>
-                                                            subItem.isVisible &&
-                                                            UIRouteLink(subItem.link)(
-                                                                HStack({ alignment: cLeading })(
-                                                                    subItem.icon,
-                                                                    Text(subItem.title).paddingLeft(".5rem")
-                                                                ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
-                                                                    .transition("all .2s ease-in-out")
-                                                                    .background({ default: subItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: subItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
-                                                                    .foregroundColor({ default: subItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
-                                                                    .shadow(subItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
-                                                            ).paddingTop("0.5rem")
-                                                        )
-                                                    )
-                                                ).paddingTop("1.5rem").height()
+                ScrollView({ axes: "cVertical" })(
+                    VStack({ alignment: cTop })(
+                        ...ForEach(sideBarMenuModel)((menuItem, index) =>
+                            menuItem.subMenu == null ?
+                                menuItem.isVisible &&
+                                UIRouteLink(menuItem.link)(
+                                    HStack({ alignment: cLeading })(
+                                        menuItem.icon,
+                                        Text(menuItem.title).paddingLeft(".5rem")
+                                    ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
+                                        .transition("all .2s ease-in-out")
+                                        .background({ default: menuItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: menuItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
+                                        .foregroundColor({ default: menuItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
+                                        .shadow(menuItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
+                                ).paddingTop("0.5rem")
+                                :
+                                menuItem.isVisible &&
+                                VStack({ alignment: cTop })(
+                                    HStack({ alignment: cLeading })(
+                                        Text(menuItem.title).textTransform("uppercase").fontWeight("900").fontSize("13px").foregroundColor("#2e5bc7")
+                                    ).height().paddingLeft("20px"),
+                                    VStack(
+                                        ...ForEach(menuItem.subMenu)(subItem =>
+                                            subItem.isVisible &&
+                                            UIRouteLink(subItem.link)(
+                                                HStack({ alignment: cLeading })(
+                                                    subItem.icon,
+                                                    Text(subItem.title).paddingLeft(".5rem")
+                                                ).height("45px").width("256px").cornerRadius(".5rem").paddingLeft("1rem")
+                                                    .transition("all .2s ease-in-out")
+                                                    .background({ default: subItem.title == selectedMenuTitle ? Resources.Colors.themeColor : "", hover: subItem.title === selectedMenuTitle ? "" : Resources.Colors.themeColor })
+                                                    .foregroundColor({ default: subItem.title == selectedMenuTitle ? "white" : Resources.Colors.themeColor, hover: "white" })
+                                                    .shadow(subItem.title == selectedMenuTitle ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}` : "")
+                                            ).paddingTop("0.5rem")
                                         )
-                                    ).paddingTop("10px").width("100%").render()
-                                }
-                            </Fragment>
-                        </div>
-                    )
-
-
+                                    )
+                                ).paddingTop("1.5rem").height()
+                        )
+                    ).paddingTop("10px").width("100%")
                 ),
                 HStack({ alignment: cLeading })(Text("v1.1.0").fontSize("10px").paddingLeft("10px").paddingBottom("5px")).height()
             ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
