@@ -37,6 +37,8 @@ import { CompetencyReportDataController } from './pages/CompetencyReportData/Con
 import { CompetencyReportDataViewController } from './pages/CompetencyReportData/Controllers/CompetencyReportDataViewController';
 import { AccountManagementController } from './pages/AccountManagement/Controllers/AccountManagementController';
 import { AccountManagementViewController } from './pages/AccountManagement/Controllers/AccountManagementViewController';
+import { CompetencyStatusReportController } from './pages/CompetencyStatusReport/Controllers/CompetencyStatusReportController';
+import { CompetencyStatusReportViewController } from './pages/CompetencyStatusReport/Controllers/CompetencyStatusReportViewController';
 
 export const Routes = () => {
     return (
@@ -109,6 +111,11 @@ export const Routes = () => {
                 // settings
                 UIRoute('account-management', AccountManagementController).children(
                     UIRoute('view', AccountManagementViewController)
+                ),
+
+                // competency status report
+                UIRoute('competency-status-report', CompetencyStatusReportController).children(
+                    UIRoute('view', CompetencyStatusReportViewController)
                 ),
 
                 // not found

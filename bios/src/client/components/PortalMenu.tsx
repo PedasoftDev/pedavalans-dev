@@ -80,8 +80,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             isVisible: true//machineBased
         },
         {
-            title: "İzleme",
-            link: "/app/lowPerformingStaffController/view",
+            title: "Yetkinlik Durum İzleme Raporu",
+            link: "/app/competency-status-report/view",
             icon: ReactView(
                 <TbHeartRateMonitor size={25} />
             ),
