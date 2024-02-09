@@ -16,6 +16,8 @@ export class SignupController extends UIController {
             passwordConfirm: ''
         });
 
+        const [isRegexError, setIsRegexError] = useState(false);
+
         const {
             createAccount,
             isSuccess: isCreateAccountSuccess,
@@ -63,7 +65,14 @@ export class SignupController extends UIController {
                         ).height(),
                         VStack({ spacing: 3, alignment: cLeading })(
                             Text("Şifre"),
-                            SecureField().onChange(e => setForm({ ...form, password: e })),
+                            SecureField().onChange(e => {
+                                if (e.length < 8 || !/[A-Z]/.test(e) || !/[a-z]/.test(e) || !/[!@#$%^&*.]/.test(e)) {
+                                    setIsRegexError(true)
+                                } else {
+                                    setIsRegexError(false)
+                                }
+                                setForm({ ...form, password: e })
+                            }),
                         ).height(),
                         VStack({ spacing: 3, alignment: cLeading })(
                             Text("Şifreyi Onayla"),

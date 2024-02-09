@@ -1,53 +1,17 @@
 import styled from "styled-components"
-export const Main = styled.div`
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    width: 80%;
-`
-// header
-export const Title = styled.h1`
-    margin-top: 10px !important;
-    font-size: 20px;
-    font-weight: 500;
-    color: #000;
-    margin: 0;
-    padding: 0;
-`
 
-export const LeftContainer = styled.div`
+export const Tab = styled.div<{ active: boolean }>`
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    padding: 0 20px;
-`
-
-export const RightContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    padding: 0 20px;
-`
-
-export const RightFormFirst = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-`
-
-export const RightFormSecond = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-`
-
-export const SecureForm = styled.form`
-    display: flex;
-    gap: 10px;
-    width: 80%;
-    padding: 0 20px;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    background: ${props => props.active ? "#3BA2EE" : ""};
+    color: ${props => props.active ? "white" : ""};
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    &:hover {
+        background: lightblue;
+    }
 `

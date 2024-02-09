@@ -1,9 +1,8 @@
-import { HStack, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, VStack, cLeading, cTop, cTopLeading } from "@tuval/forms";
+import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
-import { useGetMe, Services, Query } from "@realmocean/sdk";
+import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts } from "@realmocean/sdk";
 import { Button, FormControlLabel, Switch, TextField } from "@mui/material";
-import { LeftContainer, Main, RightContainer, SecureForm, Title } from "../Views/Form";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import AppInfo from "../../../../AppInfo";
@@ -11,6 +10,9 @@ import removeDollarProperties from "../../../assets/Functions/removeDollarProper
 import { Toast } from "../../../components/Toast";
 import { BsFillPersonFill } from "react-icons/bs";
 import { TbBuildingCommunity } from "react-icons/tb";
+import { Tab } from "../Views/Form";
+import { IoPersonAddOutline } from "react-icons/io5";
+import StyledDataGrid from "../../../components/StyledDataGrid";
 
 
 const resetMe: IAccount.IBase = {
@@ -42,24 +44,45 @@ const resetAccountRelation: IAccountRelation.IBase = {
 }
 
 export class AccountManagementViewController extends UIController {
-    public LoadView(): any {
+    public LoadView(): UIView {
 
         const { me, isLoading } = useGetMe("console");
         const { updateAccountRelation } = AccountRelation.Update();
+        const {
+            createAccount,
+            isSuccess: isCreateAccountSuccess,
+            isError: isCreateAccountError,
+            error: createAccountError
+        } = useCreateAccount('console');
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts()
 
         return (
-            isLoading ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts ? VStack(Spinner()) :
                 me == null ? VStack(UINavigate("/login")) :
                     UIViewBuilder(() => {
+
                         const [accountInfo, setAccountInfo] = useState<IAccount.IBase>(resetMe)
                         const [accountRelation, setAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
+
                         const [passwordChange, setPasswordChange] = useState<IAccount.IPasswordChange>({ password: "", newPassword: "", newPasswordConfirm: "" })
+                        const [isRegexError, setIsRegexError] = useState(false)
+
+                        const [createAccountForm, setCreateAccount] = useState({
+                            email: "",
+                            username: "",
+                            password: "",
+                            passwordConfirm: ""
+                        })
+
+                        const [selectedTab, setSelectedTab] = useState(0)
+
                         useEffect(() => {
                             if (me) {
                                 setAccountInfo(me)
                                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.equal("account_id", me.$id)]).then((data) => {
                                     setAccountRelation(removeDollarProperties(data.documents[0]))
                                 })
+
                             }
                         }, [])
 
@@ -87,6 +110,7 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
+                            setUpProject("console", undefined);
                             Services.Accounts.updatePassword(passwordChange.newPassword, passwordChange.password).then(() => {
                                 Toast.fire({
                                     icon: 'success',
@@ -99,6 +123,37 @@ export class AccountManagementViewController extends UIController {
                                     text: JSON.stringify(e)
                                 })
                             })
+                        }
+
+                        const handleCreateAccount = (e: React.FormEvent<HTMLFormElement>) => {
+                            e.preventDefault()
+                            if (createAccountForm.password !== createAccountForm.passwordConfirm) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'Şifreler uyuşmuyor'
+                                })
+                                return
+                            }
+                            if (createAccountForm.password.length < 8 || !/[A-Z]/.test(createAccountForm.password) || !/[a-z]/.test(createAccountForm.password) || !/[!@#$%^&*.]/.test(createAccountForm.password)) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'Şifre en az 8 karakter olmalı, büyük harf, küçük harf ve özel karakter içermelidir!'
+                                })
+                                return
+                            }
+                            createAccount({ name: createAccountForm.username, email: createAccountForm.email, password: createAccountForm.password, organizationId: me?.prefs?.organization }, () => {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Kullanıcı oluşturuldu'
+                                })
+                                setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
+                            })
+                            if (isCreateAccountError) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: createAccountError?.message
+                                })
+                            }
                         }
 
                         return (
@@ -118,133 +173,209 @@ export class AccountManagementViewController extends UIController {
                                                 display: "flex",
                                                 gap: "10px"
                                             }}>
-                                                <div style={{
-                                                    display: "flex",
-                                                    gap: "5px",
-                                                    fontSize: "14px",
-                                                    background: "blue",
-                                                    color: "white",
-                                                    padding: "10px 15px",
-                                                    borderRadius: "5px"
-                                                }}>
+                                                <Tab active={selectedTab === 0} onClick={() => setSelectedTab(0)}>
                                                     <BsFillPersonFill />
                                                     <div>Hesabım</div>
-                                                </div>
+                                                </Tab>
                                                 {
                                                     accountRelation.is_admin &&
-                                                    <div style={{
-                                                        display: "flex",
-                                                        gap: "5px",
-                                                        fontSize: "14px",
-                                                        padding: "10px 15px",
-                                                        borderRadius: "5px"
-                                                    }}>
+                                                    <Tab active={selectedTab === 1} onClick={() => setSelectedTab(1)}>
                                                         <TbBuildingCommunity />
                                                         <div>Organizasyon Kullanıcı Listesi</div>
-                                                    </div>
+                                                    </Tab>
+                                                }
+                                                {
+                                                    accountRelation.is_admin &&
+                                                    <Tab active={selectedTab === 2} onClick={() => setSelectedTab(2)}>
+                                                        <IoPersonAddOutline />
+                                                        <div>Yeni Kullanıcı</div>
+                                                    </Tab>
                                                 }
                                             </div>
-                                            <div style={{
-                                                display: "flex",
-                                                gap: "10px"
-                                            }}>
+                                            {selectedTab === 0 &&
                                                 <div style={{
-                                                    border: "1px solid #e0e0e0",
-                                                    borderRadius: "5px",
-                                                    padding: "20px",
-                                                    width: "100%",
                                                     display: "flex",
-                                                    flexDirection: "column",
-                                                    background: "rgb(250 250 250)"
+                                                    gap: "10px"
                                                 }}>
                                                     <div style={{
-                                                        display: "flex", alignItems: "center", borderBottom: "1px solid #e0e0e0",
-                                                        paddingBottom: "10px", fontSize: "16px"
-                                                    }}>Profil Detayları</div>
-                                                    <div style={{
+                                                        border: "1px solid #e0e0e0",
+                                                        borderRadius: "5px",
+                                                        padding: "20px",
+                                                        width: "100%",
                                                         display: "flex",
                                                         flexDirection: "column",
-                                                        gap: "10px",
-                                                        marginTop: "10px"
+                                                        background: "rgb(250 250 250)"
+                                                    }}>
+                                                        <div style={{
+                                                            display: "flex", alignItems: "center", borderBottom: "1px solid #e0e0e0",
+                                                            paddingBottom: "10px", fontSize: "16px"
+                                                        }}>Profil Detayları</div>
+                                                        <div style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            gap: "10px",
+                                                            marginTop: "10px"
+                                                        }}>
+                                                            <TextField
+                                                                label="E-posta"
+                                                                value={accountInfo.email}
+                                                                size="small"
+                                                            />
+                                                            <TextField
+                                                                size="small"
+                                                                label="Kullanıcı Adı"
+                                                                value={accountInfo.name}
+                                                            />
+                                                            <TextField
+                                                                size="small"
+                                                                label="Telefon"
+                                                                value={accountInfo.phone}
+                                                            />
+                                                            <TextField
+                                                                size="small"
+                                                                label="Ad"
+                                                                value={accountRelation.first_name}
+                                                            />
+                                                            <TextField
+                                                                size="small"
+                                                                label="Soyad"
+                                                                value={accountRelation.last_name}
+                                                            />
+                                                            <FormControlLabel
+                                                                sx={{ alignContent: "end" }}
+                                                                control={<Switch checked={accountRelation.is_active} />}
+                                                                label="Hesap aktif mi?"
+                                                            />
+                                                            <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{
+                                                        border: "1px solid #e0e0e0",
+                                                        borderRadius: "5px",
+                                                        padding: "20px",
+                                                        width: "100%",
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        background: "rgb(250 250 250)",
+                                                        height: "fit-content"
+                                                    }}>
+                                                        <div style={{
+                                                            display: "flex", alignItems: "center", borderBottom: "1px solid #e0e0e0",
+                                                            paddingBottom: "10px", fontSize: "16px"
+                                                        }}>Şifre Yönetimi</div>
+                                                        <form style={{
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            gap: "10px",
+                                                            marginTop: "10px"
+                                                        }}>
+                                                            <TextField
+                                                                size="small"
+                                                                placeholder="Eski Şifre"
+                                                                type="password"
+                                                                value={passwordChange.password}
+                                                                onChange={(e) => setPasswordChange({ ...passwordChange, password: e.target.value })}
+                                                            />
+                                                            <TextField
+                                                                size="small"
+                                                                placeholder="Yeni Şifre"
+                                                                type="password"
+                                                                value={passwordChange.newPassword}
+                                                                onChange={(e) => {
+                                                                    if (e.target.value.length < 8 || !/[A-Z]/.test(e.target.value) || !/[a-z]/.test(e.target.value) || !/[!@#$%^&*.]/.test(e.target.value)) {
+                                                                        setIsRegexError(true)
+                                                                    } else {
+                                                                        setIsRegexError(false)
+                                                                    }
+                                                                    setPasswordChange({ ...passwordChange, newPassword: e.target.value })
+                                                                }}
+                                                                error={isRegexError}
+                                                                helperText={isRegexError ? "Şifreniz en az 8 karakter olmalı, büyük harf, küçük harf ve özel karakter içermelidir" : ""}
+                                                            />
+                                                            <TextField
+                                                                size="small"
+                                                                placeholder="Yeni Şifre Tekrar"
+                                                                type="password"
+                                                                value={passwordChange.newPasswordConfirm}
+                                                                onChange={(e) => setPasswordChange({ ...passwordChange, newPasswordConfirm: e.target.value })}
+                                                            />
+                                                            <Button
+                                                                variant="contained"
+                                                                onClick={handleChangePassword}
+                                                                disabled={isRegexError}>Şifreyi Değiştir</Button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            }
+                                            {selectedTab === 1 &&
+                                                <div style={{
+                                                    height: "calc(100vh - 150px)",
+                                                    width: "calc(100vw - 310px)"
+                                                }}>
+                                                    <StyledDataGrid
+                                                        columns={[
+                                                            { field: '$id', headerName: 'ID', width: 100 },
+                                                            { field: 'email', headerName: 'E-posta', flex: 1 },
+                                                            { field: 'name', headerName: 'Kullanıcı Adı', flex: 1 },
+                                                        ]}
+                                                        rows={accounts}
+                                                        getRowId={(row) => row.$id} />
+                                                </div>
+                                            }
+                                            {selectedTab === 2 &&
+                                                <div style={{
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    width: "100%",
+                                                }}>
+                                                    <form onSubmit={handleCreateAccount} style={{
+                                                        border: "1px solid #e0e0e0",
+                                                        borderRadius: "5px",
+                                                        padding: "20px",
+                                                        width: "50%",
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        background: "rgb(250 250 250)",
+                                                        gap: "10px"
                                                     }}>
                                                         <TextField
-                                                            label="E-posta"
-                                                            value={accountInfo.email}
                                                             size="small"
+                                                            label="E-posta"
+                                                            value={createAccountForm.email}
+                                                            onChange={(e) => setCreateAccount({ ...createAccountForm, email: e.target.value })}
+                                                            fullWidth
+                                                            required
                                                         />
                                                         <TextField
                                                             size="small"
                                                             label="Kullanıcı Adı"
-                                                            value={accountInfo.name}
+                                                            value={createAccountForm.username}
+                                                            onChange={(e) => setCreateAccount({ ...createAccountForm, username: e.target.value })}
+                                                            fullWidth
+                                                            required
                                                         />
                                                         <TextField
                                                             size="small"
-                                                            label="Telefon"
-                                                            value={accountInfo.phone}
+                                                            label="Şifre"
+                                                            value={createAccountForm.password}
+                                                            onChange={(e) => setCreateAccount({ ...createAccountForm, password: e.target.value })}
+                                                            fullWidth
+                                                            type="password"
+                                                            required
                                                         />
                                                         <TextField
                                                             size="small"
-                                                            label="Ad"
-                                                            value={accountRelation.first_name}
+                                                            label="Şifre Tekrar"
+                                                            value={createAccountForm.passwordConfirm}
+                                                            onChange={(e) => setCreateAccount({ ...createAccountForm, passwordConfirm: e.target.value })}
+                                                            fullWidth
+                                                            type="password"
+                                                            required
                                                         />
-                                                        <TextField
-                                                            size="small"
-                                                            label="Soyad"
-                                                            value={accountRelation.last_name}
-                                                        />
-                                                        <FormControlLabel
-                                                            sx={{ alignContent: "end" }}
-                                                            control={<Switch checked={accountRelation.is_active} />}
-                                                            label="Hesap aktif mi?"
-                                                        />
-                                                        <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
-                                                    </div>
+                                                        <Button variant="contained" type="submit" fullWidth>Kullanıcı Oluştur</Button>
+                                                    </form>
                                                 </div>
-                                                <div style={{
-                                                    border: "1px solid #e0e0e0",
-                                                    borderRadius: "5px",
-                                                    padding: "20px",
-                                                    width: "100%",
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    background: "rgb(250 250 250)",
-                                                    height: "fit-content"
-                                                }}>
-                                                    <div style={{
-                                                        display: "flex", alignItems: "center", borderBottom: "1px solid #e0e0e0",
-                                                        paddingBottom: "10px", fontSize: "16px"
-                                                    }}>Şifre Yönetimi</div>
-                                                    <div style={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        gap: "10px",
-                                                        marginTop: "10px"
-                                                    }}>
-                                                        <TextField
-                                                            size="small"
-                                                            placeholder="Eski Şifre"
-                                                            type="password"
-                                                            value={passwordChange.password}
-                                                            onChange={(e) => setPasswordChange({ ...passwordChange, password: e.target.value })}
-                                                        />
-                                                        <TextField
-                                                            size="small"
-                                                            placeholder="Yeni Şifre"
-                                                            type="password"
-                                                            value={passwordChange.newPassword}
-                                                            onChange={(e) => setPasswordChange({ ...passwordChange, newPassword: e.target.value })}
-                                                        />
-                                                        <TextField
-                                                            size="small"
-                                                            placeholder="Yeni Şifre Tekrar"
-                                                            type="password"
-                                                            value={passwordChange.newPasswordConfirm}
-                                                            onChange={(e) => setPasswordChange({ ...passwordChange, newPasswordConfirm: e.target.value })}
-                                                        />
-                                                        <Button variant="contained" onClick={handleChangePassword}>Şifreyi Değiştir</Button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            }
                                         </div >
                                     )
                                 )
@@ -252,7 +383,5 @@ export class AccountManagementViewController extends UIController {
                         )
                     })
         )
-
-
     }
 }
