@@ -183,9 +183,9 @@
     "tslib" "^2.0.0"
 
 "@editorjs/editorjs@*":
-  "integrity" "sha512-g6V0Nd3W9IIWMpvxDNTssQ6e4kxBp1Y0W4GIf8cXRlmcBp3TUjrgCYJQmNy3l2a6ZzhyBAoVSe8krJEq4g7PQw=="
-  "resolved" "https://registry.npmjs.org/@editorjs/editorjs/-/editorjs-2.28.2.tgz"
-  "version" "2.28.2"
+  "integrity" "sha512-w2BVboSHokMBd/cAOZn0UU328o3gSZ8XUvFPA2e9+ciIGKILiRSPB70kkNdmhHkuNS3q2px+vdaIFaywBl7wGA=="
+  "resolved" "https://registry.npmjs.org/@editorjs/editorjs/-/editorjs-2.29.0.tgz"
+  "version" "2.29.0"
 
 "@editorjs/image@^2.8.1":
   "integrity" "sha512-xItihKJFiWJ06SMtLWQZvzHv4LRPNAFZYaHAXesBFzXvWwUrtVaVMcNSf0eNnw3InrPO3Po1vZRRgpsT+Ya3Bg=="
@@ -781,10 +781,10 @@
   dependencies:
     "@react-editor-js/core" "2.1.0"
 
-"@realmocean/sdk@^1.0.64":
-  "integrity" "sha512-XMj4nAYVqZrEzAiGDGM/le8ffwjSh7Sb5LvrTUSVgJXtXT7isl3bKfinrUUkDPzZPVHNrGKEykXXImk3X4abmQ=="
-  "resolved" "https://registry.npmjs.org/@realmocean/sdk/-/sdk-1.0.64.tgz"
-  "version" "1.0.64"
+"@realmocean/sdk@^1.0.79":
+  "integrity" "sha512-3jp6Ruj5E7nWHzbZrl81h0iwKZKUvLOOwOg2Tg2bAS1IApbKUJjdGMru/xmoLXK/5BVi3S2UlyUPUXKoBA8NAA=="
+  "resolved" "https://registry.npmjs.org/@realmocean/sdk/-/sdk-1.0.79.tgz"
+  "version" "1.0.79"
   dependencies:
     "@editorjs/image" "^2.8.1"
     "@editorjs/inline-code" "^1.4.0"

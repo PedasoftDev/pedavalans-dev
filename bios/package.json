@@ -105,7 +105,7 @@
         "@emotion/react": "^11.11.3",
         "@emotion/styled": "^11.11.0",
         "@mui/material": "^5.15.2",
-        "@realmocean/sdk": "^1.0.64",
+        "@realmocean/sdk": "^1.0.79",
         "@tuval/cg": "^0.0.16",
         "@tuval/core": "^0.0.103",
         "@tuval/forms": "^1.0.133",
