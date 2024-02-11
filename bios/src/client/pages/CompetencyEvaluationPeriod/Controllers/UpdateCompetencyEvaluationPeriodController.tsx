@@ -17,6 +17,7 @@ import ICompetencyEvaluationPeriod from '../../../interfaces/ICompetencyEvaluati
 import CompetencyEvaluationPeriod from '../../../../server/hooks/competencyEvaluationPeriod/main';
 import AppInfo from '../../../../AppInfo';
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
+import { useGetMe } from '@realmocean/sdk';
 
 interface IYear {
     year: string;
@@ -32,6 +33,7 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
     public LoadView() {
         const { id } = useParams();
         const navigate = useNavigate();
+        const { me, isLoading: isLoadingMe } = useGetMe('console');
 
         const [form, setForm] = useState<ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod>({
             evaluation_period_id: "",
@@ -45,7 +47,7 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
         const [isDefault, setIsDefault] = useState<string>("true");
 
         const { period, isLoading } = CompetencyEvaluationPeriod.GetCompetencyEvaluationPeriod(id);
-        const { periods, isLoading: isLoadingDefaults, total } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod();
+        const { periods, isLoading: isLoadingDefaults, total } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { updateDocument } = CompetencyEvaluationPeriod.UpdateCompetencyEvaluationPeriod();
 
         const onSubmit = (e: any) => {
@@ -119,7 +121,7 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
         }
 
         return (
-            isLoading ? VStack(Spinner()) :
+            isLoading || isLoadingMe || isLoadingDefaults ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     useEffect(() => {
                         setForm(removeDollarProperties(period));

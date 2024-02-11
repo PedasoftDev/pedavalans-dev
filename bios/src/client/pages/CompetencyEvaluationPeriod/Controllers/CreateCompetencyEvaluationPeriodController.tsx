@@ -41,7 +41,7 @@ export class CreateCompetencyEvaluationPeriodController extends UIFormController
         const [form, setForm] = useState<ICompetencyEvaluationPeriod.ICreateCompetencyEvaluationPeriod>(resetForm);
 
         const { createDocument } = CompetencyEvaluationPeriod.CreateCompetencyEvaluationPeriod();
-        const { periods, isLoading: isLoadingPeriods, total } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod();
+        const { periods, isLoading: isLoadingPeriods, total } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { updateDocument } = CompetencyEvaluationPeriod.UpdateCompetencyEvaluationPeriod()
 
         const onSubmit = (e: any) => {
