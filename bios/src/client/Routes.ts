@@ -39,6 +39,7 @@ import { AccountManagementController } from './pages/AccountManagement/Controlle
 import { AccountManagementViewController } from './pages/AccountManagement/Controllers/AccountManagementViewController';
 import { CompetencyStatusReportController } from './pages/CompetencyStatusReport/Controllers/CompetencyStatusReportController';
 import { CompetencyStatusReportViewController } from './pages/CompetencyStatusReport/Controllers/CompetencyStatusReportViewController';
+import { PasswordRecoveryController } from './controllers/PasswordRecoveryController';
 
 export const Routes = () => {
     return (
@@ -125,6 +126,7 @@ export const Routes = () => {
             UIRoute('', LoginController),
             UIRoute('login', LoginController),
             UIRoute('signup', SignupController),
+            UIRoute('password-recovery', PasswordRecoveryController),
             UIRoute('logout', LoginController)
         )
     )

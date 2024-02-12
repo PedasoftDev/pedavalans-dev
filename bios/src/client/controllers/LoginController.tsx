@@ -38,6 +38,7 @@ export class LoginController extends UIController {
             }, () => {
                 navigate('/app/dashboard')
             })
+            isError && setForm({ ...form, disabled: false })
         }
 
         const HeaderInfo = () => {
@@ -84,6 +85,9 @@ export class LoginController extends UIController {
                                     </LoginForm>
                                     <LoginToSignUp onClick={() => navigate('/signup')}>
                                         Kayıt Ol
+                                    </LoginToSignUp>
+                                    <LoginToSignUp onClick={() => navigate('/password-recovery')}>
+                                        Şifrenizi mi unuttunuz?
                                     </LoginToSignUp>
                                 </LoginContainer>
                             </Container>

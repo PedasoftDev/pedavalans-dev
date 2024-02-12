@@ -1,8 +1,10 @@
-import { IconButton, Menu, MenuItem } from "@mui/material";
+import { Button, ButtonGroup, IconButton, Menu, MenuItem } from "@mui/material";
 import { GridMoreVertIcon } from "@mui/x-data-grid";
 import { Color, ForEach, HStack, Icon, ReactView, Spacer, Text, TextAlignment, UIButton, UIContextMenu, UIRouteLink, VStack, cLeading, cTop } from "@tuval/forms";
 import React from "react";
 import styled from "styled-components";
+import { HiOutlinePencilAlt } from "react-icons/hi";
+import MenuMain from "./Menu";
 
 export namespace Views {
     export const Title = (title: string) =>
@@ -93,15 +95,16 @@ export namespace Views {
     }
 
 
-    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, items: { title: string, action: Function }[]) => {
-        const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-        const open = Boolean(anchorEl);
-        const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-            setAnchorEl(event.currentTarget);
-        };
-        const handleClose = () => {
-            setAnchorEl(null);
-        };
+    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, item: { title: string, action: Function }) => {
+        // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+        // const open = Boolean(anchorEl);
+        // const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        //     setAnchorEl(event.currentTarget);
+        //     console.log(event.currentTarget)
+        // };
+        // const handleClose = () => {
+        //     setAnchorEl(null);
+        // };
         return (
             VStack({ alignment: cTop, spacing: 10 })(
                 HStack(
@@ -111,33 +114,36 @@ export namespace Views {
                     ),
                     Spacer(),
                     ReactView(
-                        <div>
-                            <IconButton
-                                aria-label="more"
-                                id="long-button"
-                                aria-controls={open ? 'long-menu' : undefined}
-                                aria-expanded={open ? 'true' : undefined}
-                                aria-haspopup="true"
-                                onClick={handleClick}
-                            >
-                                <GridMoreVertIcon />
-                            </IconButton>
-                            <Menu
-                                id="long-menu"
-                                MenuListProps={{
-                                    'aria-labelledby': 'long-button',
-                                }}
-                                anchorEl={anchorEl}
-                                open={open}
-                                onClose={handleClose}
-                            >
-                                {items.map((item, i) => (
-                                    <MenuItem key={i} onClick={() => item.action()}>
-                                        {item.title}
-                                    </MenuItem>
-                                ))}
-                            </Menu>
-                        </div>
+                        <HiOutlinePencilAlt cursor={"pointer"} size={"15px"} onClick={() => item.action()} />
+                        //     <MenuMain />
+                        // <div style={{ fontSize: "11px", textDecoration: "underline", cursor: "pointer" }} onClick={() => item.action()}>
+                        //     {item.title}
+                        //     {/* <IconButton
+                        //         aria-label="more"
+                        //         id="long-button"
+                        //         aria-controls={open ? 'long-menu' : undefined}
+                        //         aria-expanded={open ? 'true' : undefined}
+                        //         aria-haspopup="true"
+                        //         onClick={handleClick}
+                        //     >
+                        //         <GridMoreVertIcon />
+                        //     </IconButton>
+                        //     <Menu
+                        //         id="long-menu"
+                        //         MenuListProps={{
+                        //             'aria-labelledby': 'long-button',
+                        //         }}
+                        //         anchorEl={anchorEl}
+                        //         open={open}
+                        //         onClose={handleClose}
+                        //     >
+                        //         {items.map((item, i) => (
+                        //             <MenuItem key={i} onClick={() => item.action()}>
+                        //                 {item.title}
+                        //             </MenuItem>
+                        //         ))}
+                        //     </Menu> */}
+                        // </div>
                     )
                 ).height(),
                 HStack({ alignment: cLeading })(

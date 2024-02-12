@@ -13,6 +13,7 @@ import { TbBuildingCommunity } from "react-icons/tb";
 import { Tab } from "../Views/Form";
 import { IoPersonAddOutline } from "react-icons/io5";
 import StyledDataGrid from "../../../components/StyledDataGrid";
+import Swal from "sweetalert2";
 
 
 const resetMe: IAccount.IBase = {
@@ -25,7 +26,7 @@ const resetMe: IAccount.IBase = {
     labels: [],
     name: "",
     passwordUpdate: "",
-    phone: "",
+    phone: "+",
     phoneVerification: false,
     prefs: { organization: "" },
     registration: "",
@@ -63,6 +64,7 @@ export class AccountManagementViewController extends UIController {
 
                         const [accountInfo, setAccountInfo] = useState<IAccount.IBase>(resetMe)
                         const [accountRelation, setAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
+                        const [phone, setPhone] = useState<string>("")
 
                         const [passwordChange, setPasswordChange] = useState<IAccount.IPasswordChange>({ password: "", newPassword: "", newPasswordConfirm: "" })
                         const [isRegexError, setIsRegexError] = useState(false)
@@ -79,13 +81,39 @@ export class AccountManagementViewController extends UIController {
                         useEffect(() => {
                             if (me) {
                                 setAccountInfo(me)
+                                setPhone(accountInfo?.phone)
                                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.equal("account_id", me.$id)]).then((data) => {
                                     setAccountRelation(removeDollarProperties(data.documents[0]))
                                 })
                             }
                         }, [])
 
-                        const handleSubmit = () => {
+                        const handleSubmit = async () => {
+                            // if (accountInfo?.phone != phone) {
+                            //     const { value: password } = await Swal.fire({
+                            //         title: "Lütfen şifrenizi giriniz!",
+                            //         input: "password",
+                            //     });
+                            //     if (password) {
+                            //         await Services.Accounts.updatePhone(phone, password).then((e) => {
+                            //             Toast.fire({
+                            //                 title: "Telefon numarası güncellendi",
+                            //                 icon: "success"
+                            //             })
+                            //         }).catch((e) => {
+                            //             Toast.fire({
+                            //                 icon: "error",
+                            //                 title: "Bir hata oluştu!"
+                            //             })
+                            //         })
+                            //     } else {
+                            //         Toast.fire({
+                            //             title: "Bir hata oluştu!",
+                            //             icon: "error"
+                            //         });
+                            //         return;
+                            //     }
+                            // }
                             updateAccountRelation({
                                 databaseId: AppInfo.Database,
                                 collectionId: "account_relation",
@@ -228,7 +256,18 @@ export class AccountManagementViewController extends UIController {
                                                             <TextField
                                                                 size="small"
                                                                 label="Telefon"
-                                                                value={accountInfo.phone}
+                                                                value={phone}
+                                                                onChange={(e) => {
+                                                                    let enteredValue = e.target.value;
+                                                                    // Eğer boşsa, varsayılan olarak + karakterini ekle
+                                                                    if (!enteredValue.startsWith("+")) {
+                                                                        enteredValue = "+" + enteredValue
+                                                                    }
+                                                                    // Max 15 basamaklı olmalı ve + ile başlamalı
+                                                                    if (/^\+?\d{0,15}$/.test(enteredValue)) {
+                                                                        setPhone(enteredValue);
+                                                                    }
+                                                                }}
                                                             />
                                                             <TextField
                                                                 size="small"
@@ -242,11 +281,11 @@ export class AccountManagementViewController extends UIController {
                                                                 value={accountRelation.last_name}
                                                                 onChange={(e) => setAccountRelation({ ...accountRelation, last_name: e.target.value })}
                                                             />
-                                                            <FormControlLabel
+                                                            {accountRelation.is_admin && <FormControlLabel
                                                                 sx={{ alignContent: "end" }}
                                                                 control={<Switch checked={accountRelation.is_active} />}
                                                                 label="Hesap aktif mi?"
-                                                            />
+                                                            />}
                                                             <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
                                                         </div>
                                                     </div>
