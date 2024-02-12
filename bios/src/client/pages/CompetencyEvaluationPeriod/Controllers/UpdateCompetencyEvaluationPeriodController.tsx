@@ -63,7 +63,7 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
                 data: form
             }, () => {
                 if (form.is_default_year === "true") {
-                    periods.forEach((period: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod) => {
+                    periods.filter(x => x.evaluation_period_id != id).forEach((period: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod, i) => {
                         updateDocument({
                             databaseId: AppInfo.Database,
                             collectionId: "competency_evaluation_period",
@@ -72,6 +72,15 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
                                 ...removeDollarProperties(period),
                                 is_default_year: "false"
                             }
+                        }, () => {
+                            if (i === periods.length - 1) {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Dönem Güncellendi'
+                                })
+                                navigate("/app/competency-evaluation-period/list")
+                            }
+                            return;
                         });
                     })
                 }
@@ -170,7 +179,7 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
                                             <FormControlLabel
                                                 sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
                                                 onChange={(e: any) => setForm({ ...form, is_default_year: e.target.checked ? "true" : "false" })}
-                                                control={<Switch color="primary" checked={form.is_default_year === "true" ? true : false} />}
+                                                control={<Switch color="primary" checked={form.is_default_year == "true" ? true : false} />}
                                                 label="Varsayılan Dönem mi?"
                                                 labelPlacement="start"
                                             />

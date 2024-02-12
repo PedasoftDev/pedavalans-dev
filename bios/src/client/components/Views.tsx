@@ -2,6 +2,7 @@ import { IconButton, Menu, MenuItem } from "@mui/material";
 import { GridMoreVertIcon } from "@mui/x-data-grid";
 import { Color, ForEach, HStack, Icon, ReactView, Spacer, Text, TextAlignment, UIButton, UIContextMenu, UIRouteLink, VStack, cLeading, cTop } from "@tuval/forms";
 import React from "react";
+import styled from "styled-components";
 
 export namespace Views {
     export const Title = (title: string) =>
@@ -44,18 +45,15 @@ export namespace Views {
             ).width("30px")
         ).minHeight(70).height(70).height(70).width("100%").shadow("rgba(0, 0, 0, 0.15) 0px 2px 8px").paddingLeft("20px").marginTop("20px")
 
-    export const YearCard = (year: string, period_name: string, is_active_period: string, uiDropdownItems: any[]) => {
-        const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-        
-        const open = Boolean(anchorEl);
+    export const YearCard = (year: string, period_name: string, is_active_period: string, uiDropdownItems: { action: Function, title: string }) => {
 
-        const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-            setAnchorEl(event.currentTarget);
-        };
-
-        const handleClose = () => {
-            setAnchorEl(null);
-        };
+        const YearCardButton = styled.div`
+            cursor: pointer;
+            font-size: 11px;
+            &:hover {
+                text-decoration: underline;
+            }
+        `;
 
         return (
             VStack({ alignment: cTop, spacing: 20 })(
@@ -63,33 +61,9 @@ export namespace Views {
                     PedaText(year).fontSize(22).fontWeight("300").padding("0 0 10px 10px"),
                     Spacer(),
                     ReactView(
-                        <div>
-                            <IconButton
-                                aria-label="more"
-                                id="long-button"
-                                aria-controls={open ? 'long-menu' : undefined}
-                                aria-expanded={open ? 'true' : undefined}
-                                aria-haspopup="true"
-                                onClick={handleClick}
-                            >
-                                <GridMoreVertIcon />
-                            </IconButton>
-                            <Menu
-                                id="long-menu"
-                                MenuListProps={{
-                                    'aria-labelledby': 'long-button',
-                                }}
-                                anchorEl={anchorEl}
-                                open={open}
-                                onClose={handleClose}
-                            >
-                                {uiDropdownItems.map((item, i) => (
-                                    <MenuItem key={i} onClick={() => item.action()}>
-                                        {item.title}
-                                    </MenuItem>
-                                ))}
-                            </Menu>
-                        </div>
+                        <YearCardButton onClick={() => { uiDropdownItems.action() }}>
+                            Düzenle
+                        </YearCardButton>
                     )
                 ).height().borderBottom("1px solid rgba(137, 199, 245, .5)"),
                 VStack(

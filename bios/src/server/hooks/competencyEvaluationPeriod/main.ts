@@ -13,8 +13,8 @@ namespace CompetencyEvaluationPeriod {
         return { period: document as any, isLoading }
     }
 
-    export const GetCompetencyEvaluationPeriods = (): { periods: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[], isLoading: boolean, total: Number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_evaluation_period", [Query.equal("is_deleted_period", false)])
+    export const GetCompetencyEvaluationPeriods = (tenant_id: string): { periods: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[], isLoading: boolean, total: Number } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_evaluation_period", [Query.equal("is_deleted_period", false), Query.equal("tenant_id", tenant_id)])
         return {
             periods: documents as any,
             isLoading,

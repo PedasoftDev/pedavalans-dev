@@ -82,7 +82,6 @@ export class AccountManagementViewController extends UIController {
                                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.equal("account_id", me.$id)]).then((data) => {
                                     setAccountRelation(removeDollarProperties(data.documents[0]))
                                 })
-
                             }
                         }, [])
 
@@ -235,11 +234,13 @@ export class AccountManagementViewController extends UIController {
                                                                 size="small"
                                                                 label="Ad"
                                                                 value={accountRelation.first_name}
+                                                                onChange={(e) => setAccountRelation({ ...accountRelation, first_name: e.target.value })}
                                                             />
                                                             <TextField
                                                                 size="small"
                                                                 label="Soyad"
                                                                 value={accountRelation.last_name}
+                                                                onChange={(e) => setAccountRelation({ ...accountRelation, last_name: e.target.value })}
                                                             />
                                                             <FormControlLabel
                                                                 sx={{ alignContent: "end" }}
