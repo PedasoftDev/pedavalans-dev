@@ -1,5 +1,5 @@
 import { int } from '@tuval/core';
-import { useState, cLeading, cTop, ForEach, Text, HStack, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder } from '@tuval/forms';
+import { useState, cLeading, cTop, ForEach, Text, HStack, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder, Icon, cCenter, Spacer, useNavigate } from '@tuval/forms';
 import { Resources } from '../assets/Resources';
 import React from 'react';
 import { RxDashboard, RxTable, RxColorWheel } from "react-icons/rx";
@@ -9,7 +9,7 @@ import { BsCalendar4Week } from "react-icons/bs";
 import { TbHeartRateMonitor, TbReportAnalytics } from "react-icons/tb";
 import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
-import { useGetMe, useGetOrganization } from '@realmocean/sdk';
+import { Services, useDeleteSession, useGetMe, useGetOrganization } from '@realmocean/sdk';
 import { TiFlowParallel } from "react-icons/ti";
 import { MdOutlineManageAccounts } from "react-icons/md";
 
@@ -48,9 +48,14 @@ export const PortalMenu = (selectedMenuTitle: string) => {
     )
 
     const { me, isLoading } = useGetMe("console")
+    const { deleteSession } = useDeleteSession('console');
+    const navigate = useNavigate()
 
 
-    // hiding
+    const logout = () => {
+        // remove cookies
+        deleteSession({ sessionId: 'current' }, () => window.location.href = '/login');
+    }
 
 
     const sideBarMenuModel: menuModel[] = [
@@ -195,9 +200,10 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                         UIViewBuilder(() => {
                             const { organization } = useGetOrganization({ organizationId: me?.prefs?.organization })
                             return Text(organization?.name).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
-                        })
+                        }),
+                        Text(me?.name).fontFamily("Poppins").fontSize("11px").fontWeight("400").foregroundColor(Resources.Colors.themeColor)
                     ).height().width()
-                ).height().width().padding(20),
+                ).height().width().padding("20px 20px 10px 20px"),
                 ScrollView({ axes: "cVertical" })(
                     VStack({ alignment: cTop })(
                         ...ForEach(sideBarMenuModel)((menuItem, index) =>
@@ -238,7 +244,12 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                         )
                     ).paddingTop("10px").width("100%")
                 ),
-                HStack({ alignment: cLeading })(Text("v1.1.0").fontSize("10px").paddingLeft("10px").paddingBottom("5px")).height()
+                HStack({ alignment: cCenter })(
+                    VStack(Icon("\\e9ba")).fontSize("20px").transition("all .2s ease-in-out").cornerRadius("3px")
+                        .cursor("pointer").padding("5px").background({ hover: "lightgray" }).onClick(() => logout()).height().width(),
+                    Spacer(),
+                    Text("v1.1.0").fontSize("10px")
+                ).height().padding("10px")
             ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
     )
 }

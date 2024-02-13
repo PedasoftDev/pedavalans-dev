@@ -17,13 +17,15 @@ import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
-import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
 import AppInfo from "../../../../AppInfo";
+import { MdMood } from "react-icons/md";
+import { FaRegSmile } from "react-icons/fa";
+import { BiConfused, BiSad } from "react-icons/bi";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -105,22 +107,22 @@ export class CompetencyReportDataViewController extends UIController {
                             align: "center",  headerAlign: "center",
                             renderCell: (params) => {
                                 const average = params.row.competency_real_value / params.row.competency_target_value * 100;
-                                let averageIcon: string = "";
+                                let averageIcon: React.ReactNode = "";
                                 switch (true) {
                                     case (average < 20):
-                                        averageIcon = "☹️";
+                                        averageIcon = <BiSad color="red"/>;
                                         break;
                                     case (average >= 20 && average < 40):
-                                        averageIcon = "🙁";
+                                        averageIcon = <BiSad color="orange"/>;
                                         break;
                                     case (average >= 40 && average < 60):
-                                        averageIcon = "😐";
+                                        averageIcon = <BiConfused color="yellow"/>;
                                         break;
                                     case (average >= 60 && average < 80):
-                                        averageIcon = "🙂";
+                                        averageIcon = <FaRegSmile color="green"/>;
                                         break;
                                     case (average >= 80):
-                                        averageIcon = "😄";
+                                        averageIcon = <MdMood color="green"/>;
                                         break;
                                     default:
                                         averageIcon = "";

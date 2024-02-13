@@ -29,6 +29,17 @@ namespace AccountRelation {
         }
     }
 
+    export const GetList = (tenant_id: string): {
+        accountRelations: IAccountRelation.IBase[],
+        isLoadingResult: boolean
+    } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.equal("tenant_id", tenant_id)])
+        return {
+            accountRelations: documents as any,
+            isLoadingResult: isLoading
+        }
+    }
+
 }
 
 export default AccountRelation;

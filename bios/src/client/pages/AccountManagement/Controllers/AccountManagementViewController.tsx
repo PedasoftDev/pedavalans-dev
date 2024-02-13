@@ -56,6 +56,7 @@ export class AccountManagementViewController extends UIController {
             error: createAccountError
         } = useCreateAccount('console');
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts()
+        const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
 
         return (
             isLoading || isLoadingAccounts ? VStack(Spinner()) :
@@ -65,6 +66,10 @@ export class AccountManagementViewController extends UIController {
                         const [accountInfo, setAccountInfo] = useState<IAccount.IBase>(resetMe)
                         const [accountRelation, setAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
                         const [phone, setPhone] = useState<string>("")
+
+                        // edit account info
+                        const [selectedAccount, setSelectedAccount] = useState<IAccount.IBase>(resetMe)
+                        const [selectedAccountRelation, setSelectedAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
 
                         const [passwordChange, setPasswordChange] = useState<IAccount.IPasswordChange>({ password: "", newPassword: "", newPasswordConfirm: "" })
                         const [isRegexError, setIsRegexError] = useState(false)
@@ -181,6 +186,12 @@ export class AccountManagementViewController extends UIController {
                                     title: createAccountError?.message
                                 })
                             }
+                        }
+
+                        const setEditAccount = (account: IAccount.IBase) => {
+                            setSelectedAccount(account)
+                            setSelectedAccountRelation(accountRelations.find((e) => e.account_id === account.$id) || resetAccountRelation)
+                            setSelectedTab(3)
                         }
 
                         return (
@@ -357,6 +368,10 @@ export class AccountManagementViewController extends UIController {
                                                             { field: '$id', headerName: 'ID', width: 100 },
                                                             { field: 'email', headerName: 'E-posta', flex: 1 },
                                                             { field: 'name', headerName: 'Kullanıcı Adı', flex: 1 },
+                                                            {
+                                                                field: 'value', headerName: "İşlemler", width: 150,
+                                                                renderCell: (params: any) => <Button variant="text" onClick={() => setEditAccount(params.row)}>Düzenle</Button>
+                                                            }
                                                         ]}
                                                         rows={accounts}
                                                         getRowId={(row) => row.$id} />
@@ -413,6 +428,66 @@ export class AccountManagementViewController extends UIController {
                                                             required
                                                         />
                                                         <Button variant="contained" type="submit" fullWidth>Kullanıcı Oluştur</Button>
+                                                    </form>
+                                                </div>
+                                            }
+                                            {selectedTab === 3 &&
+                                                <div style={{
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    width: "100%",
+                                                }}>
+                                                    <form onSubmit={(e) => { e.preventDefault() }} style={{
+                                                        border: "1px solid #e0e0e0",
+                                                        borderRadius: "5px",
+                                                        padding: "20px",
+                                                        width: "50%",
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        background: "rgb(250 250 250)",
+                                                        gap: "10px"
+                                                    }}>
+                                                        <TextField
+                                                            size="small"
+                                                            label="E-posta"
+                                                            value={selectedAccount.email}
+                                                            fullWidth
+                                                            required
+                                                        />
+                                                        <TextField
+                                                            size="small"
+                                                            label="Kullanıcı Adı"
+                                                            value={selectedAccount.name}
+                                                            fullWidth
+                                                            required
+                                                        />
+                                                        <TextField
+                                                            size="small"
+                                                            label="Telefon Numarası"
+                                                            value={selectedAccount.phone}
+                                                            onChange={(e) => setSelectedAccount({ ...selectedAccount, phone: e.target.value })}
+                                                            fullWidth
+                                                        />
+                                                        <TextField
+                                                            size="small"
+                                                            label="Adı"
+                                                            value={selectedAccountRelation.first_name}
+                                                            onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, first_name: e.target.value })}
+                                                            fullWidth
+                                                        />
+                                                        <TextField
+                                                            size="small"
+                                                            label="Soyadı"
+                                                            value={selectedAccountRelation.last_name}
+                                                            onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, last_name: e.target.value })}
+                                                            fullWidth
+                                                        />
+                                                        {accountRelation.is_admin && <FormControlLabel
+                                                            sx={{ alignContent: "end" }}
+                                                            control={<Switch checked={selectedAccountRelation.is_active} />}
+                                                            label="Hesap aktif mi?"
+                                                        />}
+                                                        <Button variant="contained" type="submit" fullWidth>Kullanıcıyı Düzenle</Button>
                                                     </form>
                                                 </div>
                                             }
