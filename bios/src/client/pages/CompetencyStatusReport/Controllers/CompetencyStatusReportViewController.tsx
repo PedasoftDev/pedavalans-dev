@@ -21,11 +21,10 @@ export class CompetencyStatusReportViewController extends UIController {
                 UIViewBuilder(() => {
                     return (
                         VStack(
-                            Text(JSON.stringify(employees)),
-                            Text(JSON.stringify(departments)),
-                            Text(JSON.stringify(periods)),
-                            Text(JSON.stringify(polyvalenceUnitList)
-                            )
+                            // Text(JSON.stringify(employees)),
+                            // Text(JSON.stringify(departments)),
+                            // Text(JSON.stringify(periods)),
+                            // Text(JSON.stringify(polyvalenceUnitList))
                         )
                     )
                 })
