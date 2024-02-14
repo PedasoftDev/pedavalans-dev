@@ -86,7 +86,7 @@ export class LoginController extends UIController {
                                     <LoginToSignUp onClick={() => navigate('/signup')}>
                                         Kayıt Ol
                                     </LoginToSignUp>
-                                    <LoginToSignUp onClick={() => navigate('/password-recovery')}>
+                                    <LoginToSignUp onClick={() => navigate('/reset-password')}>
                                         Şifrenizi mi unuttunuz?
                                     </LoginToSignUp>
                                 </LoginContainer>

@@ -48,13 +48,11 @@ export const PortalMenu = (selectedMenuTitle: string) => {
     )
 
     const { me, isLoading } = useGetMe("console")
-    const { deleteSession } = useDeleteSession('console');
     const navigate = useNavigate()
 
 
     const logout = () => {
-        // remove cookies
-        deleteSession({ sessionId: 'current' }, () => window.location.href = '/login');
+        navigate('/logout')
     }
 
 
