@@ -3,7 +3,7 @@ import { GridMoreVertIcon } from "@mui/x-data-grid";
 import { Color, ForEach, HStack, Icon, ReactView, Spacer, Text, TextAlignment, UIButton, UIContextMenu, UIRouteLink, VStack, cLeading, cTop } from "@tuval/forms";
 import React from "react";
 import styled from "styled-components";
-import { HiOutlinePencilAlt } from "react-icons/hi";
+import { HiOutlinePencilAlt, HiOutlineDocumentReport } from "react-icons/hi";
 import MenuMain from "./Menu";
 
 export namespace Views {
@@ -95,7 +95,7 @@ export namespace Views {
     }
 
 
-    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, item: { title: string, action: Function }) => {
+    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, item: { title: string, action: Function }, report: Function) => {
         // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
         // const open = Boolean(anchorEl);
         // const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -114,7 +114,10 @@ export namespace Views {
                     ),
                     Spacer(),
                     ReactView(
-                        <HiOutlinePencilAlt cursor={"pointer"} size={"15px"} onClick={() => item.action()} />
+                        <HiOutlineDocumentReport cursor={"pointer"} size={"18px"} onClick={() => report()} style={{ marginRight: "10px" }} />
+                    ),
+                    ReactView(
+                        <HiOutlinePencilAlt cursor={"pointer"} size={"18px"} onClick={() => item.action()} />
                         //     <MenuMain />
                         // <div style={{ fontSize: "11px", textDecoration: "underline", cursor: "pointer" }} onClick={() => item.action()}>
                         //     {item.title}
@@ -144,7 +147,7 @@ export namespace Views {
                         //         ))}
                         //     </Menu> */}
                         // </div>
-                    )
+                    ),
                 ).height(),
                 HStack({ alignment: cLeading })(
                     VStack({ alignment: cLeading })(

@@ -88,6 +88,7 @@ export class PolyvalenceUnitListController extends UIController {
                                         HStack({ alignment: cTop })(
                                             ...ForEach(filteredPolyvalenceUnitList.filter(x => x.is_active_table === isActive))((item, i) =>
                                                 Views.PolyvalenceUnitCard(item.polyvalence_table_name, item.polyvalence_department_name, item.polyvalence_evaluation_frequency,
+
                                                     //    [
                                                     // {
                                                     //     title: "Excel'e Aktar",
@@ -98,7 +99,8 @@ export class PolyvalenceUnitListController extends UIController {
                                                     {
                                                         title: "Düzenle",
                                                         action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
-                                                    }
+                                                    },
+                                                    () => navigate(`/app/polyvalence-unit/report/${item.polyvalence_table_id}`)
                                                     //   ],
                                                 ).margin("0 20px 20px 0")
                                             ),

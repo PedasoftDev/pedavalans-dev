@@ -41,6 +41,7 @@ import { CompetencyStatusReportController } from './pages/CompetencyStatusReport
 import { CompetencyStatusReportViewController } from './pages/CompetencyStatusReport/Controllers/CompetencyStatusReportViewController';
 import { ResetPasswordController } from './controllers/ResetPasswordController';
 import { LogoutController } from './controllers/LogoutController';
+import { ReportPolyvalenceUnitList } from './pages/PolyvalenceUnit/Controllers/ReportPolyvalenceUnitList';
 
 export const Routes = () => {
     return (
@@ -94,6 +95,7 @@ export const Routes = () => {
                     UIRoute('create', CreatePolyvalenceUnitController),
                     UIRoute('edit/:id', UpdatePolyvalenceUnitController),
                     UIRoute('list', PolyvalenceUnitListController),
+                    UIRoute('report/:id', ReportPolyvalenceUnitList)
                 ),
 
                 // competency target data entry
