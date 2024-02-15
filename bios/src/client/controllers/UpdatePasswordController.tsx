@@ -1,11 +1,9 @@
-import { Query, Services, useCreateRealm, useDeleteSession, useGetMe, useListRealms } from "@realmocean/sdk";
-
-import { Button, ForEach, HStack, Heading, Input, TextField, Text, UINavigate, UIViewBuilder, VStack, useNavigate, useState, Spacer, cLeading, cHorizontal, darken, Icon, Icons, HDivider, UIController, UIView } from "@tuval/forms";
-
-
-// if (password === password1) {
-//     Services.Accounts.updateRecovery(userId, secret, password, password1);
-// }
+import { Services } from "@realmocean/sdk";
+import React from "react";
+import { VStack, useNavigate, useState, UIController, UIView, cTop, ReactView } from "@tuval/forms";
+import { Container, Header, LoginContainer, LoginForm, LoginInput, LoginLabel, customLogo } from "./LoginStyles/Styles";
+import Button from "../components/Button";
+import { Toast } from "../components/Toast";
 
 
 export class UpdatePasswordController extends UIController {
@@ -19,56 +17,73 @@ export class UpdatePasswordController extends UIController {
 
         const [password, setPassword] = useState('');
         const [password1, setPassword1] = useState('');
+        const [isRegexError, setIsRegexError] = useState(false)
+
+        const HeaderInfo = () => {
+            return (
+                <Header>
+                    <img src={customLogo} style={{ width: "50px", height: "50px" }} />
+                    <LoginLabel>Pedavalans</LoginLabel>
+                </Header>
+            )
+        }
 
         return (
-
-            VStack(
-                VStack(
-                    VStack({ spacing: 10 })(
-
-
-                        Heading('Password').fontFamily('"Hagrid", sans-serif').fontSize('6rem').foregroundColor('#090e13').lineHeight(90),
-                        VStack({ alignment: cLeading, spacing: 10 })(
-
-                            TextField().fontSize('1.8rem')
-                                .allHeight(40)
-                                .placeholder('New password')
-                                .transition('all 0.3s ease-in-out')
-                                .border('none')
-                                .borderBottom({ hover: '2px solid #162330' })
-                                .background('white')
-                                .outline({ focus: 'none' })
-                                .padding('0 1.5rem').width(332)
-                                .onChange(e => setPassword(e))
-                        ).height().marginBottom('1.5rem'),
-                        TextField().fontSize('1.8rem')
-                            .allHeight(40)
-                            .placeholder('Confirm password')
-                            .transition('all 0.3s ease-in-out')
-                            .border('none')
-                            .borderBottom({ hover: '2px solid #162330' })
-                            .background('white')
-                            .outline({ focus: 'none' })
-                            .padding('0 1.5rem').width(332)
-                            .onChange(e => setPassword1(e))
-                    ).height().marginBottom('1.5rem'),
-                    HStack(
-                        Text('Log in with another email')
-                            .fontSize(16)
-                    )
-                        .height()
-                        .onClick(() => {
-                            navigate('/logout');
-                        }),
-                ).width(),
-                HStack().height('9rem')
-                    .background('linear-gradient(0deg,#fff 42.67%,hsla(0,0%,100%,.8) 60.67%,hsla(0,0%,100%,0))')
-            ).background('#7FE8D4')
+            VStack({ alignment: cTop })(
+                ReactView(
+                    <Container>
+                        <LoginContainer>
+                            <HeaderInfo />
+                            <LoginForm>
+                                <LoginInput
+                                    onChange={(e) => {
+                                        if (e.target.value.length < 8 || !/[A-Z]/.test(e.target.value) || !/[a-z]/.test(e.target.value) || !/[!@#$%^&?*.]/.test(e.target.value)) {
+                                            setIsRegexError(true)
+                                        } else {
+                                            setIsRegexError(false)
+                                        }
+                                        setPassword(e.target.value)
+                                    }
+                                    }
+                                    placeholder="Yeni Şifre"
+                                    name="password1"
+                                    type="password"
+                                    value={password}
+                                    required
+                                />
+                                <LoginInput
+                                    onChange={(e) => setPassword1(e.target.value)}
+                                    placeholder="Yeni Şifreyi Tekrar Giriniz"
+                                    name="password2"
+                                    type="password"
+                                    value={password1}
+                                    required
+                                />
+                                {
+                                    isRegexError && <div style={{ fontSize: "11px", color: "red" }}>Şifre en az 8 karakterden oluşmalı ve en az bir büyük harf, bir küçük harf ve bir özel karakter içermelidir.</div>
+                                }
+                                <Button
+                                    variant="contained"
+                                    fullWidth
+                                    disabled={isRegexError || password != password1 || password.length < 8 || password1.length < 8}
+                                    onClick={async () => {
+                                        if (password === password1) {
+                                            Services.Accounts.updateRecovery(userId, secret, password, password1).then(() => {
+                                                navigate("/login");
+                                            })
+                                        } else {
+                                            Toast.fire({
+                                                icon: 'error',
+                                                title: 'Şifreler uyuşmuyor'
+                                            })
+                                        }
+                                    }}
+                                >Şifreyi Güncelle</Button>
+                            </LoginForm>
+                        </LoginContainer>
+                    </Container>
+                )
+            ).height()
         )
-
-
-
-
-
     }
 }

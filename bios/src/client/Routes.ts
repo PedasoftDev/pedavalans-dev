@@ -42,6 +42,7 @@ import { CompetencyStatusReportViewController } from './pages/CompetencyStatusRe
 import { ResetPasswordController } from './controllers/ResetPasswordController';
 import { LogoutController } from './controllers/LogoutController';
 import { ReportPolyvalenceUnitList } from './pages/PolyvalenceUnit/Controllers/ReportPolyvalenceUnitList';
+import { UpdatePasswordController } from './controllers/UpdatePasswordController';
 
 export const Routes = () => {
     return (
@@ -130,6 +131,7 @@ export const Routes = () => {
             UIRoute('/login', LoginController),
             UIRoute('/signup', SignupController),
             UIRoute('/reset-password', ResetPasswordController),
+            UIRoute('/update-password', UpdatePasswordController),
             UIRoute('/logout', LogoutController)
         )
     )

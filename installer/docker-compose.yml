@@ -72,6 +72,7 @@ services:
       - app/http.php
       - -dopcache.preload=opcache.preload=/usr/src/code/app/preload.php
     environment:
+      - _APP_NAME
       - _APP_TITLE
       - _APP_ICON
       - _APP_ENV

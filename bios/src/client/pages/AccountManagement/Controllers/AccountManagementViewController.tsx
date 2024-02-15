@@ -333,7 +333,7 @@ export class AccountManagementViewController extends UIController {
                                                                 type="password"
                                                                 value={passwordChange.newPassword}
                                                                 onChange={(e) => {
-                                                                    if (e.target.value.length < 8 || !/[A-Z]/.test(e.target.value) || !/[a-z]/.test(e.target.value) || !/[!@#$%^&*.]/.test(e.target.value)) {
+                                                                    if (e.target.value.length < 8 || !/[A-Z]/.test(e.target.value) || !/[a-z]/.test(e.target.value) || !/[!@#$%^&?*.]/.test(e.target.value)) {
                                                                         setIsRegexError(true)
                                                                     } else {
                                                                         setIsRegexError(false)
