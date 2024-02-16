@@ -1,4 +1,4 @@
-import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading } from "@tuval/forms";
+import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
 import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts } from "@realmocean/sdk";
@@ -57,6 +57,7 @@ export class AccountManagementViewController extends UIController {
         } = useCreateAccount('console');
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts()
         const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
+        const { createAccountRelation } = AccountRelation.Create()
 
         return (
             isLoading || isLoadingAccounts ? VStack(Spinner()) :
@@ -94,31 +95,6 @@ export class AccountManagementViewController extends UIController {
                         }, [])
 
                         const handleSubmit = async () => {
-                            // if (accountInfo?.phone != phone) {
-                            //     const { value: password } = await Swal.fire({
-                            //         title: "Lütfen şifrenizi giriniz!",
-                            //         input: "password",
-                            //     });
-                            //     if (password) {
-                            //         await Services.Accounts.updatePhone(phone, password).then((e) => {
-                            //             Toast.fire({
-                            //                 title: "Telefon numarası güncellendi",
-                            //                 icon: "success"
-                            //             })
-                            //         }).catch((e) => {
-                            //             Toast.fire({
-                            //                 icon: "error",
-                            //                 title: "Bir hata oluştu!"
-                            //             })
-                            //         })
-                            //     } else {
-                            //         Toast.fire({
-                            //             title: "Bir hata oluştu!",
-                            //             icon: "error"
-                            //         });
-                            //         return;
-                            //     }
-                            // }
                             updateAccountRelation({
                                 databaseId: AppInfo.Database,
                                 collectionId: "account_relation",
@@ -158,7 +134,8 @@ export class AccountManagementViewController extends UIController {
                         }
 
                         const handleCreateAccount = (e: React.FormEvent<HTMLFormElement>) => {
-                            e.preventDefault()
+                            e.preventDefault();
+
                             if (createAccountForm.password !== createAccountForm.passwordConfirm) {
                                 Toast.fire({
                                     icon: 'error',
@@ -166,6 +143,7 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
+
                             if (createAccountForm.password.length < 8 || !/[A-Z]/.test(createAccountForm.password) || !/[a-z]/.test(createAccountForm.password) || !/[!@#$%^&*.]/.test(createAccountForm.password)) {
                                 Toast.fire({
                                     icon: 'error',
@@ -173,7 +151,18 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
-                            createAccount({ name: createAccountForm.username, email: createAccountForm.email, password: createAccountForm.password, organizationId: me?.prefs?.organization }, () => {
+
+                            createAccount({ name: createAccountForm.username, email: createAccountForm.email, password: createAccountForm.password, organizationId: me?.prefs?.organization }, (data) => {
+                                const docId: string = nanoid()
+                                createAccountRelation({
+                                    documentId: docId,
+                                    data: {
+                                        "id": docId,
+                                        "tenant_id": me?.prefs?.organization,
+                                        "account_id": data.$id,
+                                        "is_admin": true
+                                    }
+                                })
                                 Toast.fire({
                                     icon: 'success',
                                     title: 'Kullanıcı oluşturuldu'
@@ -189,9 +178,28 @@ export class AccountManagementViewController extends UIController {
                         }
 
                         const setEditAccount = (account: IAccount.IBase) => {
+                            console.log(account)
                             setSelectedAccount(account)
-                            setSelectedAccountRelation(accountRelations.find((e) => e.account_id === account.$id) || resetAccountRelation)
+                            setSelectedAccountRelation(accountRelations.find((e) => e.account_id === account.$id))
                             setSelectedTab(3)
+                        }
+
+                        const updateSelectedAccountRelation = (e) => {
+                            e.preventDefault();
+                            updateAccountRelation({
+                                databaseId: AppInfo.Database,
+                                collectionId: "account_relation",
+                                documentId: selectedAccountRelation.id,
+                                data: removeDollarProperties(selectedAccountRelation)
+                            }, (data) => {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Hesap bilgileri güncellendi'
+                                })
+                                setSelectedTab(1)
+                                setSelectedAccountRelation(resetAccountRelation)
+                                setSelectedAccount(resetMe);
+                            })
                         }
 
                         return (
@@ -437,7 +445,7 @@ export class AccountManagementViewController extends UIController {
                                                     justifyContent: "center",
                                                     width: "100%",
                                                 }}>
-                                                    <form onSubmit={(e) => { e.preventDefault() }} style={{
+                                                    <form onSubmit={updateSelectedAccountRelation} style={{
                                                         border: "1px solid #e0e0e0",
                                                         borderRadius: "5px",
                                                         padding: "20px",
@@ -465,7 +473,6 @@ export class AccountManagementViewController extends UIController {
                                                             size="small"
                                                             label="Telefon Numarası"
                                                             value={selectedAccount.phone}
-                                                            onChange={(e) => setSelectedAccount({ ...selectedAccount, phone: e.target.value })}
                                                             fullWidth
                                                         />
                                                         <TextField
@@ -482,11 +489,17 @@ export class AccountManagementViewController extends UIController {
                                                             onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, last_name: e.target.value })}
                                                             fullWidth
                                                         />
-                                                        {accountRelation.is_admin && <FormControlLabel
-                                                            sx={{ alignContent: "end" }}
-                                                            control={<Switch checked={selectedAccountRelation.is_active} />}
-                                                            label="Hesap aktif mi?"
-                                                        />}
+                                                        {
+                                                            accountRelation.is_admin && <FormControlLabel
+                                                                sx={{ alignContent: "end" }}
+                                                                control={
+                                                                    <Switch
+                                                                        checked={selectedAccountRelation.is_active}
+                                                                        onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, is_active: e.target.checked })}
+                                                                    />}
+                                                                label="Hesap aktif mi?"
+                                                            />
+                                                        }
                                                         <Button variant="contained" type="submit" fullWidth>Kullanıcıyı Düzenle</Button>
                                                     </form>
                                                 </div>

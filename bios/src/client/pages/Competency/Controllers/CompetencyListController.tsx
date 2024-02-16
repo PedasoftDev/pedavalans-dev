@@ -112,7 +112,7 @@ export class CompetencyListController extends UIController {
                                                 <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency/create")}>Yeni Yetkinlik</Button>
                                             </div>
                                         </div>
-                                        <div style={{ height: "calc(100vh - 225px)", width: "calc(100vw - 400px)" }}>
+                                        <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
                                             <StyledDataGrid
                                                 rows={competencyList.filter((item) => item.is_active_competency === rowsActive).filter((item) => item.competency_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                 columns={columns}

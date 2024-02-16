@@ -51,7 +51,6 @@ const AddDepartmentView = (
             Toast.fire({
                 icon: "success",
                 title: "Departman başarıyla eklendi!",
-                text: "Departman başarıyla eklendi."
             })
             props.setDefaultPage("");
         });
