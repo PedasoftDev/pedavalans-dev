@@ -1,8 +1,8 @@
-import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, Text, ReactView, Spinner, UIViewBuilder } from "@tuval/forms";
+import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, ReactView, Spinner, UIViewBuilder } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, trTR } from "@mui/x-data-grid";
 import React, { useEffect, useState } from "react";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
 import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
@@ -11,6 +11,9 @@ import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import AppInfo from "../../../../AppInfo";
+import SkillSlice from "../../../components/SkillSlice";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import { CircularProgressbar } from 'react-circular-progressbar';
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -26,7 +29,9 @@ export class ReportPolyvalenceUnitList extends UIController {
                 UIViewBuilder(() => {
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-                    const [reportData, setReportData] = useState<any[]>([]);
+
+                    const [columns, setColumns] = useState<GridColDef[]>([]);
+                    const [rows, setRows] = useState<any[]>([]);
 
                     useEffect(() => {
                         const periodYear = Number(periods[0].evaluation_period_year);
@@ -51,16 +56,47 @@ export class ReportPolyvalenceUnitList extends UIController {
                                 Query.equal("competency_evaluation_period", e.target.value),
                                 Query.equal("polyvalence_table_id", id), Query.equal("is_deleted_competency_value", false),
                                 Query.equal("tenant_id", me?.prefs?.organization)
-                            ]).then((res) => {
-                                setReportData(res.documents);
-                                console.log(res.documents);
-                                columns: 
-                                const competencies: { id: string, name: string }[] = [];
-                                res.documents.forEach((item: any) => {
-                                    if (!competencies.some((c) => c.id == item.competency_id)) {
-                                        competencies.push({ id: item.competency_id, name: item.competency_name });
+                            ]).then((res: any) => {
+                                const copyColumns: GridColDef[] = []
+                                const copyEmployees: { id: string, name: string }[] = []
+                                copyColumns.push({
+                                    field: "id", headerName: "Çalışan Adı Soyadı", minWidth: 200, width: 200,
+                                    valueGetter: (params: any) => {
+                                        return params.row.name
                                     }
-                                });
+                                })
+                                res.documents.forEach((item: IEmployeeCompetencyValue.IEmployeeCompetencyValue) => {
+                                    if (!copyEmployees.some(x => x.id == item.employee_id)) {
+                                        copyEmployees.push({ id: item.employee_id, name: item.employee_name })
+                                    }
+                                    if (!copyColumns.some(x => x.field == item.competency_id)) {
+                                        copyColumns.push({
+                                            field: item.competency_id, headerName: item.competency_name, minWidth: 150, width: 150, renderCell: (params) => {
+                                                const value: IEmployeeCompetencyValue.IEmployeeCompetencyValue = res.documents.find((x: IEmployeeCompetencyValue.IEmployeeCompetencyValue) => x.employee_id == params.row.id && x.competency_id === item.competency_id)
+                                                let real: number = 0;
+                                                let target: number = 0;
+                                                let percentage: number = 0;
+                                                if (value && value.competency_real_value && value.competency_target_value) {
+                                                    real = Number(value.competency_real_value)
+                                                    target = Number(value.competency_target_value)
+                                                    percentage = (real / target) * 100;
+                                                    percentage = isNaN(percentage) ? 0 : percentage;
+                                                    percentage = parseFloat(percentage.toFixed(1))
+                                                }
+                                                return (
+                                                    <div style={{ display: "flex", gap: "10px" }}>
+                                                        <SkillSlice real={real} target={target} />
+                                                        <div style={{ width: "40px", height: "40px" }}>
+                                                            <CircularProgressbar value={percentage} text={`${percentage}%`} />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }
+                                        })
+                                    }
+                                })
+                                setColumns(copyColumns)
+                                setRows(copyEmployees)
                             })
                     }
 
@@ -93,13 +129,17 @@ export class ReportPolyvalenceUnitList extends UIController {
                                 ),
                             ).height().paddingTop("15px"),
                             VStack(
-                                Text(" ")
+                                ReactView(
+                                    <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                        {rows.length != 0 &&
+                                            <StyledDataGrid rows={rows} columns={columns} localeText={trTR.components.MuiDataGrid.defaultProps.localeText} style={{ width: "100%" }} />
+                                        }
+                                    </div>
+                                )
                             )
                         ).padding("0 20px")
                     )
                 })
         )
-
-
     }
 }

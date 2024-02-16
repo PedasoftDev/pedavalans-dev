@@ -1,8 +1,9 @@
-import { Fragment, ReactView, UIController, UINavigate, UIView, VStack, cTop, useNavigate, useState } from "@tuval/forms";
+import { Fragment, ReactView, UIController, UINavigate, UIView, UIViewBuilder, VStack, cTop, useNavigate, useState } from "@tuval/forms";
 import { useCreateEmailSession, useGetMe } from "@realmocean/sdk";
 import React from "react";
 import { Container, Header, LoginContainer, LoginError, LoginForm, LoginInput, LoginLabel, LoginToSignUp, customLogo } from "./LoginStyles/Styles";
 import Button from '../components/Button';
+import Main from "../../server/hooks/main/Main";
 
 
 export class LoginController extends UIController {
@@ -13,6 +14,7 @@ export class LoginController extends UIController {
         const navigate = useNavigate();
 
         const { me, isLoading, isError: isAccountGetError } = useGetMe('console');
+        const { isLoading: isLoadingRequired, required } = Main.SetupRequired();
 
         const { createEmailSession, isSuccess, isError, error } = useCreateEmailSession('console');
 
@@ -38,7 +40,7 @@ export class LoginController extends UIController {
             }, () => {
                 navigate('/app/dashboard')
             })
-            isError && setForm({ ...form, disabled: false })
+            setForm({ ...form, disabled: false })
         }
 
         const HeaderInfo = () => {
@@ -51,48 +53,55 @@ export class LoginController extends UIController {
         }
 
         return (
-            isLoading ? Fragment() :
+            isLoading || isLoadingRequired ? Fragment() :
                 me != null ? UINavigate('/app/dashboard') :
-                    VStack({ alignment: cTop })(
-                        ReactView(
-                            <Container>
-                                <LoginContainer>
-                                    <HeaderInfo />
-                                    <LoginForm onSubmit={onSubmit}>
-                                        <LoginInput
-                                            onChange={handleFormChange}
-                                            placeholder="E-posta"
-                                            name="email"
-                                            type="email"
-                                            value={form.email}
-                                            required
-                                        />
-                                        <LoginInput
-                                            onChange={handleFormChange}
-                                            placeholder="Şifre"
-                                            type="password"
-                                            name="password"
-                                            value={form.password}
-                                            required
-                                        />
-                                        <Button
-                                            variant="contained"
-                                            fullWidth
-                                            type="submit"
-                                            disabled={form.disabled}
-                                        >Giriş Yap</Button>
-                                        {isError && <LoginError>{error?.message}</LoginError>}
-                                    </LoginForm>
-                                    <LoginToSignUp onClick={() => navigate('/signup')}>
-                                        Kayıt Ol
-                                    </LoginToSignUp>
-                                    <LoginToSignUp onClick={() => navigate('/reset-password')}>
-                                        Şifrenizi mi unuttunuz?
-                                    </LoginToSignUp>
-                                </LoginContainer>
-                            </Container>
+                    UIViewBuilder(() => {
+                        return (
+                            VStack({ alignment: cTop })(
+                                ReactView(
+                                    <Container>
+                                        <LoginContainer>
+                                            <HeaderInfo />
+                                            <LoginForm onSubmit={onSubmit}>
+                                                <LoginInput
+                                                    onChange={handleFormChange}
+                                                    placeholder="E-posta"
+                                                    name="email"
+                                                    type="email"
+                                                    value={form.email}
+                                                    required
+                                                />
+                                                <LoginInput
+                                                    onChange={handleFormChange}
+                                                    placeholder="Şifre"
+                                                    type="password"
+                                                    name="password"
+                                                    value={form.password}
+                                                    required
+                                                />
+                                                <Button
+                                                    variant="contained"
+                                                    fullWidth
+                                                    type="submit"
+                                                    disabled={form.disabled}
+                                                >Giriş Yap</Button>
+                                                {isError && <LoginError>{error?.message}</LoginError>}
+                                            </LoginForm>
+                                            {
+                                                required &&
+                                                <LoginToSignUp onClick={() => navigate('/signup')}>
+                                                    Kayıt Ol
+                                                </LoginToSignUp>
+                                            }
+                                            <LoginToSignUp onClick={() => navigate('/reset-password')}>
+                                                Şifrenizi mi unuttunuz?
+                                            </LoginToSignUp>
+                                        </LoginContainer>
+                                    </Container>
+                                )
+                            ).height()
                         )
-                    ).height()
+                    })
         )
     }
 }

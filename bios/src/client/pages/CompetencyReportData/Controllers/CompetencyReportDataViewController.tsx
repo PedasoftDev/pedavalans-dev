@@ -104,31 +104,31 @@ export class CompetencyReportDataViewController extends UIController {
                         { field: "competency_real_value", headerName: "Gerçekleşen Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150 },
                         {
                             field: "value", headerName: "Dönem Ortalaması", width: 150, minWidth: 150,
-                            align: "center",  headerAlign: "center",
+                            align: "center", headerAlign: "center",
                             renderCell: (params) => {
                                 const average = params.row.competency_real_value / params.row.competency_target_value * 100;
                                 let averageIcon: React.ReactNode = "";
                                 switch (true) {
                                     case (average < 20):
-                                        averageIcon = <BiSad color="red"/>;
+                                        averageIcon = <BiSad color="red" />;
                                         break;
                                     case (average >= 20 && average < 40):
-                                        averageIcon = <BiSad color="orange"/>;
+                                        averageIcon = <BiSad color="orange" />;
                                         break;
                                     case (average >= 40 && average < 60):
-                                        averageIcon = <BiConfused color="yellow"/>;
+                                        averageIcon = <BiConfused color="yellow" />;
                                         break;
                                     case (average >= 60 && average < 80):
-                                        averageIcon = <FaRegSmile color="green"/>;
+                                        averageIcon = <FaRegSmile color="green" />;
                                         break;
                                     case (average >= 80):
-                                        averageIcon = <MdMood color="green"/>;
+                                        averageIcon = <MdMood color="green" />;
                                         break;
                                     default:
                                         averageIcon = "";
                                 }
-                                return <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                    <div style={{ fontSize: "20px"}}>{averageIcon}</div>
+                                return <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", width: "100px" }}>
+                                    <div style={{ fontSize: "20px" }}>{averageIcon}</div>
                                     <div style={{ marginLeft: "5px", fontSize: "14px" }}>{average.toFixed(2)}%</div>
                                 </div>;
                             }

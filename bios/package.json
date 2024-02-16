@@ -145,6 +145,7 @@
         "devextreme": "23.2.3",
         "devextreme-react": "23.2.3",
         "js-cookie": "^3.0.5",
+        "react-circular-progressbar": "^2.1.0",
         "react-icons": "^4.12.0"
     }
 }
