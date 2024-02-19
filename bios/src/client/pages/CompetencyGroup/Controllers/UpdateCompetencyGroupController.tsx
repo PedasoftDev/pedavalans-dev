@@ -20,11 +20,12 @@ import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import AppInfo from '../../../../AppInfo';
+import { useGetMe } from '@realmocean/sdk';
 
 export class UpdateCompetencyGroupController extends UIFormController {
 
     public LoadView() {
-
+        const { me, isLoading: isLoadingMe } = useGetMe("console");
         const { id } = useParams();
 
         const navigate = useNavigate();
@@ -35,10 +36,10 @@ export class UpdateCompetencyGroupController extends UIFormController {
         const [isActive, setIsActive] = useState(true);
 
         // grade
-        const { grades, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrades();
+        const { grades, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrades(me?.prefs?.organization);
 
         return (
-            isLoading || isLoadingGrade ? VStack(Spinner()) :
+            isLoading || isLoadingGrade || isLoadingMe ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const navigateToList = () => {
                         navigate("/app/competency-group/list")

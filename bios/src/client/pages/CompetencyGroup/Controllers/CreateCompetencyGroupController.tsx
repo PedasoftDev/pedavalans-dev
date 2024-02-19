@@ -23,9 +23,10 @@ export class CreateCompetencyGroupController extends UIFormController {
 
     const navigate = useNavigate();
 
-    const { grades, isLoading } = CompetencyGrade.GetCompetencyGrades();
     const { createDocument } = CompetencyGroup.CreateCompetencyGroup();
     const { me } = useGetMe("console");
+
+    const { grades, isLoading } = CompetencyGrade.GetCompetencyGrades(me?.prefs?.organization);
 
     const [form, setForm] = useState<ICompetencyGroup.ICrateCompetencyGroup>({
       competency_group_id: "",

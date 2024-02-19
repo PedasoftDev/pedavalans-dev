@@ -22,29 +22,23 @@ export namespace Views {
                 PedaText("Düzey Adı").fontSize("10px").foregroundColor("gray"),
                 PedaText(grade_name).multilineTextAlignment(TextAlignment.leading)
             ),
-            VStack({ alignment: cLeading })(
-                UIContextMenu(
-                    ...ForEach(uiDropdownItems)((item) =>
-                        item.title == "Sil" ?
-                            VStack({ alignment: cLeading })(
-                                Views.PedaText(item.title).foregroundColor(Color.red)
-                            ).width("100%")
-                                .onClick(() => item.action())
-                            :
-                            VStack({ alignment: cLeading })(
-                                Views.PedaText(item.title)
-                            ).width("100%")
-                                .onClick(() => item.action())
-                    )
-                )(
-                    Icon("\\e5d4")
-                        .size(20)
-                        .background({ hover: "#dddddd" })
-                        .cursor("pointer")
-                        .cornerRadius("50%")
-                        .padding(5)
-                ).width(),
-            ).width("30px")
+            HStack({ alignment: cLeading, spacing: 10 })(
+                VStack(
+                    Icon("\\e3c9").tooltip("Düzenle").cursor("pointer").onClick(() => uiDropdownItems[0].action()).size(20)
+                )
+                    .background({ hover: "#dddddd" })
+                    .cursor("pointer")
+                    .cornerRadius("50%")
+                    .width()
+                    .padding(5),
+                VStack(
+                    Icon("\\e267").tooltip("Düzey Skalası").cursor("pointer").onClick(() => uiDropdownItems[1].action()).size(20)
+                ).background({ hover: "#dddddd" })
+                    .cursor("pointer")
+                    .cornerRadius("50%")
+                    .width()
+                    .padding(5)
+            ).width().height()
         ).minHeight(70).height(70).height(70).width("100%").shadow("rgba(0, 0, 0, 0.15) 0px 2px 8px").paddingLeft("20px").marginTop("20px")
 
     export const YearCard = (year: string, period_name: string, is_active_period: string, uiDropdownItems: { action: Function, title: string }) => {

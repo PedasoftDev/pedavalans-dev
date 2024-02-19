@@ -1,9 +1,9 @@
-import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, ReactView, Spinner, UIViewBuilder } from "@tuval/forms";
+import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, ReactView, Spinner, UIViewBuilder, Text } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
 import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
 import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
@@ -55,7 +55,8 @@ export class ReportPolyvalenceUnitList extends UIController {
                             [
                                 Query.equal("competency_evaluation_period", e.target.value),
                                 Query.equal("polyvalence_table_id", id), Query.equal("is_deleted_competency_value", false),
-                                Query.equal("tenant_id", me?.prefs?.organization)
+                                Query.equal("tenant_id", me?.prefs?.organization),
+                                Query.limit(1000)
                             ]).then((res: any) => {
                                 const copyColumns: GridColDef[] = []
                                 const copyEmployees: { id: string, name: string }[] = []
@@ -71,7 +72,12 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     }
                                     if (!copyColumns.some(x => x.field == item.competency_id)) {
                                         copyColumns.push({
-                                            field: item.competency_id, headerName: item.competency_name, minWidth: 150, width: 150, renderCell: (params) => {
+                                            field: item.competency_id,
+                                            headerName: item.competency_name,
+                                            minWidth: 200,
+                                            width: 200,
+                                            hideSortIcons: true,
+                                            renderCell: (params) => {
                                                 const value: IEmployeeCompetencyValue.IEmployeeCompetencyValue = res.documents.find((x: IEmployeeCompetencyValue.IEmployeeCompetencyValue) => x.employee_id == params.row.id && x.competency_id === item.competency_id)
                                                 let real: number = 0;
                                                 let target: number = 0;

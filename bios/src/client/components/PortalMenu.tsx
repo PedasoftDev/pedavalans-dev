@@ -74,14 +74,14 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             ),
             isVisible: true
         },
-        {
-            title: "Makineler",
-            link: "/app/machines/list",
-            icon: ReactView(
-                <RxColorWheel size={25} />
-            ),
-            isVisible: true//machineBased
-        },
+        // {
+        //     title: "Makineler",
+        //     link: "/app/machines/list",
+        //     icon: ReactView(
+        //         <RxColorWheel size={25} />
+        //     ),
+        //     isVisible: true//machineBased
+        // },
         {
             title: "Yetkinlik Durum İzleme Raporu",
             link: "/app/competency-status-report/view",
