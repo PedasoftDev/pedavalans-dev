@@ -1,9 +1,9 @@
-import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, ReactView, Spinner, UIViewBuilder, Text } from "@tuval/forms";
+import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, ReactView, Spinner, UIViewBuilder } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
 import getHalfYearPeriods from "../../../assets/Functions/getHalfYearPeriods";
 import getQuarterYearPeriods from "../../../assets/Functions/getQuarterYearPeriods";
@@ -14,6 +14,7 @@ import AppInfo from "../../../../AppInfo";
 import SkillSlice from "../../../components/SkillSlice";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { CircularProgressbar } from 'react-circular-progressbar';
+import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -23,9 +24,10 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
+        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization)
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingCompetencyGradeValueList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedPeriod, setSelectedPeriod] = useState<string>("");
@@ -82,16 +84,18 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                 let real: number = 0;
                                                 let target: number = 0;
                                                 let percentage: number = 0;
+                                                let targetTotal: number = 0;
                                                 if (value && value.competency_real_value && value.competency_target_value) {
-                                                    real = Number(value.competency_real_value)
-                                                    target = Number(value.competency_target_value)
+                                                    real = Number(value.competency_real_value);
+                                                    target = Number(value.competency_target_value);
                                                     percentage = (real / target) * 100;
                                                     percentage = isNaN(percentage) ? 0 : percentage;
-                                                    percentage = parseFloat(percentage.toFixed(1))
+                                                    percentage = parseFloat(percentage.toFixed(1));
+                                                    targetTotal = competencyGradeValueList.filter((x) => x.competency_id === item.competency_id).length;
                                                 }
                                                 return (
                                                     <div style={{ display: "flex", gap: "10px" }}>
-                                                        <SkillSlice real={real} target={target} />
+                                                        <SkillSlice real={real} target={targetTotal} />
                                                         <div style={{ width: "40px", height: "40px" }}>
                                                             <CircularProgressbar value={percentage} text={`${percentage}%`} />
                                                         </div>

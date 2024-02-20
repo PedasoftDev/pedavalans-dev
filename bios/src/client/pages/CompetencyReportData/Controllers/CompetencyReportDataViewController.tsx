@@ -25,7 +25,7 @@ import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetency
 import AppInfo from "../../../../AppInfo";
 import { MdMood } from "react-icons/md";
 import { FaRegSmile } from "react-icons/fa";
-import { BiConfused, BiSad } from "react-icons/bi";
+import { BiConfused, BiHappy, BiSad, BiSmile } from "react-icons/bi";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -106,7 +106,7 @@ export class CompetencyReportDataViewController extends UIController {
                             field: "value", headerName: "Dönem Ortalaması", width: 150, minWidth: 150,
                             align: "center", headerAlign: "center",
                             renderCell: (params) => {
-                                const average = params.row.competency_real_value / params.row.competency_target_value * 100;
+                                let average = params.row.competency_real_value / params.row.competency_target_value * 100;
                                 let averageIcon: React.ReactNode = "";
                                 switch (true) {
                                     case (average < 20):
@@ -119,15 +119,18 @@ export class CompetencyReportDataViewController extends UIController {
                                         averageIcon = <BiConfused color="yellow" />;
                                         break;
                                     case (average >= 60 && average < 80):
-                                        averageIcon = <FaRegSmile color="green" />;
+                                        averageIcon = <BiSmile color="green" />;
                                         break;
                                     case (average >= 80):
-                                        averageIcon = <MdMood color="green" />;
+                                        averageIcon = <BiHappy color="green" />;
                                         break;
                                     default:
                                         averageIcon = "";
                                 }
-                                return <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", width: "100px" }}>
+                                if (isNaN(average)) {
+                                    average = 0;
+                                }
+                                return <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", width: "100px", background: "#c7c7c7", padding: "10px", borderRadius: "10px" }}>
                                     <div style={{ fontSize: "20px" }}>{averageIcon}</div>
                                     <div style={{ marginLeft: "5px", fontSize: "14px" }}>{average.toFixed(2)}%</div>
                                 </div>;
