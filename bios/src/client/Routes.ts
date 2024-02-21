@@ -43,6 +43,8 @@ import { ResetPasswordController } from './controllers/ResetPasswordController';
 import { LogoutController } from './controllers/LogoutController';
 import { ReportPolyvalenceUnitList } from './pages/PolyvalenceUnit/Controllers/ReportPolyvalenceUnitList';
 import { UpdatePasswordController } from './controllers/UpdatePasswordController';
+import { AuthorizationProfileController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileController';
+import { AuthorizationProfileViewController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileViewController';
 
 export const Routes = () => {
     return (
@@ -121,6 +123,11 @@ export const Routes = () => {
                 // competency status report
                 UIRoute('competency-status-report', CompetencyStatusReportController).children(
                     UIRoute('view', CompetencyStatusReportViewController)
+                ),
+
+                // authorization profile
+                UIRoute('authorization-profile', AuthorizationProfileController).children(
+                    UIRoute('view', AuthorizationProfileViewController)
                 ),
 
                 // not found

@@ -8,7 +8,6 @@ import {
     Spacer,
     Spinner,
     Toggle,
-    UIController,
     UIFormController,
     UINavigate,
     UIViewBuilder,
@@ -19,9 +18,9 @@ import {
 import { PortalMenu } from '../../../components/PortalMenu';
 import { Views } from '../../../components/Views';
 import Button from '../../../components/Button';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Resources } from '../../../assets/Resources';
-import { Switch, TextField } from '@mui/material';
+import { IconButton, Switch, TextField } from '@mui/material';
 import Parameters from '../../../../server/hooks/parameters/main';
 import Monitoring from '../../../../server/hooks/monitoring/main';
 import { useGetMe } from '@realmocean/sdk';
@@ -29,22 +28,25 @@ import AppInfo from '../../../../AppInfo';
 import IParameters from '../../../interfaces/IParameters';
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
 import { Toast } from '../../../components/Toast';
+import { RxExternalLink } from 'react-icons/rx';
+import AccountRelation from '../../../../server/hooks/accountRelation/main';
 
 export class ParametersController extends UIFormController {
 
     public LoadView() {
 
+
         const { me, isLoading: isLoad } = useGetMe("console");
-
-        const { parameters, isLoading } = Parameters.GetParameters();
-        const { monitoring, isLoading: isLoadingMonitoring } = Monitoring.GetMonitoring(me?.prefs?.organization);
-        const { updateParameter, error, isError, isLoading: isLoadinUpdate, isSuccess } = Parameters.UpdateParameter();
-
         const navigate = useNavigate();
+
+        const { parameters, isLoading } = Parameters.GetParameters(me?.prefs?.organization);
+        const { monitoring, isLoading: isLoadingMonitoring } = Monitoring.GetMonitoring(me?.prefs?.organization);
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
+        const { updateParameter } = Parameters.UpdateParameter();
 
 
         return (
-            isLoad || isLoading || isLoadingMonitoring ? VStack(Spinner()) :
+            isLoad || isLoading || isLoadingMonitoring || isLoadingResult ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
@@ -66,6 +68,7 @@ export class ParametersController extends UIFormController {
                                 title: "Parametre güncellendi"
                             })
                         }
+
                         return (
                             HStack({ alignment: cTopLeading })(
                                 PortalMenu("Parametreler").background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : ""),
@@ -92,6 +95,18 @@ export class ParametersController extends UIFormController {
                                     VStack({ alignment: cTopLeading })(
                                         ReactView(
                                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+                                                {accountRelations && accountRelations[0] && accountRelations[0].is_admin &&
+                                                    <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
+                                                        <div style={{ fontSize: "14px", fontWeight: 400 }}>
+                                                            {"Yetki Profili Tanımlama"}
+                                                        </div>
+                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                                            <IconButton onClick={() => navigate("/app/authorization-profile/view")}>
+                                                                <RxExternalLink size={20} />
+                                                            </IconButton>
+                                                        </div>
+                                                    </div>
+                                                }
                                                 {parameters.map((parameter) =>
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>

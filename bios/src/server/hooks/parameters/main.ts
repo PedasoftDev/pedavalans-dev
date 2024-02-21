@@ -2,8 +2,8 @@ import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDo
 import AppInfo from '../../../AppInfo';
 import IParameters from '../../../client/interfaces/IParameters';
 namespace Parameters {
-    export const GetParameters = (): { parameters: IParameters.IParameter[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "pedavalans_parameter")
+    export const GetParameters = (tenant_id: string): { parameters: IParameters.IParameter[], isLoading: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", [Query.equal("tenant_id", tenant_id)])
         return {
             parameters: documents as any,
             isLoading

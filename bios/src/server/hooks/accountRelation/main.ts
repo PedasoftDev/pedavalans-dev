@@ -17,7 +17,7 @@ namespace AccountRelation {
     } => {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.equal("account_id", id)])
         return {
-            accountRelations: document as any,
+            accountRelations: documents as any,
             isLoadingResult: isLoading
         }
     }
