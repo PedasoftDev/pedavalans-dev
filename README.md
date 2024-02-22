@@ -1,8 +1,15 @@
-## Realmocean Development Boilerplate
+## PEDAVALANS RELEASE NOTES
 
-### realmocean folder 
+### Versiyon 1.0
 
-### bios folder
-Bios development folder. Write your bios here
+** Yetkinlik Tanımlama
+** Polivalans Tablosu Tanımlama
+** Organizasyon Tanımlama
+** Yetkinlik Hedef ve Gerçekleşme Girişleri
+** Çalışan Yetkinlik Karneleri
 
-### installer folder
+### Versiyon 1.1
+
+** Skill Matrix
+** Departman-Hat İlişkilendirme
+** Yetkinlik-Hat İlişkilendirme
