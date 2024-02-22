@@ -16,7 +16,7 @@ import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
 import StyledDataGrid from '../../../components/StyledDataGrid';
-import { useGetMe, useListTeamMemberships } from '@realmocean/sdk';
+import { useGetMe, useListAccounts, useListTeamMemberships } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
@@ -47,7 +47,7 @@ export class CreatePolyvalenceUnitController extends UIController {
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const { memberships, isLoading: isLoadingTeam } = useListTeamMemberships(AppInfo.Name, me?.prefs?.organization);
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { createPolyvalenceUnit, errorPolyvalenceUnit, isErrorPolyvalenceUnit, isLoadingPolyvalenceUnit, isSuccessPolyvalenceUnit } = PolyvalenceUnit.Create();
         const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
@@ -58,7 +58,7 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
 
         return (
-            isLoading || isLoadingTeam || isLoadingDepartments || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<IPolyvalenceUnit.ICreatePolyvalenceUnit>({
@@ -127,13 +127,8 @@ export class CreatePolyvalenceUnitController extends UIController {
 
                     const accountColumns = [
                         {
-                            field: "FirstName",
-                            headerName: "Adı",
-                            flex: 1
-                        },
-                        {
-                            field: "LastName",
-                            headerName: "Soyadı",
+                            field: "name",
+                            headerName: "Adı Soyadı",
                             flex: 1
                         },
                     ]
@@ -199,50 +194,52 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                     </Select>
                                                 </FormControl>
                                             }
-                                            {/* <div style={{
-                                                        height: "250px",
-                                                        width: "100%",
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        gap: "5px",
-                                                    }}>
-                                                        <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
-                                                        <StyledDataGrid
-                                                            rows={accounts.filter((account) => !selectedViewerAccounts.includes(account.id))}
-                                                            columns={accountColumns}
-                                                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                            isCellEditable={() => false}
-                                                            disableRowSelectionOnClick
-                                                            checkboxSelection
-                                                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                                setSelectedResponsibleAccounts(newRowSelectionModel)
-                                                            }}
-                                                            rowHeight={30}
-                                                            columnHeaderHeight={30}
-                                                        />
-                                                    </div>
-                                                    <div style={{
-                                                        height: "250px",
-                                                        width: "100%",
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        gap: "5px",
-                                                    }}>
-                                                        <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
-                                                        <StyledDataGrid
-                                                            rows={accounts.filter((account) => !selectedResponsibleAccounts.includes(account.id))}
-                                                            columns={accountColumns}
-                                                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                            isCellEditable={() => false}
-                                                            disableRowSelectionOnClick
-                                                            checkboxSelection
-                                                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                                setSelectedViewerAccounts(newRowSelectionModel)
-                                                            }}
-                                                            rowHeight={30}
-                                                            columnHeaderHeight={30}
-                                                        />
-                                                    </div> */}
+                                            <div style={{
+                                                height: "250px",
+                                                width: "100%",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "5px",
+                                            }}>
+                                                <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
+                                                <StyledDataGrid
+                                                    rows={accounts.filter((account) => !selectedViewerAccounts.includes(account.$id))}
+                                                    columns={accountColumns}
+                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                    isCellEditable={() => false}
+                                                    disableRowSelectionOnClick
+                                                    checkboxSelection
+                                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                        setSelectedResponsibleAccounts(newRowSelectionModel)
+                                                    }}
+                                                    rowHeight={30}
+                                                    columnHeaderHeight={30}
+                                                    getRowId={(row) => row.$id}
+                                                />
+                                            </div>
+                                            <div style={{
+                                                height: "250px",
+                                                width: "100%",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "5px",
+                                            }}>
+                                                <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
+                                                <StyledDataGrid
+                                                    rows={accounts.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
+                                                    columns={accountColumns}
+                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                    isCellEditable={() => false}
+                                                    disableRowSelectionOnClick
+                                                    checkboxSelection
+                                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                        setSelectedViewerAccounts(newRowSelectionModel)
+                                                    }}
+                                                    rowHeight={30}
+                                                    columnHeaderHeight={30}
+                                                    getRowId={(row) => row.$id}
+                                                />
+                                            </div>
                                             <FormControl fullWidth size="small">
                                                 <InputLabel>Değerlendirme Sıklığı</InputLabel>
                                                 <Select

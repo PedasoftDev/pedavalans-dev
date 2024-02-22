@@ -3,10 +3,9 @@ import { IRoot } from "./main";
 namespace IAccountRelation {
     export interface IBase extends IRoot {
         id: string;
-        first_name: string;
-        last_name: string;
         tenant_id: string;
         account_id: string;
+        authorization_profile: string;
         is_admin: boolean;
         is_active: boolean;
         is_deleted: boolean;
@@ -14,8 +13,7 @@ namespace IAccountRelation {
 
     export interface ICreate {
         id: string;
-        first_name?: string;
-        last_name?: string;
+        authorization_profile: string;
         tenant_id: string;
         account_id: string;
         is_admin: boolean;

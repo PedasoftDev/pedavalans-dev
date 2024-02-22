@@ -71,4 +71,20 @@ export namespace Resources {
         localStr: "competency_performance_acceptance_criteria",
         type: "string",
     };
+
+    export const AuthorizationProfile = [
+        {
+            name: "Yönetici",
+            localStr: "admin",
+        },
+        {
+            name: "Veri Girişçi",
+            localStr: "data_entry",
+        },
+        {
+            name: "Görüntüleyici",
+            localStr: "viewer",
+        }
+
+    ]
 }

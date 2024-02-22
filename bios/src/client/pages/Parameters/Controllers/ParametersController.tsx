@@ -98,7 +98,7 @@ export class ParametersController extends UIFormController {
                                                 {accountRelations && accountRelations[0] && accountRelations[0].is_admin &&
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>
-                                                            {"Yetki Profili Tanımlama"}
+                                                            {"Yetki Profilleri"}
                                                         </div>
                                                         <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                                             <IconButton onClick={() => navigate("/app/authorization-profile/view")}>

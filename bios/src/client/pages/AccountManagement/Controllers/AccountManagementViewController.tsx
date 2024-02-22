@@ -35,8 +35,9 @@ const resetMe: IAccount.IBase = {
 
 const resetAccountRelation: IAccountRelation.IBase = {
     account_id: "",
-    first_name: "",
-    last_name: "",
+    // first_name: "",
+    // last_name: "",
+    authorization_profile: "",
     id: "",
     is_active: true,
     is_deleted: false,
@@ -269,7 +270,7 @@ export class AccountManagementViewController extends UIController {
                                                             />
                                                             <TextField
                                                                 size="small"
-                                                                label="Kullanıcı Adı"
+                                                                label="Adı Soyadı"
                                                                 value={accountInfo.name}
                                                             />
                                                             <TextField
@@ -288,7 +289,7 @@ export class AccountManagementViewController extends UIController {
                                                                     }
                                                                 }}
                                                             />
-                                                            <TextField
+                                                            {/* <TextField
                                                                 size="small"
                                                                 label="Ad"
                                                                 value={accountRelation.first_name}
@@ -299,7 +300,7 @@ export class AccountManagementViewController extends UIController {
                                                                 label="Soyad"
                                                                 value={accountRelation.last_name}
                                                                 onChange={(e) => setAccountRelation({ ...accountRelation, last_name: e.target.value })}
-                                                            />
+                                                            /> */}
                                                             {accountRelation.is_admin && <FormControlLabel
                                                                 sx={{ alignContent: "end" }}
                                                                 control={<Switch checked={accountRelation.is_active} />}
@@ -375,7 +376,7 @@ export class AccountManagementViewController extends UIController {
                                                         columns={[
                                                             { field: '$id', headerName: 'ID', width: 100 },
                                                             { field: 'email', headerName: 'E-posta', flex: 1 },
-                                                            { field: 'name', headerName: 'Kullanıcı Adı', flex: 1 },
+                                                            { field: 'name', headerName: 'Adı Soyadı', flex: 1 },
                                                             {
                                                                 field: 'value', headerName: "İşlemler", width: 150,
                                                                 renderCell: (params: any) => <Button variant="text" onClick={() => setEditAccount(params.row)}>Düzenle</Button>
@@ -411,7 +412,7 @@ export class AccountManagementViewController extends UIController {
                                                         />
                                                         <TextField
                                                             size="small"
-                                                            label="Kullanıcı Adı"
+                                                            label="Adı Soyadı"
                                                             value={createAccountForm.username}
                                                             onChange={(e) => setCreateAccount({ ...createAccountForm, username: e.target.value })}
                                                             fullWidth
@@ -464,7 +465,7 @@ export class AccountManagementViewController extends UIController {
                                                         />
                                                         <TextField
                                                             size="small"
-                                                            label="Kullanıcı Adı"
+                                                            label="Adı Soyadı"
                                                             value={selectedAccount.name}
                                                             fullWidth
                                                             required
@@ -475,7 +476,7 @@ export class AccountManagementViewController extends UIController {
                                                             value={selectedAccount.phone}
                                                             fullWidth
                                                         />
-                                                        <TextField
+                                                        {/* <TextField
                                                             size="small"
                                                             label="Adı"
                                                             value={selectedAccountRelation.first_name}
@@ -488,7 +489,7 @@ export class AccountManagementViewController extends UIController {
                                                             value={selectedAccountRelation.last_name}
                                                             onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, last_name: e.target.value })}
                                                             fullWidth
-                                                        />
+                                                        /> */}
                                                         {
                                                             accountRelation.is_admin && <FormControlLabel
                                                                 sx={{ alignContent: "end" }}

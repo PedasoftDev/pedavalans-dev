@@ -61,7 +61,7 @@ export class SignupController extends UIController {
                             // Sign up Form
                             VStack({ spacing: 10 })(
                                 VStack({ spacing: 3, alignment: cLeading })(
-                                    Text("Kullanıcı Adı"),
+                                    Text("Adı Soyadı"),
                                     TextField().onChange(e => setForm({ ...form, userName: e }))
                                 ).height(),
                                 VStack({ spacing: 3, alignment: cLeading })(

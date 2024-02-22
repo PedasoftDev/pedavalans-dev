@@ -1244,11 +1244,7 @@ const Database: IDatabase = {
                     "type": "string"
                 },
                 {
-                    "key": "first_name",
-                    "type": "string"
-                },
-                {
-                    "key": "last_name",
+                    "key": "authorization_profile",
                     "type": "string"
                 },
                 {

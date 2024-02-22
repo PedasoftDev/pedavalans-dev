@@ -1,12 +1,17 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
 import React from "react";
 import { Views } from "../../../components/Views";
-import { IconButton, } from "@mui/material";
+import { FormControl, IconButton, MenuItem, Select, } from "@mui/material";
 import { FaAngleLeft } from "react-icons/fa";
 import { useGetMe, useListAccounts } from "@realmocean/sdk";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
+import { Resources } from "../../../assets/Resources";
+import AppInfo from "../../../../AppInfo";
+import Collections from "../../../../server/core/Collections";
+import { Toast } from "../../../components/Toast";
+import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 
 export class AuthorizationProfileViewController extends UIController {
 
@@ -14,12 +19,28 @@ export class AuthorizationProfileViewController extends UIController {
         const navigate = useNavigate();
         const { isLoading, me } = useGetMe("console");
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
+        const { updateAccountRelation } = AccountRelation.Update();
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
 
         return (
             isLoading || isLoadingResult || isLoadingAccounts ? VStack(Spinner()) :
                 !accountRelations[0].is_admin ? UINavigate("/dashboard") :
                     UIViewBuilder(() => {
+
+                        const handleChangeAuthorizationProfile = (id: string, authorization_profile: string) => {
+                            const account = accountRelations.find((x) => x.account_id === id);
+                            updateAccountRelation({
+                                databaseId: AppInfo.Database,
+                                collectionId: Collections.AccountRelation,
+                                documentId: account?.$id,
+                                data: { ...removeDollarProperties(account), authorization_profile }
+                            }, () => {
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Yetki profili başarıyla güncellendi."
+                                })
+                            })
+                        };
 
                         const columns: GridColDef[] = [
                             {
@@ -33,14 +54,25 @@ export class AuthorizationProfileViewController extends UIController {
                                 flex: 1,
                             },
                             {
-                                field: 'role',
-                                headerName: 'Rol',
+                                field: 'authorization_profile',
+                                headerName: 'Yetki Profili',
                                 flex: 1,
                                 renderCell(params) {
                                     return (
-                                        <div>
-                                            yetki profili
-                                        </div>
+                                        <FormControl fullWidth size="small">
+                                            <Select
+                                                value={accountRelations.find((x) => x.account_id === params.row.$id)?.authorization_profile || ""}
+                                                onChange={(e) => handleChangeAuthorizationProfile(params.row.$id, e.target.value)}
+                                                size="small"
+                                                required
+                                            >
+                                                {Resources.AuthorizationProfile.map((item) => (
+                                                    <MenuItem key={item.localStr} value={item.localStr}>
+                                                        {item.name}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
                                     )
                                 },
                             }
@@ -66,7 +98,7 @@ export class AuthorizationProfileViewController extends UIController {
                                             gap: "10px",
                                             width: "100%",
                                         }}>
-                                            <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                            <div style={{ height: "calc(100vh - 125px)", width: "calc(100vw - 330px)" }}>
                                                 <StyledDataGrid
                                                     rows={accounts}
                                                     columns={columns}
