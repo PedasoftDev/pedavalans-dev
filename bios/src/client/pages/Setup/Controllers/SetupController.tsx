@@ -169,6 +169,7 @@ export class SetupController extends UIController {
                             "is_active": false,
                             "is_show": false,
                         })
+                        localStorage.setItem(localStr, "false");
                     }
                 })
                 tasks.Wait(1);

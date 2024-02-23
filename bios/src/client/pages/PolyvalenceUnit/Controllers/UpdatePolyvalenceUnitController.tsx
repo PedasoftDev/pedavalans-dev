@@ -17,7 +17,7 @@ import { trTR } from '@mui/x-data-grid';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
-import { useGetMe, useListTeamMemberships } from '@realmocean/sdk';
+import { useGetMe, useListAccounts } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
@@ -27,6 +27,11 @@ import Parameters from '../../../../server/hooks/parameters/main';
 import { Resources } from '../../../assets/Resources';
 import PolyvalenceUnitTableLineRelation from '../../../../server/hooks/polyvalenceUnitTableLineRelation/main';
 import Swal from 'sweetalert2';
+import PolyvalenceUnitTableDataResponsible from '../../../../server/hooks/polyvalenceUnitTableDataResponsible/main';
+import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalenceUnitTableDataViewer/main';
+import IPolyvalenceUnitTableDataViewer from '../../../interfaces/IPolyvalenceUnitTableDataViewer';
+import Collections from '../../../../server/core/Collections';
+import IPolyvalenceUnitTableDataResponsible from '../../../interfaces/IPolyvalenceUnitTableDataResponsible';
 
 const formReset = {
     polyvalence_table_id: "",
@@ -47,10 +52,10 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { id } = useParams();
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const { memberships, isLoading: isLoadingTeam } = useListTeamMemberships(AppInfo.Name, me?.prefs?.organization);
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
-        const { updatePolyvalenceUnit, errorPolyvalenceUnit, isErrorPolyvalenceUnit, isLoadingPolyvalenceUnitUpdate, isSuccessPolyvalenceUnit } = PolyvalenceUnit.Update();
+        const { updatePolyvalenceUnit } = PolyvalenceUnit.Update();
 
         // lines
         const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
@@ -60,10 +65,18 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
 
         const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
 
+        // selectedAccounts
+        const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetByPolyvalenceUnitId(id);
+        const { dataViewer, isLoadingDataViewer } = PolyvalenceUnitTableDataViewer.GetByPolyvalenceUnitId(id);
+        const { createPolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Create();
+        const { createPolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Create();
+        const { updatePolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Update();
+        const { updatePolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Update();
 
         return (
-            isLoading || isLoadingTeam || isLoadingDepartments || isLoadingPolyvalenceUnit
+            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingPolyvalenceUnit || isLoadingTableAuth || isLoadingDataResponsible || isLoadingDataViewer
                 || isLoadingParameter || isLoadingLines || isLoadingLineRelation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
@@ -89,6 +102,67 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
+                            
+                            if (tableAuth[0]?.is_active) {
+                                const alreadyViewer = dataViewer.map((viewer) => viewer.viewer_employee_id)
+                                const alreadyResponsible = dataResponsible.map((responsible) => responsible.responsible_employee_id)
+                                const newViewer = selectedViewerAccounts.filter((viewer) => !alreadyViewer.includes(viewer))
+                                const newResponsible = selectedResponsibleAccounts.filter((responsible) => !alreadyResponsible.includes(responsible))
+                                const removedViewer = alreadyViewer.filter((viewer) => !selectedViewerAccounts.includes(viewer))
+                                const removedResponsible = alreadyResponsible.filter((responsible) => !selectedResponsibleAccounts.includes(responsible))
+                                newViewer.forEach((viewer) => {
+                                    const newViewerId = nanoid();
+                                    const newViewerModel: IPolyvalenceUnitTableDataViewer.ICreate = {
+                                        data_viewer_id: newViewerId,
+                                        polyvalence_table_id: id,
+                                        viewer_employee_id: viewer,
+                                        viewer_employee_name: accounts.find(x => x.$id == viewer)?.name,
+                                        tenant_id: me?.prefs?.organization,
+                                        realm_id: ""
+                                    }
+                                    createPolyvalenceUnitTableDataViewer({
+                                        documentId: newViewerId,
+                                        data: newViewerModel
+                                    })
+                                })
+                                removedViewer.forEach((viewer) => {
+                                    updatePolyvalenceUnitTableDataViewer({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.PolyvalenceUnitTableDataViewer,
+                                        documentId: dataViewer.find((x) => x.viewer_employee_id == viewer)?.$id,
+                                        data: {
+                                            ...removeDollarProperties(dataViewer.find((x) => x.viewer_employee_id == viewer)),
+                                            is_deleted: true
+                                        }
+                                    })
+                                })
+                                newResponsible.forEach((responsible) => {
+                                    const newResponsibleId = nanoid();
+                                    const newResponsibleModel: IPolyvalenceUnitTableDataResponsible.ICreate = {
+                                        data_responsible_id: newResponsibleId,
+                                        polyvalence_table_id: id,
+                                        responsible_employee_id: responsible,
+                                        responsible_employee_name: accounts.find(x => x.$id == responsible)?.name,
+                                        tenant_id: me?.prefs?.organization,
+                                        realm_id: ""
+                                    }
+                                    createPolyvalenceUnitTableDataResponsible({
+                                        documentId: newResponsibleId,
+                                        data: newResponsibleModel
+                                    })
+                                })
+                                removedResponsible.forEach((responsible) => {
+                                    updatePolyvalenceUnitTableDataResponsible({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.PolyvalenceUnitTableDataResponsible,
+                                        documentId: dataResponsible.find((x) => x.responsible_employee_id == responsible)?.$id,
+                                        data: {
+                                            ...removeDollarProperties(dataResponsible.find((x) => x.responsible_employee_id == responsible)),
+                                            is_deleted: true
+                                        }
+                                    })
+                                })
+                            }
                             if (lineBased[0]?.is_active) {
                                 if (lineRelation.length == 0) {
                                     const documentId = nanoid();
@@ -119,26 +193,6 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             })
                             navigate("/app/polyvalence-unit/list")
                         })
-                        // const selectedPolvalenceTableDataResponsibleEmployees = accounts.filter((account) => selectedResponsibleAccounts.includes(account.id)).map((account) => {
-                        //     return {
-                        //         "responsible_employee_id": account.id,
-                        //         "responsible_employee_name": account.Name
-                        //     }
-                        // });
-                        // const selectedPolvalenceTableDataViewerEmployees = accounts.filter((account) => selectedViewerAccounts.includes(account.id)).map((account) => {
-                        //     return {
-                        //         "viewer_employee_id": account.id,
-                        //         "viewer_employee_name": account.Name
-                        //     }
-                        // });
-                        // PolivalansBrokerClient.UpdatePolyvalenceTable(this.id, form.polyvalence_table_name,
-                        //     form.polyvalence_department_id, form.polyvalence_department_name, selectedPolvalenceTableDataResponsibleEmployees, selectedPolvalenceTableDataViewerEmployees).then(() => {
-                        //         Toast.fire({
-                        //             icon: 'success',
-                        //             title: 'Polivalans tablosu güncellendi!'
-                        //         })
-                        //         navigate("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/list")
-                        //     })
                     }
 
                     const onCancel = () => {
@@ -147,15 +201,10 @@ export class UpdatePolyvalenceUnitController extends UIController {
 
                     const accountColumns = [
                         {
-                            field: "FirstName",
-                            headerName: "Adı",
+                            field: "name",
+                            headerName: "Adı Soyadı",
                             flex: 1
-                        },
-                        {
-                            field: "LastName",
-                            headerName: "Soyadı",
-                            flex: 1
-                        },
+                        }
                     ];
 
                     const onDelete = () => {
@@ -190,43 +239,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
                     }
 
                     useEffect(() => {
-                        // Promise.all([
-                        //     RealmBrokerClient.GetSessionInfo(),
-                        //     PolivalansBrokerClient.GetPolyvalenceTableById(this.id),
-                        //     PolivalansBrokerClient.GetParameterByNameAndTenantId(Resources.ParameterNames.PolyvalenceUnitTableAuth),
-                        //     PolivalansBrokerClient.GetPolyvalenceUnitTableLineRelationByPolyvalenceUnitTableId(this.id),
-                        //     PolivalansBrokerClient.GetActiveOrganizationLines()
-                        // ]).then(res => {
-                        //     const [sessionInfo, polyvalenceUnitTable, parameter, lineRelation, lines] = res;
-                        //     setForm(polyvalenceUnitTable);
-                        //     setSelectedResponsibleAccounts(polyvalenceUnitTable.polyvalence_unit_table_data_responsible.map((responsible) => responsible.responsible_employee_id));
-                        //     setSelectedViewerAccounts(polyvalenceUnitTable.polyvalence_unit_table_data_viewer.map((viewer) => viewer.viewer_employee_id));
-                        //     setSelectedLine(lineRelation.line_id);
-                        //     setLines(lines);
-                        //     if (parameter && sessionInfo.is_tenant_admin == false) {
-                        //         // if (parameter) {
-                        //         PolivalansBrokerClient.GetCanEditPolyvalenceUnitTable(this.id).then((canEdit) => {
-                        //             this.canEdit = canEdit;
-                        //             if (!canEdit) {
-                        //                 PolivalansBrokerClient.GetCanViewPolyvalenceUnitTable(this.id).then((canView) => {
-                        //                     this.canView = canView;
-                        //                     if (!canView) {
-                        //                         navigate("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/list")
-                        //                         Views.Toast.fire({
-                        //                             icon: 'error',
-                        //                             title: 'Bu tabloyu görüntüleme yetkiniz yok!'
-                        //                         })
-                        //                     }
-                        //                 })
-                        //             }
-                        //         })
-
-                        //     } else {
-                        //         this.canEdit = true;
-                        //         this.canView = true;
-                        //     }
-                        // })
-
+                        setSelectedResponsibleAccounts(dataResponsible.map((responsible) => responsible.responsible_employee_id))
+                        setSelectedViewerAccounts(dataViewer.map((viewer) => viewer.viewer_employee_id))
                         setForm(removeDollarProperties(polyvalenceUnit))
                         if (lineBased[0]?.is_active) {
                             setSelectedLine(lineRelation[0]?.line_id)
@@ -295,7 +309,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     </Select>
                                                 </FormControl>
                                             }
-                                            {/* <div style={{
+                                            <div style={{
                                                 height: "250px",
                                                 width: "100%",
                                                 display: "flex",
@@ -304,7 +318,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                             }}>
                                                 <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
                                                 <StyledDataGrid
-                                                    rows={memberships}
+                                                    rows={accounts.filter((account) => !selectedViewerAccounts.includes(account.$id))}
                                                     columns={accountColumns}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                     isCellEditable={() => false}
@@ -316,6 +330,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     rowHeight={30}
                                                     columnHeaderHeight={30}
                                                     rowSelectionModel={selectedResponsibleAccounts}
+                                                    getRowId={(row) => row.$id}
                                                 />
                                             </div>
                                             <div style={{
@@ -327,7 +342,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                             }}>
                                                 <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
                                                 <StyledDataGrid
-                                                    rows={memberships}
+                                                    rows={accounts.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
                                                     columns={accountColumns}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                     isCellEditable={() => false}
@@ -339,8 +354,9 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     rowSelectionModel={selectedViewerAccounts}
                                                     rowHeight={30}
                                                     columnHeaderHeight={30}
+                                                    getRowId={(row) => row.$id}
                                                 />
-                                            </div> */}
+                                            </div>
                                             <FormControl fullWidth size="small">
                                                 <InputLabel>Değerlendirme Sıklığı</InputLabel>
                                                 <Select

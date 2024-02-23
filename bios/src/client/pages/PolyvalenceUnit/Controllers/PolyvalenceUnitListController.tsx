@@ -86,7 +86,7 @@ export class PolyvalenceUnitListController extends UIController {
                                 filteredPolyvalenceUnitList.length > 0 ?
                                     ScrollView({ axes: "cVertical" })(
                                         HStack({ alignment: cTop })(
-                                            ...ForEach(filteredPolyvalenceUnitList.filter(x => x.is_active_table === isActive))((item, i) =>
+                                            ...ForEach(filteredPolyvalenceUnitList.filter(x => x.is_active_table === isActive).sort((a, b) => a.polyvalence_table_name.localeCompare(b.polyvalence_table_name)))((item, i) =>
                                                 Views.PolyvalenceUnitCard(item.polyvalence_table_name, item.polyvalence_department_name, item.polyvalence_evaluation_frequency,
 
                                                     //    [

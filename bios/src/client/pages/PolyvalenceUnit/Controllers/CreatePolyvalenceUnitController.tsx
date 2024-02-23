@@ -16,14 +16,17 @@ import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
 import StyledDataGrid from '../../../components/StyledDataGrid';
-import { useGetMe, useListAccounts, useListTeamMemberships } from '@realmocean/sdk';
+import { useGetMe, useListAccounts } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
-import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
 import OrganizationStructureLine from '../../../../server/hooks/organizationStructureLine/main';
 import { Resources } from '../../../assets/Resources';
 import Parameters from '../../../../server/hooks/parameters/main';
 import PolyvalenceUnitTableLineRelation from '../../../../server/hooks/polyvalenceUnitTableLineRelation/main';
+import IPolyvalenceUnitTableDataResponsible from '../../../interfaces/IPolyvalenceUnitTableDataResponsible';
+import IPolyvalenceUnitTableDataViewer from '../../../interfaces/IPolyvalenceUnitTableDataViewer';
+import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalenceUnitTableDataViewer/main';
+import PolyvalenceUnitTableDataResponsible from '../../../../server/hooks/polyvalenceUnitTableDataResponsible/main';
 
 // Değerlendirme Sıklığı için
 const evaluationFrequency = [
@@ -49,16 +52,20 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
-        const { createPolyvalenceUnit, errorPolyvalenceUnit, isErrorPolyvalenceUnit, isLoadingPolyvalenceUnit, isSuccessPolyvalenceUnit } = PolyvalenceUnit.Create();
+        const { createPolyvalenceUnit } = PolyvalenceUnit.Create();
         const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
 
         // lines
         const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
 
         const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
+
+        const { createPolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Create();
+        const { createPolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Create();
 
         return (
-            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingLines || isLoadingTableAuth ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<IPolyvalenceUnit.ICreatePolyvalenceUnit>({
@@ -99,33 +106,58 @@ export class CreatePolyvalenceUnitController extends UIController {
                                 tenant_id: me?.prefs?.organization
                             }
                         }, () => {
-                            const documentId: string = nanoid();
-                            createPolyvalenceUnitLineRelation({
-                                documentId: documentId,
-                                data: {
-                                    polyvalence_table_id: id,
-                                    line_id: selectedLine,
-                                    tenant_id: me?.prefs?.organization
+                            if (tableAuth[0]?.is_active) {
+                                for (let i = 0; i < selectedResponsibleAccounts.length; i++) {
+                                    const responsibleDataId: string = nanoid();
+                                    const responsibleData: IPolyvalenceUnitTableDataResponsible.ICreate = {
+                                        data_responsible_id: responsibleDataId,
+                                        polyvalence_table_id: id,
+                                        responsible_employee_id: selectedResponsibleAccounts[i],
+                                        responsible_employee_name: accounts.find((account) => account.$id == selectedResponsibleAccounts[i]).name,
+                                        tenant_id: me?.prefs?.organization,
+                                        realm_id: ""
+                                    }
+                                    createPolyvalenceUnitTableDataResponsible({
+                                        documentId: nanoid(),
+                                        data: responsibleData
+                                    })
                                 }
-                            }, () => {
+                                for (let i = 0; i < selectedViewerAccounts.length; i++) {
+                                    const viewerDataId: string = nanoid();
+                                    const viewerData: IPolyvalenceUnitTableDataViewer.ICreate = {
+                                        data_viewer_id: viewerDataId,
+                                        polyvalence_table_id: id,
+                                        viewer_employee_id: selectedViewerAccounts[i],
+                                        viewer_employee_name: accounts.find((account) => account.$id == selectedViewerAccounts[i]).name,
+                                        tenant_id: me?.prefs?.organization,
+                                        realm_id: ""
+                                    }
+                                    createPolyvalenceUnitTableDataViewer({
+                                        documentId: nanoid(),
+                                        data: viewerData
+                                    })
+                                }
+                            }
+
+                            if (lineBased[0]?.is_active) {
+                                createPolyvalenceUnitLineRelation({
+                                    documentId: id,
+                                    data: {
+                                        polyvalence_table_id: id,
+                                        line_id: selectedLine,
+                                        tenant_id: me?.prefs?.organization
+                                    }
+                                }, () => {
+                                    responseFunc();
+                                })
+                            }
+                            else {
                                 responseFunc();
-                            })
+                            }
                         })
-                        // const selectedPolvalenceTableDataResponsibleEmployees = accounts.filter((account) => selectedResponsibleAccounts.includes(account.id)).map((account) => {
-                        //     return {
-                        //         "responsible_employee_id": account.id,
-                        //         "responsible_employee_name": account.Name
-                        //     }
-                        // });
-                        // const selectedPolvalenceTableDataViewerEmployees = accounts.filter((account) => selectedViewerAccounts.includes(account.id)).map((account) => {
-                        //     return {
-                        //         "viewer_employee_id": account.id,
-                        //         "viewer_employee_name": account.Name
-                        //     }
-                        // });
                     }
 
-                    const accountColumns = [
+                    const accountColumns: GridColDef[] = [
                         {
                             field: "name",
                             headerName: "Adı Soyadı",
@@ -194,52 +226,58 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                     </Select>
                                                 </FormControl>
                                             }
-                                            <div style={{
-                                                height: "250px",
-                                                width: "100%",
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                gap: "5px",
-                                            }}>
-                                                <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
-                                                <StyledDataGrid
-                                                    rows={accounts.filter((account) => !selectedViewerAccounts.includes(account.$id))}
-                                                    columns={accountColumns}
-                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                    isCellEditable={() => false}
-                                                    disableRowSelectionOnClick
-                                                    checkboxSelection
-                                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                        setSelectedResponsibleAccounts(newRowSelectionModel)
-                                                    }}
-                                                    rowHeight={30}
-                                                    columnHeaderHeight={30}
-                                                    getRowId={(row) => row.$id}
-                                                />
-                                            </div>
-                                            <div style={{
-                                                height: "250px",
-                                                width: "100%",
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                gap: "5px",
-                                            }}>
-                                                <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
-                                                <StyledDataGrid
-                                                    rows={accounts.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
-                                                    columns={accountColumns}
-                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                    isCellEditable={() => false}
-                                                    disableRowSelectionOnClick
-                                                    checkboxSelection
-                                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                        setSelectedViewerAccounts(newRowSelectionModel)
-                                                    }}
-                                                    rowHeight={30}
-                                                    columnHeaderHeight={30}
-                                                    getRowId={(row) => row.$id}
-                                                />
-                                            </div>
+                                            {
+                                                tableAuth[0]?.is_active &&
+                                                <div style={{
+                                                    height: "250px",
+                                                    width: "100%",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "5px",
+                                                }}>
+                                                    <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
+                                                    <StyledDataGrid
+                                                        rows={accounts.filter((account) => !selectedViewerAccounts.includes(account.$id))}
+                                                        columns={accountColumns}
+                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                        isCellEditable={() => false}
+                                                        disableRowSelectionOnClick
+                                                        checkboxSelection
+                                                        onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                            setSelectedResponsibleAccounts(newRowSelectionModel)
+                                                        }}
+                                                        rowHeight={30}
+                                                        columnHeaderHeight={30}
+                                                        getRowId={(row) => row.$id}
+                                                    />
+                                                </div>
+                                            }
+                                            {
+                                                tableAuth[0]?.is_active &&
+                                                <div style={{
+                                                    height: "250px",
+                                                    width: "100%",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "5px",
+                                                }}>
+                                                    <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
+                                                    <StyledDataGrid
+                                                        rows={accounts.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
+                                                        columns={accountColumns}
+                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                        isCellEditable={() => false}
+                                                        disableRowSelectionOnClick
+                                                        checkboxSelection
+                                                        onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                            setSelectedViewerAccounts(newRowSelectionModel)
+                                                        }}
+                                                        rowHeight={30}
+                                                        columnHeaderHeight={30}
+                                                        getRowId={(row) => row.$id}
+                                                    />
+                                                </div>
+                                            }
                                             <FormControl fullWidth size="small">
                                                 <InputLabel>Değerlendirme Sıklığı</InputLabel>
                                                 <Select

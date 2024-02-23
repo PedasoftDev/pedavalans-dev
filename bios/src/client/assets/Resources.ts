@@ -79,7 +79,7 @@ export namespace Resources {
         },
         {
             name: "Veri Girişçi",
-            localStr: "data_entry",
+            localStr: "responsible",
         },
         {
             name: "Görüntüleyici",
