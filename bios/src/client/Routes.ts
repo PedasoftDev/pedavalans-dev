@@ -45,6 +45,7 @@ import { ReportPolyvalenceUnitList } from './pages/PolyvalenceUnit/Controllers/R
 import { UpdatePasswordController } from './controllers/UpdatePasswordController';
 import { AuthorizationProfileController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileController';
 import { AuthorizationProfileViewController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileViewController';
+import { OrganizationViewController } from './pages/Organization/Controllers/OrganizationViewController';
 
 export const Routes = () => {
     return (
@@ -129,6 +130,8 @@ export const Routes = () => {
                 UIRoute('authorization-profile', AuthorizationProfileController).children(
                     UIRoute('view', AuthorizationProfileViewController)
                 ),
+
+                UIRoute('organization', OrganizationViewController),
 
                 // not found
                 UIRoute('*', NotFoundController),

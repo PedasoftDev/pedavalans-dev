@@ -29,6 +29,15 @@ namespace PolyvalenceUnitTableDataResponsible {
             updatePolyvalenceUnitTableDataResponsible: updateDocument
         }
     }
+
+    export const GetListByAccountId = (account_id: string): { dataResponsible: IPolyvalenceUnitTableDataResponsible.IBase[], isLoadingDataResponsible: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("responsible_employee_id", account_id)])
+        return {
+            dataResponsible: documents as any,
+            isLoadingDataResponsible: isLoading
+        }
+
+    }
 }
 
 export default PolyvalenceUnitTableDataResponsible;

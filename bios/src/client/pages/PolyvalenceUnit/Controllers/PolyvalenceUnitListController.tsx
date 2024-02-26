@@ -1,44 +1,67 @@
-import { cCenter, cLeading, cTop, cTopLeading, ForEach, HStack, ReactView, ScrollView, Spinner, UIController, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
+import { cCenter, cLeading, cTop, cTopLeading, ForEach, HStack, ReactView, ScrollView, Spinner, State, UIController, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
 import React, { useState } from 'react';
 import { Button, IconButton, TextField, Tooltip } from '@mui/material';
 import { Views } from '../../../components/Views';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
-import { useGetMe } from '@realmocean/sdk';
+import { Query, Services, useGetMe } from '@realmocean/sdk';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
+import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
+import AppInfo from '../../../../AppInfo';
+import Collections from '../../../../server/core/Collections';
+import { Resources } from '../../../assets/Resources';
 
 
 export class PolyvalenceUnitListController extends UIController {
-    // accountName: string;
-    // tenantName: string;
+    // @State()
+    // private unitTables: IPolyvalenceUnit.IPolyvalenceUnit[];
 
-    // protected BindRouterParams() {
-    //     Promise.all([
-    //         RealmBrokerClient.GetSessionInfo(),
-    //         PolivalansBrokerClient.GetParameterByNameAndTenantId("Polivalans tablolarında yetkilendirme kullanılsın mı?"),
-    //     ]).then(res => {
-    //         const [sessionInfo, unitTableAuth] = res;
-    //         this.accountName = sessionInfo.account_name;
-    //         this.tenantName = sessionInfo.tenant_name;
-    //         if (unitTableAuth && sessionInfo.is_tenant_admin == false) {
-    //             PolivalansBrokerClient.GetPolyvalenceTablesByDataResponsibleAndViewerId().then((polyvalenceUnitTables) => {
-    //                 this.showingPolyvalenceUnitTables = this.polyvalenceUnitTables = polyvalenceUnitTables
+    // @State()
+    // private authParameter: boolean;
+
+    // @State()
+    // private viewerTableIds: string[];
+
+    // @State()
+    // private dataResponsibleTableIds: string[];
+
+    // @State()
+    // private isAdmin: boolean;
+
+    // protected BindRouterParams(): void {
+    //     Services.Accounts.get().then((account) => {
+    //         Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, account.$id).then((accountRelation) => {
+    //             this.isAdmin = accountRelation.is_admin;
+    //             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", accountRelation.tenant_id), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+    //                 if (accountRelation.is_admin) {
+    //                     this.unitTables = unitTables as any;
+    //                 } else {
+    //                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", accountRelation.tenant_id), Query.equal("is_deleted", false)]).then((parameter) => {
+    //                         if (parameter && parameter[0] && parameter.documents[0]?.is_active) {
+    //                             let viewerTables = []
+    //                             let dataResponsibleTables = []
+    //                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("data_responsible_id", account.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+    //                                 dataResponsibleTables = polyvalenceUnitTables.documents;
+    //                                 this.dataResponsibleTableIds = dataResponsibleTables.map((x) => x.polyvalence_table_id)
+    //                             })
+    //                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", account.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+    //                                 viewerTables = polyvalenceUnitTables.documents;
+    //                                 this.viewerTableIds = viewerTables.map((x) => x.polyvalence_table_id)
+    //                             })
+    //                             const tables = unitTables.documents.filter((x) => viewerTables.map((x) => x.polyvalence_table_id).includes(x.$id) || dataResponsibleTables.map((x) => x.polyvalence_table_id).includes(x.$id))
+    //                             this.unitTables = tables as any;
+    //                         }
+    //                         this.authParameter = parameter.documents[0]?.is_active;
+    //                     })
+    //                 }
     //             })
-    //         } else {
-    //             PolivalansBrokerClient.GetPolyvalenceTables().then((polyvalenceUnitTables) => {
-    //                 this.showingPolyvalenceUnitTables = this.polyvalenceUnitTables = polyvalenceUnitTables
-    //             })
-    //         }
-    //         // this.showingPolyvalenceUnitTables = this.polyvalenceUnitTables = polyvalenceUnitTables
+    //         })
     //     })
     // }
 
-    // private ShowDialog(polyvalence_table_id: string) {
-    //     PolyvalenceUnitTableExcelDialog.Show({ polyvalence_table_id })
-    // }
 
     public LoadView() {
 
-        // const isAdmin = localStorage.getItem("polyvalenceUnitTableAuth") == "admin";
+        const isAdmin = localStorage.getItem("isAdmin") === "true";
         const navigate = useNavigate();
 
         const { me, isLoading, error, isError } = useGetMe("console");
@@ -75,9 +98,7 @@ export class PolyvalenceUnitListController extends UIController {
                                     ),
                                     VStack(
                                         ReactView(
-                                            <Button size="small" fullWidth variant="outlined" onClick={() =>
-                                                // navigate(isAdmin ? "/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add" : "/app/com.pedasoft.app.pedavalans/")}>Yeni Tablo</Button>
-                                                navigate("/app/polyvalence-unit/create")}>Yeni Tablo</Button>
+                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate(isAdmin ? "/app/polyvalence-unit/create" : "/")}>Yeni Tablo</Button>
                                         )
                                     ).width("20%")
                                 ),
@@ -104,22 +125,18 @@ export class PolyvalenceUnitListController extends UIController {
                                                     //   ],
                                                 ).margin("0 20px 20px 0")
                                             ),
-                                            // isAdmin ? Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add").margin("0 20px 20px 0") : null
-                                            Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create").margin("0 20px 20px 0")
+                                            isAdmin ? Views.NewPolyvalenceUnitCard("//app/polyvalence-unit/create").margin("0 20px 20px 0") : null
 
                                         ).wrap("wrap").paddingTop("10px")
                                     )
                                     :
                                     HStack({ alignment: cCenter })(
-                                        // isAdmin ? Views.NewPolyvalenceUnitCard("/app/com.pedasoft.app.pedavalans/polyvalenceUnit/add") : null
-                                        Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create")
+                                        isAdmin ? Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create") : null
                                     )
                             ).marginBottom("10px")
                         ).padding("0 20px")
                     )
                 })
-        )
-
-
+        );
     }
 }

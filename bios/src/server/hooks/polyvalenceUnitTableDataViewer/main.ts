@@ -24,7 +24,16 @@ namespace PolyvalenceUnitTableDataViewer {
         return {
             updatePolyvalenceUnitTableDataViewer: updateDocument
         }
-    
+
+    }
+ 
+    export const GetListByAccountId = (account_id: string): { dataViewer: IPolyvalenceUnitTableDataViewer.IBase[], isLoadingDataViewer: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", account_id)])
+        return {
+            dataViewer: documents as any,
+            isLoadingDataViewer: isLoading
+        }
+
     }
 }
 

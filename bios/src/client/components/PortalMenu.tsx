@@ -2,18 +2,16 @@ import { int } from '@tuval/core';
 import { useState, cLeading, cTop, ForEach, Text, HStack, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder, Icon, cCenter, Spacer, useNavigate } from '@tuval/forms';
 import { Resources } from '../assets/Resources';
 import React, { useEffect } from 'react';
-import { RxDashboard, RxTable, RxColorWheel } from "react-icons/rx";
+import { RxDashboard, RxTable } from "react-icons/rx";
 import { IoGitNetworkOutline } from "react-icons/io5";
 import { FaLayerGroup, FaSignal } from "react-icons/fa";
 import { BsCalendar4Week } from "react-icons/bs";
 import { TbHeartRateMonitor, TbReportAnalytics } from "react-icons/tb";
 import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
-import { Services, useDeleteSession, useGetMe, useGetOrganization } from '@realmocean/sdk';
+import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import { TiFlowParallel } from "react-icons/ti";
 import { MdOutlineManageAccounts } from "react-icons/md";
-import Parameters from '../../server/hooks/parameters/main';
-import AccountRelation from '../../server/hooks/accountRelation/main';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -44,11 +42,6 @@ export interface menuModel {
 export const PortalMenu = (selectedMenuTitle: string) => {
     const [machineBased, setMachineBased] = useState(localStorage.getItem("pedavalans_machine_based") == "true" ? true : false)
 
-    const [tableAuth, setTableAuth] = useState(localStorage.getItem("tableAuth") == "true" ? true : false)
-    const [responsibleUser, setResponsibleUser] = useState<boolean>(localStorage.getItem("isAdmin") == "true" ? true : false)
-    const [viewerUser, setViewerUser] = useState<boolean>(localStorage.getItem("isViewer") == "true" ? true : false)
-    const [adminUser, setAdminUser] = useState<boolean>(localStorage.getItem("isResponsible") == "true" ? true : false)
-
     const { me, isLoading } = useGetMe("console")
 
     const navigate = useNavigate()
@@ -73,7 +66,6 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             link: "/app/polyvalence-unit/list",
             icon: ReactView(
                 <RxTable size={25} />
-                //import { FaRegObjectGroup } from "react-icons/fa";
             ),
             isVisible: true
         },
@@ -102,8 +94,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <BiCalendarPlus size={25} />
                     ),
-                    isVisible: !tableAuth ? true : responsibleUser || adminUser
-                    //responsibleUserPolyvalanceTable || localStorage.getItem("polyvalenceUnitTableAuth") === "admin"
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isResponsible") === "true" || localStorage.getItem("isAdmin") === "true" : true
                 },
                 {
                     title: "Yetkinlik Gerçekleşme Girişi",
@@ -111,8 +102,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <BiCalendarCheck size={25} />
                     ),
-                    isVisible: !tableAuth ? true : responsibleUser || adminUser
-                    //responsibleUserPolyvalanceTable || localStorage.getItem("polyvalenceUnitTableAuth") === "admin"
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isResponsible") === "true" || localStorage.getItem("isAdmin") === "true" : true
                 },
                 {
                     title: "Çalışan Yetkinlik Karnesi",
@@ -134,7 +124,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <IoGitNetworkOutline size={25} />
                     ),
-                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isResponsible") === "true" || localStorage.getItem("isAdmin") === "true" : true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Yetkinlik Grupları",
@@ -142,7 +132,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <FaLayerGroup size={25} />
                     ),
-                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isResponsible") === "true" || localStorage.getItem("isAdmin") === "true" : true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Değerlendirme Dönemi",
@@ -150,7 +140,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <BsCalendar4Week size={25} />
                     ),
-                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isAdmin") === "true" : true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Yetkinlik Düzeyleri",
@@ -158,7 +148,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <FaSignal size={25} />
                     ),
-                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isAdmin") === "true" : true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
                 },
                 {
                     title: "Organizasyon Yapısı",
@@ -166,7 +156,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <VscOrganization size={25} />
                     ),
-                    isVisible: true //localStorage.getItem("polyvalenceUnitTableAuth") == "admin" && localStorage.getItem("/app_based_organization_structure") == "true" ? true : false
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isAdmin") === "true" : true //localStorage.getItem("polyvalenceUnitTableAuth") == "admin" && localStorage.getItem("/app_based_organization_structure") == "true" ? true : false
                 },
                 {
                     title: "Parametreler",
@@ -174,7 +164,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <TiFlowParallel size={25} />
                     ),
-                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: localStorage.getItem("tableAuth") === "true" ? localStorage.getItem("isAdmin") === "true" : true
                 },
                 {
                     title: "Hesap Yönetimi",
@@ -182,19 +172,13 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <MdOutlineManageAccounts size={25} />
                     ),
-                    isVisible: true//localStorage.getItem("polyvalenceUnitTableAuth") == "admin" ? true : false
+                    isVisible: true
                 }
             ],
-            isVisible: tableAuth ? adminUser : true
+            isVisible: true
         }
     ];
 
-    useEffect(() => {
-        console.log("tableAuth", tableAuth)
-        console.log("adminUser", adminUser)
-        console.log("responsibleUser", responsibleUser)
-        console.log("viewerUser", viewerUser)
-    }, [])
 
     return (
         isLoading ? VStack() :

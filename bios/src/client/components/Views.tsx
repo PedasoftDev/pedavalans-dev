@@ -89,16 +89,7 @@ export namespace Views {
     }
 
 
-    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, item: { title: string, action: Function }, report: Function) => {
-        // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-        // const open = Boolean(anchorEl);
-        // const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        //     setAnchorEl(event.currentTarget);
-        //     console.log(event.currentTarget)
-        // };
-        // const handleClose = () => {
-        //     setAnchorEl(null);
-        // };
+    export const PolyvalenceUnitCard = (table_name: string, department_name: string, period_name: string, item: { title: string, action: Function } | null, report: Function) => {
         return (
             VStack({ alignment: cTop, spacing: 10 })(
                 HStack(
@@ -110,38 +101,10 @@ export namespace Views {
                     ReactView(
                         <HiOutlineDocumentReport cursor={"pointer"} size={"18px"} onClick={() => report()} style={{ marginRight: "10px" }} />
                     ),
-                    ReactView(
-                        <HiOutlinePencilAlt cursor={"pointer"} size={"18px"} onClick={() => item.action()} />
-                        //     <MenuMain />
-                        // <div style={{ fontSize: "11px", textDecoration: "underline", cursor: "pointer" }} onClick={() => item.action()}>
-                        //     {item.title}
-                        //     {/* <IconButton
-                        //         aria-label="more"
-                        //         id="long-button"
-                        //         aria-controls={open ? 'long-menu' : undefined}
-                        //         aria-expanded={open ? 'true' : undefined}
-                        //         aria-haspopup="true"
-                        //         onClick={handleClick}
-                        //     >
-                        //         <GridMoreVertIcon />
-                        //     </IconButton>
-                        //     <Menu
-                        //         id="long-menu"
-                        //         MenuListProps={{
-                        //             'aria-labelledby': 'long-button',
-                        //         }}
-                        //         anchorEl={anchorEl}
-                        //         open={open}
-                        //         onClose={handleClose}
-                        //     >
-                        //         {items.map((item, i) => (
-                        //             <MenuItem key={i} onClick={() => item.action()}>
-                        //                 {item.title}
-                        //             </MenuItem>
-                        //         ))}
-                        //     </Menu> */}
-                        // </div>
-                    ),
+                    item != null ?
+                        ReactView(
+                            <HiOutlinePencilAlt cursor={"pointer"} size={"18px"} onClick={() => item.action()} />
+                        ) : null,
                 ).height(),
                 HStack({ alignment: cLeading })(
                     VStack({ alignment: cLeading })(

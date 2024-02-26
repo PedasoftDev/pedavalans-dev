@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
-import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts } from "@realmocean/sdk";
+import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts, useCreateTeamMembership } from "@realmocean/sdk";
 import { Button, FormControlLabel, Switch, TextField } from "@mui/material";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
@@ -50,6 +50,7 @@ export class AccountManagementViewController extends UIController {
 
         const { me, isLoading } = useGetMe("console");
         const { updateAccountRelation } = AccountRelation.Update();
+        const { createTeamMembership } = useCreateTeamMembership(AppInfo.Name)
         const {
             createAccount,
             isSuccess: isCreateAccountSuccess,
@@ -152,23 +153,39 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
+                            // Services.Client.setProject("console");
+                            // Services.Client.setMode(undefined);
 
-                            createAccount({ name: createAccountForm.username, email: createAccountForm.email, password: createAccountForm.password, organizationId: me?.prefs?.organization }, (data) => {
+                            createAccount({
+                                name: createAccountForm.username,
+                                email: createAccountForm.email,
+                                password: createAccountForm.password,
+                                organizationId: me?.prefs?.organization
+                            }, (data) => {
                                 const docId: string = nanoid()
-                                createAccountRelation({
-                                    documentId: docId,
-                                    data: {
-                                        "id": docId,
-                                        "tenant_id": me?.prefs?.organization,
-                                        "account_id": data.$id,
-                                        "is_admin": true
-                                    }
+                                createTeamMembership({
+                                    teamId: me?.prefs?.organization,
+                                    roles: [],
+                                    url: "",
+                                    userId: data.$id,
+                                }, () => {
+                                    createAccountRelation({
+                                        documentId: docId,
+                                        data: {
+                                            "id": docId,
+                                            "tenant_id": me?.prefs?.organization,
+                                            "account_id": docId,
+                                            "is_admin": false
+                                        }
+                                    }, () => {
+                                        Toast.fire({
+                                            icon: 'success',
+                                            title: 'Kullanıcı oluşturuldu'
+                                        })
+                                        setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
+                                    })
                                 })
-                                Toast.fire({
-                                    icon: 'success',
-                                    title: 'Kullanıcı oluşturuldu'
-                                })
-                                setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
+
                             })
                             if (isCreateAccountError) {
                                 Toast.fire({
