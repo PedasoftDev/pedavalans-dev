@@ -1,6 +1,6 @@
 import { cTop, Spinner, UIFormController, VStack, UIView, ReactView, nanoid, useState, useParams } from '@tuval/forms';
 import Form from '../Views/Form';
-import { Button, TextField } from '@mui/material';
+import { Button, ButtonGroup, TextField } from '@mui/material';
 import React, { useEffect } from 'react';
 import { GridColDef } from '@mui/x-data-grid';
 import Swal from 'sweetalert2';
@@ -8,6 +8,7 @@ import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import AppInfo from '../../../../AppInfo';
+import Collections from '../../../../server/core/Collections';
 
 interface IFormData {
     grade_id: string;
@@ -42,6 +43,8 @@ export class CompetencyGradeLevelController extends UIFormController {
         const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(id);
 
         const { updateDocument } = CompetencyGrade.UpdateCompetencyGradeLevel();
+
+        const [selectedRow, setSelectedRow] = useState<any>(null)
 
         const onSubmit = (e: any) => {
             e.preventDefault();
@@ -94,25 +97,76 @@ export class CompetencyGradeLevelController extends UIFormController {
                 headerName: 'Seviye Adı',
                 editable: false,
                 flex: 1,
-                width: 200
+                width: 200,
+                renderCell: (params) => (
+                    selectedRow?.$id === params.row.$id ?
+                        <TextField
+                            size="small"
+                            value={selectedRow?.grade_level_name}
+                            onChange={(e) => {
+                                setSelectedRow({ ...selectedRow, grade_level_name: e.target.value })
+                            }}
+                        /> :
+                        <div>{params.value}</div>
+                )
             },
             {
                 field: 'grade_level_number',
                 headerName: 'Seviye Değeri',
                 editable: false,
                 flex: 1,
-                width: 200
+                width: 200,
+                renderCell: (params) => (
+                    selectedRow?.$id === params.row.$id ?
+                        <TextField
+                            size="small"
+                            value={selectedRow.grade_level_number}
+                            onChange={(e) => {
+                                setSelectedRow({ ...selectedRow, grade_level_number: e.target.value })
+                            }}
+                        /> :
+                        <div>{params.value}</div>
+                )
             },
             {
                 field: "$id",
                 headerName: "İşlemler",
-                width: 100,
+                width: 200,
                 renderCell: (params) => (
-                    <Button onClick={() => {
-                        onDelete(params.value)
-                    }} variant="outlined" size="small" fullWidth>Sil</Button>
+                    params.value === selectedRow?.$id ?
+                        <ButtonGroup>
+                            <Button onClick={() => {
+                                updateDocument({
+                                    databaseId: AppInfo.Database,
+                                    collectionId: Collections.CompetencyGradeLevel,
+                                    documentId: selectedRow.$id,
+                                    data: {
+                                        grade_level_name: selectedRow.grade_level_name,
+                                        grade_level_number: selectedRow.grade_level_number
+                                    }
+                                }, () => {
+                                    Toast.fire({
+                                        title: "Yetkinlik Düzeyi Seviyesi Güncellendi",
+                                        icon: "success"
+                                    })
+                                    
+                                setSelectedRow(null)
+                                })
+                            }} variant="outlined" size="small" fullWidth>Kaydet</Button>
+                            <Button onClick={() => {
+                                setSelectedRow(null)
+                            }} variant="outlined" size="small" fullWidth>İptal</Button>
+                        </ButtonGroup>
+                        :
+                        <ButtonGroup>
+                            <Button onClick={() => {
+                                setSelectedRow(params.row)
+                            }} variant="outlined" size="small" fullWidth>Düzenle</Button>
+                            <Button onClick={() => {
+                                onDelete(params.value)
+                            }} variant="outlined" size="small" fullWidth>Sil</Button>
+                        </ButtonGroup>
                 )
-
             }
         ]
 
