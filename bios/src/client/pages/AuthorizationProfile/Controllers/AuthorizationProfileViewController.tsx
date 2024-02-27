@@ -1,9 +1,9 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Views } from "../../../components/Views";
 import { FormControl, IconButton, MenuItem, Select, } from "@mui/material";
 import { FaAngleLeft } from "react-icons/fa";
-import { useGetMe, useListAccounts } from "@realmocean/sdk";
+import { Models, Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
@@ -11,34 +11,49 @@ import { Resources } from "../../../assets/Resources";
 import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import { Toast } from "../../../components/Toast";
-import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
+import IAccountRelation from "../../../interfaces/IAccountRelation";
 
 export class AuthorizationProfileViewController extends UIController {
 
     public LoadView(): UIView {
         const navigate = useNavigate();
-        const { isLoading, me } = useGetMe("console");
-        const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization);
-        const { updateAccountRelation } = AccountRelation.Update();
+        const [isLoading, setIsLoading] = useState(true);
+        const [accountRelations, setAccountRelations] = useState<IAccountRelation.IBase[]>([]);
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { updateAccountRelation } = AccountRelation.Update();
+
+        const getAccountRelations = () => {
+            Services.Accounts.get().then((me) => {
+                Promise.all([
+                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("tenant_id", me.prefs.organization), Query.equal("is_deleted", false)]),
+                ]).then(res => {
+                    const [accountRelationsDb] = res;
+                    setAccountRelations(accountRelationsDb.documents as any);
+                    setIsLoading(false);
+                })
+            });
+        }
+
+        useEffect(() => {
+            getAccountRelations();
+        }, [])
 
         return (
-            isLoading || isLoadingResult || isLoadingAccounts ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts ? VStack(Spinner()) :
                 !accountRelations[0].is_admin ? UINavigate("/dashboard") :
                     UIViewBuilder(() => {
 
                         const handleChangeAuthorizationProfile = (id: string, authorization_profile: string) => {
-                            const account = accountRelations.find((x) => x.account_id === id);
+                            const accountRelation = accountRelations.find((x) => x.account_id === id);
                             updateAccountRelation({
                                 databaseId: AppInfo.Database,
                                 collectionId: Collections.AccountRelation,
-                                documentId: account?.$id,
-                                data: { ...removeDollarProperties(account), authorization_profile }
+                                documentId: accountRelation.$id,
+                                data: {
+                                    authorization_profile
+                                }
                             }, () => {
-                                Toast.fire({
-                                    icon: "success",
-                                    title: "Yetki profili başarıyla güncellendi."
-                                })
+                                getAccountRelations();
                             })
                         };
 

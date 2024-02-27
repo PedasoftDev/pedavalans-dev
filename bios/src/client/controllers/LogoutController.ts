@@ -1,5 +1,5 @@
 import { useDeleteSession } from "@realmocean/sdk";
-import { Fragment, Spinner, Text, UIController, UINavigate, UIView, VStack, useEffect, useNavigate, useState } from "@tuval/forms";
+import { Spinner, Text, UIController, UIView, VStack, useEffect, useNavigate } from "@tuval/forms";
 
 
 export class LogoutController extends UIController {
@@ -10,6 +10,15 @@ export class LogoutController extends UIController {
 
 
         useEffect(() => {
+            localStorage.removeItem('tableAuth');
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('isResponsible');
+            localStorage.removeItem('isViewer');
+            localStorage.removeItem('polyvalence_unit_table_mail');
+            localStorage.removeItem('polyvalence_unit_table_auth');
+            localStorage.removeItem('line_based_competency_relationship');
+            localStorage.removeItem('machine_based_polyvalence_management');
+
             deleteSession({ sessionId: 'current' }, () => window.location.href = '/login');
         }, []);
 

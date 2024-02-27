@@ -1,11 +1,10 @@
-import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
+import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../../CompetencyTargetDataEntry/Views/View";
 import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
-import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
@@ -26,6 +25,9 @@ import AppInfo from "../../../../AppInfo";
 import { MdMood } from "react-icons/md";
 import { FaRegSmile } from "react-icons/fa";
 import { BiConfused, BiHappy, BiSad, BiSmile } from "react-icons/bi";
+import IAccountRelation from "../../../interfaces/IAccountRelation";
+import Collections from "../../../../server/core/Collections";
+import { Resources } from "../../../assets/Resources";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -41,6 +43,38 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
 
 export class CompetencyReportDataViewController extends UIController {
 
+    @State()
+    private polyvalenceUnitList: IPolyvalenceUnit.IPolyvalenceUnit[];
+
+    protected BindRouterParams(): void {
+        Services.Accounts.get().then((me) => {
+            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
+                if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
+                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
+
+                        const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
+                        if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin" || accountRelationData.authorization_profile === "responsible") {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                this.polyvalenceUnitList = unitTables.documents as any
+                            })
+                        } else {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                    this.polyvalenceUnitList = unitTables.documents.filter((x) => viewerTableIds.includes(x.polyvalence_table_id)) as any
+                                })
+                            })
+                        }
+                    })
+                } else {
+                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                        this.polyvalenceUnitList = unitTables.documents as any
+                    })
+                }
+            })
+        })
+    }
+
     public LoadView(): UIView {
 
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
@@ -49,7 +83,6 @@ export class CompetencyReportDataViewController extends UIController {
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
@@ -58,7 +91,7 @@ export class CompetencyReportDataViewController extends UIController {
 
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -67,7 +100,7 @@ export class CompetencyReportDataViewController extends UIController {
                     const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
 
                     const onChangeTable = (e: SelectChangeEvent<string>) => {
-                        const table = polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                        const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
                         const periodYear = Number(periods[0].evaluation_period_year);
                         setSelectedTable(table)
                         setSelectedPeriod("")
@@ -195,7 +228,7 @@ export class CompetencyReportDataViewController extends UIController {
                     return (
                         VStack(
                             HStack({ alignment: cLeading })(
-                                Views.Title("Çalışan Yetkinlik Girişi").paddingTop("10px")
+                                Views.Title("Çalışan Yetkinlik Karnesi").paddingTop("10px")
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             ReactView(
                                 <Container>
@@ -211,7 +244,7 @@ export class CompetencyReportDataViewController extends UIController {
                                                     size="small"
                                                     required
                                                 >
-                                                    {polyvalenceUnitList.map((unit) => (
+                                                    {this.polyvalenceUnitList.map((unit) => (
                                                         <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
                                                     ))}
                                                 </Select>

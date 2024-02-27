@@ -1,75 +1,77 @@
 import { cCenter, cLeading, cTop, cTopLeading, ForEach, HStack, ReactView, ScrollView, Spinner, State, UIController, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, IconButton, TextField, Tooltip } from '@mui/material';
 import { Views } from '../../../components/Views';
-import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
-import { Query, Services, useGetMe } from '@realmocean/sdk';
+import { Query, Services } from '@realmocean/sdk';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
 import AppInfo from '../../../../AppInfo';
 import Collections from '../../../../server/core/Collections';
 import { Resources } from '../../../assets/Resources';
+import IAccountRelation from '../../../interfaces/IAccountRelation';
+import { Toast } from '../../../components/Toast';
 
-
+interface IPolyvalenceUnitWithResponsible extends IPolyvalenceUnit.IPolyvalenceUnit {
+    is_responsible: boolean;
+    is_viewer: boolean;
+    is_admin: boolean;
+}
 export class PolyvalenceUnitListController extends UIController {
-    // @State()
-    // private unitTables: IPolyvalenceUnit.IPolyvalenceUnit[];
-
-    // @State()
-    // private authParameter: boolean;
-
-    // @State()
-    // private viewerTableIds: string[];
-
-    // @State()
-    // private dataResponsibleTableIds: string[];
-
-    // @State()
-    // private isAdmin: boolean;
-
-    // protected BindRouterParams(): void {
-    //     Services.Accounts.get().then((account) => {
-    //         Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, account.$id).then((accountRelation) => {
-    //             this.isAdmin = accountRelation.is_admin;
-    //             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", accountRelation.tenant_id), Query.equal("is_deleted_table", false)]).then((unitTables) => {
-    //                 if (accountRelation.is_admin) {
-    //                     this.unitTables = unitTables as any;
-    //                 } else {
-    //                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", accountRelation.tenant_id), Query.equal("is_deleted", false)]).then((parameter) => {
-    //                         if (parameter && parameter[0] && parameter.documents[0]?.is_active) {
-    //                             let viewerTables = []
-    //                             let dataResponsibleTables = []
-    //                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("data_responsible_id", account.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
-    //                                 dataResponsibleTables = polyvalenceUnitTables.documents;
-    //                                 this.dataResponsibleTableIds = dataResponsibleTables.map((x) => x.polyvalence_table_id)
-    //                             })
-    //                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", account.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
-    //                                 viewerTables = polyvalenceUnitTables.documents;
-    //                                 this.viewerTableIds = viewerTables.map((x) => x.polyvalence_table_id)
-    //                             })
-    //                             const tables = unitTables.documents.filter((x) => viewerTables.map((x) => x.polyvalence_table_id).includes(x.$id) || dataResponsibleTables.map((x) => x.polyvalence_table_id).includes(x.$id))
-    //                             this.unitTables = tables as any;
-    //                         }
-    //                         this.authParameter = parameter.documents[0]?.is_active;
-    //                     })
-    //                 }
-    //             })
-    //         })
-    //     })
-    // }
-
-
     public LoadView() {
 
         const isAdmin = localStorage.getItem("isAdmin") === "true";
         const navigate = useNavigate();
+        // const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
+        const [polyvalenceUnitList, setPolyvalenceUnitList] = useState<IPolyvalenceUnitWithResponsible[]>(null);
 
-        const { me, isLoading, error, isError } = useGetMe("console");
-        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
+        useEffect(() => {
+            Services.Accounts.get().then((me) => {
+                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
+                    if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
+                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
+                            const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
+                            if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin") {
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                    setPolyvalenceUnitList(unitTables.documents as any);
+                                })
+                            } else {
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                    const dataResponsibleTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                        const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                            const unitTablesData: IPolyvalenceUnitWithResponsible[] = unitTables.documents as any;
+                                            const filteredUnitTables = unitTablesData.filter((x) => dataResponsibleTableIds.includes(x.$id) || viewerTableIds.includes(x.$id));
+                                            setPolyvalenceUnitList(filteredUnitTables.map((x) => {
+                                                return {
+                                                    ...x,
+                                                    is_admin: false,
+                                                    is_responsible: dataResponsibleTableIds.includes(x.$id),
+                                                    is_viewer: viewerTableIds.includes(x.$id)
+                                                }
+                                            }));
+                                        })
+                                    })
+                                })
+                            }
+                        })
+                    } else {
+                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                            const unitTablesData: IPolyvalenceUnitWithResponsible[] = unitTables.documents as any;
+                            setPolyvalenceUnitList(unitTablesData.map((x) => { return { ...x, is_admin: true, is_responsible: true, is_viewer: true } }));
+                        })
+                    }
+                })
+            }).catch((err) => {
+                console.log(err);
+                Toast.fire({ icon: "error", title: "Yetkinlik tabloları yüklenirken bir hata oluştu." });
+                navigate("/");
+            })
+        }, []);
 
 
         return (
-            isLoading || isLoadingPolyvalenceUnit ? VStack(Spinner()) :
+            polyvalenceUnitList == null ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [isActive, setIsActive] = useState(true);
@@ -88,7 +90,7 @@ export class PolyvalenceUnitListController extends UIController {
                                         ReactView(
                                             <TextField label="Tablo Arayın" onChange={(e) => setSearchText(e.target.value)} fullWidth size="small" />
                                         )
-                                    ).width("80%"),
+                                    ).width(isAdmin ? "80%" : "100%"),
                                     ReactView(
                                         <Tooltip title={`${isActive ? "Pasif" : "Aktif"} Yetkinlik Gruplarını Göster`}>
                                             <IconButton onClick={() => setIsActive(!isActive)}>
@@ -98,9 +100,14 @@ export class PolyvalenceUnitListController extends UIController {
                                     ),
                                     VStack(
                                         ReactView(
-                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate(isAdmin ? "/app/polyvalence-unit/create" : "/")}>Yeni Tablo</Button>
+                                            <div>
+                                                {isAdmin ?
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate(isAdmin ? "/app/polyvalence-unit/create" : "/")}>Yeni Tablo</Button>
+                                                    : null
+                                                }
+                                            </div>
                                         )
-                                    ).width("20%")
+                                    ).width(isAdmin ? "20%" : "0%")
                                 ),
                             ).height().paddingTop("15px"),
                             HStack({ alignment: cTop })(
@@ -117,10 +124,10 @@ export class PolyvalenceUnitListController extends UIController {
                                                     //         // this.ShowDialog(item.polyvalence_table_id)
                                                     //     }
                                                     // },
-                                                    {
+                                                    item.is_admin || item.is_responsible || isAdmin ? {
                                                         title: "Düzenle",
                                                         action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
-                                                    },
+                                                    } : null,
                                                     () => navigate(`/app/polyvalence-unit/report/${item.polyvalence_table_id}`)
                                                     //   ],
                                                 ).margin("0 20px 20px 0")

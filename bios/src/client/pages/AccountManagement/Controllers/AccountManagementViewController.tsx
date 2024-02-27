@@ -153,8 +153,6 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
-                            // Services.Client.setProject("console");
-                            // Services.Client.setMode(undefined);
 
                             createAccount({
                                 name: createAccountForm.username,
@@ -163,29 +161,21 @@ export class AccountManagementViewController extends UIController {
                                 organizationId: me?.prefs?.organization
                             }, (data) => {
                                 const docId: string = nanoid()
-                                createTeamMembership({
-                                    teamId: me?.prefs?.organization,
-                                    roles: [],
-                                    url: "",
-                                    userId: data.$id,
+                                createAccountRelation({
+                                    documentId: docId,
+                                    data: {
+                                        "id": docId,
+                                        "tenant_id": me?.prefs?.organization,
+                                        "account_id": data.$id,
+                                        "is_admin": false
+                                    }
                                 }, () => {
-                                    createAccountRelation({
-                                        documentId: docId,
-                                        data: {
-                                            "id": docId,
-                                            "tenant_id": me?.prefs?.organization,
-                                            "account_id": docId,
-                                            "is_admin": false
-                                        }
-                                    }, () => {
-                                        Toast.fire({
-                                            icon: 'success',
-                                            title: 'Kullanıcı oluşturuldu'
-                                        })
-                                        setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Kullanıcı oluşturuldu'
                                     })
+                                    setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
                                 })
-
                             })
                             if (isCreateAccountError) {
                                 Toast.fire({
