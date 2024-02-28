@@ -39,6 +39,14 @@ namespace PolyvalenceUnit {
             isSuccessPolyvalenceUnit: isSuccess
         }
     }
+
+    export const GetActiveList = (tenant_id: string): { polyvalenceUnitList: IPolyvalenceUnit.IPolyvalenceUnit[], isLoadingPolyvalenceUnit: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "polyvalence_unit_table", [Query.equal("tenant_id", tenant_id), Query.equal("is_deleted_table", false), Query.equal("is_active", true)])
+        return {
+            polyvalenceUnitList: documents as any,
+            isLoadingPolyvalenceUnit: isLoading
+        }
+    }
 }
 
 export default PolyvalenceUnit;

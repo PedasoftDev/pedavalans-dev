@@ -101,7 +101,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     isVisible: tableAuth ? isResponsible || isAdmin : true
                 },
                 {
-                    title: "Yetkinlik Gerçekleşme Girişi",
+                    title: "Yetkinlik Değerlendirme Girişi",
                     link: "/app/competency-real-data-entry/view",
                     icon: ReactView(
                         <BiCalendarCheck size={25} />

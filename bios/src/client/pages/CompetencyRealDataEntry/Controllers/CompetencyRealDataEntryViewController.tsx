@@ -46,27 +46,28 @@ export class CompetencyRealDataEntryViewController extends UIController {
     private polyvalenceUnitList: IPolyvalenceUnit.IPolyvalenceUnit[] = [];
 
     protected BindRouterParams(): void {
-        Services.Accounts.get().then(me => {
+        Services.Accounts.get().then((me) => {
             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
                 if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
+
                         const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
-                        if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin") {
-                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
-                                this.polyvalenceUnitList = unitTables.documents as any;
+                        if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin" || accountRelationData.authorization_profile === "responsible") {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
+                                this.polyvalenceUnitList = unitTables.documents as any
                             })
                         } else {
-                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
-                                const dataResponsibleTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
-                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
-                                    this.polyvalenceUnitList = polyvalenceUnitTables.documents.filter((x) => dataResponsibleTableIds.includes(x.polyvalence_table_id)) as any;
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
+                                    this.polyvalenceUnitList = unitTables.documents.filter((x) => viewerTableIds.includes(x.polyvalence_table_id)) as any
                                 })
                             })
                         }
                     })
                 } else {
                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
-                        this.polyvalenceUnitList = unitTables.documents as any;
+                        this.polyvalenceUnitList = unitTables.documents as any
                     })
                 }
             })
@@ -369,7 +370,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     return (
                         VStack(
                             HStack({ alignment: cLeading })(
-                                Views.Title("Yetkinlik Gerçekleşme Girişi").paddingTop("10px")
+                                Views.Title("Yetkinlik Değerlendirme Girişi").paddingTop("10px")
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             ReactView(
                                 <Container>

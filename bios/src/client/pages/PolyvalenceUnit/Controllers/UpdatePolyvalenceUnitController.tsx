@@ -102,41 +102,29 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
-                            
+
                             if (tableAuth[0]?.is_active) {
-                                const alreadyViewer = dataViewer.map((viewer) => viewer.viewer_employee_id)
-                                const alreadyResponsible = dataResponsible.map((responsible) => responsible.responsible_employee_id)
-                                const newViewer = selectedViewerAccounts.filter((viewer) => !alreadyViewer.includes(viewer))
-                                const newResponsible = selectedResponsibleAccounts.filter((responsible) => !alreadyResponsible.includes(responsible))
-                                const removedViewer = alreadyViewer.filter((viewer) => !selectedViewerAccounts.includes(viewer))
-                                const removedResponsible = alreadyResponsible.filter((responsible) => !selectedResponsibleAccounts.includes(responsible))
-                                newViewer.forEach((viewer) => {
-                                    const newViewerId = nanoid();
-                                    const newViewerModel: IPolyvalenceUnitTableDataViewer.ICreate = {
-                                        data_viewer_id: newViewerId,
-                                        polyvalence_table_id: id,
-                                        viewer_employee_id: viewer,
-                                        viewer_employee_name: accounts.find(x => x.$id == viewer)?.name,
-                                        tenant_id: me?.prefs?.organization,
-                                        realm_id: ""
-                                    }
-                                    createPolyvalenceUnitTableDataViewer({
-                                        documentId: newViewerId,
-                                        data: newViewerModel
-                                    })
-                                })
-                                removedViewer.forEach((viewer) => {
+                                dataViewer.forEach((viewer) => {
                                     updatePolyvalenceUnitTableDataViewer({
                                         databaseId: AppInfo.Database,
                                         collectionId: Collections.PolyvalenceUnitTableDataViewer,
-                                        documentId: dataViewer.find((x) => x.viewer_employee_id == viewer)?.$id,
+                                        documentId: viewer.$id,
                                         data: {
-                                            ...removeDollarProperties(dataViewer.find((x) => x.viewer_employee_id == viewer)),
                                             is_deleted: true
                                         }
                                     })
                                 })
-                                newResponsible.forEach((responsible) => {
+                                dataResponsible.forEach((responsible) => {
+                                    updatePolyvalenceUnitTableDataResponsible({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.PolyvalenceUnitTableDataResponsible,
+                                        documentId: responsible.$id,
+                                        data: {
+                                            is_deleted: true
+                                        }
+                                    })
+                                })
+                                selectedResponsibleAccounts.forEach((responsible) => {
                                     const newResponsibleId = nanoid();
                                     const newResponsibleModel: IPolyvalenceUnitTableDataResponsible.ICreate = {
                                         data_responsible_id: newResponsibleId,
@@ -151,15 +139,19 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                         data: newResponsibleModel
                                     })
                                 })
-                                removedResponsible.forEach((responsible) => {
-                                    updatePolyvalenceUnitTableDataResponsible({
-                                        databaseId: AppInfo.Database,
-                                        collectionId: Collections.PolyvalenceUnitTableDataResponsible,
-                                        documentId: dataResponsible.find((x) => x.responsible_employee_id == responsible)?.$id,
-                                        data: {
-                                            ...removeDollarProperties(dataResponsible.find((x) => x.responsible_employee_id == responsible)),
-                                            is_deleted: true
-                                        }
+                                selectedViewerAccounts.forEach((viewer) => {
+                                    const newViewerId = nanoid();
+                                    const newViewerModel: IPolyvalenceUnitTableDataViewer.ICreate = {
+                                        data_viewer_id: newViewerId,
+                                        polyvalence_table_id: id,
+                                        viewer_employee_id: viewer,
+                                        viewer_employee_name: accounts.find(x => x.$id == viewer)?.name,
+                                        tenant_id: me?.prefs?.organization,
+                                        realm_id: ""
+                                    }
+                                    createPolyvalenceUnitTableDataViewer({
+                                        documentId: newViewerId,
+                                        data: newViewerModel
                                     })
                                 })
                             }

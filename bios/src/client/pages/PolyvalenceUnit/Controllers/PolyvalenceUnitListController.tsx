@@ -100,7 +100,7 @@ export class PolyvalenceUnitListController extends UIController {
                                     ),
                                     VStack(
                                         ReactView(
-                                            <div>
+                                            <div style={{ width: "100%" }}>
                                                 {isAdmin ?
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate(isAdmin ? "/app/polyvalence-unit/create" : "/")}>Yeni Tablo</Button>
                                                     : null
@@ -132,7 +132,7 @@ export class PolyvalenceUnitListController extends UIController {
                                                     //   ],
                                                 ).margin("0 20px 20px 0")
                                             ),
-                                            isAdmin ? Views.NewPolyvalenceUnitCard("//app/polyvalence-unit/create").margin("0 20px 20px 0") : null
+                                            isAdmin ? Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create").margin("0 20px 20px 0") : null
 
                                         ).wrap("wrap").paddingTop("10px")
                                     )

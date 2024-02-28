@@ -5,7 +5,7 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Button, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -20,14 +20,14 @@ import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
-import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
 import AppInfo from "../../../../AppInfo";
-import { MdMood } from "react-icons/md";
-import { FaRegSmile } from "react-icons/fa";
 import { BiConfused, BiHappy, BiSad, BiSmile } from "react-icons/bi";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
+import { Legend, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { SiMicrosoftexcel } from "react-icons/si";
+import { getReportToExcel } from "../../../assets/Functions/getReportToExcel";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -54,13 +54,13 @@ export class CompetencyReportDataViewController extends UIController {
 
                         const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
                         if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin" || accountRelationData.authorization_profile === "responsible") {
-                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
                                 this.polyvalenceUnitList = unitTables.documents as any
                             })
                         } else {
                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
                                 const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
-                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
                                     this.polyvalenceUnitList = unitTables.documents.filter((x) => viewerTableIds.includes(x.polyvalence_table_id)) as any
                                 })
                             })
@@ -98,6 +98,12 @@ export class CompetencyReportDataViewController extends UIController {
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
                     const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
+
+                    // radar=true or table=false
+                    const [isRadar, setIsRadar] = useState<boolean>(false);
+
+                    // radar data
+                    const [radarData, setRadarData] = useState<{ name: string, target: number, real: number }[]>([]);
 
                     const onChangeTable = (e: SelectChangeEvent<string>) => {
                         const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
@@ -172,6 +178,7 @@ export class CompetencyReportDataViewController extends UIController {
                     ];
 
                     const getCompetencies = async (employee_id: string) => {
+                        setRadarData([]);
                         const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
                         const appendToSelectedCompetencyList = [];
                         await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
@@ -202,10 +209,23 @@ export class CompetencyReportDataViewController extends UIController {
                                         }
                                     })
                                 })
+                                setRadarData(appendToSelectedCompetencyList.map((competency) => {
+                                    return {
+                                        name: competency.competency_name,
+                                        target: competency.competency_target_value,
+                                        real: competency.competency_real_value
+                                    }
+                                }))
                             })
-                        console.log(appendToSelectedCompetencyList)
                         setSelectedCompetencyList(appendToSelectedCompetencyList);
                     }
+
+                    const truncateText = (text, maxLength) => {
+                        if (text.length > maxLength) {
+                            return text.substring(0, maxLength - 3) + '...';
+                        }
+                        return text;
+                    };
 
 
                     useEffect(() => {
@@ -307,18 +327,44 @@ export class CompetencyReportDataViewController extends UIController {
                                                         ))}
                                                     </Select>
                                                 </FormControl>
+                                                <Button variant="outlined" onClick={() => {
+                                                    // setIsRadar(!isRadar)
+                                                }}>
+                                                    {isRadar ? "Tablo" : "Grafik"}
+                                                </Button>
+                                                <IconButton onClick={() => {
+                                                    // getReportToExcel(employees.find(x => x.$id == selectedEmployeeId), selectedCompetencyList)
+                                                }}>
+                                                    <SiMicrosoftexcel />
+                                                </IconButton>
                                             </RightContainerHeader>
                                             <div style={{
                                                 height: "calc(100vh - 120px)",
                                                 width: "100%",
                                                 padding: "0 20px"
                                             }}>
-                                                <StyledDataGrid
-                                                    columns={columns}
-                                                    rows={selectedCompetencyList}
-                                                    getRowId={(row) => row.competency_id}
-                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                />
+                                                {isRadar ?
+                                                    <div style={{ width: "100%", height: "100%", padding: "20px" }}>
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                                                                <PolarGrid />
+                                                                <PolarAngleAxis dataKey={"name"}
+                                                                    tickFormatter={(value) => truncateText(value, 30)}
+                                                                />
+                                                                <Radar name="Hedef" dataKey="target" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                                                                <Radar name="Gerçekleşen" dataKey="real" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                                                                <Tooltip />
+                                                                <Legend />
+                                                            </RadarChart>
+                                                        </ResponsiveContainer>
+                                                    </div>
+                                                    : <StyledDataGrid
+                                                        columns={columns}
+                                                        rows={selectedCompetencyList}
+                                                        getRowId={(row) => row.competency_id}
+                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                    />
+                                                }
                                             </div>
                                         </RightContainer>
                                     }

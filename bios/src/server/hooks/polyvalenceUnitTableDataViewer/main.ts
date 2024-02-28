@@ -12,7 +12,7 @@ namespace PolyvalenceUnitTableDataViewer {
     }
 
     export const GetByPolyvalenceUnitId = (polyvalence_table_id: string): { dataViewer: IPolyvalenceUnitTableDataViewer.IBase[], isLoadingDataViewer: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("polyvalence_table_id", polyvalence_table_id)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("polyvalence_table_id", polyvalence_table_id), Query.equal("is_deleted", false)])
         return {
             dataViewer: documents as any,
             isLoadingDataViewer: isLoading
@@ -28,7 +28,7 @@ namespace PolyvalenceUnitTableDataViewer {
     }
  
     export const GetListByAccountId = (account_id: string): { dataViewer: IPolyvalenceUnitTableDataViewer.IBase[], isLoadingDataViewer: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", account_id)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", account_id), Query.equal("is_deleted", false)])
         return {
             dataViewer: documents as any,
             isLoadingDataViewer: isLoading

@@ -38,7 +38,6 @@ export const LeftContainerHeader = styled.div`
 
 export const RightContainerHeader = styled.div`
 display: flex;
-flex-direction: column;
 gap: 10px;
 width: 100%;
 justify-content: center;
