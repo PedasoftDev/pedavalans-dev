@@ -128,7 +128,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <IoGitNetworkOutline size={25} />
                     ),
-                    isVisible: tableAuth ? isResponsible || isAdmin : true
+                    isVisible: tableAuth ? isAdmin : true
                 },
                 {
                     title: "Yetkinlik Grupları",
@@ -136,7 +136,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     icon: ReactView(
                         <FaLayerGroup size={25} />
                     ),
-                    isVisible: tableAuth ? isResponsible || isAdmin : true
+                    isVisible: tableAuth ? isAdmin : true
                 },
                 {
                     title: "Değerlendirme Dönemi",

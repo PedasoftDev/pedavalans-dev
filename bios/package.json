@@ -116,7 +116,6 @@
         "css-loader": "^6.7.3",
         "declaration-bundler-webpack-plugin": "^1.0.3",
         "dts-bundle": "^0.7.3",
-        "exceljs": "^4.4.0",
         "file-saver": "^2.0.5",
         "html2canvas": "^1.4.1",
         "ifdef-loader": "^2.3.2",
@@ -138,7 +137,8 @@
         "uuid": "^9.0.1",
         "web-vitals": "^3.3.1",
         "webpack": "^5.74.0",
-        "webpack-cli": "^4.10.0"
+        "webpack-cli": "^4.10.0",
+        "xlsx": "^0.18.5"
     },
     "dependencies": {
         "@mui/icons-material": "^5.15.3",
@@ -147,7 +147,7 @@
         "@types/js-cookie": "^3.0.6",
         "devextreme": "23.2.3",
         "devextreme-react": "23.2.3",
-        "js-cookie": "^3.0.5",
+        "jszip": "^3.10.1",
         "react-circular-progressbar": "^2.1.0",
         "react-icons": "^4.12.0"
     }

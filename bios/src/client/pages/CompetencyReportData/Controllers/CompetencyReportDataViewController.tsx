@@ -41,6 +41,19 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     tenant_id: ""
 }
 
+interface IData extends ICompetency.ICompetency {
+    employee_id: string;
+    employee_name: string;
+    polyvalence_table_id: string;
+    polyvalence_table_name: string;
+    competency_evaluation_period: string;
+    competency_department_id: string;
+    competency_department_name: string;
+    competency_target_value: string;
+    competency_real_value: string;
+    competency_value_desc: string;
+}
+
 export class CompetencyReportDataViewController extends UIController {
 
     @State()
@@ -96,11 +109,12 @@ export class CompetencyReportDataViewController extends UIController {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
-                    const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
+                    const [selectedCompetencyList, setSelectedCompetencyList] = useState<IData[]>([]);
                     const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
 
                     // radar=true or table=false
                     const [isRadar, setIsRadar] = useState<boolean>(false);
+
 
                     // radar data
                     const [radarData, setRadarData] = useState<{ name: string, target: number, real: number }[]>([]);
@@ -327,13 +341,13 @@ export class CompetencyReportDataViewController extends UIController {
                                                         ))}
                                                     </Select>
                                                 </FormControl>
-                                                <Button variant="outlined" onClick={() => {
-                                                    // setIsRadar(!isRadar)
-                                                }}>
+                                                <Button variant="outlined" onClick={() => setIsRadar(!isRadar)}>
                                                     {isRadar ? "Tablo" : "Grafik"}
                                                 </Button>
                                                 <IconButton onClick={() => {
-                                                    // getReportToExcel(employees.find(x => x.$id == selectedEmployeeId), selectedCompetencyList)
+                                                    const employee = employees.find((employee) => employee.id === selectedEmployeeId);
+                                                    const employeeName = `${employee?.first_name} ${employee?.last_name}`;
+                                                    getReportToExcel(employeeName, selectedCompetencyList)
                                                 }}>
                                                     <SiMicrosoftexcel />
                                                 </IconButton>

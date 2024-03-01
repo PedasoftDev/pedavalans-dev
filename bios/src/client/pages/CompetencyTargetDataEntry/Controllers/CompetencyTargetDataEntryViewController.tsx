@@ -52,11 +52,19 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
 
                         const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
-                        if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin" || accountRelationData.authorization_profile === "responsible") {
+                        if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin") {
                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
                                 this.polyvalenceUnitList = unitTables.documents as any
                             })
-                        } else {
+                        } else if (accountRelationData.authorization_profile === "responsible") {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                const responsibleTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
+                                    this.polyvalenceUnitList = unitTables.documents.filter((x) => responsibleTableIds.includes(x.polyvalence_table_id)) as any
+                                })
+                            })
+                        }
+                        else if (accountRelationData.authorization_profile === "viewer") {
                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
                                 const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
                                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
