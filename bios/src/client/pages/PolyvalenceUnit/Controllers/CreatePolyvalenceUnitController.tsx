@@ -42,7 +42,7 @@ const evaluationFrequency = [
     {
         frequency: "Ay"
     }
-]
+];
 
 export class CreatePolyvalenceUnitController extends UIController {
 
