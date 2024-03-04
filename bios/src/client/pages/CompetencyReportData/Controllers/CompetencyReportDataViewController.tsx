@@ -355,10 +355,12 @@ export class CompetencyReportDataViewController extends UIController {
                                             <div style={{
                                                 height: "calc(100vh - 120px)",
                                                 width: "100%",
-                                                padding: "0 20px"
+                                                padding: "0 20px",
+                                                display: "flex",
+                                                justifyContent: "center",
                                             }}>
                                                 {isRadar ?
-                                                    <div style={{ width: "100%", height: "100%", padding: "20px" }}>
+                                                    <div style={{ width: "100%", height: "80%", display: "flex", justifyContent: "center" }}>
                                                         <ResponsiveContainer width="100%" height="100%">
                                                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                                                                 <PolarGrid />
