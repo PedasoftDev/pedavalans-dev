@@ -1,7 +1,7 @@
 import { HStack, UIController, UIView, VStack, cLeading, cTopLeading, useParams, ReactView, Spinner, UIViewBuilder, UINavigate } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import React, { useEffect, useState } from "react";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
@@ -15,6 +15,8 @@ import SkillSlice from "../../../components/SkillSlice";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
+import { getReportToExcelByPolyvalenceTable } from "../../../assets/Functions/getReportToExcelByPolyvalenceTable";
+import { SiMicrosoftexcel } from "react-icons/si";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -120,21 +122,31 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     HStack({ spacing: 10 })(
                                         VStack(
                                             ReactView(
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Değerlendirme Dönemi</InputLabel>
-                                                    <Select
-                                                        name="evaluation_period"
-                                                        value={selectedPeriod}
-                                                        label="Değerlendirme Dönemi"
-                                                        onChange={handleChangeEvaluationPeriod}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {dataYear.map((period, i) => (
-                                                            <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
+                                                <div style={{ display: "flex", gap: "10px", width: "100%" }}>
+                                                    <FormControl fullWidth size="small">
+                                                        <InputLabel>Değerlendirme Dönemi</InputLabel>
+                                                        <Select
+                                                            name="evaluation_period"
+                                                            value={selectedPeriod}
+                                                            label="Değerlendirme Dönemi"
+                                                            onChange={handleChangeEvaluationPeriod}
+                                                            size="small"
+                                                            required
+                                                        >
+                                                            {dataYear.map((period, i) => (
+                                                                <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                    {rows.length != 0 &&
+                                                        <IconButton onClick={() => {
+                                                            getReportToExcelByPolyvalenceTable(polyvalenceUnit.polyvalence_table_name, rows)
+                                                        }}>
+                                                            <SiMicrosoftexcel />
+                                                        </IconButton>
+                                                    }
+                                                </div>
+
                                             )
                                         ),
                                     ),

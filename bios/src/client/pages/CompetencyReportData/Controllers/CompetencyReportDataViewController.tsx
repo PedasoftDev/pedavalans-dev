@@ -27,7 +27,7 @@ import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import { Legend, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { SiMicrosoftexcel } from "react-icons/si";
-import { getReportToExcel } from "../../../assets/Functions/getReportToExcel";
+import { getReportToExcelByEmployee } from "../../../assets/Functions/getReportToExcelByEmployee";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -347,7 +347,7 @@ export class CompetencyReportDataViewController extends UIController {
                                                 <IconButton onClick={() => {
                                                     const employee = employees.find((employee) => employee.id === selectedEmployeeId);
                                                     const employeeName = `${employee?.first_name} ${employee?.last_name}`;
-                                                    getReportToExcel(employeeName, selectedCompetencyList)
+                                                    getReportToExcelByEmployee(employeeName, selectedCompetencyList)
                                                 }}>
                                                     <SiMicrosoftexcel />
                                                 </IconButton>
