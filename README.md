@@ -13,3 +13,9 @@
 ** Skill Matrix
 ** Departman-Hat İlişkilendirme
 ** Yetkinlik-Hat İlişkilendirme
+
+
+### Versiyon 1.1.1
+
+** Çalışan Bazlı Excel Export
+** Çalışan Radar Kartı
