@@ -28,6 +28,8 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization)
 
+        let excelData: any[] = [];
+
         return (
             isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingCompetencyGradeValueList ? VStack(Spinner()) :
                 periods.length == 0 ? UINavigate("/") :
@@ -110,6 +112,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     })
                                     setColumns(copyColumns)
                                     setRows(copyEmployees)
+                                    excelData = res.documents;
                                 })
                         }
 
@@ -140,7 +143,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                     </FormControl>
                                                     {rows.length != 0 &&
                                                         <IconButton onClick={() => {
-                                                            getReportToExcelByPolyvalenceTable(polyvalenceUnit.polyvalence_table_name, rows)
+                                                            getReportToExcelByPolyvalenceTable(polyvalenceUnit.polyvalence_table_name, excelData)
                                                         }}>
                                                             <SiMicrosoftexcel />
                                                         </IconButton>

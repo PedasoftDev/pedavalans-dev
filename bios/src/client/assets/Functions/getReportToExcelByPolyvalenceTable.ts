@@ -16,27 +16,40 @@ interface IData extends ICompetency.ICompetency {
 
 
 export function getReportToExcelByPolyvalenceTable(polyvalence_table_name: string, data: IData[]) {
-    const wb = XLSX.utils.book_new();
 
-    const appendData = [];
+    // const wb = XLSX.utils.book_new();
 
-    const rowHeights: { hpx: number }[] = [];
+    // const appendData = [];
 
-    const alignCenter = { vertical: "center", horizontal: "center" };
-    const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "D9D9D9" } }, alignment: alignCenter };
+    // const rowHeights: { hpx: number }[] = [];
 
-    appendData.push([
-        { v: null, t: 's', s: headerStyle },
-        { v: data[0].competency_evaluation_period, t: 's', s: { alignment: alignCenter } },
-        { v: null, t: 's', s: headerStyle },
-    ]);
+    // const alignCenter = { vertical: "center", horizontal: "center" };
+    // const headerStyle = { font: { bold: true }, fill: { fgColor: { rgb: "D9D9D9" } }, alignment: alignCenter };
 
-    rowHeights[0] = { hpx: 40 };
+    // appendData.push([
+    //     { v: data[0].competency_evaluation_period, t: 's', s: headerStyle },
+    // ]);
 
-    const ws = XLSX.utils.aoa_to_sheet(appendData);
+    // rowHeights[0] = { hpx: 40 };
 
-    XLSX.utils.book_append_sheet(wb, ws, "Rapor");
+    // appendData.push([
+    //     { v: "Takım", t: 's', s: headerStyle },
+    // ]);
 
-    // STEP 4: Write Excel file to browser
-    XLSX.writeFile(wb, polyvalence_table_name + '-' + new Date().toLocaleDateString() + '.xlsx');
+    // rowHeights[1] = { hpx: 40 };
+
+    // const ws = XLSX.utils.aoa_to_sheet(appendData);
+
+    // const merge = [
+    //     { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+    // ];
+
+
+    // ws["!rows"] = rowHeights;
+    // ws["!merges"] = merge;
+
+    // XLSX.utils.book_append_sheet(wb, ws, "Rapor");
+
+    // // STEP 4: Write Excel file to browser
+    // XLSX.writeFile(wb, polyvalence_table_name + '-' + new Date().toLocaleDateString() + '.xlsx');
 }
