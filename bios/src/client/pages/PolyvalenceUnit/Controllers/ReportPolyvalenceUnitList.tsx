@@ -63,7 +63,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     Query.equal("competency_evaluation_period", e.target.value),
                                     Query.equal("polyvalence_table_id", id), Query.equal("is_deleted_competency_value", false),
                                     Query.equal("tenant_id", me?.prefs?.organization),
-                                    Query.limit(1000)
+                                    Query.limit(10000)
                                 ]).then((res: any) => {
                                     const copyColumns: GridColDef[] = []
                                     const copyEmployees: { id: string, name: string }[] = []

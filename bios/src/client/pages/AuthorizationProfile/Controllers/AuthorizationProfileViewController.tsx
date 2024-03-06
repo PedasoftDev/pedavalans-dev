@@ -25,7 +25,7 @@ export class AuthorizationProfileViewController extends UIController {
         const getAccountRelations = () => {
             Services.Accounts.get().then((me) => {
                 Promise.all([
-                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("tenant_id", me.prefs.organization), Query.equal("is_deleted", false)]),
+                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("tenant_id", me.prefs.organization), Query.equal("is_deleted", false)]),
                 ]).then(res => {
                     const [accountRelationsDb] = res;
                     setAccountRelations(accountRelationsDb.documents as any);

@@ -17,7 +17,7 @@ namespace CompetencyGrade {
     }
 
     export const GetCompetencyGrades = (tenant_id: string): { grades: ICompetencyGrade.ICompetencyGrade[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade", [Query.limit(1000), Query.equal("is_deleted_grade", false), Query.equal("is_active_grade", true), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade", [Query.limit(10000), Query.equal("is_deleted_grade", false), Query.equal("is_active_grade", true), Query.equal("tenant_id", tenant_id)])
         return {
             grades: documents as any[],
             isLoading: isLoading
@@ -30,7 +30,7 @@ namespace CompetencyGrade {
     }
 
     export const GetGradeLevels = (id): { levels: ICompetencyGrade.ICompetencyGradeLevel[], total: Number, isLoadingLevels: boolean } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_level", [Query.limit(1000),, Query.equal("grade_id", id), Query.equal("is_deleted_level", false)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_level", [Query.limit(10000), Query.equal("grade_id", id), Query.equal("is_deleted_level", false)])
         return {
             levels: documents as any[],
             total,

@@ -17,7 +17,7 @@ namespace CompetencyGroup {
     }
 
     export const GetActiveCompetencyGroups = (): { activeGroups: ICompetencyGroup.IGetCompetencyGroup[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.equal("is_deleted_group", false), Query.equal("is_active_group", true)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.limit(10000), Query.equal("is_deleted_group", false), Query.equal("is_active_group", true)])
         return {
             activeGroups: documents as any,
             isLoading
@@ -25,7 +25,7 @@ namespace CompetencyGroup {
     }
 
     export const GetPassiveCompetencyGroups = (): { passiveGroups: ICompetencyGroup.IGetCompetencyGroup[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.equal("is_deleted_group", false), Query.equal("is_active_group", false)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.limit(10000), Query.equal("is_deleted_group", false), Query.equal("is_active_group", false)])
         return {
             passiveGroups: documents as any,
             isLoading
@@ -33,7 +33,7 @@ namespace CompetencyGroup {
     }
 
     export const GetList = (tenant_id: string): { groups: ICompetencyGroup.IGetCompetencyGroup[], isLoadingGroups: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.equal("is_deleted_group", false), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_group", [Query.limit(10000), Query.equal("is_deleted_group", false), Query.equal("tenant_id", tenant_id)])
         return {
             groups: documents as any,
             isLoadingGroups: isLoading

@@ -22,7 +22,7 @@ namespace OrganizationStructureDepartment {
         { departments: IOrganizationStructure.IDepartments.IDepartment[], isLoadingDepartments: boolean, totalDepartments: number }
 
     ) => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_department", [Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_department", [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
         return {
             departments: documents as any,
             isLoadingDepartments: isLoading,

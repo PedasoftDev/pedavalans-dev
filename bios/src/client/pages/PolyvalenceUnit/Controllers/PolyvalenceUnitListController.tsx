@@ -26,20 +26,20 @@ export class PolyvalenceUnitListController extends UIController {
 
         useEffect(() => {
             Services.Accounts.get().then((me) => {
-                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
+                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.limit(10000), Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
                     if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
-                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
+                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
                             const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
                             if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin") {
-                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
                                     setPolyvalenceUnitList(unitTables.documents as any);
                                 })
                             } else {
-                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.limit(10000), Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
                                     const dataResponsibleTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
-                                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.limit(10000), Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
                                         const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
-                                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
                                             const unitTablesData: IPolyvalenceUnitWithResponsible[] = unitTables.documents as any;
                                             const filteredUnitTables = unitTablesData.filter((x) => dataResponsibleTableIds.includes(x.$id) || viewerTableIds.includes(x.$id));
                                             setPolyvalenceUnitList(filteredUnitTables.map((x) => {
@@ -56,7 +56,7 @@ export class PolyvalenceUnitListController extends UIController {
                             }
                         })
                     } else {
-                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
                             const unitTablesData: IPolyvalenceUnitWithResponsible[] = unitTables.documents as any;
                             setPolyvalenceUnitList(unitTablesData.map((x) => { return { ...x, is_admin: true, is_responsible: true, is_viewer: true } }));
                         })

@@ -1,4 +1,4 @@
-import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
+import { Query, useCreateDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo';
 import ICompetencyDepartment from '../../../client/interfaces/ICompetencyDepartment';
 
@@ -15,7 +15,7 @@ namespace CompetencyDepartment {
     }
 
     export const GetList = (tenant_id: string): { competencyDepartmentList: ICompetencyDepartment.ICompetencyDepartment[], isLoadingCompetencyDepartmentList: boolean, totalCompetencyDepartmentList: Number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false), Query.limit(10000)])
         return {
             competencyDepartmentList: documents as any,
             isLoadingCompetencyDepartmentList: isLoading,
@@ -24,7 +24,7 @@ namespace CompetencyDepartment {
     }
 
     export const GetByCompetencyId = (competency_id: string): { competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[], isLoadingCompetencyDepartments: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("competency_id", competency_id), Query.equal("is_deleted", false)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("competency_id", competency_id), Query.equal("is_deleted", false), Query.limit(10000)])
         return {
             competencyDepartments: documents as any,
             isLoadingCompetencyDepartments: isLoading
@@ -32,7 +32,7 @@ namespace CompetencyDepartment {
     }
     
     export const GetByDepartmentId = (department_id: string): { competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[], isLoadingCompetencyDepartments: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("competency_department_id", department_id), Query.equal("is_deleted", false)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_department", [Query.equal("competency_department_id", department_id), Query.equal("is_deleted", false), Query.limit(10000)])
         return {
             competencyDepartments: documents as any,
             isLoadingCompetencyDepartments: isLoading

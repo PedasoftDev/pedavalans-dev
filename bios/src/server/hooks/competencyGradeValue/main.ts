@@ -15,7 +15,7 @@ namespace CompetencyGradeValue {
     }
 
     export const GetList = (tenant_id: string): { competencyGradeValueList: ICompetencyGradeValue.ICompetencyGradeValue[], isLoadingCompetencyGradeValueList: boolean } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_value", [Query.limit(1000), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_value", [Query.limit(10000), Query.equal("tenant_id", tenant_id)])
         return {
             competencyGradeValueList: documents as any,
             isLoadingCompetencyGradeValueList: isLoading

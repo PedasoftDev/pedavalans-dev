@@ -26,7 +26,7 @@ namespace OrganizationStructureTitle {
     }
 
     export const GetList = (tenant_id: string): { titles: IOrganizationStructure.ITitles.ITitle[], isLoadingTitles: boolean, totalTitles: Number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_title", [Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_title", [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
         return {
             titles: documents as any,
             isLoadingTitles: isLoading,

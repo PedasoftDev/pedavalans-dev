@@ -90,7 +90,7 @@ export class AccountManagementViewController extends UIController {
                             if (me) {
                                 setAccountInfo(me)
                                 setPhone(accountInfo?.phone)
-                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.equal("account_id", me.$id)]).then((data) => {
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.limit(10000), Query.equal("account_id", me.$id)]).then((data) => {
                                     setAccountRelation(removeDollarProperties(data.documents[0]))
                                 })
                             }

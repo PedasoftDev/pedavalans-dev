@@ -9,7 +9,7 @@ namespace OrganizationStructureLine {
     }
 
     export const GetList = (tenant_id: string): { lines: IOrganizationStructure.ILines.ILine[], isLoadingLines: boolean, totalLines: number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_line", [Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_line", [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
         return {
             lines: documents as any,
             isLoadingLines: isLoading,

@@ -15,7 +15,7 @@ namespace Competency {
     }
 
     export const GetList = (tenant_id: string): { competencyList: ICompetency.ICompetency[], isLoadingCompetencyList: boolean, totalCompetencyList: Number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency", [Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency", [Query.equal("tenant_id", tenant_id), Query.equal('is_deleted_competency', false), Query.limit(10000)])
         return {
             competencyList: documents as any,
             isLoadingCompetencyList: isLoading,
@@ -32,7 +32,7 @@ namespace Competency {
     }
 
     export const GetListByDepartmentId = (tenant_id: string, competency_department_id: string): { competencyList: ICompetency.ICompetency[], isLoadingCompetencyList: boolean, totalCompetencyList: Number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency", [Query.equal("tenant_id", tenant_id), Query.equal("competency_department_id", competency_department_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency", [Query.equal("tenant_id", tenant_id), Query.equal("competency_department_id", competency_department_id), Query.limit(10000)])
         return {
             competencyList: documents as any,
             isLoadingCompetencyList: isLoading,

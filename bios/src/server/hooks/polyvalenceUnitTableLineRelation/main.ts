@@ -10,7 +10,7 @@ namespace PolyvalenceUnitTableLineRelation {
     }
 
     export const GetByPolyvalenceUnitId = (polyvalence_unit_id: string, tenant_id: string): { lineRelation: IPolyvalenceUnitTableLineRelation.IPolyvalenceUnitTableLineRelation[], isLoading: boolean, total: number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.equal('polyvalence_table_id', polyvalence_unit_id), Query.equal('tenant_id', tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.limit(10000), Query.equal('polyvalence_table_id', polyvalence_unit_id), Query.equal('tenant_id', tenant_id)])
         return { lineRelation: documents as any, isLoading, total }
     }
 

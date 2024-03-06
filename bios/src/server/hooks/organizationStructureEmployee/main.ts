@@ -16,7 +16,7 @@ namespace OrganizationStructureEmployee {
     }
 
     export const GetList = (tenant_id: string): { employees: IOrganizationStructure.IEmployees.IEmployee[], isLoadingEmployees: boolean, totalEmployees: Number } => {
-        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_employee", [Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_employee", [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("tenant_id", tenant_id)])
         return {
             employees: documents as any,
             isLoadingEmployees: isLoading,

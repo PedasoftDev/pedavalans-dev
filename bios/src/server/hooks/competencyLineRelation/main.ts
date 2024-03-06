@@ -12,7 +12,7 @@ namespace CompetencyLineRelation {
         competencyLineRelation: ICompetencyLineRelation.ICompetencyLineRelation[],
         isLoading: boolean
     } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_line_relation", [Query.equal("competency_id", competencyId), Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_line_relation", [Query.limit(10000), Query.equal("competency_id", competencyId), Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false)])
         return { competencyLineRelation: documents as any, isLoading }
     }
 
@@ -20,7 +20,7 @@ namespace CompetencyLineRelation {
         competencyLineRelation: ICompetencyLineRelation.ICompetencyLineRelation[],
         isLoading: boolean
     } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_line_relation", [Query.equal("line_id", lineId), Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_line_relation", [Query.limit(10000), Query.equal("line_id", lineId), Query.equal("tenant_id", tenant_id), Query.equal("is_deleted", false)])
         return { competencyLineRelation: documents as any, isLoading }
     }
 
