@@ -19,3 +19,10 @@
 
 ** Çalışan Bazlı Excel Export
 ** Çalışan Radar Kartı
+
+
+#### Versiyon 1.1.1 - (Hata Giderme)
+
+--- Yetkinlik hedef, gerçekleşme giriş ve rapor ekranlarında yetkinlik grubuna göre filtreleme yapıldı.
+--- Yetkinlik seviye düzeyi düzenlenmeme hatası giderildi.
+--- Yetkinlik tablosunda sorgu limiti düzenlendi.
