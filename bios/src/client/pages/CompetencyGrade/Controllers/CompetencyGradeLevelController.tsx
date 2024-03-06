@@ -1,6 +1,6 @@
 import { cTop, Spinner, UIFormController, VStack, UIView, ReactView, nanoid, useState, useParams } from '@tuval/forms';
 import Form from '../Views/Form';
-import { Button, ButtonGroup, TextField } from '@mui/material';
+import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import React, { useEffect } from 'react';
 import { GridColDef } from '@mui/x-data-grid';
 import Swal from 'sweetalert2';
@@ -45,6 +45,35 @@ export class CompetencyGradeLevelController extends UIFormController {
         const { updateDocument } = CompetencyGrade.UpdateCompetencyGradeLevel();
 
         const [selectedRow, setSelectedRow] = useState<any>(null)
+
+        // dialog
+        const [openDialog, setOpenDialog] = useState(false);
+
+        const handleCloseDialog = () => {
+            setOpenDialog(false);
+            setSelectedRow(null)
+        }
+
+        const handleSubmitDialog = (e: any) => {
+            e.preventDefault();
+            updateDocument({
+                databaseId: AppInfo.Database,
+                collectionId: Collections.CompetencyGradeLevel,
+                documentId: selectedRow.$id,
+                data: {
+                    grade_level_name: selectedRow.grade_level_name,
+                    grade_level_number: selectedRow.grade_level_number
+                }
+            }, () => {
+                Toast.fire({
+                    title: "Yetkinlik Düzeyi Seviyesi Güncellendi",
+                    icon: "success"
+                })
+
+                setSelectedRow(null)
+                setOpenDialog(false);
+            })
+        }
 
         const onSubmit = (e: any) => {
             e.preventDefault();
@@ -98,17 +127,6 @@ export class CompetencyGradeLevelController extends UIFormController {
                 editable: false,
                 flex: 1,
                 width: 200,
-                renderCell: (params) => (
-                    selectedRow?.$id === params.row.$id ?
-                        <TextField
-                            size="small"
-                            value={selectedRow?.grade_level_name}
-                            onChange={(e) => {
-                                setSelectedRow({ ...selectedRow, grade_level_name: e.target.value })
-                            }}
-                        /> :
-                        <div>{params.value}</div>
-                )
             },
             {
                 field: 'grade_level_number',
@@ -116,56 +134,21 @@ export class CompetencyGradeLevelController extends UIFormController {
                 editable: false,
                 flex: 1,
                 width: 200,
-                renderCell: (params) => (
-                    selectedRow?.$id === params.row.$id ?
-                        <TextField
-                            size="small"
-                            value={selectedRow.grade_level_number}
-                            onChange={(e) => {
-                                setSelectedRow({ ...selectedRow, grade_level_number: e.target.value })
-                            }}
-                        /> :
-                        <div>{params.value}</div>
-                )
             },
             {
                 field: "$id",
                 headerName: "İşlemler",
                 width: 200,
                 renderCell: (params) => (
-                    params.value === selectedRow?.$id ?
-                        <ButtonGroup>
-                            <Button onClick={() => {
-                                updateDocument({
-                                    databaseId: AppInfo.Database,
-                                    collectionId: Collections.CompetencyGradeLevel,
-                                    documentId: selectedRow.$id,
-                                    data: {
-                                        grade_level_name: selectedRow.grade_level_name,
-                                        grade_level_number: selectedRow.grade_level_number
-                                    }
-                                }, () => {
-                                    Toast.fire({
-                                        title: "Yetkinlik Düzeyi Seviyesi Güncellendi",
-                                        icon: "success"
-                                    })
-                                    
-                                setSelectedRow(null)
-                                })
-                            }} variant="outlined" size="small" fullWidth>Kaydet</Button>
-                            <Button onClick={() => {
-                                setSelectedRow(null)
-                            }} variant="outlined" size="small" fullWidth>İptal</Button>
-                        </ButtonGroup>
-                        :
-                        <ButtonGroup>
-                            <Button onClick={() => {
-                                setSelectedRow(params.row)
-                            }} variant="outlined" size="small" fullWidth>Düzenle</Button>
-                            <Button onClick={() => {
-                                onDelete(params.value)
-                            }} variant="outlined" size="small" fullWidth>Sil</Button>
-                        </ButtonGroup>
+                    <ButtonGroup>
+                        <Button onClick={() => {
+                            setSelectedRow(params.row)
+                            setOpenDialog(true)
+                        }} variant="outlined" size="small" fullWidth>Düzenle</Button>
+                        <Button onClick={() => {
+                            onDelete(params.value)
+                        }} variant="outlined" size="small" fullWidth>Sil</Button>
+                    </ButtonGroup>
                 )
             }
         ]
@@ -222,6 +205,39 @@ export class CompetencyGradeLevelController extends UIFormController {
                                             rows={levels}
                                         />
                                     </div>
+                                    <Dialog
+                                        open={openDialog}
+                                        onClose={handleCloseDialog}>
+                                        <div style={{ width: "400px" }}>
+                                            <DialogTitle>Düzenleyin</DialogTitle>
+                                            <DialogContent>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Seviye Adı"
+                                                    variant="outlined"
+                                                    size='small'
+                                                    margin='normal'
+                                                    required
+                                                    value={selectedRow?.grade_level_name}
+                                                    onChange={(e) => setSelectedRow({ ...selectedRow, grade_level_name: e.target.value })}
+                                                />
+                                                <TextField
+                                                    fullWidth
+                                                    label="Seviye Değeri"
+                                                    variant="outlined"
+                                                    size='small'
+                                                    margin='normal'
+                                                    required
+                                                    value={selectedRow?.grade_level_number}
+                                                    onChange={(e) => setSelectedRow({ ...selectedRow, grade_level_number: e.target.value })}
+                                                />
+                                            </DialogContent>
+                                            <DialogActions>
+                                                <Button onClick={handleCloseDialog}>İptal</Button>
+                                                <Button onClick={handleSubmitDialog}>Kaydet</Button>
+                                            </DialogActions>
+                                        </div>
+                                    </Dialog>
                                 </form>
                             }
                         />

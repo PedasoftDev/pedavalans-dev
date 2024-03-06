@@ -365,6 +365,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                         size="small"
                                                         required
                                                     >
+                                                        <MenuItem value="" key="all">Tümü</MenuItem>
                                                         {groups.map((group, i) => (
                                                             <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
                                                         ))}
@@ -378,7 +379,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                             }}>
                                                 <StyledDataGrid
                                                     columns={columns}
-                                                    rows={selectedCompetencyList}
+                                                    rows={selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList}
                                                     getRowId={(row) => row.competency_id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
