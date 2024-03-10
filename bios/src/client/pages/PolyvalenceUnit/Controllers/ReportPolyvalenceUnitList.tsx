@@ -17,6 +17,8 @@ import { CircularProgressbar } from 'react-circular-progressbar';
 import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 import { getReportToExcelByPolyvalenceTable } from "../../../assets/Functions/getReportToExcelByPolyvalenceTable";
 import { SiMicrosoftexcel } from "react-icons/si";
+import Competency from "../../../../server/hooks/competency/main";
+import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -26,12 +28,14 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
-        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization)
+        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
+        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
 
         let excelData: any[] = [];
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriods || isLoadingCompetencyGradeValueList ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingCompetencyList || isLoadingPeriods || isLoadingCompetencyGradeValueList || isLoadingGroups ? VStack(Spinner()) :
                 periods.length == 0 ? UINavigate("/") :
                     UIViewBuilder(() => {
                         const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -143,7 +147,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                     </FormControl>
                                                     {rows.length != 0 &&
                                                         <IconButton onClick={() => {
-                                                            getReportToExcelByPolyvalenceTable(polyvalenceUnit.polyvalence_table_name, excelData)
+                                                            getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
                                                         }}>
                                                             <SiMicrosoftexcel />
                                                         </IconButton>

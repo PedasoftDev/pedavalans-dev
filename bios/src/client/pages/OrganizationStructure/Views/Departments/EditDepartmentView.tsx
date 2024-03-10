@@ -56,7 +56,6 @@ const EditDepartmentView = (
             Toast.fire({
                 icon: "success",
                 title: "Departman başarıyla güncellendi!",
-                text: "Departman başarıyla güncellendi."
             })
             onReset();
         })
