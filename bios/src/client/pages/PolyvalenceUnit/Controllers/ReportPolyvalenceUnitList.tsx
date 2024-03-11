@@ -153,7 +153,6 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                         </IconButton>
                                                     }
                                                 </div>
-
                                             )
                                         ),
                                     ),
