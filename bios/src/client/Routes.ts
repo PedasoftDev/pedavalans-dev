@@ -46,6 +46,9 @@ import { UpdatePasswordController } from './controllers/UpdatePasswordController
 import { AuthorizationProfileController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileController';
 import { AuthorizationProfileViewController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileViewController';
 import { OrganizationViewController } from './pages/Organization/Controllers/OrganizationViewController';
+import { EducationController } from './pages/Education/Controllers/EducationController';
+import { EducationListController } from './pages/Education/Controllers/EducationListController';
+import { CreateEducationController } from './pages/Education/Controllers/CreateEducationController';
 
 export const Routes = () => {
     return (
@@ -129,6 +132,12 @@ export const Routes = () => {
                 // authorization profile
                 UIRoute('authorization-profile', AuthorizationProfileController).children(
                     UIRoute('view', AuthorizationProfileViewController)
+                ),
+
+                // training
+                UIRoute('education', EducationController).children(
+                    UIRoute('list', EducationListController),
+                    UIRoute('create', CreateEducationController)
                 ),
 
                 UIRoute('organization', OrganizationViewController),

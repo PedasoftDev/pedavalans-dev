@@ -2,7 +2,7 @@ import { cTop, Spinner, UIFormController, VStack, UIView, ReactView, nanoid, use
 import Form from '../Views/Form';
 import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import React, { useEffect } from 'react';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, trTR } from '@mui/x-data-grid';
 import Swal from 'sweetalert2';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
@@ -203,6 +203,7 @@ export class CompetencyGradeLevelController extends UIFormController {
                                             getRowId={(row) => row.$id}
                                             columns={columns}
                                             rows={levels}
+                                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                         />
                                     </div>
                                     <Dialog

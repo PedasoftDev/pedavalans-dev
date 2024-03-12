@@ -87,4 +87,15 @@ export namespace Resources {
         }
 
     ]
+
+    export const EducationTypes = [
+        {
+            id: "theoreticalEducation",
+            name: "Teorik Eğitim",
+        },
+        {
+            id: "practicalEducation",
+            name: "Pratik Eğitim",
+        },
+    ];
 }

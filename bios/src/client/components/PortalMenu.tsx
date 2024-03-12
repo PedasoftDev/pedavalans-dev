@@ -10,7 +10,7 @@ import { BiCalendarPlus, BiCalendarCheck } from "react-icons/bi";
 import { VscOrganization } from "react-icons/vsc";
 import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import { TiFlowParallel } from "react-icons/ti";
-import { MdOutlineManageAccounts } from "react-icons/md";
+import { MdOutlineManageAccounts, MdOutlineLibraryBooks } from "react-icons/md";
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -86,6 +86,14 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             link: "/app/competency-status-report/view",
             icon: ReactView(
                 <TbHeartRateMonitor size={25} />
+            ),
+            isVisible: true
+        },
+        {
+            title: "Eğitimler",
+            link: "/app/education/list",
+            icon: ReactView(
+                <MdOutlineLibraryBooks size={25} />
             ),
             isVisible: true
         },
