@@ -49,6 +49,10 @@ import { OrganizationViewController } from './pages/Organization/Controllers/Org
 import { EducationController } from './pages/Education/Controllers/EducationController';
 import { EducationListController } from './pages/Education/Controllers/EducationListController';
 import { CreateEducationController } from './pages/Education/Controllers/CreateEducationController';
+import { MachineController } from './pages/Machines/Controllers/MachineController';
+import { CreateMachineController } from './pages/Machines/Controllers/CreateMachineController';
+import { UpdateMachineController } from './pages/Machines/Controllers/UpdateMachineController';
+import { MachineListController } from './pages/Machines/Controllers/MachineListController';
 
 export const Routes = () => {
     return (
@@ -132,6 +136,13 @@ export const Routes = () => {
                 // authorization profile
                 UIRoute('authorization-profile', AuthorizationProfileController).children(
                     UIRoute('view', AuthorizationProfileViewController)
+                ),
+
+                // machine
+                UIRoute('machine', MachineController).children(
+                    UIRoute('create', CreateMachineController),
+                    UIRoute('edit/:id', UpdateMachineController),
+                    UIRoute('list', MachineListController)
                 ),
 
                 // training

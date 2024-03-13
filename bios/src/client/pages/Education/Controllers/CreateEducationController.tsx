@@ -107,7 +107,7 @@ export class CreateEducationController extends UIFormController {
                                                 value={form.code}
                                                 name="code"
                                                 inputProps={{ maxLength: 50 }}
-                                                label="EĞİTİM KATALOG KODU"
+                                                label="Eğitim Katalog Kodu"
                                             />
                                             <TextField
                                                 fullWidth
@@ -116,14 +116,14 @@ export class CreateEducationController extends UIFormController {
                                                 name="description"
                                                 multiline={true}
                                                 rows={4}
-                                                label="EĞİTİM TANIMI"
+                                                label="Eğitim Tanımı"
                                             />
                                             <FormControl fullWidth size="small" required>
-                                                <InputLabel>İLİŞKİLİ YETKİNLİKLER</InputLabel>
+                                                <InputLabel>İlişkili Yetkinlikler</InputLabel>
                                                 <Select
                                                     multiple
                                                     name="relatedCompetencies"
-                                                    label="İLİŞKİLİ YETKİNLİKLER"
+                                                    label="İlişkili Yetkinlikler"
                                                     value={form.relatedCompetencies}
                                                     onChange={handleChangeSelect}
                                                     size="small"

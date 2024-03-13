@@ -1,7 +1,7 @@
 import { useState, cLeading, cTop, ForEach, Text, HStack, UIImage, UIRouteLink, VStack, ScrollView, ReactViewClass, ReactView, UIViewBuilder, Icon, cCenter, Spacer, useNavigate } from '@tuval/forms';
 import { Resources } from '../assets/Resources';
 import React, { useEffect } from 'react';
-import { RxDashboard, RxTable } from "react-icons/rx";
+import { RxColorWheel, RxDashboard, RxTable } from "react-icons/rx";
 import { IoGitNetworkOutline } from "react-icons/io5";
 import { FaLayerGroup, FaSignal } from "react-icons/fa";
 import { BsCalendar4Week } from "react-icons/bs";
@@ -73,14 +73,14 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             ),
             isVisible: true
         },
-        // {
-        //     title: "Makineler",
-        //     link: "/app/machines/list",
-        //     icon: ReactView(
-        //         <RxColorWheel size={25} />
-        //     ),
-        //     isVisible: true//machineBased
-        // },
+        {
+            title: "Makineler",
+            link: "/app/machine/list",
+            icon: ReactView(
+                <RxColorWheel size={25} />
+            ),
+            isVisible: true//machineBased
+        },
         {
             title: "Yetkinlik Durum İzleme Raporu",
             link: "/app/competency-status-report/view",

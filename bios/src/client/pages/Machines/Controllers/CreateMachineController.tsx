@@ -1,171 +1,223 @@
-import React from "react";
-import Select from 'react-select'
-import { Button, HStack, ReactView, RequiredRule, Spinner, State, Text, UIFormController, UIView, VStack, cCenter, cLeading, cTop, useEffect, useNavigate, useState, MaskTypes } from "@tuval/forms";
-import { TextField } from "@mui/material";
+import React, { Fragment } from "react";
+import { ReactView, Spinner, UIFormController, UIView, VStack, cTop, useNavigate, useState, UIViewBuilder } from "@tuval/forms";
+import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
-import { useGetMe } from "@realmocean/sdk";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
+import Form from "../../Competency/Views/Form";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import IMachine from "../../../interfaces/IMachine";
+import { GridColDef, trTR } from "@mui/x-data-grid";
+import AppInfo from "../../../../AppInfo";
+import Collections from "../../../../server/core/Collections";
+import ICompetency from "../../../interfaces/ICompetency";
+import ICompetencyMachineAssociation from "../../../interfaces/ICompetencyMachineAssociation";
+import ICompetencyDepartment from "../../../interfaces/ICompetencyDepartment";
+
+const resetForm: IMachine.ICreate = {
+    id: "",
+    code: "",
+    department_id: "",
+    difficulty_coefficient: "",
+    is_active_machine: "",
+    name: "",
+    tenant_id: ""
+}
+
+export class CreateMachineController extends UIFormController {
 
 
-// export class CreateMachineController extends UIFormController {
+    public LoadView(): UIView {
+
+        const navigate = useNavigate();
+
+        const { me, isLoading } = useGetMe("console");
+        const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
+
+        const [form, setForm] = useState(resetForm);
 
 
-//     public LoadView(): UIView {
+        return (
+            isLoading || isLoadingDepartments ? VStack(Spinner()) :
+                UIViewBuilder(() => {
+                    const [competencies, setCompetencies] = useState([]);
+                    const [selectedCompetencies, setSelectedCompetencies] = useState<string[]>([]);
+                    const [isLoadingCompetencies, setIsLoadingCompetencies] = useState(false);
 
-//         const navigate = useNavigate();
+                    const columns: GridColDef[] = [
+                        {
+                            field: "competency_name",
+                            headerName: "Yetkinlik Adı",
+                            flex: 1
+                        }
+                    ]
 
-//         const { me, isLoading } = useGetMe("console");
-//         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
+                    const handleChange = (e: any) => {
+                        setForm({ ...form, [e.target.name]: e.target.value });
+                    }
 
-//         const [isMachineBased, setMachineBased] = useState(false)
+                    const getCompetencies = async (department_id: string) => {
 
-//         const [competencies, setCompetencies] = useState([])
+                        if (department_id === "") return;
+                        setIsLoadingCompetencies(true);
 
-//         const [selectLoading, setSelectLoading] = useState(false)
+                        const result: ICompetency.ICompetency[] = []
 
-//         const [loadingCounter, setLoadingCounter] = useState<string>("")
+                        interface ICompetenciesWithDepartments extends ICompetency.ICompetency {
+                            department_id: string;
+                        }
+                        const competenciesWithDepartments: ICompetenciesWithDepartments[] = []
 
-//         const maxValue = 1
-//         const minValue = 0.1
+                        const competencyMachineAssociationList: ICompetencyMachineAssociation.IBase[] = await Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.CompetencyMachineAssociation,
+                            [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
+                        ).then((res) => res.documents as any[]);
 
-//         const getCompetencies = () => {
-//             if (loadingCounter != this.GetValue("departmentId")) {
-//                 setSelectLoading(true)
-//                 PolivalansBrokerClient.GetCompetencyByIdIfNotSelectedForMachine(this.GetValue("departmentId")).then((res) => {
-//                     let value = res.map((item) => {
-//                         return { value: item.competency_id, label: item.competency_name }
-//                     })
-//                     setCompetencies(value)
-//                     setSelectLoading(false)
-//                 })
-//                 setLoadingCounter(this.GetValue("departmentId"))
-//             }
-//         }
+                        const competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.CompetencyDepartment,
+                            [Query.equal("competency_department_id", department_id)]
+                        ).then((res) => res.documents as any);
 
-//         const createMachine = () => {
-//             let stateObj = {
-//                 department_id: this.GetValue("departmentId"),
-//                 code: this.GetValue("code"),
-//                 name: this.GetValue("name"),
-//                 difficulty_coefficient: this.GetValue("difficulty_coefficient"),
-//                 competencies: this.GetValue("selectedCompetencies")
+                        const competencyList: ICompetency.ICompetency[] = await Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Competency,
+                            [Query.equal("is_deleted_competency", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_competency", true)]
+                        ).then((res) => res.documents as any[]);
 
-//             }
-//             PolivalansBrokerClient.GetMachineByCodeAndTenantId(stateObj.code).then((res) => {
-//                 if (res) {
-//                     Views.Toast.fire({
-//                         icon: 'error',
-//                         title: 'Bu makine kodu daha önce kullanılmıştır.'
-//                     })
-//                 }
-//                 else {
-//                     PolivalansBrokerClient.CreateMachineWithCompetencies(stateObj).then((res) => {
-//                         if (res) {
-//                             navigate("/app/com.pedasoft.app.pedavalans/machines/list")
-//                         }
-//                     })
-//                 }
-//             })
-//         }
+                        competencyList.forEach((competency) => {
+                            if (competencyDepartments.find((cd) => cd.competency_id === competency.competency_id)) {
+                                competenciesWithDepartments.push({ ...competency, department_id: department_id });
+                            }
+                        })
 
-//         useEffect(() => {
-//             setMachineBased(localStorage.getItem("pedavalans_machine_based") == "true" ? true : false)
-//         }, [])
+                        competenciesWithDepartments.forEach((competency) => {
+                            if (!competencyMachineAssociationList.find((cma) => cma.competency_id === competency.competency_id)) {
+                                result.push(competency);
+                            }
+                        });
 
-//         return (
-//             VStack({ alignment: cTop })(
-//                 isMachineBased ?
-//                     VStack({ alignment: cTop, spacing: 20 })(
-//                         HStack({ alignment: cTop })(
-//                             Views.PedaText("Makine Ekle").fontSize(28).paddingTop("40px")
-//                         ).paddingBottom("50px"),
-//                         VStack({ alignment: cLeading })(
-//                             UITextBoxView()
-//                                 .floatlabel(false)
-//                                 .width('100%')
-//                                 .placeholder('Makine Kodu')
-//                                 .formField('code', [new RequiredRule('Makine Kodu zorunludur.')]),
-//                         ).width(400),
-//                         VStack({ alignment: cLeading })(
-//                             UITextBoxView()
-//                                 .floatlabel(false)
-//                                 .width('100%')
-//                                 .placeholder('Makine Adı')
-//                                 .formField('name', [new RequiredRule('Makine Adı zorunludur.')]),
-//                         ).width(400),
-//                         VStack({ alignment: cLeading })(
-//                             Text("Makine Zorluk Katsayısı").fontSize("12px").fontWeight("500").foregroundColor("#343a40"),
-//                             ReactView(
-//                                 <div style={{ width: "100%" }}>
-//                                     <TextField
-//                                         type="number"
-//                                         style={{ width: "100%", height: "32px", background: "white" }}
-//                                         size="small"
-//                                         InputProps={{
-//                                             inputProps: {
-//                                                 step: 0.1,
-//                                             },
-//                                         }}
-//                                         onChange={(e) => {
-//                                             setTimeout(() => {
-//                                                 if (Number(e.target.value) > maxValue) {
-//                                                     e.target.value = maxValue.toString()
-//                                                     this.SetValue("difficulty_coefficient", maxValue.toString())
-//                                                 }
-//                                                 else if (Number(e.target.value) < minValue) {
-//                                                     e.target.value = minValue.toString()
-//                                                     this.SetValue("difficulty_coefficient", minValue.toString())
-//                                                 }
-//                                                 else {
-//                                                     this.SetValue("difficulty_coefficient", e.target.value)
-//                                                 }
-//                                             }, 800)
-//                                         }}
-//                                     />
-//                                 </div>
-//                             )
-//                         ).width(400),
-//                         VStack({ alignment: cLeading })(
-//                             Text("Departman").fontSize("12px").fontWeight("500").foregroundColor("#343a40"),
-//                             UIDropdownListView()
-//                                 .placeHolder('Departman Seçiniz')
-//                                 .formField('departmentId', [new RequiredRule('Departman zorunludur.')])
-//                                 .fields({ text: "Name", value: "Id" })
-//                                 .dataSource(this.departments)
-//                                 .width("100%")
-//                         ).width(400).paddingBottom("20px"),
-//                         VStack({ alignment: cLeading })(
-//                             Text("Yetkinlikler").fontSize("12px").fontWeight("500").foregroundColor("#343a40"),
-//                             ReactView(
-//                                 <div style={{ width: "100%" }}>
-//                                     <Select options={competencies}
-//                                         onMenuOpen={() => { getCompetencies() }}
-//                                         isMulti
-//                                         closeMenuOnSelect={false}
-//                                         placeholder="Yetkinlik Seçiniz"
-//                                         isLoading={selectLoading}
-//                                         onChange={(e) => {
-//                                             this.SetValue("selectedCompetencies", e.map(function (obj) {
-//                                                 return obj.value;
-//                                             }))
-//                                         }}
-//                                     />
-//                                 </div>
-//                             )
-//                         ).width(400),
-//                         HStack({ alignment: cTop, spacing: 20 })(
-//                             Button(Text("Kaydet")).width(100).onClick(() => {
-//                                 createMachine()
-//                             }),
-//                             Button(Text("Vazgeç")).width(100).onClick(() => {
-//                                 navigate("/app/machines/list")
-//                             }).background({ default: "#d83a52", hover: "#b63546" })
-//                         ).paddingTop("50px")
-//                     ).height().marginTop("20px")
-//                     :
-//                     VStack({ spacing: 20, alignment: cCenter })(
-//                         Spinner()
-//                     )
-//             )
-//         )
-//     }
-// }
+                        setCompetencies(result);
+                        setIsLoadingCompetencies(false);
+
+                    }
+
+                    const onCancel = () => {
+                        navigate("/app/machines/list");
+                    };
+
+
+                    const onSubmit = (e: any) => {
+                        e.preventDefault();
+                        console.log(form);
+                        console.log(selectedCompetencies);
+                    }
+
+                    return (
+                        VStack({ alignment: cTop })(
+                            ReactView(
+                                <Form
+                                    title="Yeni Makine Ekleyin"
+                                    form={
+                                        <form
+                                            onSubmit={onSubmit}
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "10px",
+                                                width: "60%"
+                                            }}>
+                                            <TextField
+                                                name="code"
+                                                label="Makine Kodu"
+                                                variant="outlined"
+                                                fullWidth
+                                                size="small"
+                                                value={form.code}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            <TextField
+                                                name="name"
+                                                label="Makine Adı"
+                                                variant="outlined"
+                                                fullWidth
+                                                size="small"
+                                                value={form.name}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            <TextField
+                                                name="difficulty_coefficient"
+                                                label="Makine Zorluk Katsayısı"
+                                                variant="outlined"
+                                                fullWidth
+                                                size="small"
+                                                value={form.difficulty_coefficient}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            <FormControl fullWidth size="small">
+                                                <InputLabel>Departman</InputLabel>
+                                                <Select
+                                                    name="department_id"
+                                                    value={form.department_id}
+                                                    label="Departman"
+                                                    onChange={(e: any) => {
+                                                        setForm({ ...form, department_id: e.target.value });
+                                                        getCompetencies(e.target.value);
+                                                    }}
+                                                    size="small"
+                                                    required
+                                                >
+                                                    {departments.map((department) => (
+                                                        <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <div style={{
+                                                height: "280px",
+                                                width: "100%",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "5px",
+                                            }}>
+                                                <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlikler</Typography>
+                                                {
+                                                    isLoadingCompetencies ? <Fragment>{Spinner().render()}</Fragment> :
+                                                        <StyledDataGrid
+                                                            rows={form.department_id === "" ? [] : competencies}
+                                                            columns={columns}
+                                                            getRowId={(row) => row.$id}
+                                                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                            isCellEditable={() => false}
+                                                            disableRowSelectionOnClick
+                                                            checkboxSelection
+                                                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                                setSelectedCompetencies(newRowSelectionModel);
+                                                            }}
+                                                            rowHeight={30}
+                                                            columnHeaderHeight={30}
+
+                                                        />
+                                                }
+                                            </div>
+                                            <div style={{
+                                                display: "flex", gap: "10px", flexDirection: "column", marginTop: "10px"
+                                            }}>
+                                                <Button type="submit" variant="contained" color="primary" size="small">Kaydet</Button>
+                                                <Button variant="contained" color="info" size="small" onClick={onCancel}>İptal</Button>
+                                            </div>
+                                        </form>
+                                    }
+                                />
+                            )
+                        ).padding("30px 20px")
+                    )
+                })
+        )
+    }
+}
