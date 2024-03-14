@@ -2,7 +2,7 @@ import { cTop, cTopLeading, HStack, ReactView, Spinner, UIController, UINavigate
 import React, { useEffect } from 'react';
 import { Chart, Series, Export, Tooltip } from 'devextreme-react/chart';
 import { PortalMenu } from '../../components/PortalMenu';
-import { Services, useGetMe } from '@realmocean/sdk';
+import { Query, Services, useGetMe, useListCollections } from '@realmocean/sdk';
 import Main from '../../../server/hooks/main/Main';
 import Parameters from '../../../server/hooks/parameters/main';
 import { Resources } from '../../assets/Resources';
@@ -65,6 +65,7 @@ export class DashboardController extends UIController {
 
         const { me, isLoading } = useGetMe("console");
         const { required, isLoading: isLoadingDb } = Main.SetupRequired();
+        // const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)])
 
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
@@ -119,6 +120,7 @@ export class DashboardController extends UIController {
                                         localStorage.setItem("isAdmin", "true")
                                     }
                                 }
+
 
                             }, [])
 

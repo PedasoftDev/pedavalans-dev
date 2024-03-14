@@ -1,3 +1,4 @@
+
 namespace Collections {
     export const Competency: string = "competency";
     export const CompetencyDepartment: string = "competency_department";
@@ -8,6 +9,9 @@ namespace Collections {
     export const PolyvalenceUnitTable: string = "polyvalence_unit_table";
     export const Parameter: string = "pedavalans_parameter";
     export const CompetencyGradeLevel: string = "competency_grade_level";
+    export const Education: string = "education";
+    export const EducationCompetencyRelation: string = "education_competency_relation";
+    export const Machine: string = "machine";
 }
 
 export default Collections;

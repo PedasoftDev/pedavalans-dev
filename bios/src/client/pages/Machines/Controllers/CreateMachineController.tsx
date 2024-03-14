@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { ReactView, Spinner, UIFormController, UIView, VStack, cTop, useNavigate, useState, UIViewBuilder } from "@tuval/forms";
+import { ReactView, Spinner, UIFormController, UIView, VStack, cTop, useNavigate, useState, UIViewBuilder, nanoid } from "@tuval/forms";
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
@@ -12,13 +12,16 @@ import Collections from "../../../../server/core/Collections";
 import ICompetency from "../../../interfaces/ICompetency";
 import ICompetencyMachineAssociation from "../../../interfaces/ICompetencyMachineAssociation";
 import ICompetencyDepartment from "../../../interfaces/ICompetencyDepartment";
+import Machine from "../../../../server/hooks/machine/main";
+import CompetencyMachineAssociation from "../../../../server/hooks/competencyMachineAssocation/main";
+import { Toast } from "../../../components/Toast";
 
 const resetForm: IMachine.ICreate = {
     id: "",
     code: "",
     department_id: "",
     difficulty_coefficient: "",
-    is_active_machine: "",
+    is_active_machine: "true",
     name: "",
     tenant_id: ""
 }
@@ -32,12 +35,15 @@ export class CreateMachineController extends UIFormController {
 
         const { me, isLoading } = useGetMe("console");
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
+        const { createMachine } = Machine.Create();
+        const { machineList, isLoading: isLoadingMachines } = Machine.GetList(me?.prefs?.organization);
+        const { createCompetencyMachineAssociation } = CompetencyMachineAssociation.Create();
 
         const [form, setForm] = useState(resetForm);
 
 
         return (
-            isLoading || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDepartments || isLoadingMachines ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [competencies, setCompetencies] = useState([]);
                     const [selectedCompetencies, setSelectedCompetencies] = useState<string[]>([]);
@@ -49,7 +55,7 @@ export class CreateMachineController extends UIFormController {
                             headerName: "Yetkinlik Adı",
                             flex: 1
                         }
-                    ]
+                    ];
 
                     const handleChange = (e: any) => {
                         setForm({ ...form, [e.target.name]: e.target.value });
@@ -106,14 +112,58 @@ export class CreateMachineController extends UIFormController {
                     }
 
                     const onCancel = () => {
-                        navigate("/app/machines/list");
+                        navigate("/app/machine/list");
                     };
 
 
                     const onSubmit = (e: any) => {
                         e.preventDefault();
-                        console.log(form);
-                        console.log(selectedCompetencies);
+                        if (form.department_id === "") {
+                            return;
+                        }
+                        if (selectedCompetencies.length === 0) {
+                            Toast.fire({
+                                icon: "error",
+                                title: "En az bir yetkinlik seçmelisiniz"
+                            });
+                            return;
+                        }
+                        if (machineList.find((machine) => machine.code === form.code)) {
+                            Toast.fire({
+                                icon: "error",
+                                title: "Bu kod ile bir makine zaten var"
+                            });
+                            return;
+                        }
+                        const formId = nanoid();
+                        createMachine({
+                            documentId: formId,
+                            data: {
+                                ...form,
+                                id: formId,
+                                tenant_id: me?.prefs?.organization
+                            }
+                        }, () => {
+                            selectedCompetencies.forEach((competency_id, i) => {
+                                createCompetencyMachineAssociation({
+                                    data: {
+                                        competency_id,
+                                        machine_id: formId,
+                                        tenant_id: me?.prefs?.organization
+                                    }
+                                }, () => {
+
+                                    if (i === selectedCompetencies.length - 1) {
+                                        Toast.fire({
+                                            icon: "success",
+                                            title: "Makine başarıyla eklendi"
+                                        });
+                                        onCancel();
+                                    }
+                                })
+                            })
+                        })
+
                     }
 
                     return (
@@ -159,6 +209,13 @@ export class CreateMachineController extends UIFormController {
                                                 value={form.difficulty_coefficient}
                                                 onChange={handleChange}
                                                 required
+                                                type="number"
+                                                inputProps={{
+                                                    step: 0.1,
+                                                    min: 0,
+                                                    max: 1,
+                                                    maxLength: 3
+                                                }}
                                             />
                                             <FormControl fullWidth size="small">
                                                 <InputLabel>Departman</InputLabel>

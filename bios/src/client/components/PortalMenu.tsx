@@ -11,6 +11,7 @@ import { VscOrganization } from "react-icons/vsc";
 import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import { TiFlowParallel } from "react-icons/ti";
 import { MdOutlineManageAccounts, MdOutlineLibraryBooks } from "react-icons/md";
+import Database from '../../server/core/Database';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -259,7 +260,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     VStack(Icon("\\e9ba")).fontSize("20px").transition("all .2s ease-in-out").cornerRadius("3px")
                         .cursor("pointer").padding("5px").background({ hover: "lightgray" }).onClick(() => logout()).height().width(),
                     Spacer(),
-                    Text("v1.1.0").fontSize("10px")
+                    Text("v" + Database.version).fontSize("10px")
                 ).height().padding("10px")
             ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
     )

@@ -9,8 +9,8 @@ namespace IMachine {
         department_id: string;
         is_active_machine: string;
         difficulty_coefficient: string;
-        is_active: string;
-        is_deleted: string;
+        is_active: boolean;
+        is_deleted: boolean;
     }
     export interface ICreate {
         id: string;

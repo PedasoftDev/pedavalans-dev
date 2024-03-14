@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": "1.0.0",
+    "version": "1.1.0",
     "collections": [
         {
             "id": "competency",
@@ -1268,6 +1268,80 @@ const Database: IDatabase = {
                     "key": "is_deleted",
                     "type": "boolean",
                     "default": false
+                }
+            ]
+        },
+        {
+            id: "education",
+            name: "Education",
+            description: {
+                en: "Education is a collection of educations.",
+                tr: "Eğitimlerin koleksiyonudur."
+            },
+            version: "1.0.0",
+            attributes: [
+                {
+                    key: "code",
+                    type: "string"
+                },
+                {
+                    key: "name",
+                    type: "string"
+                },
+                {
+                    key: "type",
+                    type: "string"
+                },
+                {
+                    key: "tenant_id",
+                    type: "string"
+                },
+                {
+                    key: "is_active",
+                    type: "boolean",
+                    default: true
+                },
+                {
+                    key: "is_deleted",
+                    type: "boolean",
+                    default: false
+                }
+            ]
+        },
+        {
+            id: "education_competency_relation",
+            name: "Education Competency Relation",
+            description: {
+                en: "Education Competency Relation is a collection of education competency relations.",
+                tr: "Eğitim yetkinlik ilişkilerinin koleksiyonudur."
+            },
+            version: "1.0.0",
+            attributes: [
+                {
+                    key: "education_id",
+                    type: "string"
+                },
+                {
+                    key: "competency_id",
+                    type: "string"
+                },
+                {
+                    key: "competency_name",
+                    type: "string"
+                },
+                {
+                    key: "tenant_id",
+                    type: "string"
+                },
+                {
+                    key: "is_active",
+                    type: "boolean",
+                    default: true
+                },
+                {
+                    key: "is_deleted",
+                    type: "boolean",
+                    default: false
                 }
             ]
         }

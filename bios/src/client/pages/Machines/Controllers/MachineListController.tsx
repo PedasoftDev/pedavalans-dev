@@ -7,6 +7,9 @@ import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { FiEdit } from "react-icons/fi";
 import { useGetMe } from "@realmocean/sdk";
+import Machine from "../../../../server/hooks/machine/main";
+import Competency from "../../../../server/hooks/competency/main";
+import CompetencyMachineAssociation from "../../../../server/hooks/competencyMachineAssocation/main";
 
 export class MachineListController extends UIFormController {
 
@@ -15,49 +18,63 @@ export class MachineListController extends UIFormController {
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const [rowsActive, setRowsActive] = useState(true);
-        const [filterKey, setFilterKey] = useState("");
+        const { machineList, isLoading: isLoadingMachine } = Machine.GetList(me?.prefs?.organization);
+        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+        const { competencyMachineAssociationList, isLoading: isLoadingAssociation } = CompetencyMachineAssociation.GetList(me?.prefs?.organization);
 
-        const columns: GridColDef[] = [
-            {
-                field: 'code',
-                headerName: 'Makine Kodu',
-                width: 150
-            },
-            {
-                field: 'name',
-                headerName: 'Makine Adı',
-                flex: 1
-            },
-            {
-                field: 'difficulty_coefficient',
-                headerName: 'Zorluk Katsayısı',
-                width: 150
-            },
-            {
-                field: 'is_active_machine',
-                headerName: 'İşlemler',
-                width: 150,
-                renderCell: (params: any) => (
-                    <div style={{ display: "flex", gap: 15 }}>
-                        <div>
-                            <FiEdit size={20} cursor={"pointer"} color="blue" onClick={() => navigate(`/app/machine/edit/${params.id}`)} />
-                        </div>
-                    </div>
-                )
-            }
-        ];
-
-        const handleSetActiveRows = () => {
-            setRowsActive(!rowsActive);
-        }
-
-        const handleSearch = (e: any) => { }
 
         return (
-            isLoading ? VStack(Spinner()) :
+            isLoading || isLoadingMachine || isLoadingCompetencyList || isLoadingAssociation ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
+                        const [rowsActive, setRowsActive] = useState(true);
+                        const [filterKey, setFilterKey] = useState("");
+
+                        const columns: GridColDef[] = [
+                            {
+                                field: 'code',
+                                headerName: 'Makine Kodu',
+                                width: 150
+                            },
+                            {
+                                field: 'name',
+                                headerName: 'Makine Adı',
+                                flex: 1
+                            },
+                            {
+                                field: 'difficulty_coefficient',
+                                headerName: 'Zorluk Katsayısı',
+                                width: 150
+                            },
+                            {
+                                field: 'related_competencies',
+                                headerName: 'İlgili Yetkinlikler',
+                                width: 150,
+                                valueGetter: (params: any) => {
+                                    return competencyMachineAssociationList.filter((item) => item.machine_id === params.id).map((item) => {
+                                        return competencyList.find((comp) => comp.$id === item.competency_id)?.competency_name;
+                                    }).join(", ");
+                                }
+                            },
+                            {
+                                field: 'is_active',
+                                headerName: 'İşlemler',
+                                width: 150,
+                                renderCell: (params: any) => (
+                                    <div style={{ display: "flex", gap: 15 }}>
+                                        <Button size="small" variant="outlined" onClick={() => navigate(`/app/machine/edit/${params.id}`)}>Düzenle</Button>
+                                    </div>
+                                )
+                            }
+                        ];
+
+                        const handleSetActiveRows = () => {
+                            setRowsActive(!rowsActive);
+                        }
+
+                        const handleSearch = (e: any) => {
+                            setFilterKey(e.target.value);
+                        }
                         return (
                             VStack({ spacing: 15, alignment: cTopLeading })(
                                 HStack({ alignment: cLeading })(
@@ -92,10 +109,8 @@ export class MachineListController extends UIFormController {
                                             </div>
                                             <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
                                                 <StyledDataGrid
-                                                    rows={[]}
+                                                    rows={machineList.filter((item) => item.is_active === rowsActive).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     columns={columns}
-                                                    // rows={competencyList.filter((item) => item.is_active_competency === rowsActive).filter((item) => item.competency_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
-                                                    // columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
