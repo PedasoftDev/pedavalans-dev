@@ -16,6 +16,8 @@ namespace ICompetencyDepartment {
         competency_department_name: string;
         competency_id: string;
         tenant_id: string;
+        is_active: boolean;
+        is_deleted: boolean;
     }
 
 }

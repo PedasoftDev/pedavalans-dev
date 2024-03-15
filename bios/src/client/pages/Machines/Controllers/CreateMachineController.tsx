@@ -135,24 +135,28 @@ export class CreateMachineController extends UIFormController {
                             });
                             return;
                         }
-                        const formId = nanoid();
+
+                        const machineId = nanoid();
+
                         createMachine({
-                            documentId: formId,
+                            documentId: machineId,
                             data: {
                                 ...form,
-                                id: formId,
+                                id: machineId,
                                 tenant_id: me?.prefs?.organization
                             }
                         }, () => {
                             selectedCompetencies.forEach((competency_id, i) => {
+                                const competencyMachineAssociationId = nanoid();
                                 createCompetencyMachineAssociation({
+                                    documentId: competencyMachineAssociationId,
                                     data: {
+                                        id: competencyMachineAssociationId,
                                         competency_id,
-                                        machine_id: formId,
+                                        machine_id: machineId,
                                         tenant_id: me?.prefs?.organization
                                     }
                                 }, () => {
-
                                     if (i === selectedCompetencies.length - 1) {
                                         Toast.fire({
                                             icon: "success",

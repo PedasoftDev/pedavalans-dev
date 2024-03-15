@@ -5,7 +5,6 @@ import { Views } from "../../../components/Views";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import { FiEdit } from "react-icons/fi";
 import { useGetMe } from "@realmocean/sdk";
 import Machine from "../../../../server/hooks/machine/main";
 import Competency from "../../../../server/hooks/competency/main";
@@ -39,7 +38,7 @@ export class MachineListController extends UIFormController {
                             {
                                 field: 'name',
                                 headerName: 'Makine Adı',
-                                flex: 1
+                                width: 200
                             },
                             {
                                 field: 'difficulty_coefficient',
@@ -49,7 +48,7 @@ export class MachineListController extends UIFormController {
                             {
                                 field: 'related_competencies',
                                 headerName: 'İlgili Yetkinlikler',
-                                width: 150,
+                                flex: 1,
                                 valueGetter: (params: any) => {
                                     return competencyMachineAssociationList.filter((item) => item.machine_id === params.id).map((item) => {
                                         return competencyList.find((comp) => comp.$id === item.competency_id)?.competency_name;

@@ -115,7 +115,6 @@ export class EducationListController extends UIFormController {
                                                 <StyledDataGrid
                                                     rows={educationList.filter((item) => item.is_active === rowsActive).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     columns={columns}
-                                                    // rows={competencyList.filter((item) => item.is_active_competency === rowsActive).filter((item) => item.competency_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />

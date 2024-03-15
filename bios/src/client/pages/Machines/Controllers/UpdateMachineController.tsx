@@ -1,372 +1,276 @@
-import React from "react";
-import { RequiredRule, UIFormController, UIView, cLeading, cTop, Text, HStack, VStack, ReactView, State, useState, useEffect, useNavigate, Spinner, nanoid, } from "@tuval/forms";
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField, Typography } from "@mui/material";
+import React, { Fragment } from "react";
+import { UIFormController, UIView, cTop, VStack, ReactView, useState, useEffect, useNavigate, Spinner, useParams, UIViewBuilder, nanoid, } from "@tuval/forms";
+import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import StyledDataGrid from "../../../components/StyledDataGrid";
-import { trTR } from "@mui/x-data-grid";
+import { GridColDef, trTR } from "@mui/x-data-grid";
 import Form from "../../Competency/Views/Form";
-import { Toast } from "../../../components/Toast";
 import AppInfo from "../../../../AppInfo";
-import Swal from "sweetalert2";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
+import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
+import Machine from "../../../../server/hooks/machine/main";
+import IMachine from "../../../interfaces/IMachine";
+import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
+import CompetencyMachineAssociation from "../../../../server/hooks/competencyMachineAssocation/main";
+import ICompetency from "../../../interfaces/ICompetency";
+import Collections from "../../../../server/core/Collections";
+import ICompetencyMachineAssociation from "../../../interfaces/ICompetencyMachineAssociation";
+import ICompetencyDepartment from "../../../interfaces/ICompetencyDepartment";
+import Competency from "../../../../server/hooks/competency/main";
+import { Toast } from "../../../components/Toast";
 
+const formReset: IMachine.IBase = {
+    name: "",
+    department_id: "",
+    code: "",
+    difficulty_coefficient: "",
+    id: "",
+    is_active_machine: "true",
+    is_deleted: false,
+    tenant_id: "",
+    is_active: true
+}
 
 export class UpdateMachineController extends UIFormController {
 
-    @State()
-    private departments: any[];
-
-    @State()
-    private selectedCompetencies: any[];
-
-    @State()
-    private competencies: any[];
-
-    @State()
-    private id: string;
-
-    // protected BindRouterParams({ machine_id }): void {
-    //     const orgService = useOrgProvider();
-    //     Promise.all([
-    //         PolivalansBrokerClient.GetMachineById(machine_id),
-    //         orgService.getDepartments(),
-    //     ]).then((results) => {
-    //         const [machine, departments] = results;
-    //         this.SetValue("code", machine.code)
-    //         this.SetValue("name", machine.name)
-    //         this.SetValue("difficulty_coefficient", machine.difficulty_coefficient)
-    //         this.SetValue("departmentId", machine.department_id)
-    //         this.id = machine.id;
-    //         this.SetValue("is_active_machine", machine.is_active_machine)
-    //         // Set selected competencies to machine competencies like this { value: item.competency_id, label: item.competency_name }
-    //         machine.competencies != null && machine.competencies.length > 0 ? this.selectedCompetencies = machine.competencies.map((item) => {
-    //             return item.competency_id
-    //         })
-    //             : this.selectedCompetencies = [];
-    //         this.departments = departments;
-    //         PolivalansBrokerClient.GetCompetencyByIdIfNotSelectedForEditMachine(machine.department_id, machine.id).then((res) => {
-    //             this.competencies = res.map((item) => {
-    //                 return { id: item.competency_id, label: item.competency_name }
-    //             })
-    //         })
-    //     })
-    // }
-
     public LoadView(): UIView {
-        return (VStack())
 
-        // const navigate = useNavigate();
-        // const { id } = useParams();
+        const { id } = useParams();
+        const navigate = useNavigate();
+        const { me, isLoading } = useGetMe("console");
 
-        // const { me, isLoading } = useGetMe("console");
-        // const { competency, isLoadingCompetency } = Competency.Get(id)
-        // const { updateCompetency } = Competency.Update();
+        const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+        const { machine, isLoading: isLoadingMachine } = Machine.Get(id);
+        const { updateMachine } = Machine.Update();
+        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
 
-        // const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
-        // const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
+        const { createCompetencyMachineAssociation } = CompetencyMachineAssociation.Create();
 
-        // const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
-        // const { createCompetencyLineRelation, error, isError, isLoading: isLoadingCreateLineRelation, isSuccess } = CompetencyLineRelation.Create();
-        // const { competencyLineRelation, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetByCompetencyId(id, me?.prefs?.organization);
-        // const { updateCompetencyLineRelation } = CompetencyLineRelation.Update();
+        return (
+            isLoading || isLoadingMachine || isLoadingDepartments || isLoadingCompetencyList ? VStack(Spinner()) :
+                UIViewBuilder(() => {
 
-        // // lines
-        // const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+                    const [isLoadingCompetencies, setIsLoadingCompetencies] = useState(true);
+                    const [form, setForm] = useState<IMachine.IBase>(formReset)
+                    const [selectedCompetencies, setSelectedCompetencies] = useState<string[]>([]);
+                    const [competencies, setCompetencies] = useState([]);
 
-        // const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByCompetencyId(competency?.competency_id);
-        // const { updateCompetencyDepartment } = CompetencyDepartment.Update();
-        // const { createCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
+                    let oldSelectedCompetencyMachineAssociation: ICompetencyMachineAssociation.IBase[] = [];
 
+                    const columns: GridColDef[] = [
+                        {
+                            field: "competency_name",
+                            headerName: "Yetkinlik Adı",
+                            flex: 1
+                        }
+                    ];
 
+                    const getCompetencies = async (department_id: string) => {
+                        setIsLoadingCompetencies(true);
 
-        // return (
-        //     isLoading || isLoadingCompetency || isLoadingDepartments ||
-        //         isLoadingGroups || isLoadingCompetencyDepartments || isLoadingCompetencyLineRelation ||
-        //         isLoadingLines || isLoadingParameter ? VStack(Spinner()) :
-        //         UIViewBuilder(() => {
+                        const result: ICompetency.ICompetency[] = []
 
-        //             const [form, setForm] = useState<ICompetency.ICompetency>(formReset)
-        //             const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-        //             const [isActive, setIsActive] = useState<boolean>(true);
+                        interface ICompetenciesWithDepartments extends ICompetency.ICompetency {
+                            department_id: string;
+                        }
 
-        //             const [selectedLines, setSelectedLines] = useState<string[]>([]);
+                        const competenciesWithDepartments: ICompetenciesWithDepartments[] = []
 
-        //             const lineColumns: GridColDef[] = [
-        //                 {
-        //                     field: "name",
-        //                     headerName: "Hat Adı",
-        //                     flex: 1,
-        //                 },
-        //                 {
-        //                     field: "department_name",
-        //                     headerName: "Bağlı Olduğu Departman",
-        //                     flex: 1,
-        //                 }
-        //             ]
+                        const competencyMachineAssociationAllList: ICompetencyMachineAssociation.IBase[] = await Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.CompetencyMachineAssociation,
+                            [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
+                        ).then((res) => res.documents as any[]);
 
+                        oldSelectedCompetencyMachineAssociation = competencyMachineAssociationAllList;
 
-        //             const departmentColumns: GridColDef[] = [
-        //                 {
-        //                     field: "name",
-        //                     headerName: "Departman Adı",
-        //                     flex: 1,
-        //                 }
-        //             ];
+                        const competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.CompetencyDepartment,
+                            [Query.equal("competency_department_id", department_id), Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
+                        ).then((res) => res.documents as any);
 
-        //             useEffect(() => {
-        //                 setForm(removeDollarProperties(competency))
-        //                 setSelectedDepartments(competencyDepartments.map((department) => department.competency_department_id))
-        //                 if (lineBased[0]?.is_active) {
-        //                     setSelectedLines(competencyLineRelation.map((line) => line.line_id))
-        //                 }
-        //                 setIsActive(competency.is_active_competency)
-        //             }, [])
+                        competencyList.forEach((competency) => {
+                            if (competencyDepartments.find((cd) => cd.competency_id === competency.competency_id)) {
+                                competenciesWithDepartments.push({ ...competency, department_id: department_id });
+                            }
+                        })
 
-        //             const handleChangeGroup = (e: SelectChangeEvent<string>) => {
-        //                 const group = groups.find((group) => group.competency_group_id === e.target.value)
-        //                 setForm({
-        //                     ...form,
-        //                     [e.target.name as string]: e.target.value,
-        //                     competency_group_name: group?.competency_group_name
-        //                 })
-        //             }
+                        competenciesWithDepartments.forEach((competency) => {
+                            const competencyMachineAssociation = competencyMachineAssociationAllList.find((cma) => cma.competency_id === competency.competency_id);
+                            if (!competencyMachineAssociation) {
+                                result.push(competency);
+                            } else {
+                                if (competencyMachineAssociation.machine_id === id) {
+                                    result.push(competency);
+                                    setSelectedCompetencies([...selectedCompetencies, competency.competency_id]);
+                                }
+                            }
+                        });
 
-        //             const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        //                 setForm({
-        //                     ...form,
-        //                     [e.target.name as string]: e.target.value
-        //                 })
-        //             }
+                        setCompetencies(result);
+                        setIsLoadingCompetencies(false);
+                    }
 
-        //             const onSubmit = (e) => {
-        //                 e.preventDefault();
-        //                 Toast.fire({
-        //                     icon: "info",
-        //                     title: "Yetkinlik düzenleniyor...",
-        //                     timer: 5000,
-        //                 })
-        //                 competencyDepartments.map((department) => {
-        //                     if (!selectedDepartments.includes(department.competency_department_id)) {
-        //                         updateCompetencyDepartment({
-        //                             databaseId: AppInfo.Database,
-        //                             collectionId: "competency_department",
-        //                             documentId: department.$id,
-        //                             data: {
-        //                                 ...removeDollarProperties(department),
-        //                                 is_deleted: true
-        //                             }
-        //                         })
-        //                     }
-        //                 })
+                    const onSubmit = (e) => {
+                        e.preventDefault();
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Machine,
+                            [Query.equal("code", form.code), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false)]
+                        ).then((res) => {
+                            res.documents.forEach((doc) => {
+                                if (doc.id !== form.id) {
+                                    Toast.fire({
+                                        icon: "error",
+                                        title: "Bu kod zaten kullanılıyor."
+                                    })
+                                    return;
+                                }
+                            })
 
-        //                 if (lineBased[0]?.is_active) {
-        //                     competencyLineRelation.map((line) => {
-        //                         if (!selectedLines.includes(line.line_id)) {
-        //                             updateCompetencyLineRelation({
-        //                                 databaseId: AppInfo.Database,
-        //                                 collectionId: "competency_line_relation",
-        //                                 documentId: line.$id,
-        //                                 data: {
-        //                                     ...removeDollarProperties(line),
-        //                                     is_deleted: true
-        //                                 }
-        //                             })
-        //                         }
-        //                     })
-        //                 }
+                            updateMachine({
+                                databaseId: AppInfo.Database,
+                                collectionId: Collections.Machine,
+                                documentId: form.id,
+                                data: form
+                            }, (machineRes) => {
+                                console.log(machineRes);
+                            })
+                        })
+                    }
 
-        //                 selectedDepartments.map((department) => {
-        //                     if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
-        //                         const createDepId = nanoid();
-        //                         createCompetencyDepartment({
-        //                             documentId: createDepId,
-        //                             data: {
-        //                                 competency_department_table_id: createDepId,
-        //                                 competency_department_id: department,
-        //                                 competency_department_name: departments.find((dep) => dep.id === department).name,
-        //                                 competency_id: id,
-        //                                 tenant_id: me?.prefs?.organization
-        //                             }
-        //                         })
-        //                     }
-        //                 })
+                    const onCancel = () => {
+                        navigate("/app/machine/list");
+                    }
 
-        //                 if (lineBased[0]?.is_active) {
-        //                     selectedLines.map((line) => {
-        //                         if (!competencyLineRelation.map((line) => line.line_id).includes(line)) {
-        //                             const createLineId = nanoid();
-        //                             createCompetencyLineRelation({
-        //                                 documentId: createLineId,
-        //                                 data: {
-        //                                     id: createLineId,
-        //                                     competency_id: id,
-        //                                     competency_target_value: "",
-        //                                     line_id: line,
-        //                                     tenant_id: me?.prefs?.organization
-        //                                 }
-        //                             })
-        //                         }
-        //                     })
-        //                 }
+                    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                        setForm({
+                            ...form,
+                            [e.target.name as string]: e.target.value
+                        })
+                    }
 
-        //                 updateCompetency({
-        //                     databaseId: AppInfo.Database,
-        //                     collectionId: "competency",
-        //                     documentId: id,
-        //                     data: form
-        //                 }, () => {
-        //                     Toast.fire({
-        //                         icon: "success",
-        //                         title: "Yetkinlik başarıyla düzenlendi."
-        //                     });
-        //                     navigate("/app/competency/list");
-        //                 })
-        //             }
+                    useEffect(() => {
+                        setForm(removeDollarProperties(machine))
+                        getCompetencies(machine.department_id);
+                    }, [])
 
-        //             const onCancel = () => {
-        //                 navigate("/app/competency/list");
-        //             }
+                    return (
+                        isLoadingCompetencies ? VStack(Spinner()) :
+                            VStack({ alignment: cTop })(
+                                ReactView(
+                                    <Form
+                                        title="Makineyi Düzenleyin"
+                                        form={
+                                            <form
+                                                onSubmit={onSubmit}
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "10px",
+                                                    width: "60%"
+                                                }}>
+                                                <TextField
+                                                    name="code"
+                                                    label="Makine Kodu"
+                                                    variant="outlined"
+                                                    fullWidth
+                                                    size="small"
+                                                    value={form.code}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                                <TextField
+                                                    name="name"
+                                                    label="Makine Adı"
+                                                    variant="outlined"
+                                                    fullWidth
+                                                    size="small"
+                                                    value={form.name}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                                <TextField
+                                                    name="difficulty_coefficient"
+                                                    label="Makine Zorluk Katsayısı"
+                                                    variant="outlined"
+                                                    fullWidth
+                                                    size="small"
+                                                    value={form.difficulty_coefficient}
+                                                    onChange={handleChange}
+                                                    required
+                                                    type="number"
+                                                    inputProps={{
+                                                        step: 0.1,
+                                                        min: 0,
+                                                        max: 1,
+                                                        maxLength: 3
+                                                    }}
+                                                />
+                                                <FormControl fullWidth size="small">
+                                                    <InputLabel>Departman</InputLabel>
+                                                    <Select
+                                                        name="department_id"
+                                                        value={form.department_id}
+                                                        label="Departman"
+                                                        onChange={(e: any) => {
+                                                            setForm({ ...form, department_id: e.target.value });
+                                                            getCompetencies(e.target.value);
+                                                        }}
+                                                        size="small"
+                                                        required
+                                                    >
+                                                        {departments.map((department) => (
+                                                            <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                                <div style={{
+                                                    height: "280px",
+                                                    width: "100%",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "5px",
+                                                }}>
+                                                    <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlikler</Typography>
+                                                    {
+                                                        isLoadingCompetencies ? <Fragment>{Spinner().render()}</Fragment> :
+                                                            <StyledDataGrid
+                                                                rows={form.department_id === "" ? [] : competencies}
+                                                                columns={columns}
+                                                                getRowId={(row) => row.competency_id}
+                                                                localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                                isCellEditable={() => false}
+                                                                disableRowSelectionOnClick
+                                                                checkboxSelection
+                                                                rowSelectionModel={selectedCompetencies}
+                                                                onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                                    setSelectedCompetencies(newRowSelectionModel);
+                                                                }}
+                                                                rowHeight={30}
+                                                                columnHeaderHeight={30}
 
-        //             const onDelete = () => {
-        //                 Swal.fire({
-        //                     title: "Yetkinlik Silme",
-        //                     text: "Yetkinliği silmek istediğinize emin misiniz?",
-        //                     icon: "warning",
-        //                     showCancelButton: true,
-        //                     confirmButtonText: "Sil",
-        //                     cancelButtonText: "İptal",
-        //                     confirmButtonColor: "#d33",
-        //                     cancelButtonColor: "#3085d6"
-        //                 }).then((result) => {
-        //                     if (result.isConfirmed) {
-        //                         Toast.fire({
-        //                             icon: "info",
-        //                             title: "Yetkinlik siliniyor...",
-        //                             timer: 5000,
-        //                         })
-        //                         updateCompetency({
-        //                             databaseId: AppInfo.Database,
-        //                             collectionId: "competency",
-        //                             documentId: id,
-        //                             data: {
-        //                                 ...form,
-        //                                 is_deleted_competency: true
-        //                             }
-        //                         }, () => {
-        //                             Toast.fire({
-        //                                 icon: "success",
-        //                                 title: "Yetkinlik başarıyla silindi."
-        //                             });
-        //                             navigate("/app/competency/list");
-        //                         })
-        //                     }
-        //                 })
-        //             }
+                                                            />
+                                                    }
+                                                </div>
+                                                <div style={{
+                                                    display: "flex", gap: "10px", flexDirection: "column", marginTop: "10px"
+                                                }}>
+                                                    <Button type="submit" variant="contained" color="primary" size="small">Düzenle</Button>
+                                                    <Button variant="contained" color="info" size="small" onClick={onCancel}>İptal</Button>
+                                                </div>
+                                            </form>
+                                        }
+                                    />
+                                )
+                            ).padding("30px 20px")
+                    )
+                })
+        )
 
-        //             return (
-        //                 VStack({ alignment: cTop })(
-        //                     ReactView(
-        //                         <Form
-        //                             title="Tanımlı Yetkinliği Düzenleyin"
-        //                             form={
-        //                                 <form
-        //                                     onSubmit={onSubmit}
-        //                                     style={{
-        //                                         display: "flex",
-        //                                         flexDirection: "column",
-        //                                         gap: "10px",
-        //                                         width: "60%",
-        //                                         height: "calc(100vh - 200px)",
-        //                                     }}>
-        //                                     <TextField name="competency_name" label="Yetkinlik Adı" variant="outlined" fullWidth size="small" value={form.competency_name} onChange={handleChange} required />
-        //                                     <FormControl fullWidth size="small" required>
-        //                                         <InputLabel>Yetkinlik Grubu</InputLabel>
-        //                                         <Select
-        //                                             name="competency_group_id"
-        //                                             value={form.competency_group_id}
-        //                                             label="Yetkinlik Grubu"
-        //                                             onChange={handleChangeGroup}
-        //                                             size="small"
-        //                                         >
-        //                                             {groups.map((group) => (
-        //                                                 <MenuItem value={group.competency_group_id} key={group.competency_group_id}>{group.competency_group_name}</MenuItem>
-        //                                             ))}
-        //                                         </Select>
-        //                                     </FormControl>
-        //                                     <div style={{
-        //                                         height: "280px",
-        //                                         width: "100%",
-        //                                         display: "flex",
-        //                                         flexDirection: "column",
-        //                                         gap: "5px",
-        //                                     }}>
-        //                                         <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
-        //                                         <StyledDataGrid
-        //                                             rows={departments}
-        //                                             columns={departmentColumns}
-        //                                             localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-        //                                             isCellEditable={() => false}
-        //                                             disableRowSelectionOnClick
-        //                                             checkboxSelection
-        //                                             rowSelectionModel={selectedDepartments}
-        //                                             onRowSelectionModelChange={(newRowSelectionModel: any) => {
-        //                                                 setSelectedDepartments(newRowSelectionModel)
-        //                                             }}
-        //                                             rowHeight={30}
-        //                                             columnHeaderHeight={30}
-        //                                         />
-        //                                     </div>
-        //                                     {
-        //                                         lineBased[0]?.is_active &&
-        //                                         <div style={{
-        //                                             height: "280px",
-        //                                             width: "100%",
-        //                                             display: "flex",
-        //                                             flexDirection: "column",
-        //                                             gap: "5px",
-        //                                         }}>
-        //                                             <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Hatları</Typography>
-        //                                             <StyledDataGrid
-        //                                                 // çoklu id ye göre filtreleme yapılacak
-        //                                                 rows={lines.filter((line) => selectedDepartments.indexOf(line.department_id) > -1)}
-        //                                                 columns={lineColumns}
-        //                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-        //                                                 isCellEditable={() => false}
-        //                                                 disableRowSelectionOnClick
-        //                                                 checkboxSelection
-        //                                                 onRowSelectionModelChange={(newRowSelectionModel: any) => {
-        //                                                     setSelectedLines(newRowSelectionModel)
-        //                                                 }}
-        //                                                 rowSelectionModel={selectedLines}
-        //                                                 rowHeight={30}
-        //                                                 columnHeaderHeight={30}
-        //                                             />
-        //                                         </div>
-        //                                     }
-        //                                     <FormControlLabel
-        //                                         sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
-        //                                         onChange={(e: any) => setForm({ ...form, is_active_competency: e.target.checked })}
-        //                                         control={<Switch color="primary" checked={form.is_active_competency} />}
-        //                                         label="Aktif mi?"
-        //                                         labelPlacement="start"
-        //                                     />
-        //                                     <div style={{
-        //                                         display: "flex", gap: "10px", flexDirection: "column", marginTop: "10px"
-        //                                     }}>
-        //                                         <Button type="submit" variant="contained" color="primary" size="small">Kaydet</Button>
-        //                                         {
-        //                                             !isActive &&
-        //                                             <Button variant="contained" color="error" size="small" onClick={onDelete}>Sil</Button>
-
-        //                                         }
-        //                                         <Button variant="contained" color="info" size="small" onClick={onCancel}>İptal</Button>
-        //                                     </div>
-        //                                 </form>
-        //                             }
-        //                         />
-        //                     )
-        //                 ).padding("30px 20px")
-        //             )
-        //         })
-        // )
     }
 
 }

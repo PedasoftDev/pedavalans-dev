@@ -34,11 +34,12 @@ export class CreateEducationController extends UIFormController {
     public LoadView(): UIView {
 
         const navigate = useNavigate();
-        const navigateToList = () => navigate("/app/education/list");
 
         const { me, isLoading } = useGetMe("console")
+
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
         const { createEducation } = Education.Create()
+
         const { createEducationCompetencyRelation } = EducationCompetencyRelation.Create()
         const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization)
 
@@ -49,17 +50,14 @@ export class CreateEducationController extends UIFormController {
 
                         const [form, setForm] = useState<IEducation.ICreate>(resetForm);
 
+                        const navigateToList = () => navigate("/app/education/list");
+
                         const handleChangeText = (e: any) => {
-                            const { name, value } = e.target;
-                            setForm({ ...form, [name]: value });
+                            setForm({ ...form, [e.target.name]: e.target.value });
                         };
 
                         const handleChangeSelect = (event: SelectChangeEvent<any>) => {
-                            const { name, value } = event.target;
-                            setForm({
-                                ...form,
-                                [name]: value,
-                            });
+                            setForm({ ...form, [event.target.name]: event.target.value });
                         };
 
                         const handleSubmit = (e: React.FormEvent) => {
