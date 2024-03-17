@@ -42,19 +42,18 @@ export class UpdateMachineController extends UIFormController {
         const { machine, isLoading: isLoadingMachine } = Machine.Get(id);
         const { updateMachine } = Machine.Update();
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
-
+        const { competencyMachineAssociationList, isLoading: isLoadingAssocation } = CompetencyMachineAssociation.GetListByMachineId(me?.prefs?.organization, id);
         const { createCompetencyMachineAssociation } = CompetencyMachineAssociation.Create();
+        const { updateCompetencyMachineAssociation } = CompetencyMachineAssociation.Update();
 
         return (
-            isLoading || isLoadingMachine || isLoadingDepartments || isLoadingCompetencyList ? VStack(Spinner()) :
+            isLoading || isLoadingMachine || isLoadingDepartments || isLoadingCompetencyList || isLoadingAssocation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [isLoadingCompetencies, setIsLoadingCompetencies] = useState(true);
                     const [form, setForm] = useState<IMachine.IBase>(formReset)
                     const [selectedCompetencies, setSelectedCompetencies] = useState<string[]>([]);
                     const [competencies, setCompetencies] = useState([]);
-
-                    let oldSelectedCompetencyMachineAssociation: ICompetencyMachineAssociation.IBase[] = [];
 
                     const columns: GridColDef[] = [
                         {
@@ -82,8 +81,6 @@ export class UpdateMachineController extends UIFormController {
                             [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
                         ).then((res) => res.documents as any[]);
 
-                        oldSelectedCompetencyMachineAssociation = competencyMachineAssociationAllList;
-
                         const competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(
                             AppInfo.Name,
                             AppInfo.Database,
@@ -98,23 +95,19 @@ export class UpdateMachineController extends UIFormController {
                         })
 
                         competenciesWithDepartments.forEach((competency) => {
-                            const competencyMachineAssociation = competencyMachineAssociationAllList.find((cma) => cma.competency_id === competency.competency_id);
-                            if (!competencyMachineAssociation) {
+                            if (competencyMachineAssociationList.find((cma) => cma.competency_id === competency.competency_id) || !competencyMachineAssociationAllList.find((cma) => cma.competency_id === competency.competency_id)) {
                                 result.push(competency);
-                            } else {
-                                if (competencyMachineAssociation.machine_id === id) {
-                                    result.push(competency);
-                                    setSelectedCompetencies([...selectedCompetencies, competency.competency_id]);
-                                }
                             }
-                        });
+                        })
 
                         setCompetencies(result);
+                        setSelectedCompetencies(competencyMachineAssociationList.map((cma) => cma.competency_id));
                         setIsLoadingCompetencies(false);
                     }
 
                     const onSubmit = (e) => {
                         e.preventDefault();
+                        const alreadyAssocation = competencyMachineAssociationList;
                         Services.Databases.listDocuments(
                             AppInfo.Name,
                             AppInfo.Database,
@@ -137,7 +130,35 @@ export class UpdateMachineController extends UIFormController {
                                 documentId: form.id,
                                 data: form
                             }, (machineRes) => {
-                                console.log(machineRes);
+
+                                alreadyAssocation.forEach((association, indexAssociation) => {
+                                    updateCompetencyMachineAssociation({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.CompetencyMachineAssociation,
+                                        documentId: association.$id,
+                                        data: { ...removeDollarProperties(association), is_deleted: true, is_active: false }
+                                    })
+                                })
+
+                                selectedCompetencies.forEach(competency => {
+                                    const assocId = nanoid();
+                                    createCompetencyMachineAssociation({
+                                        documentId: assocId,
+                                        data: {
+                                            id: assocId,
+                                            competency_id: competency,
+                                            machine_id: form.id,
+                                            tenant_id: me?.prefs?.organization
+                                        }
+                                    })
+                                })
+                                setTimeout(() => {
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Makine başarıyla güncellendi."
+                                    })
+                                    navigate("/app/machine/list");
+                                }, selectedCompetencies.length * 100 + 1000);
                             })
                         })
                     }
@@ -270,7 +291,5 @@ export class UpdateMachineController extends UIFormController {
                     )
                 })
         )
-
     }
-
 }

@@ -1,4 +1,4 @@
-import { Query, useCreateDocument, useListDocuments } from "@realmocean/sdk"
+import { Query, useCreateDocument, useListDocuments, useUpdateDocument } from "@realmocean/sdk"
 import AppInfo from "../../../AppInfo"
 import Collections from "../../core/Collections"
 import ICompetencyMachineAssociation from "../../../client/interfaces/ICompetencyMachineAssociation"
@@ -8,6 +8,12 @@ namespace CompetencyMachineAssociation {
         const { createDocument } = useCreateDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyMachineAssociation)
         return { createCompetencyMachineAssociation: createDocument }
     }
+
+    export const Update = () => {
+        const { updateDocument } = useUpdateDocument(AppInfo.Name)
+        return { updateCompetencyMachineAssociation: updateDocument }
+    }
+
     export const GetList = (tenant_id: string): { competencyMachineAssociationList: ICompetencyMachineAssociation.IBase[], isLoading: boolean } => {
         const { documents, isLoading } = useListDocuments(
             AppInfo.Name,

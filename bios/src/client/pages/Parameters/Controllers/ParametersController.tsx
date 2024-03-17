@@ -57,6 +57,7 @@ export class ParametersController extends UIFormController {
                                 icon: "info",
                                 title: "Parametre güncelleniyor..."
                             })
+                            localStorage.setItem(parameter.name, parameter.is_active ? "true" : "false");
                             updateParameter({
                                 databaseId: AppInfo.Database,
                                 collectionId: "pedavalans_parameter",

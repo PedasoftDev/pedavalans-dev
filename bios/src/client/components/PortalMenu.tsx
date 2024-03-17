@@ -40,7 +40,7 @@ export interface menuModel {
 
 
 export const PortalMenu = (selectedMenuTitle: string) => {
-    const [machineBased, setMachineBased] = useState(localStorage.getItem("pedavalans_machine_based") == "true" ? true : false)
+
 
     const { me, isLoading } = useGetMe("console")
 
@@ -50,6 +50,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
     const [isAdmin, setIsAdmin] = useState(null)
     const [isResponsible, setIsResponsible] = useState(null)
     const [isViewer, setIsViewer] = useState(null)
+    const [machineBased, setMachineBased] = useState(null)
 
 
     const logout = () => {
@@ -80,7 +81,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             icon: ReactView(
                 <RxColorWheel size={25} />
             ),
-            isVisible: true//machineBased
+            isVisible: machineBased
         },
         {
             title: "Yetkinlik Durum İzleme Raporu",
@@ -193,6 +194,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
     ];
 
     useEffect(() => {
+        setMachineBased(localStorage.getItem("machine_based_polyvalence_management") === "true" ? true : false)
         setIsAdmin(localStorage.getItem("isAdmin") === "true" ? true : false)
         setIsResponsible(localStorage.getItem("isResponsible") === "true" ? true : false)
         setIsViewer(localStorage.getItem("isViewer") === "true" ? true : false)
