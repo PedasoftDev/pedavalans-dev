@@ -168,10 +168,15 @@ export class UpdateMachineController extends UIFormController {
                     }
 
                     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                        setForm({
-                            ...form,
-                            [e.target.name as string]: e.target.value
-                        })
+                        if (e.target.name === "difficulty_coefficient") {
+                            if (Number(e.target.value) > 1) {
+                                e.target.value = "1";
+                            }
+                            if (Number(e.target.value) < 0) {
+                                e.target.value = "0";
+                            }
+                        }
+                        setForm({ ...form, [e.target.name]: e.target.value })
                     }
 
                     useEffect(() => {

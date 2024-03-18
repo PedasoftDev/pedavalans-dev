@@ -19,6 +19,9 @@ import { getReportToExcelByPolyvalenceTable } from "../../../assets/Functions/ge
 import { SiMicrosoftexcel } from "react-icons/si";
 import Competency from "../../../../server/hooks/competency/main";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import Collections from "../../../../server/core/Collections";
+import { Resources } from "../../../assets/Resources";
+import { getReportToExcelByMachinePolyvalenceTable } from "../../../assets/Functions/getReportToExcelByMachinePolyvalenceTable";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -120,6 +123,20 @@ export class ReportPolyvalenceUnitList extends UIController {
                                 })
                         }
 
+                        const exportPolyvalenceUnitToXlsx = () => {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.machine_based_polyvalence_management), Query.equal("tenant_id", me?.prefs?.organization)]).then(res => {
+                                if (res.documents && res.documents[0] && res.documents[0].is_active) {
+                                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Machine, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true)]).then(machineRes => {
+                                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyMachineAssociation, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false)]).then(competencyMachineRes => {
+                                            getReportToExcelByMachinePolyvalenceTable(machineRes.documents as any, competencyMachineRes.documents as any, competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
+                                        })
+                                    })
+                                } else {
+                                    getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
+                                }
+                            })
+                        }
+
                         return (
                             VStack({ alignment: cTopLeading })(
                                 VStack({ alignment: cTopLeading })(
@@ -146,9 +163,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                         </Select>
                                                     </FormControl>
                                                     {rows.length != 0 &&
-                                                        <IconButton onClick={() => {
-                                                            getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
-                                                        }}>
+                                                        <IconButton onClick={exportPolyvalenceUnitToXlsx}>
                                                             <SiMicrosoftexcel />
                                                         </IconButton>
                                                     }

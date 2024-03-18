@@ -299,6 +299,12 @@ export class OrganizationStructureViewController extends UIController {
                     // employees
                     const employeeColumns: GridColDef[] = [
                         {
+                            field: 'id',
+                            headerName: 'Sicil Numarası',
+                            width: 200,
+                            flex: 1
+                        },
+                        {
                             field: 'first_name',
                             headerName: 'İsim',
                             width: 200,
@@ -380,7 +386,7 @@ export class OrganizationStructureViewController extends UIController {
                             headerName: 'İşlemler',
                             width: 100,
                             renderCell: (params: any) => (
-                                <TableClickP onClick={() => handleEditEmployee(removeDollarProperties(params.row))}>
+                                <TableClickP onClick={() => handleEditEmployee(params.row)}>
                                     Düzenle
                                 </TableClickP>
                             )

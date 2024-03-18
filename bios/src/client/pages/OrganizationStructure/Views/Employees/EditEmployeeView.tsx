@@ -6,6 +6,7 @@ import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStru
 import { Toast } from '../../../../components/Toast';
 import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
 import AppInfo from '../../../../../AppInfo';
+import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
 
 
 const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
@@ -64,15 +65,24 @@ const EditEmployeeView = (
             label: "Bulunduğu Hat",
             options: props.lines.filter((line) => line.department_id === formEmployee.department_id)
         }
-    ]
+    ];
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (props.employees.find(x => x.$id != formEmployee.$id && x.id === formEmployee.id)) {
+            Toast.fire({
+                icon: "error",
+                title: "Bu sicil numarası zaten kullanılıyor. Lütfen farklı bir sicil numarası girin."
+            })
+            return;
+        }
+
         updateEmployee({
             databaseId: AppInfo.Database,
             collectionId: "organization_employee",
-            documentId: formEmployee.id,
-            data: formEmployee,
+            documentId: formEmployee.$id,
+            data: removeDollarProperties(formEmployee),
         }, () => {
             Toast.fire({
                 icon: "success",
@@ -114,9 +124,9 @@ const EditEmployeeView = (
                 updateEmployee({
                     databaseId: AppInfo.Database,
                     collectionId: "organization_employee",
-                    documentId: formEmployee.id,
+                    documentId: formEmployee.$id,
                     data: {
-                        ...formEmployee,
+                        ...removeDollarProperties(formEmployee),
                         is_deleted: true
                     },
                 }, () => {
@@ -144,7 +154,13 @@ const EditEmployeeView = (
             formContent={
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
-
+                    <TextField
+                        name='id'
+                        size='small'
+                        label='Sicil Numarası'
+                        value={formEmployee.id}
+                        onChange={onChange}
+                    />
                     <TextField
                         name='first_name'
                         size='small'

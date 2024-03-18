@@ -62,12 +62,17 @@ const AddEmployeeView = (
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const id = nanoid();
+        if (props.employees.find((employee) => employee.id === formEmployee.id)) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Bu sicil numarası zaten kullanımda.'
+            })
+            return;
+        }
         createEmployee({
-            documentId: id,
+            documentId: nanoid(),
             data: {
                 ...formEmployee,
-                id: id,
                 tenant_id: me?.prefs?.organization
             }
         }, () => {
@@ -109,11 +114,20 @@ const AddEmployeeView = (
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
                         <TextField
+                            name='id'
+                            size='small'
+                            label='Sicil No'
+                            value={formEmployee.id}
+                            onChange={onChange}
+                            required
+                        />
+                        <TextField
                             name='first_name'
                             size='small'
                             label='İsim'
                             value={formEmployee.first_name}
                             onChange={onChange}
+                            required
                         />
                         <TextField
                             name='last_name'
@@ -121,6 +135,7 @@ const AddEmployeeView = (
                             label='Soyisim'
                             value={formEmployee.last_name}
                             onChange={onChange}
+                            required
                         />
                         {selectFormStates.map((selectFormState) => {
                             return (
