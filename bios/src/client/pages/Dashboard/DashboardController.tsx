@@ -68,6 +68,7 @@ export class DashboardController extends UIController {
         // const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)])
 
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
+        const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management, me?.prefs?.organization)
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
 
         const navigate = useNavigate();
@@ -119,6 +120,7 @@ export class DashboardController extends UIController {
                                         localStorage.setItem("tableAuth", "false")
                                         localStorage.setItem("isAdmin", "true")
                                     }
+                                    localStorage.setItem(Resources.ParameterLocalStr.machine_based_polyvalence_management, machineBased[0]?.is_active ? "true" : "false")
                                 }
 
 

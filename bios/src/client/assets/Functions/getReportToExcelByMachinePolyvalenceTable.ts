@@ -83,7 +83,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
             })
         }
     })
-    competencies.sort((a, b) => a.competency_group_name.localeCompare(b.competency_group_name)).sort((a, b) => a.name.localeCompare(b.name));
+    competencies.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a.competency_group_name.localeCompare(b.competency_group_name));
     competencyGroups = competencyGroups.sort((a, b) => a.competency_group_name.localeCompare(b.competency_group_name));
 
     // ilk satır -- Değerlendirme Dönemi - - - - Polivalans Tablosu Adı - - - - Başarı Oranı
@@ -119,8 +119,13 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
     competencies.forEach((competencyWithValue, index) => {
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
             if (employeeCompetencyValue.competency_id === competencyWithValue.competency_id) {
+                const selectedMachine = machines.find(x => x.$id === competencyWithValue.id);
+                let difficultyCoefficient = 1;
+                if (selectedMachine) {
+                    difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
+                }
                 totalCompetencyCount++;
-                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value);
+                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
             }
         });
@@ -154,34 +159,40 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
 
     // makine
     const machineRow: any[] = []
-    machineRow[0] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
-    competencies.forEach((competency, index) => {
+    machineRow[0] = { v: 'Makineler', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+    const writingMachines: string[] = [];
+    let lastWritingMachineIndex = 4;
+    competencies.forEach((competency, _i) => {
+
         const machineByCompetency = machines.find(x => x.$id === competency.id);
-        const machineAssocLength = competencyMachineAssocation.filter(x => x.competency_id === competency.competency_id).length;
-        if (machineAssocLength > 0) {
-            if (index === 0) {
-                machineRow[4 + index] = { v: machineByCompetency?.name, t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomLeft } }
-                for (let i = 1; i < machineAssocLength; i++) {
-                    if (i === machineAssocLength - 1) {
-                        machineRow[4 + index + i] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
-                    } else {
-                        machineRow[4 + index + i] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+
+        if (!writingMachines.some(x => x === machineByCompetency?.id)) {
+
+            const machineAssociation = competencyMachineAssocation.filter(x => x.machine_id === machineByCompetency?.id);
+            if (machineAssociation.length > 0) {
+                writingMachines.push(machineByCompetency?.id || "");
+                machineAssociation.forEach((machineAssoc, index) => {
+                    if (index === 0) {
+                        machineRow[lastWritingMachineIndex] = { v: machineByCompetency?.name, t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomLeft } }
+
                     }
-                }
-                merge.push({ s: { r: 2, c: 4 }, e: { r: 2, c: 4 + machineAssocLength - 1 } })
+                    else if (index === machineAssociation.length - 1) {
+                        machineRow[lastWritingMachineIndex + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+                    }
+                    else {
+                        machineRow[lastWritingMachineIndex + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+                    }
+                })
+                merge.push({ s: { r: 1, c: lastWritingMachineIndex }, e: { r: 1, c: lastWritingMachineIndex + machineAssociation.length - 1 } })
+                lastWritingMachineIndex += machineAssociation.length;
             } else {
-                machineRow[4 + index] = { v: machineByCompetency?.name, t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomLeft } }
-                for (let i = 1; i < machineAssocLength; i++) {
-                    if (i === machineAssocLength - 1) {
-                        machineRow[4 + index + i] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
-                    } else {
-                        machineRow[4 + index + i] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
-                    }
-                }
-                merge.push({ s: { r: 2, c: 4 + index }, e: { r: 2, c: 4 + index + machineAssocLength - 1 } })
+                machineRow[lastWritingMachineIndex] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+                lastWritingMachineIndex++;
             }
         }
     })
+
+    machineRow[lastWritingMachineIndex] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
 
 
     appendData.push(machineRow);
@@ -217,6 +228,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
             }
         }
     })
+    merge.push({ s: { r: 2, c: 0 }, e: { r: 2, c: 3 } })
     competencyGroupRow[startCompetencyGroupIndex] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
     competencyGroupRow[startCompetencyGroupIndex + 1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
     appendData.push(competencyGroupRow);
@@ -228,7 +240,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
     // sabit
     const competenciesRow: any[] = []
     // yükseklik
-    rowHeights[2] = { hpx: 120 };
+    rowHeights[2] = { hpx: 60 };
 
     //// personel -- yazma
     competenciesRow[0] = { v: 'Personel', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomLeft } }
@@ -272,9 +284,14 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         let totalRealValue = 0;
         competencies.forEach((competencyWithValue, index) => {
             const employeeCompetencyValue = employeeCompetencyValues.find(x => x.competency_id === competencyWithValue.competency_id && x.employee_id === employee.id);
+            const selectedMachine = machines.find(x => x.$id === competencyWithValue.id);
+            let difficultyCoefficient = 1;
+            if (selectedMachine) {
+                difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
+            }
             if (employeeCompetencyValue) {
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
-                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value);
+                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
             }
         });
         if (totalTargetValue > 0) {
@@ -284,8 +301,13 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         // geliştirilmesi gereken yetkinlik sayısı
         competencies.forEach((competencyWithValue, index) => {
             const employeeCompetencyValue = employeeCompetencyValues.find(x => x.competency_id === competencyWithValue.competency_id && x.employee_id === employee.id);
+            const selectedMachine = machines.find(x => x.$id === competencyWithValue.id);
+            let difficultyCoefficient = 1;
+            if (selectedMachine) {
+                difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
+            }
             if (employeeCompetencyValue) {
-                if (parseInt(employeeCompetencyValue.competency_real_value) < parseInt(employeeCompetencyValue.competency_target_value)) {
+                if (parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient < parseInt(employeeCompetencyValue.competency_target_value)) {
                     competencyToBeImprovedCount++;
                 }
             }
@@ -316,9 +338,19 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         let startFirstCompetencyIndex = 4;
         competencies.forEach((competencyWithValue, index) => {
             const employeeCompetencyValue = employeeCompetencyValues.find(x => x.competency_id === competencyWithValue.competency_id && x.employee_id === employee.id);
+            let difficultyCoefficient = 1;
+            const selectedMachine = machines.find(x => x.$id === competencyWithValue.id);
+            if (selectedMachine) {
+                difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
+            }
+
             if (employeeCompetencyValue) {
                 employeeRow[startFirstCompetencyIndex + index] = { v: employeeCompetencyValue.competency_target_value, t: 's', s: waitingValueStyle }
-                employeeRowPlusOne[startFirstCompetencyIndex + index] = { v: employeeCompetencyValue.competency_real_value, t: 's', s: realValueStyle }
+                employeeRowPlusOne[startFirstCompetencyIndex + index] = {
+                    v: difficultyCoefficient === 1 ? employeeCompetencyValue.competency_real_value : (parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient).toFixed(1),
+                    t: 's',
+                    s: realValueStyle
+                }
             } else {
                 employeeRow[startFirstCompetencyIndex + index] = { v: '', t: 's', s: waitingValueStyle }
                 employeeRowPlusOne[startFirstCompetencyIndex + index] = { v: '', t: 's', s: realValueStyle }
@@ -368,7 +400,13 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         let employeeCount = 0;
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
             if (employeeCompetencyValue.competency_id === competency.competency_id) {
-                if (parseInt(employeeCompetencyValue.competency_real_value) < parseInt(employeeCompetencyValue.competency_target_value)) {
+                const selectedMachine = machines.find(x => x.$id === competencies.find(x => x.competency_id === competency.competency_id)?.id);
+                let difficultyCoefficient = 1;
+                const realValue = parseInt(employeeCompetencyValue.competency_real_value);
+                if (selectedMachine) {
+                    difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
+                }
+                if ((realValue * difficultyCoefficient) < parseInt(employeeCompetencyValue.competency_target_value)) {
                     employeeCount++;
                 }
             }
@@ -394,11 +432,15 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         let totalRealValue = 0;
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
             if (competencies.find(x => x.competency_id === employeeCompetencyValue.competency_id)?.competency_group_id === group.competency_group_id) {
+                const selectedMachine = machines.find(x => x.$id === employeeCompetencyValue.competency_id);
+                let difficultyCoefficient = 1;
+                if (selectedMachine) {
+                    difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
+                }
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
-                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value);
+                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
             }
         })
-        console.log(totalTargetValue, totalRealValue)
 
         if (totalTargetValue > 0) {
             totalPercentage = (totalRealValue / totalTargetValue) * 100
