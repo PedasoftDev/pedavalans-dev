@@ -440,6 +440,7 @@ export class OrganizationStructureViewController extends UIController {
                                                         />
                                                         :
                                                         <EmployeeListView
+                                                            me={me}
                                                             employees={filteredEmployees}
                                                             columns={employeeColumns}
                                                             active={employeeActives}

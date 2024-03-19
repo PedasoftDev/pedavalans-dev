@@ -12,6 +12,11 @@ namespace Collections {
     export const Education: string = "education";
     export const EducationCompetencyRelation: string = "education_competency_relation";
     export const Machine: string = "machine";
+    export const OrganizationStructureDepartment: string = "organization_department";
+    export const OrganizationStructureTitle: string = "organization_title";
+    export const OrganizationStructurePosition: string = "organization_position";
+    export const OrganizationStructureLine: string = "organization_line";
+    export const OrganizationStructureEmployee: string = "organization_employee";
 }
 
 export default Collections;
