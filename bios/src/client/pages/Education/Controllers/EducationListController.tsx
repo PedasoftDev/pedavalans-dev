@@ -97,7 +97,7 @@ export class EducationListController extends UIFormController {
                                                 gap: "10px",
                                                 alignItems: "center"
                                             }}>
-                                                <div style={{ width: "80%" }}>
+                                                <div style={{ width: "70%" }}>
                                                     <TextField placeholder="Eğitim Arayın..." size="small" fullWidth onChange={handleSearch} />
                                                 </div>
                                                 <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Eğitimleri Göster`}>
@@ -106,9 +106,12 @@ export class EducationListController extends UIFormController {
                                                     </IconButton>
                                                 </Tooltip>
                                                 <div style={{
-                                                    width: "20%",
+                                                    width: "30%",
+                                                    display: "flex",
+                                                    gap: "10px"
                                                 }}>
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
                                                 </div>
                                             </div>
                                             <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>

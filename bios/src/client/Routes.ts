@@ -53,6 +53,8 @@ import { MachineController } from './pages/Machines/Controllers/MachineControlle
 import { CreateMachineController } from './pages/Machines/Controllers/CreateMachineController';
 import { UpdateMachineController } from './pages/Machines/Controllers/UpdateMachineController';
 import { MachineListController } from './pages/Machines/Controllers/MachineListController';
+import { AssignedEducationListController } from './pages/Education/Controllers/AssignedEducationListController';
+import { AssignEducationController } from './pages/Education/Controllers/AssignEducationController';
 
 export const Routes = () => {
     return (
@@ -148,7 +150,9 @@ export const Routes = () => {
                 // training
                 UIRoute('education', EducationController).children(
                     UIRoute('list', EducationListController),
-                    UIRoute('create', CreateEducationController)
+                    UIRoute('create', CreateEducationController),
+                    UIRoute('assigned', AssignedEducationListController),
+                    UIRoute('assign', AssignEducationController)
                 ),
 
                 UIRoute('organization', OrganizationViewController),

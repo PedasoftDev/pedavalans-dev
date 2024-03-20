@@ -26,8 +26,6 @@ namespace ICompetency {
         competency_name: string;
         competency_group_id: string;
         competency_group_name: string;
-        polyvalence_table_id: string;
-        polyvalence_table_name: string;
         tenant_id: string;
         realm_id: string;
     }

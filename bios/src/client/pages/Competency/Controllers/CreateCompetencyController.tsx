@@ -24,8 +24,6 @@ const formReset: ICompetency.ICreateCompetency = {
     competency_name: "",
     competency_group_id: "",
     competency_group_name: "",
-    polyvalence_table_id: "",
-    polyvalence_table_name: "",
     realm_id: "",
     tenant_id: "",
 }

@@ -4,8 +4,8 @@ import { Container, LeftContainer, LeftContainerContent, LeftContainerContentIte
 import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
-import { Query, Services, useGetMe } from "@realmocean/sdk";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -27,6 +27,13 @@ import { TbPencilPlus } from "react-icons/tb";
 import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
+import { MdOutlineLibraryBooks } from "react-icons/md";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import Education from "../../../../server/hooks/education/main";
+import IEducation from "../../../interfaces/IEducation";
+import IAssignedEducation from "../../../interfaces/IAssignedEducation";
+import AssignEducation from "../../../../server/hooks/assignEducation/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -99,9 +106,13 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
 
+        const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { createAssignedEducation } = AssignEducation.Create();
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods
+                || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList || isLoadingEducation || isLoadingAccounts ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -113,6 +124,75 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     const [openDialog, setOpenDialog] = useState(false);
                     const [description, setDescription] = useState("");
                     const [selectedCompetencyId, setSelectedCompetencyId] = useState("");
+
+                    // dialog for education
+                    const [form, setForm] = useState({
+                        education_id: "",
+                        education_name: "",
+                        education_code: "",
+                        educator_id: "",
+                        educator_name: "",
+                        start_date: "",
+                        end_date: "",
+                    });
+
+                    const [selectedEmployees, setSelectedEmployees] = useState<typeof employees>([]);
+                    const [openEducationDialog, setOpenEducationDialog] = useState(false);
+
+                    const handleCloseEducationDialog = () => {
+                        setOpenEducationDialog(false);
+                        setForm({
+                            education_id: "",
+                            education_name: "",
+                            education_code: "",
+                            educator_id: "",
+                            educator_name: "",
+                            start_date: "",
+                            end_date: "",
+                        });
+                        setSelectedEmployees([]);
+                    }
+
+                    const handleOpenEducationDialog = (employee_id: string) => {
+                        const selectedEmployee = employees.find((employee) => employee.id === employee_id);
+                        if (selectedEmployee) {
+                            setSelectedEmployees([selectedEmployee]);
+                            setOpenEducationDialog(true);
+                        }
+                    }
+
+                    const handleSubmitEducationDialog = (e) => {
+                        e.preventDefault();
+                        selectedEmployees.forEach((employee, _i) => {
+                            const createForm: IAssignedEducation.ICreate = {
+                                education_code: form.education_code,
+                                employee_id: employee.$id,
+                                education_id: form.education_id,
+                                education_name: form.education_name,
+                                educator_id: form.educator_id,
+                                educator_name: form.educator_name,
+                                employee_name: `${employee.first_name} ${employee.last_name}`,
+                                start_date: form.start_date,
+                                end_date: form.end_date,
+                                status: "open",
+                                tenant_id: me?.prefs?.organization
+                            }
+                            createAssignedEducation({
+                                data: createForm
+                            }, () => {
+                                if (_i === selectedEmployees.length - 1) {
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Eğitim atamaları başarıyla yapıldı.",
+                                        timer: 1000
+                                    })
+                                    handleCloseEducationDialog();
+                                }
+                            })
+                        })
+                    }
+
+
 
                     const handleClickOpenDialog = (description: string, competency_id: string) => {
                         const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === competency_id);
@@ -311,13 +391,20 @@ export class CompetencyRealDataEntryViewController extends UIController {
                             )
                         },
                         {
-                            field: "competency_value_desc", headerName: "Açıklama", width: 100, minWidth: 100,
+                            field: "competency_value_desc", headerName: "Aksiyonlar", width: 100, minWidth: 100,
                             renderCell: (params) => (
-                                <Button variant="text" fullWidth onClick={() => {
-                                    handleClickOpenDialog(params.row.competency_value_desc, params.row.competency_id)
-                                }}>
-                                    <TbPencilPlus size={20} color="#3BA2EE" />
-                                </Button>
+                                <div style={{ display: "flex", gap: "5px" }}>
+                                    <IconButton color="primary" onClick={() => {
+                                        handleClickOpenDialog(params.row.competency_value_desc, params.row.competency_id)
+                                    }}>
+                                        <TbPencilPlus />
+                                    </IconButton>
+                                    <IconButton color="primary" onClick={() => {
+                                        handleOpenEducationDialog(params.row.employee_id)
+                                    }}>
+                                        <MdOutlineLibraryBooks />
+                                    </IconButton>
+                                </div>
                             )
                         }
                     ];
@@ -493,6 +580,139 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 <Button onClick={handleCloseDialog}>İptal</Button>
                                                 <Button type="submit">Açıklamayı Kaydet</Button>
                                             </DialogActions>
+                                        </form>
+                                    </Dialog>
+                                    <Dialog
+                                        open={openEducationDialog}
+                                        onClose={handleCloseEducationDialog}>
+                                        <form
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "10px",
+                                                width: "60%",
+                                            }}
+                                            onSubmit={handleSubmitEducationDialog}
+                                        >
+                                            <FormControl fullWidth size="small" required>
+                                                <InputLabel>Eğitim</InputLabel>
+                                                <Select
+                                                    name="education_id"
+                                                    value={form.education_id}
+                                                    label="Eğitim"
+                                                    onChange={(e) => {
+                                                        const selectedEducation = educationList.find((item) => item.$id === e.target.value);
+                                                        setForm({ ...form, education_id: e.target.value, education_name: selectedEducation?.name, education_code: selectedEducation?.code });
+                                                    }}
+                                                    size="small"
+                                                    required
+                                                >
+                                                    {educationList.map((education: IEducation.IBase) => (
+                                                        <MenuItem
+                                                            value={education.$id}
+                                                            key={education.$id}
+                                                        >
+                                                            {education.name}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <Autocomplete
+                                                multiple
+                                                disableCloseOnSelect
+                                                options={employees}
+                                                getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
+                                                filterSelectedOptions
+                                                // defaultValue={}
+                                                size="small"
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Eğitim Alacak Personel"
+                                                        size="small"
+                                                    />
+                                                )}
+                                                onChange={(event, newValue) => {
+                                                    setSelectedEmployees(newValue);
+                                                }}
+                                            />
+                                            <FormControl fullWidth size="small" required>
+                                                <InputLabel>Eğitimci</InputLabel>
+                                                <Select
+                                                    name="educator_id"
+                                                    value={form.educator_id}
+                                                    label="Eğitimci"
+                                                    onChange={(e) => {
+                                                        const selectedEducator = accounts.find((item) => item.$id === e.target.value);
+                                                        setForm({ ...form, educator_id: e.target.value, educator_name: selectedEducator?.name });
+                                                    }}
+                                                    size="small"
+                                                    required
+                                                >
+                                                    {accounts.map((account) => (
+                                                        <MenuItem
+                                                            value={account.$id}
+                                                            key={account.$id}
+                                                        >
+                                                            {account.name}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            <div style={{
+                                                display: "flex",
+                                                gap: "10px",
+                                            }}>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker label="Eğitim Başlangıç Tarihi"
+                                                        format="DD/MM/YYYY"
+                                                        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                                        onChange={(e: any) => {
+                                                            if (e.$D < 10) {
+                                                                setForm({ ...form, start_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
+                                                            } else {
+                                                                setForm({ ...form, start_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
+                                                            }
+                                                        }} />
+                                                </LocalizationProvider>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker label="Eğitim Bitiş Tarihi"
+                                                        format="DD/MM/YYYY"
+                                                        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                                        onChange={(e: any) => {
+                                                            if (e.$D < 10) {
+                                                                setForm({ ...form, end_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
+                                                            } else {
+                                                                setForm({ ...form, end_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
+                                                            }
+                                                        }} />
+                                                </LocalizationProvider>
+                                            </div>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    gap: "10px",
+                                                    flexDirection: "column",
+                                                    marginTop: "10px",
+                                                }}
+                                            >
+                                                <Button
+                                                    type="submit"
+                                                    variant="contained"
+                                                    color="primary"
+                                                    size="small"
+                                                >
+                                                    Kaydet
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    color="info"
+                                                    size="small"
+                                                    onClick={handleCloseEducationDialog}
+                                                >
+                                                    İptal
+                                                </Button>
+                                            </div>
                                         </form>
                                     </Dialog>
                                 </Container>

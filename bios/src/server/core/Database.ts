@@ -1344,6 +1344,71 @@ const Database: IDatabase = {
                     default: false
                 }
             ]
+        },
+        {
+            id: "assigned_education",
+            name: "Assigned Education",
+            description: {
+                en: "Assigned Education is a collection of assigned educations.",
+                tr: "Atanmış eğitimlerin koleksiyonudur."
+            },
+            version: "1.0.0",
+            attributes: [
+                {
+                    key: "education_id",
+                    type: "string"
+                },
+                {
+                    key: "education_code",
+                    type: "string"
+                },
+                {
+                    key: "education_name",
+                    type: "string"
+                },
+                {
+                    key: "employee_id",
+                    type: "string"
+                },
+                {
+                    key: "employee_name",
+                    type: "string"
+                },
+                {
+                    key: "educator_id",
+                    type: "string"
+                },
+                {
+                    key: "educator_name",
+                    type: "string"
+                },
+                {
+                    key: "start_date",
+                    type: "string"
+                },
+                {
+                    key: "end_date",
+                    type: "string"
+                },
+                {
+                    key: "status",
+                    type: "string"
+                },
+                {
+                    key: "tenant_id",
+                    type: "string"
+                },
+                {
+                    key: "is_active",
+                    type: "boolean",
+                    default: true
+                },
+                {
+                    key: "is_deleted",
+                    type: "boolean",
+                    default: false
+                }
+            ]
         }
     ]
 }

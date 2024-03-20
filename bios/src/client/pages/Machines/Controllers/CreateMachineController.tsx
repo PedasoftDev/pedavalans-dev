@@ -85,21 +85,21 @@ export class CreateMachineController extends UIFormController {
                             AppInfo.Name,
                             AppInfo.Database,
                             Collections.CompetencyMachineAssociation,
-                            [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
+                            [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true), Query.limit(10000)]
                         ).then((res) => res.documents as any[]);
 
                         const competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(
                             AppInfo.Name,
                             AppInfo.Database,
                             Collections.CompetencyDepartment,
-                            [Query.equal("competency_department_id", department_id)]
+                            [Query.equal("competency_department_id", department_id), Query.limit(10000)]
                         ).then((res) => res.documents as any);
 
                         const competencyList: ICompetency.ICompetency[] = await Services.Databases.listDocuments(
                             AppInfo.Name,
                             AppInfo.Database,
                             Collections.Competency,
-                            [Query.equal("is_deleted_competency", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_competency", true)]
+                            [Query.equal("is_deleted_competency", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_competency", true), Query.limit(10000)]
                         ).then((res) => res.documents as any[]);
 
                         competencyList.forEach((competency) => {

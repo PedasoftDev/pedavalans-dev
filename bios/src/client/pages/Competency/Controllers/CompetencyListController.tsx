@@ -1,14 +1,29 @@
-import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
-import React, { useState, useEffect } from "react";
-import { Button, IconButton, TextField, Tooltip } from "@mui/material";
+import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid, useNavigate } from "@tuval/forms";
+import React, { useState, useEffect, useRef, Fragment } from "react";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField, Tooltip } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { Views } from "../../../components/Views";
 import ICompetency from "../../../interfaces/ICompetency";
 import Competency from "../../../../server/hooks/competency/main";
-import { useGetMe } from "@realmocean/sdk";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
+import { Resources } from "../../../assets/Resources";
+import { SiMicrosoftexcel } from "react-icons/si";
+import { competencyTransferTemplateByExcel } from "../../../assets/Functions/competencyTransferTemplateByExcel";
+import excelToJson from "../../../assets/Functions/excelToJson";
+import LinearProgressWithLabel from "../../../components/LinearProgressWithLabel";
+import AppInfo from "../../../../AppInfo";
+import Collections from "../../../../server/core/Collections";
+import ICompetencyGroup from "../../../interfaces/ICompetencyGroup";
+import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
+
+interface ICompetencyImportFromExcel {
+    yetkinlik_adi: string;
+    yetkinlik_grubu_adi: string;
+    departman_adlari: string;
+}
 
 export class CompetencyListController extends UIController {
 
@@ -18,14 +33,107 @@ export class CompetencyListController extends UIController {
 
         const { me, isLoading: isMeLoading } = useGetMe("console");
 
-        const { competencyList, isLoadingCompetencyList, totalCompetencyList } = Competency.GetList(me?.prefs?.organization)
-        const { competencyDepartmentList, isLoadingCompetencyDepartmentList, totalCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
+        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
+        const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
 
         return (
             isMeLoading || isLoadingCompetencyList || isLoadingCompetencyDepartmentList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
+
                     const [filterKey, setFilterKey] = useState("");
                     const [rowsActive, setRowsActive] = useState<boolean>(true);
+
+                    // excel import -- start
+                    const [open, setOpen] = React.useState(false);
+                    const fileInputRef = useRef<HTMLInputElement>(null);
+                    const [excelData, setExcelData] = React.useState<ICompetencyImportFromExcel[]>([]);
+                    const [excelColumns, setExcelColumns] = React.useState<GridColDef[]>([]);
+                    const [isTransfer, setIsTransfer] = React.useState(false);
+                    const [transferPercent, setTransferPercent] = React.useState(0);
+
+                    const handleClickOpen = () => {
+                        setOpen(true);
+                    };
+
+                    const handleClose = () => {
+                        setOpen(false);
+                        setExcelColumns([]);
+                        setExcelData([]);
+                    };
+
+
+                    const handleButtonClick = () => {
+                        if (fileInputRef.current) {
+                            fileInputRef.current.click(); // Dosya seçme penceresini aç
+                        }
+                    };
+
+                    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0];
+                        console.log(file);
+                        if (file) {
+                            excelToJson(file, (data) => {
+                                // first row is columns
+                                const columns = data?.shift() as string[];
+                                const excelColumns: GridColDef[] = columns.map((column, index) => {
+                                    return {
+                                        field: column.toLowerCase(),
+                                        headerName: column.replace(/_/g, " "),
+                                        flex: 1,
+                                        minWidth: 150,
+                                        type: "string"
+                                    }
+                                });
+                                setExcelColumns(excelColumns);
+
+                                // data without first row
+                                let excelData = []
+                                data?.map((row, index) => {
+                                    let appendRow: any = {}
+                                    row.forEach((cell: string, cellIndex: number) => {
+                                        appendRow[columns[cellIndex].toLowerCase()] = String(cell);
+                                    });
+                                    excelData.push({ id: index, ...appendRow });
+                                });
+
+                                setExcelData(excelData);
+
+                                handleClickOpen();
+                            });
+                        }
+                    };
+
+                    const handleTransfer = async () => {
+                        setIsTransfer(true);
+
+                        // transfer
+                        // try {
+                        //     const competencyGroups: ICompetencyGroup.IGetCompetencyGroup[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyGroup, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_group", true), Query.equal("is_deleted_group", false)]) as any;
+                        //     const departments: IOrganizationStructure.IDepartments.IDepartment[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true)]) as any;
+                        //     for (let i = 0; i < excelData.length; i++) {
+                        //         const competencyItem = excelData[i];
+                        //         const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
+                        //         const createCompetency: ICompetency.ICreateCompetency = {
+                        //             competency_id: nanoid(),
+                        //             competency_name: competencyItem.yetkinlik_adi,
+                        //             competency_group_name: competencyItem.yetkinlik_grubu_adi,
+                        //             tenant_id: me?.prefs?.organization,
+                        //             competency_group_id: competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi)?.$id,
+
+                        //         }
+
+
+                        //         const percentage = i / excelData.length * 100;
+                        //         setTransferPercent(percentage);
+                        //     }
+                        // }
+                        // catch (error: any) {
+                        //     console.log(error);
+
+                        // }
+                    }
+
+                    // excel import -- end
 
                     const columns: GridColDef[] = [
                         {
@@ -108,8 +216,30 @@ export class CompetencyListController extends UIController {
                                             </Tooltip>
                                             <div style={{
                                                 width: "20%",
+                                                display: "flex",
+                                                gap: "10px",
                                             }}>
                                                 <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency/create")}>Yeni Yetkinlik</Button>
+                                                <Tooltip title={`Yetkinlik Aktarım Şablonunu İndir`}>
+                                                    <Button
+                                                        variant='contained'
+                                                        onClick={() => competencyTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
+                                                        size='small'><SiMicrosoftexcel size={20} />
+                                                    </Button>
+                                                </Tooltip>
+                                                <Tooltip title={`Yetkinlik Aktarım Şablonunu Yükle`}>
+                                                    <Button
+                                                        variant='outlined'
+                                                        onClick={handleButtonClick}
+                                                        size='small'><SiMicrosoftexcel size={20} /><input
+                                                            type='file'
+                                                            accept='.xlsx, .xls'
+                                                            onChange={handleFileChange}
+                                                            ref={fileInputRef}
+                                                            style={{ display: 'none' }} // Görünmez dosya girişi
+                                                        />
+                                                    </Button>
+                                                </Tooltip>
                                             </div>
                                         </div>
                                         <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
@@ -120,6 +250,35 @@ export class CompetencyListController extends UIController {
                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                             />
                                         </div>
+                                        <Dialog
+                                            open={open}
+                                            onClose={handleClose}
+                                            fullScreen
+                                        >
+                                            <DialogTitle>Yetkinlik Aktarımı</DialogTitle>
+                                            <DialogContent>
+                                                <div style={{
+                                                    height: "calc(100vh - 150px)",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    alignItems: "center",
+                                                    justifyContent: "center"
+                                                }}>
+                                                    <StyledDataGrid rows={excelData} columns={excelColumns} sx={{ width: "100%" }}
+                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText} /> {/* excel data */}
+                                                    {isTransfer &&
+                                                        <div style={{ width: "100%" }}>
+                                                            <DialogContentText>Aktarım yapılıyor...</DialogContentText>
+                                                            <LinearProgressWithLabel value={transferPercent} />
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </DialogContent>
+                                            <DialogActions>
+                                                {!isTransfer && <Button onClick={handleClose} color='error' variant='contained'>İptal</Button>}
+                                                {/* {!isTransfer && <Button variant='contained' color='primary' onClick={handleTransfer}>Aktarımı Başlat</Button>} */}
+                                            </DialogActions>
+                                        </Dialog>
                                     </div>
                                 )
                             )
