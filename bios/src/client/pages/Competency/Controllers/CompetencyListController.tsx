@@ -18,6 +18,9 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import ICompetencyGroup from "../../../interfaces/ICompetencyGroup";
 import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
+import ICompetencyGrade from "../../../interfaces/ICompetencyGrade";
+import { Umay } from "@tuval/core";
+import { Toast } from "../../../components/Toast";
 
 interface ICompetencyImportFromExcel {
     yetkinlik_adi: string;
@@ -26,6 +29,9 @@ interface ICompetencyImportFromExcel {
 }
 
 export class CompetencyListController extends UIController {
+
+    @State()
+    private percentage: number;
 
     public LoadView(): UIView {
 
@@ -87,16 +93,18 @@ export class CompetencyListController extends UIController {
                                 setExcelColumns(excelColumns);
 
                                 // data without first row
-                                let excelData = []
+                                let excelValues = []
                                 data?.map((row, index) => {
                                     let appendRow: any = {}
                                     row.forEach((cell: string, cellIndex: number) => {
                                         appendRow[columns[cellIndex].toLowerCase()] = String(cell);
                                     });
-                                    excelData.push({ id: index, ...appendRow });
+                                    if (appendRow.yetkinlik_adi !== "") {
+                                        excelValues.push({ id: index, ...appendRow });
+                                    }
                                 });
 
-                                setExcelData(excelData);
+                                setExcelData(excelValues);
 
                                 handleClickOpen();
                             });
@@ -107,30 +115,172 @@ export class CompetencyListController extends UIController {
                         setIsTransfer(true);
 
                         // transfer
-                        // try {
-                        //     const competencyGroups: ICompetencyGroup.IGetCompetencyGroup[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyGroup, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_group", true), Query.equal("is_deleted_group", false)]) as any;
-                        //     const departments: IOrganizationStructure.IDepartments.IDepartment[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true)]) as any;
-                        //     for (let i = 0; i < excelData.length; i++) {
-                        //         const competencyItem = excelData[i];
-                        //         const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
-                        //         const createCompetency: ICompetency.ICreateCompetency = {
-                        //             competency_id: nanoid(),
-                        //             competency_name: competencyItem.yetkinlik_adi,
-                        //             competency_group_name: competencyItem.yetkinlik_grubu_adi,
-                        //             tenant_id: me?.prefs?.organization,
-                        //             competency_group_id: competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi)?.$id,
+                        try {
+                            const competencyGroups: ICompetencyGroup.IGetCompetencyGroup[] = await Services.Databases.listDocuments(
+                                AppInfo.Name, AppInfo.Database, Collections.CompetencyGroup,
+                                [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_group", true), Query.equal("is_deleted_group", false), Query.limit(10000)]).then((data) => data.documents as any);
+                            console.log(competencyGroups);
 
-                        //         }
+                            const departments: IOrganizationStructure.IDepartments.IDepartment[] = await Services.Databases.listDocuments(
+                                AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment,
+                                [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true), Query.limit(10000)]).then((data) => data.documents as any);
+                            const grades: ICompetencyGrade.ICompetencyGrade[] = await Services.Databases.listDocuments(
+                                AppInfo.Name, AppInfo.Database, Collections.CompetencyGrade,
+                                [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_grade", true), Query.equal("is_deleted_grade", false), Query.limit(10000)]).then((data) => data.documents as any);
+
+                            const gradeLevels: ICompetencyGrade.ICompetencyGradeLevel[] = await Services.Databases.listDocuments(
+                                AppInfo.Name, AppInfo.Database, Collections.CompetencyGradeLevel,
+                                [Query.equal("is_active_level", true), Query.equal("is_deleted_level", false), Query.limit(10000)]).then((data) => data.documents as any);
+
+                            const task = new Umay();
+                            const failedCompetencies: ICompetencyImportFromExcel[] = [];
+                            excelData.forEach((competencyItem, index) => {
+                                const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
+                                const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
+                                const grade = grades.find(item => item.$id === competencyGroup.competency_grade_id);
+                                const competencyGradeLevels = gradeLevels.filter(item => item.grade_id === grade.$id);
+                                const createCompetency: ICompetency.ICreateCompetency = {
+                                    competency_id: nanoid(),
+                                    competency_name: competencyItem.yetkinlik_adi,
+                                    competency_group_name: competencyItem.yetkinlik_grubu_adi,
+                                    tenant_id: me?.prefs?.organization,
+                                    competency_group_id: competencyGroup?.$id,
+                                    realm_id: me?.prefs?.organization,
+                                }
+                                task.Task(async () => {
+                                    try {
+                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Competency, createCompetency.competency_id, createCompetency)
+
+                                        competencyDepartments.forEach(async (departmentName) => {
+                                            const department = departments.find((item) => item.name === departmentName);
+                                            if (department) {
+                                                const comp_dep_id = nanoid();
+                                                try {
+                                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment, comp_dep_id, {
+                                                        competency_department_table_id: comp_dep_id,
+                                                        competency_department_id: department.id,
+                                                        competency_department_name: department.name,
+                                                        competency_id: createCompetency.competency_id,
+                                                        tenant_id: me?.prefs?.organization
+                                                    });
+                                                } catch {
+                                                    console.log(departmentName);
+                                                }
+                                            }
+                                        })
+
+                                        competencyGradeLevels.forEach(async (gradeLevel) => {
+                                            const comp_grade_level_id = nanoid();
+                                            try {
+                                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyGradeValue, comp_grade_level_id, {
+                                                    competency_grade_value_id: comp_grade_level_id,
+                                                    grade_level_id: gradeLevel.grade_level_id,
+                                                    grade_level_name: gradeLevel.grade_level_name,
+                                                    grade_level_number: gradeLevel.grade_level_number,
+                                                    competency_id: createCompetency.competency_id,
+                                                    tenant_id: me?.prefs?.organization
+                                                });
+                                            } catch {
+                                                console.log(gradeLevel);
+                                            }
+                                        })
+
+                                        const percentage = index / excelData.length * 100;
+                                        setTransferPercent(percentage);
+
+                                    } catch {
+                                        failedCompetencies.push(competencyItem);
+                                    }
+                                })
+                                task.Wait(2);
+                            })
+
+                            task.Wait(1);
+
+                            failedCompetencies.forEach((competencyItem, index) => {
+                                const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
+                                const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
+                                const competencyGradeLevels = gradeLevels.filter(item => item.grade_id === competencyGroup?.competency_grade_id);
+                                console.log(competencyGradeLevels);
+                                const createCompetency: ICompetency.ICreateCompetency = {
+                                    competency_id: nanoid(),
+                                    competency_name: competencyItem.yetkinlik_adi,
+                                    competency_group_name: competencyItem.yetkinlik_grubu_adi,
+                                    tenant_id: me?.prefs?.organization,
+                                    competency_group_id: competencyGroup?.$id,
+                                    realm_id: me?.prefs?.organization,
+                                }
+                                task.Task(async () => {
+                                    try {
+                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Competency, createCompetency.competency_id, createCompetency)
+
+                                        competencyDepartments.forEach(async (departmentName) => {
+                                            const department = departments.find((item) => item.name === departmentName);
+                                            if (department) {
+                                                const comp_dep_id = nanoid();
+                                                try {
+                                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment, comp_dep_id, {
+                                                        competency_department_table_id: comp_dep_id,
+                                                        competency_department_id: department.id,
+                                                        competency_department_name: department.name,
+                                                        competency_id: createCompetency.competency_id,
+                                                        tenant_id: me?.prefs?.organization
+                                                    });
+                                                } catch {
+                                                    console.log(departmentName);
+                                                }
+                                            }
+                                        })
+
+                                        competencyGradeLevels.forEach(async (gradeLevel) => {
+                                            const comp_grade_level_id = nanoid();
+                                            try {
+                                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyGradeLevel, comp_grade_level_id, {
+                                                    competency_grade_level_id: comp_grade_level_id,
+                                                    grade_id: competencyGroup?.competency_grade_id,
+                                                    grade_level_id: gradeLevel.grade_level_id,
+                                                    grade_level_name: gradeLevel.grade_level_name,
+                                                    grade_level_number: gradeLevel.grade_level_number,
+                                                    is_active_level: gradeLevel.is_active_level,
+                                                    is_deleted_level: gradeLevel.is_deleted_level,
+                                                    tenant_id: me?.prefs?.organization,
+                                                    realm_id: me?.prefs?.organization
+                                                });
+                                            } catch {
+                                                console.log(gradeLevel);
+                                            }
+                                        })
+                                    } catch {
+                                        console.log(competencyItem);
+                                    }
+                                })
+                            })
 
 
-                        //         const percentage = i / excelData.length * 100;
-                        //         setTransferPercent(percentage);
-                        //     }
-                        // }
-                        // catch (error: any) {
-                        //     console.log(error);
+                            task.Wait(2);
 
-                        // }
+
+                            task.Task(() => {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Yetkinlikler aktarıldı.'
+                                });
+
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            })
+
+                            task.Run()
+
+                        }
+                        catch (error: any) {
+                            setIsTransfer(false);
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Yetkinlikler aktarılamadı.'
+                            });
+                        }
                     }
 
                     // excel import -- end
@@ -276,7 +426,7 @@ export class CompetencyListController extends UIController {
                                             </DialogContent>
                                             <DialogActions>
                                                 {!isTransfer && <Button onClick={handleClose} color='error' variant='contained'>İptal</Button>}
-                                                {/* {!isTransfer && <Button variant='contained' color='primary' onClick={handleTransfer}>Aktarımı Başlat</Button>} */}
+                                                {!isTransfer && <Button variant='contained' color='primary' onClick={handleTransfer}>Aktarımı Başlat</Button>}
                                             </DialogActions>
                                         </Dialog>
                                     </div>

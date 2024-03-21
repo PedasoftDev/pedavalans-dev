@@ -2,6 +2,7 @@
 namespace Collections {
     export const Competency: string = "competency";
     export const CompetencyGroup: string = "competency_group";
+    export const CompetencyGrade: string = "competency_grade";
     export const CompetencyDepartment: string = "competency_department";
     export const CompetencyMachineAssociation: string = "competency_machine_association";
     export const AccountRelation: string = "account_relation";
@@ -19,6 +20,7 @@ namespace Collections {
     export const OrganizationStructureLine: string = "organization_line";
     export const OrganizationStructureEmployee: string = "organization_employee";
     export const AssignedEducation = "assigned_education";
+    export const CompetencyGradeValue = "competency_grade_value";
 }
 
 export default Collections;

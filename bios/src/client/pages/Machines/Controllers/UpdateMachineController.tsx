@@ -78,14 +78,14 @@ export class UpdateMachineController extends UIFormController {
                             AppInfo.Name,
                             AppInfo.Database,
                             Collections.CompetencyMachineAssociation,
-                            [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
+                            [Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true), Query.limit(10000)]
                         ).then((res) => res.documents as any[]);
 
                         const competencyDepartments: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(
                             AppInfo.Name,
                             AppInfo.Database,
                             Collections.CompetencyDepartment,
-                            [Query.equal("competency_department_id", department_id), Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]
+                            [Query.equal("competency_department_id", department_id), Query.equal("is_deleted", false), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true), Query.limit(10000)]
                         ).then((res) => res.documents as any);
 
                         competencyList.forEach((competency) => {
@@ -112,7 +112,7 @@ export class UpdateMachineController extends UIFormController {
                             AppInfo.Name,
                             AppInfo.Database,
                             Collections.Machine,
-                            [Query.equal("code", form.code), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false)]
+                            [Query.equal("code", form.code), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.limit(10000)]
                         ).then((res) => {
                             res.documents.forEach((doc) => {
                                 if (doc.id !== form.id) {
