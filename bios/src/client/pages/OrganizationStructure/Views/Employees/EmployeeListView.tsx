@@ -139,8 +139,11 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data);
-                        createdDepartments.push(data);
+
+                        if (data.name && data.record_id) {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data);
+                            createdDepartments.push(data);
+                        }
                     }
                     catch (error) {
                         failedDepartments.push(department.code);
@@ -160,9 +163,11 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
-                            createdTitles.push(data);
-                        })
+                        if (data.name && data.record_id) {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
+                                createdTitles.push(data);
+                            })
+                        }
                     }
                     catch (error) {
                         failedTitles.push(title.code);
@@ -182,9 +187,11 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
-                            createdPositions.push(data);
-                        });
+                        if (data.name && data.record_id) {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
+                                createdPositions.push(data);
+                            });
+                        }
                     }
                     catch (error) {
                         failedPositions.push(position.code);
@@ -206,9 +213,11 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
-                            createdLines.push(data);
-                        });
+                        if (data.name && data.record_id) {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
+                                createdLines.push(data);
+                            });
+                        }
                     }
                     catch (error) {
                         failedLines.push(line.code);
@@ -316,7 +325,9 @@ const EmployeeListView = (
                             realm_id: props.me?.prefs?.organization,
                             tenant_id: props.me?.prefs?.organization
                         }
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
+                        if (data.first_name && data.last_name) {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
+                        }
                     } catch (error) {
                         failedEmployees.push(employee.sicil_no);
                     }

@@ -99,7 +99,7 @@ export class CompetencyListController extends UIController {
                                     row.forEach((cell: string, cellIndex: number) => {
                                         appendRow[columns[cellIndex].toLowerCase()] = String(cell);
                                     });
-                                    if (appendRow.yetkinlik_adi !== "") {
+                                    if (appendRow.yetkinlik_adi && appendRow.yetkinlik_adi !== "") {
                                         excelValues.push({ id: index, ...appendRow });
                                     }
                                 });
