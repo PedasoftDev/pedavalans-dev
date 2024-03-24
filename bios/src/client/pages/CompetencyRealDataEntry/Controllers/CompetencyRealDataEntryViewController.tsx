@@ -106,13 +106,15 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
 
-        const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
-        const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
-        const { createAssignedEducation } = AssignEducation.Create();
+        // const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
+        // const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        // const { createAssignedEducation } = AssignEducation.Create();
 
         return (
             isLoading || this.polyvalenceUnitList == null || isLoadingPeriods
-                || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList || isLoadingEducation || isLoadingAccounts ? VStack(Spinner()) :
+                || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList
+                //  || isLoadingEducation || isLoadingAccounts 
+                ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -161,36 +163,36 @@ export class CompetencyRealDataEntryViewController extends UIController {
                         }
                     }
 
-                    const handleSubmitEducationDialog = (e) => {
-                        e.preventDefault();
-                        selectedEmployees.forEach((employee, _i) => {
-                            const createForm: IAssignedEducation.ICreate = {
-                                education_code: form.education_code,
-                                employee_id: employee.$id,
-                                education_id: form.education_id,
-                                education_name: form.education_name,
-                                educator_id: form.educator_id,
-                                educator_name: form.educator_name,
-                                employee_name: `${employee.first_name} ${employee.last_name}`,
-                                start_date: form.start_date,
-                                end_date: form.end_date,
-                                status: "open",
-                                tenant_id: me?.prefs?.organization
-                            }
-                            createAssignedEducation({
-                                data: createForm
-                            }, () => {
-                                if (_i === selectedEmployees.length - 1) {
-                                    Toast.fire({
-                                        icon: "success",
-                                        title: "Eğitim atamaları başarıyla yapıldı.",
-                                        timer: 1000
-                                    })
-                                    handleCloseEducationDialog();
-                                }
-                            })
-                        })
-                    }
+                    // const handleSubmitEducationDialog = (e) => {
+                    //     e.preventDefault();
+                    //     selectedEmployees.forEach((employee, _i) => {
+                    //         const createForm: IAssignedEducation.ICreate = {
+                    //             education_code: form.education_code,
+                    //             employee_id: employee.$id,
+                    //             education_id: form.education_id,
+                    //             education_name: form.education_name,
+                    //             educator_id: form.educator_id,
+                    //             educator_name: form.educator_name,
+                    //             employee_name: `${employee.first_name} ${employee.last_name}`,
+                    //             start_date: form.start_date,
+                    //             end_date: form.end_date,
+                    //             status: "open",
+                    //             tenant_id: me?.prefs?.organization
+                    //         }
+                    //         createAssignedEducation({
+                    //             data: createForm
+                    //         }, () => {
+                    //             if (_i === selectedEmployees.length - 1) {
+                    //                 Toast.fire({
+                    //                     icon: "success",
+                    //                     title: "Eğitim atamaları başarıyla yapıldı.",
+                    //                     timer: 1000
+                    //                 })
+                    //                 handleCloseEducationDialog();
+                    //             }
+                    //         })
+                    //     })
+                    // }
 
 
 
@@ -582,6 +584,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                             </DialogActions>
                                         </form>
                                     </Dialog>
+                                    {/*
                                     <Dialog
                                         open={openEducationDialog}
                                         onClose={handleCloseEducationDialog}>
@@ -714,7 +717,8 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 </Button>
                                             </div>
                                         </form>
-                                    </Dialog>
+                                            </Dialog>
+                                     */}
                                 </Container>
                             )
                         ).padding("0 20px")
