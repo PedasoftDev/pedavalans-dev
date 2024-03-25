@@ -21,6 +21,7 @@ import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructu
 import ICompetencyGrade from "../../../interfaces/ICompetencyGrade";
 import { Umay } from "@tuval/core";
 import { Toast } from "../../../components/Toast";
+import AccountRelation from "../../../../server/hooks/accountRelation/main";
 
 interface ICompetencyImportFromExcel {
     yetkinlik_adi: string;
@@ -38,6 +39,7 @@ export class CompetencyListController extends UIController {
         const navigate = useNavigate();
 
         const { me, isLoading: isMeLoading } = useGetMe("console");
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
 
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
         const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
@@ -370,26 +372,32 @@ export class CompetencyListController extends UIController {
                                                 gap: "10px",
                                             }}>
                                                 <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency/create")}>Yeni Yetkinlik</Button>
-                                                <Tooltip title={`Yetkinlik Aktarım Şablonunu İndir`}>
-                                                    <Button
-                                                        variant='contained'
-                                                        onClick={() => competencyTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
-                                                        size='small'><SiMicrosoftexcel size={20} />
-                                                    </Button>
-                                                </Tooltip>
-                                                <Tooltip title={`Yetkinlik Aktarım Şablonunu Yükle`}>
-                                                    <Button
-                                                        variant='outlined'
-                                                        onClick={handleButtonClick}
-                                                        size='small'><SiMicrosoftexcel size={20} /><input
-                                                            type='file'
-                                                            accept='.xlsx, .xls'
-                                                            onChange={handleFileChange}
-                                                            ref={fileInputRef}
-                                                            style={{ display: 'none' }} // Görünmez dosya girişi
-                                                        />
-                                                    </Button>
-                                                </Tooltip>
+                                                {
+                                                    accountRelations[0].is_admin &&
+                                                    <Tooltip title={`Yetkinlik Aktarım Şablonunu İndir`}>
+                                                        <Button
+                                                            variant='contained'
+                                                            onClick={() => competencyTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
+                                                            size='small'><SiMicrosoftexcel size={20} />
+                                                        </Button>
+                                                    </Tooltip>
+                                                }
+                                                {
+                                                    accountRelations[0].is_admin &&
+                                                    <Tooltip title={`Yetkinlik Aktarım Şablonunu Yükle`}>
+                                                        <Button
+                                                            variant='outlined'
+                                                            onClick={handleButtonClick}
+                                                            size='small'><SiMicrosoftexcel size={20} /><input
+                                                                type='file'
+                                                                accept='.xlsx, .xls'
+                                                                onChange={handleFileChange}
+                                                                ref={fileInputRef}
+                                                                style={{ display: 'none' }} // Görünmez dosya girişi
+                                                            />
+                                                        </Button>
+                                                    </Tooltip>
+                                                }
                                             </div>
                                         </div>
                                         <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>

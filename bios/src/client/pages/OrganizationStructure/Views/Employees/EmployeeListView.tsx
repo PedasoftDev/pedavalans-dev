@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField, Tooltip } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Tooltip } from '@mui/material'
 import { GridColDef, trTR } from '@mui/x-data-grid'
 import React, { Fragment, useRef } from 'react'
 import { MdDisplaySettings } from 'react-icons/md'
@@ -9,12 +9,13 @@ import { employeeTransferTemplateByExcel } from '../../../../assets/Functions/em
 import { Resources } from '../../../../assets/Resources'
 import excelToJson from '../../../../assets/Functions/excelToJson'
 import { Spinner, VStack, nanoid } from '@tuval/forms';
-import { Services, useGetMe } from '@realmocean/sdk'
+import { Services } from '@realmocean/sdk'
 import AppInfo from '../../../../../AppInfo'
 import { Umay } from '@tuval/core'
 import Collections from '../../../../../server/core/Collections'
 import { Toast } from '../../../../components/Toast'
 import Swal from 'sweetalert2'
+import IAccountRelation from '../../../../interfaces/IAccountRelation'
 
 interface IEmployeeImportFromExcel {
     sicil_no: string;
@@ -38,7 +39,8 @@ const EmployeeListView = (
         active: boolean,
         setActives: React.Dispatch<React.SetStateAction<boolean>>,
         setDefaultPage: (page: string) => void,
-        setFilterKey: React.Dispatch<React.SetStateAction<string>>
+        setFilterKey: React.Dispatch<React.SetStateAction<string>>,
+        accountRelation: IAccountRelation.IBase
     }
 ) => {
 
@@ -428,14 +430,16 @@ const EmployeeListView = (
                 </div>
                 <div style={{ width: "30%", display: "flex", gap: "5px" }}>
                     <Button variant='contained' fullWidth size='small' onClick={() => props.setDefaultPage("addEmployee")}>Yeni Personel</Button>
-                    <Tooltip title={`Çalışan Aktarım Şablonunu İndir`}>
-                        <Button
-                            variant='contained'
-                            onClick={() => employeeTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
-                            size='small'><SiMicrosoftexcel size={20} />
-                        </Button>
-                    </Tooltip>
-                    <Tooltip title={`Çalışan Aktarım Şablonunu Yükle`}>
+                    {
+                        props.accountRelation.is_admin && <Tooltip title={`Çalışan Aktarım Şablonunu İndir`}>
+                            <Button
+                                variant='contained'
+                                onClick={() => employeeTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
+                                size='small'><SiMicrosoftexcel size={20} />
+                            </Button>
+                        </Tooltip>
+                    }
+                    {props.accountRelation.is_admin && <Tooltip title={`Çalışan Aktarım Şablonunu Yükle`}>
                         <Button
                             variant='outlined'
                             onClick={handleButtonClick}
@@ -448,6 +452,7 @@ const EmployeeListView = (
                             />
                         </Button>
                     </Tooltip>
+                    }
                 </div>
             </div>
             <div style={{ height: "calc(100vh - 280px)" }}>

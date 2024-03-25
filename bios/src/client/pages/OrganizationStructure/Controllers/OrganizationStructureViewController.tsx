@@ -41,6 +41,7 @@ import AddEmployeeView from '../Views/Employees/AddEmployeeView';
 import EditEmployeeView from '../Views/Employees/EditEmployeeView';
 import EmployeeListView from '../Views/Employees/EmployeeListView';
 import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main';
+import AccountRelation from '../../../../server/hooks/accountRelation/main';
 
 const TableClickP = styled.p`
     &:hover {
@@ -57,6 +58,7 @@ export class OrganizationStructureViewController extends UIController {
 
         // me
         const { me, isLoading: isLoadingMe } = useGetMe("console");
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
 
         // page state
         const [defaultPage, setDefaultPage] = useState("");
@@ -124,7 +126,7 @@ export class OrganizationStructureViewController extends UIController {
 
 
         return (
-            isLoadingMe || isLoadingDepartments || isLoadingLines || isLoadingPositions || isLoadingTitles || isLoadingEmployees ? VStack(Spinner()) :
+            isLoadingMe || isLoadingDepartments || isLoadingLines || isLoadingPositions || isLoadingTitles || isLoadingEmployees || isLoadingResult ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     // departments
@@ -447,6 +449,7 @@ export class OrganizationStructureViewController extends UIController {
                                                             setActives={setEmployeeActives}
                                                             setFilterKey={setFilterKeyEmployees}
                                                             setDefaultPage={setDefaultPage}
+                                                            accountRelation={accountRelations[0]}
                                                         />
                                             }
                                         </TabPanel>
