@@ -4,7 +4,7 @@ interface IDatabase {
     description: IDescription;
     seed_admin: IAdmin;
     author: string;
-    version: string;
+    version: number;
     enabled: boolean;
     collections: ICollection[];
 }
@@ -21,11 +21,12 @@ interface ICollection {
     id: string;
     name: string;
     description: IDescription;
-    version: string;
+    version: number;
     attributes: {
         key: string;
         type: string;
         default?: boolean;
+        version: number;
     }[];
 }
 
