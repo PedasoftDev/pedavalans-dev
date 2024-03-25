@@ -10,6 +10,7 @@ import AccountRelation from '../../../server/hooks/accountRelation/main';
 import AppInfo from '../../../AppInfo';
 import Collections from '../../../server/core/Collections';
 import { Toast } from '../../components/Toast';
+import Database from '../../../server/core/Database';
 
 const useGetBestFiveDepartments = [
     {
@@ -65,7 +66,7 @@ export class DashboardController extends UIController {
 
         const { me, isLoading } = useGetMe("console");
         const { required, isLoading: isLoadingDb } = Main.SetupRequired();
-        // const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)])
+        const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)])
 
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management, me?.prefs?.organization)
@@ -75,7 +76,7 @@ export class DashboardController extends UIController {
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingMachineBased || isLoadingLineBased ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         UIViewBuilder(() => {
@@ -123,6 +124,21 @@ export class DashboardController extends UIController {
                                     }
                                     localStorage.setItem(Resources.ParameterLocalStr.machine_based_polyvalence_management, machineBased[0]?.is_active ? "true" : "false")
                                     localStorage.setItem(Resources.ParameterLocalStr.line_based_competency_relationship, lineBased[0]?.is_active ? "true" : "false")
+                                    const collection_version = collections.find(collection => collection.name === "collection_version")
+                                    if (!collection_version) {
+                                        const collectionVersion = Database.collections.find(collection => collection.id === Collections.CollectionVersion)
+                                        Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, collectionVersion.name).then((collId) => {
+                                            collectionVersion.attributes.forEach((attr) => {
+                                                if (attr.type === "string") {
+                                                    Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, 256, false)
+                                                } else if (attr.type === "number") {
+                                                    Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, false)
+                                                } else if (attr.type === "boolean") {
+                                                    Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, false, attr.default)
+                                                }
+                                            })
+                                        })
+                                    }
                                 }
 
 

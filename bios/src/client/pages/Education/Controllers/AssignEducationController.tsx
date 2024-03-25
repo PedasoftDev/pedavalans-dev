@@ -5,7 +5,6 @@ import {
     TextField,
     Select,
     MenuItem,
-    SelectChangeEvent,
     FormControl,
     InputLabel,
     Autocomplete,

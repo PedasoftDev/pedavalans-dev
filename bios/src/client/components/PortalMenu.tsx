@@ -97,7 +97,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             icon: ReactView(
                 <MdOutlineLibraryBooks size={25} />
             ),
-            isVisible: false
+            isVisible: true
         },
         {
             title: "Yetkinlik Değerlendirmeleri",

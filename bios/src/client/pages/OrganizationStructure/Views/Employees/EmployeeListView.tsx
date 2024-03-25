@@ -50,6 +50,7 @@ const EmployeeListView = (
     const [excelData, setExcelData] = React.useState<IEmployeeImportFromExcel[]>([]);
     const [excelColumns, setExcelColumns] = React.useState<GridColDef[]>([]);
     const [isTransfer, setIsTransfer] = React.useState(false);
+    const [transferPercent, setTransferPercent] = React.useState(0);
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -70,7 +71,6 @@ const EmployeeListView = (
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        console.log(file);
         if (file) {
             excelToJson(file, (data) => {
                 // first row is columns
@@ -312,29 +312,34 @@ const EmployeeListView = (
             tasks.Wait(1);
 
             const failedEmployees: string[] = [];
-            tasks.Task(async () => {
-                for (let employee of excelData) {
-                    try {
-                        const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
-                            id: employee.sicil_no,
-                            first_name: employee.adi,
-                            last_name: employee.soyadi,
-                            department_id: createdDepartments.find(x => x.record_id === employee.departman_kodu)?.id || null,
-                            title_id: createdTitles.find(x => x.record_id === employee.unvan_kodu)?.id || null,
-                            position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
-                            line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
-                            manager_id: null,
-                            realm_id: props.me?.prefs?.organization,
-                            tenant_id: props.me?.prefs?.organization
-                        }
-                        if (data.first_name && data.last_name) {
-                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
-                        }
-                    } catch (error) {
-                        failedEmployees.push(employee.sicil_no);
-                    }
+
+            for (let employee of excelData) {
+
+                const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
+                    id: employee.sicil_no,
+                    first_name: employee.adi,
+                    last_name: employee.soyadi,
+                    department_id: createdDepartments.find(x => x.record_id === employee.departman_kodu)?.id || null,
+                    title_id: createdTitles.find(x => x.record_id === employee.unvan_kodu)?.id || null,
+                    position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
+                    line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
+                    manager_id: null,
+                    realm_id: props.me?.prefs?.organization,
+                    tenant_id: props.me?.prefs?.organization
                 }
-            })
+                if (data.first_name && data.last_name) {
+                    tasks.Task(async () => {
+                        try {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
+                        } catch (error) {
+                            failedEmployees.push(employee.sicil_no);
+                        }
+                    });
+                    tasks.Wait(1);
+                }
+            }
+
+
             tasks.Wait(1);
             tasks.Task(async () => {
                 for (let failedEmployee of failedEmployees) {
