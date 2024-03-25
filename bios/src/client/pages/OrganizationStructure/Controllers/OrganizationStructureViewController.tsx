@@ -450,6 +450,10 @@ export class OrganizationStructureViewController extends UIController {
                                                             setFilterKey={setFilterKeyEmployees}
                                                             setDefaultPage={setDefaultPage}
                                                             accountRelation={accountRelations[0]}
+                                                            departments={departments}
+                                                            lines={lines}
+                                                            positions={positions}
+                                                            titles={titles}
                                                         />
                                             }
                                         </TabPanel>

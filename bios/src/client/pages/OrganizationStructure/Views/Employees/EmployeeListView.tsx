@@ -16,6 +16,7 @@ import Collections from '../../../../../server/core/Collections'
 import { Toast } from '../../../../components/Toast'
 import Swal from 'sweetalert2'
 import IAccountRelation from '../../../../interfaces/IAccountRelation'
+import LinearProgressWithLabel from '../../../../components/LinearProgressWithLabel'
 
 interface IEmployeeImportFromExcel {
     sicil_no: string;
@@ -35,6 +36,10 @@ const EmployeeListView = (
     props: {
         me: any,
         employees: IOrganizationStructure.IEmployees.IEmployee[],
+        lines: IOrganizationStructure.ILines.ILine[],
+        departments: IOrganizationStructure.IDepartments.IDepartment[],
+        titles: IOrganizationStructure.ITitles.ITitle[],
+        positions: IOrganizationStructure.IPositions.IPosition[],
         columns: GridColDef[],
         active: boolean,
         setActives: React.Dispatch<React.SetStateAction<boolean>>,
@@ -111,6 +116,12 @@ const EmployeeListView = (
             let titles: { code: string, name: string }[] = [];
             let positions: { code: string, name: string }[] = [];
             let lines: { code: string, name: string, department_code: string }[] = [];
+            let employees: { sicil_no: string, adi: string, soyadi: string, departman_kodu: string, departman_adi: string }[] = [];
+
+            const alreadyDepartments = props.departments;
+            const alreadyTitles = props.titles;
+            const alreadyPositions = props.positions;
+            const alreadyLines = props.lines;
 
             excelData.map((row, index) => {
                 if (departments.findIndex(x => x.code === row.departman_kodu) === -1) {
@@ -130,7 +141,9 @@ const EmployeeListView = (
             // add departments
             const tasks = new Umay();
             const failedDepartments: string[] = [];
-            const createdDepartments: IOrganizationStructure.IDepartments.ICreateDepartment[] = [];
+            const createdDepartments: IOrganizationStructure.IDepartments.ICreateDepartment[] = alreadyDepartments.map(x => {
+                return { id: x.id, name: x.name, record_id: x.record_id, tenant_id: x.tenant_id, realm_id: x.realm_id }
+            })
             tasks.Task(async () => {
                 for (let department of departments) {
                     try {
@@ -142,7 +155,7 @@ const EmployeeListView = (
                             realm_id: props.me?.prefs?.organization
                         }
 
-                        if (data.name && data.record_id) {
+                        if (data.name && data.record_id && !createdDepartments.find(x => x.record_id === data.record_id)) {
                             await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data);
                             createdDepartments.push(data);
                         }
@@ -154,7 +167,9 @@ const EmployeeListView = (
             });
             tasks.Wait(1);
             const failedTitles: string[] = [];
-            const createdTitles: IOrganizationStructure.ITitles.ICreateTitle[] = [];
+            const createdTitles: IOrganizationStructure.ITitles.ICreateTitle[] = alreadyTitles.map(x => {
+                return { id: x.id, name: x.name, record_id: x.record_id, tenant_id: x.tenant_id, realm_id: x.realm_id }
+            })
             tasks.Task(async () => {
                 for (let title of titles) {
                     try {
@@ -165,7 +180,7 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        if (data.name && data.record_id) {
+                        if (data.name && data.record_id && !createdTitles.find(x => x.record_id === data.record_id)) {
                             await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
                                 createdTitles.push(data);
                             })
@@ -189,7 +204,7 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        if (data.name && data.record_id) {
+                        if (data.name && data.record_id && !createdPositions.find(x => x.record_id === data.record_id)) {
                             await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
                                 createdPositions.push(data);
                             });
@@ -215,7 +230,7 @@ const EmployeeListView = (
                             tenant_id: props.me?.prefs?.organization,
                             realm_id: props.me?.prefs?.organization
                         }
-                        if (data.name && data.record_id) {
+                        if (data.name && data.record_id && !createdLines.find(x => x.record_id === data.record_id)) {
                             await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
                                 createdLines.push(data);
                             });
@@ -312,8 +327,9 @@ const EmployeeListView = (
             tasks.Wait(1);
 
             const failedEmployees: string[] = [];
+            console.log(createdDepartments, createdTitles, createdPositions, createdLines);
 
-            for (let employee of excelData) {
+            excelData.map((employee, index) => {
 
                 const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
                     id: employee.sicil_no,
@@ -331,13 +347,14 @@ const EmployeeListView = (
                     tasks.Task(async () => {
                         try {
                             await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
+                            setTransferPercent(index / excelData.length * 100);
                         } catch (error) {
                             failedEmployees.push(employee.sicil_no);
                         }
                     });
                     tasks.Wait(1);
                 }
-            }
+            })
 
 
             tasks.Wait(1);
@@ -410,9 +427,9 @@ const EmployeeListView = (
                         <StyledDataGrid rows={excelData} columns={excelColumns} sx={{ width: "100%" }}
                             localeText={trTR.components.MuiDataGrid.defaultProps.localeText} /> {/* excel data */}
                         {isTransfer &&
-                            <div>
+                            <div style={{ width: "100%" }}>
                                 <DialogContentText>Aktarım yapılıyor...</DialogContentText>
-                                <Fragment>{VStack(Spinner()).height().render()}</Fragment>
+                                <LinearProgressWithLabel value={transferPercent} />
                             </div>
                         }
                     </div>
