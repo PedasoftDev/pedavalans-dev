@@ -98,7 +98,9 @@ const EmployeeListView = (
                     row.forEach((cell: string, cellIndex: number) => {
                         appendRow[columns[cellIndex].toLowerCase()] = String(cell);
                     });
-                    excelData.push({ id: index, ...appendRow });
+                    if (appendRow.sicil_no) {
+                        excelData.push({ id: index, ...appendRow });
+                    }
                 });
 
                 setExcelData(excelData);
@@ -110,18 +112,12 @@ const EmployeeListView = (
 
     const handleTransfer = async () => {
         setIsTransfer(true);
-        // transfer
+
         try {
             let departments: { code: string, name: string }[] = [];
             let titles: { code: string, name: string }[] = [];
             let positions: { code: string, name: string }[] = [];
             let lines: { code: string, name: string, department_code: string }[] = [];
-            let employees: { sicil_no: string, adi: string, soyadi: string, departman_kodu: string, departman_adi: string }[] = [];
-
-            const alreadyDepartments = props.departments;
-            const alreadyTitles = props.titles;
-            const alreadyPositions = props.positions;
-            const alreadyLines = props.lines;
 
             excelData.map((row, index) => {
                 if (departments.findIndex(x => x.code === row.departman_kodu) === -1) {
@@ -141,53 +137,57 @@ const EmployeeListView = (
             // add departments
             const tasks = new Umay();
             const failedDepartments: string[] = [];
-            const createdDepartments: IOrganizationStructure.IDepartments.ICreateDepartment[] = alreadyDepartments.map(x => {
-                return { id: x.id, name: x.name, record_id: x.record_id, tenant_id: x.tenant_id, realm_id: x.realm_id }
-            })
+            const createdDepartments: IOrganizationStructure.IDepartments.ICreateDepartment[] = []
             tasks.Task(async () => {
                 for (let department of departments) {
-                    try {
-                        const data: IOrganizationStructure.IDepartments.ICreateDepartment = {
-                            id: nanoid(),
-                            name: department.name,
-                            record_id: department.code,
-                            tenant_id: props.me?.prefs?.organization,
-                            realm_id: props.me?.prefs?.organization
-                        }
+                    if (!props.departments.find(x => x.record_id === department.code)) {
+                        try {
+                            const data: IOrganizationStructure.IDepartments.ICreateDepartment = {
+                                id: nanoid(),
+                                name: department.name,
+                                record_id: department.code,
+                                tenant_id: props.me?.prefs?.organization,
+                                realm_id: props.me?.prefs?.organization
+                            }
 
-                        if (data.name && data.record_id && !createdDepartments.find(x => x.record_id === data.record_id)) {
-                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data);
-                            createdDepartments.push(data);
+                            if (data.name && data.record_id) {
+                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data);
+                                createdDepartments.push(data);
+                            }
                         }
-                    }
-                    catch (error) {
-                        failedDepartments.push(department.code);
+                        catch (error) {
+                            failedDepartments.push(department.code);
+                        }
+                    } else {
+                        createdDepartments.push(props.departments.find(x => x.record_id === department.code));
                     }
                 }
             });
             tasks.Wait(1);
             const failedTitles: string[] = [];
-            const createdTitles: IOrganizationStructure.ITitles.ICreateTitle[] = alreadyTitles.map(x => {
-                return { id: x.id, name: x.name, record_id: x.record_id, tenant_id: x.tenant_id, realm_id: x.realm_id }
-            })
+            const createdTitles: IOrganizationStructure.ITitles.ICreateTitle[] = []
             tasks.Task(async () => {
                 for (let title of titles) {
-                    try {
-                        const data: IOrganizationStructure.ITitles.ICreateTitle = {
-                            id: nanoid(),
-                            name: title.name,
-                            record_id: title.code,
-                            tenant_id: props.me?.prefs?.organization,
-                            realm_id: props.me?.prefs?.organization
+                    if (!props.titles.find(x => x.record_id === title.code)) {
+                        try {
+                            const data: IOrganizationStructure.ITitles.ICreateTitle = {
+                                id: nanoid(),
+                                name: title.name,
+                                record_id: title.code,
+                                tenant_id: props.me?.prefs?.organization,
+                                realm_id: props.me?.prefs?.organization
+                            }
+                            if (data.name && data.record_id) {
+                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
+                                    createdTitles.push(data);
+                                });
+                            }
                         }
-                        if (data.name && data.record_id && !createdTitles.find(x => x.record_id === data.record_id)) {
-                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
-                                createdTitles.push(data);
-                            })
+                        catch (error) {
+                            failedTitles.push(title.code);
                         }
-                    }
-                    catch (error) {
-                        failedTitles.push(title.code);
+                    } else {
+                        createdTitles.push(props.titles.find(x => x.record_id === title.code));
                     }
                 }
             })
@@ -196,22 +196,26 @@ const EmployeeListView = (
             const createdPositions: IOrganizationStructure.IPositions.ICreatePosition[] = [];
             tasks.Task(async () => {
                 for (let position of positions) {
-                    try {
-                        const data: IOrganizationStructure.IPositions.ICreatePosition = {
-                            id: nanoid(),
-                            name: position.name,
-                            record_id: position.code,
-                            tenant_id: props.me?.prefs?.organization,
-                            realm_id: props.me?.prefs?.organization
+                    if (!props.positions.find(x => x.record_id === position.code)) {
+                        try {
+                            const data: IOrganizationStructure.IPositions.ICreatePosition = {
+                                id: nanoid(),
+                                name: position.name,
+                                record_id: position.code,
+                                tenant_id: props.me?.prefs?.organization,
+                                realm_id: props.me?.prefs?.organization
+                            }
+                            if (data.name && data.record_id) {
+                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
+                                    createdPositions.push(data);
+                                });
+                            }
                         }
-                        if (data.name && data.record_id && !createdPositions.find(x => x.record_id === data.record_id)) {
-                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
-                                createdPositions.push(data);
-                            });
+                        catch (error) {
+                            failedPositions.push(position.code);
                         }
-                    }
-                    catch (error) {
-                        failedPositions.push(position.code);
+                    } else {
+                        createdPositions.push(props.positions.find(x => x.record_id === position.code));
                     }
                 }
             })
@@ -220,24 +224,27 @@ const EmployeeListView = (
             const createdLines: IOrganizationStructure.ILines.ICreateLine[] = [];
             tasks.Task(async () => {
                 for (let line of lines) {
-                    try {
-                        const data: IOrganizationStructure.ILines.ICreateLine = {
-                            id: nanoid(),
-                            name: line.name,
-                            record_id: line.code,
-                            department_id: createdDepartments.find(x => x.record_id === line.department_code)?.id,
-                            department_name: createdDepartments.find(x => x.record_id === line.department_code)?.name,
-                            tenant_id: props.me?.prefs?.organization,
-                            realm_id: props.me?.prefs?.organization
+                    if (!props.titles.find(x => x.record_id === line.code)) {
+                        try {
+                            const data: IOrganizationStructure.ILines.ICreateLine = {
+                                id: nanoid(),
+                                name: line.name,
+                                record_id: line.code,
+                                department_id: createdDepartments.find(x => x.record_id === line.department_code)?.id,
+                                department_name: createdDepartments.find(x => x.record_id === line.department_code)?.name,
+                                tenant_id: props.me?.prefs?.organization,
+                                realm_id: props.me?.prefs?.organization
+                            }
+                            if (data.name && data.record_id) {
+                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
+                                    createdLines.push(data);
+                                });
+
+                            }
                         }
-                        if (data.name && data.record_id && !createdLines.find(x => x.record_id === data.record_id)) {
-                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
-                                createdLines.push(data);
-                            });
+                        catch (error) {
+                            failedLines.push(line.code);
                         }
-                    }
-                    catch (error) {
-                        failedLines.push(line.code);
                     }
                 }
             })
@@ -327,29 +334,46 @@ const EmployeeListView = (
             tasks.Wait(1);
 
             const failedEmployees: string[] = [];
-            console.log(createdDepartments, createdTitles, createdPositions, createdLines);
-
             excelData.map((employee, index) => {
-
+                let department = createdDepartments.find(x => x.record_id === employee.departman_kodu);
+                let title = createdTitles.find(x => x.record_id === employee.unvan_kodu);
+                let position = createdPositions.find(x => x.record_id === employee.pozisyon_kodu);
+                let line = createdLines.find(x => x.record_id === employee.hat_kodu);
+                if (!department) {
+                    department = props.departments.find(x => x.record_id === employee.departman_kodu);
+                }
+                if (!title) {
+                    title = props.titles.find(x => x.record_id === employee.unvan_kodu);
+                }
+                if (!position) {
+                    position = props.positions.find(x => x.record_id === employee.pozisyon_kodu);
+                }
+                if (!line) {
+                    line = props.lines.find(x => x.record_id === employee.hat_kodu);
+                }
                 const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
                     id: employee.sicil_no,
                     first_name: employee.adi,
                     last_name: employee.soyadi,
-                    department_id: createdDepartments.find(x => x.record_id === employee.departman_kodu)?.id || null,
-                    title_id: createdTitles.find(x => x.record_id === employee.unvan_kodu)?.id || null,
-                    position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
-                    line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
+                    department_id: department?.id,
+                    title_id: title?.id,
+                    position_id: position?.id,
+                    line_id: line?.id,
                     manager_id: null,
                     realm_id: props.me?.prefs?.organization,
                     tenant_id: props.me?.prefs?.organization
                 }
                 if (data.first_name && data.last_name) {
                     tasks.Task(async () => {
-                        try {
-                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
-                            setTransferPercent(index / excelData.length * 100);
-                        } catch (error) {
-                            failedEmployees.push(employee.sicil_no);
+                        if (!props.employees.find(x => x.id === employee.sicil_no)) {
+                            try {
+                                if (!props.employees.find(x => x.id === employee.sicil_no)) {
+                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
+                                    setTransferPercent(index / excelData.length * 100);
+                                }
+                            } catch (error) {
+                                failedEmployees.push(employee.sicil_no);
+                            }
                         }
                     });
                     tasks.Wait(1);
