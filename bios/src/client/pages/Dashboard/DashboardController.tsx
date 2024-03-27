@@ -1,5 +1,5 @@
-import { cTop, cTopLeading, HStack, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
-import React, { useEffect } from 'react';
+import { cTop, cTopLeading, HStack, nanoid, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
+import React, { useEffect, useState } from 'react';
 import { Chart, Series, Export, Tooltip } from 'devextreme-react/chart';
 import { PortalMenu } from '../../components/PortalMenu';
 import { Query, Services, useGetMe, useListCollections } from '@realmocean/sdk';
@@ -11,6 +11,8 @@ import AppInfo from '../../../AppInfo';
 import Collections from '../../../server/core/Collections';
 import { Toast } from '../../components/Toast';
 import Database from '../../../server/core/Database';
+import { Umay } from '@tuval/core';
+import { Dialog, DialogContent } from '@mui/material';
 
 const useGetBestFiveDepartments = [
     {
@@ -80,6 +82,124 @@ export class DashboardController extends UIController {
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         UIViewBuilder(() => {
+                            const [isUpdate, setIsUpdate] = useState(false)
+
+                            const createCollection = async () => {
+                                Services.Client.setProject("console");
+                                Services.Client.setMode(undefined);
+                                const task = new Umay()
+                                const failedAttributes = []
+                                const collectionVersion = Database.collections.find(collection => collection.id === Collections.CollectionVersion)
+                                const collectionAttributeVersion = Database.collections.find(collection => collection.id === Collections.CollectionAttributeVersion)
+                                task.Task(async () => {
+                                    setIsUpdate(true)
+                                    await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, collectionVersion.name)
+                                    await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, collectionAttributeVersion.name)
+                                })
+                                task.Wait(1)
+
+                                collectionVersion.attributes.forEach((attr) => {
+                                    task.Task(async () => {
+                                        if (attr.type === "string") {
+                                            try {
+                                                await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, 256, false)
+                                            } catch (error) {
+                                                failedAttributes.push({ colName: collectionVersion.name, key: attr.key, type: attr.type })
+                                            }
+                                        } else if (attr.type === "number") {
+                                            try {
+                                                await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, false)
+                                            } catch (error) {
+                                                failedAttributes.push({ colName: collectionVersion.name, key: attr.key, type: attr.type })
+                                            }
+                                        } else if (attr.type === "boolean") {
+                                            try {
+                                                await Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, false, attr.default)
+                                            } catch {
+                                                failedAttributes.push({ colName: collectionVersion.name, key: attr.key, type: attr.type })
+                                            }
+                                        }
+                                    })
+                                    task.Wait(1)
+                                })
+
+                                collectionAttributeVersion.attributes.forEach((attr) => {
+                                    task.Task(async () => {
+                                        if (attr.type === "string") {
+                                            try {
+                                                await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, attr.key, 256, false)
+                                            } catch (error) {
+                                                failedAttributes.push({ colName: collectionAttributeVersion.name, key: attr.key, type: attr.type })
+                                            }
+                                        } else if (attr.type === "number") {
+                                            try {
+                                                await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, attr.key, false)
+                                            } catch (error) {
+                                                failedAttributes.push({ colName: collectionAttributeVersion.name, key: attr.key, type: attr.type })
+                                            }
+                                        } else if (attr.type === "boolean") {
+                                            try {
+                                                await Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, attr.key, false, attr.default)
+                                            } catch {
+                                                failedAttributes.push({ colName: collectionAttributeVersion.name, key: attr.key, type: attr.type })
+                                            }
+                                        }
+                                    })
+                                    task.Wait(1)
+                                })
+                                task.Wait(2)
+
+                                failedAttributes.forEach((attr) => {
+                                    task.Task(async () => {
+                                        if (attr.type === "string") {
+                                            await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, attr.colName, attr.key, 256, false)
+                                        }
+                                        else if (attr.type === "number") {
+                                            await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, attr.colName, attr.key, false)
+                                        }
+                                        else if (attr.type === "boolean") {
+                                            await Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, attr.colName, attr.key, false, false)
+                                        }
+                                    })
+                                    task.Wait(1)
+                                })
+                                task.Wait(2)
+
+                                collections.forEach((collection) => {
+                                    task.Task(async () => {
+                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, collection.$id, {
+                                            id: collection.$id,
+                                            collection_id: collection.$id,
+                                            version: 1,
+                                            is_active: true,
+                                            is_deleted: false
+                                        })
+                                    })
+                                    task.Wait(1)
+                                    collection.attributes.forEach((attr: any) => {
+                                        task.Task(async () => {
+                                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, nanoid(), {
+                                                id: collection.$id + "_a_" + attr.key,
+                                                collection_id: collection.$id,
+                                                attribute_id: attr.key,
+                                                version: 1,
+                                                is_active: true,
+                                                is_deleted: false
+                                            })
+                                        })
+                                        task.Wait(1)
+                                    })
+                                })
+                                task.Task(async () => {
+                                    setIsUpdate(false)
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Veritabanı Güncellendi"
+                                    })
+                                    window.location.reload()
+                                })
+                                task.Run()
+                            }
 
                             useEffect(() => {
 
@@ -124,24 +244,12 @@ export class DashboardController extends UIController {
                                     }
                                     localStorage.setItem(Resources.ParameterLocalStr.machine_based_polyvalence_management, machineBased[0]?.is_active ? "true" : "false")
                                     localStorage.setItem(Resources.ParameterLocalStr.line_based_competency_relationship, lineBased[0]?.is_active ? "true" : "false")
-                                    const collection_version = collections.find(collection => collection.name === "collection_version")
+                                    const collection_version = collections.find(collection => collection.$id === "collection_version")
                                     if (!collection_version) {
-                                        const collectionVersion = Database.collections.find(collection => collection.id === Collections.CollectionVersion)
-                                        Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, collectionVersion.name).then((collId) => {
-                                            collectionVersion.attributes.forEach((attr) => {
-                                                if (attr.type === "string") {
-                                                    Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, 256, false)
-                                                } else if (attr.type === "number") {
-                                                    Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, false)
-                                                } else if (attr.type === "boolean") {
-                                                    Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, false, attr.default)
-                                                }
-                                            })
-                                        })
+                                        createCollection()
                                     }
+                                    const dbVersion = Database.version;
                                 }
-
-
                             }, [])
 
                             return (
@@ -184,6 +292,14 @@ export class DashboardController extends UIController {
                                                         />
                                                     </Chart>
                                                 </div>
+                                                <Dialog
+                                                    open={isUpdate}
+                                                    fullScreen
+                                                >
+                                                    <DialogContent>
+                                                        Güncelleme Yapılıyor, Lütfen Bekleyiniz...
+                                                    </DialogContent>
+                                                </Dialog>
                                             </div>
                                         )
                                     ).width("100%").height("100%")

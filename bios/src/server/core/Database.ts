@@ -1509,7 +1509,7 @@ const Database: IDatabase = {
                 "en": "Collection Version is a collection of collection versions.",
                 "tr": "Koleksiyon versiyonlarının koleksiyonudur."
             },
-            "version": 2,
+            "version": 1,
             "attributes": [
                 {
                     "key": "id",
@@ -1547,7 +1547,7 @@ const Database: IDatabase = {
                 "en": "Collection Attribute Version is a collection of collection attribute versions.",
                 "tr": "Koleksiyon nitelik versiyonlarının koleksiyonudur."
             },
-            "version": 2,
+            "version": 1,
             "attributes": [
                 {
                     "key": "id",
