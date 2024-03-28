@@ -23,6 +23,7 @@ namespace Collections {
     export const CompetencyGradeValue = "competency_grade_value";
     export const CollectionVersion = "collection_version";
     export const CollectionAttributeVersion = "collection_attribute_version";
+    export const DatabaseVersion = "database_version";
 }
 
 export default Collections;

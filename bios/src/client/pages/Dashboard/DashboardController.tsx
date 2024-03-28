@@ -190,15 +190,118 @@ export class DashboardController extends UIController {
                                         task.Wait(1)
                                     })
                                 })
+                                task.Wait(2)
+                                const databaseVersionCollection = Database.collections.find(collection => collection.id === Collections.DatabaseVersion)
+                                task.Task(async () => {
+                                    await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, databaseVersionCollection.name)
+                                })
+                                task.Wait(1)
+                                databaseVersionCollection.attributes.forEach((attr) => {
+                                    if (attr.type === "string") {
+                                        task.Task(async () => {
+                                            try {
+                                                Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, attr.key, 256, false)
+                                            } catch (error) {
+                                                failedAttributes.push({ colName: databaseVersionCollection.name, key: attr.key, type: attr.type })
+                                            }
+                                        })
+                                        task.Wait(1)
+                                    } else if (attr.type === "number") {
+                                        task.Task(async () => {
+                                            try {
+                                                Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, attr.key, false)
+                                            } catch (error) {
+                                                failedAttributes.push({ colName: databaseVersionCollection.name, key: attr.key, type: attr.type })
+                                            }
+                                        })
+                                        task.Wait(1)
+                                    } else if (attr.type === "boolean") {
+                                        task.Task(async () => {
+                                            try {
+                                                Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, attr.key, false, attr.default)
+                                            } catch {
+                                                failedAttributes.push({ colName: databaseVersionCollection.name, key: attr.key, type: attr.type })
+                                            }
+                                        })
+                                        task.Wait(1)
+                                    }
+                                })
+                                task.Wait(2)
+
+                                task.Task(async () => {
+                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version", {
+                                        id: "database_version",
+                                        version: 1,
+                                        is_active: true,
+                                        is_deleted: false
+                                    })
+                                })
+                                task.Wait(1)
+
                                 task.Task(async () => {
                                     setIsUpdate(false)
                                     Toast.fire({
                                         icon: "success",
                                         title: "Veritabanı Güncellendi"
                                     })
+                                })
+                                task.Wait(1)
+                                task.Task(async () => {
                                     window.location.reload()
                                 })
                                 task.Run()
+                            }
+
+                            const updateVersion = async (dbVersion: number) => {
+                                const updateVersion = dbVersion + 1;
+                                const updateVersionTask = new Umay();
+                                Database.collections.filter(collection => collection.version == updateVersion).forEach((collection) => {
+                                    updateVersionTask.Task(async () => {
+                                        try {
+                                            setIsUpdate(true)
+                                            await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, collection.id, collection.name)
+                                        } catch (error) {
+                                            console.log(error)
+                                        }
+                                    })
+                                    updateVersionTask.Wait(1)
+                                    collection.attributes.forEach((attr) => {
+                                        updateVersionTask.Task(async () => {
+                                            try {
+                                                if (attr.type === "string") {
+                                                    await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, 256, false)
+                                                } else if (attr.type === "number") {
+                                                    await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, false)
+                                                } else if (attr.type === "boolean") {
+                                                    await Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, false, attr.default)
+                                                }
+                                            } catch (error) {
+                                                console.log(error)
+                                            }
+                                        })
+                                        updateVersionTask.Wait(1)
+                                    })
+
+                                })
+                                updateVersionTask.Wait(2)
+                                updateVersionTask.Task(async () => {
+                                    await Services.Databases.updateDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version", {
+                                        version: updateVersion
+                                    })
+                                })
+                                updateVersionTask.Wait(1)
+                                updateVersionTask.Task(async () => {
+                                    setIsUpdate(false)
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Veritabanı Güncellendi"
+                                    })
+                                })
+                                updateVersionTask.Wait(1)
+                                updateVersionTask.Task(async () => {
+                                    window.location.reload()
+                                })
+                                updateVersionTask.Run()
                             }
 
                             useEffect(() => {
@@ -248,7 +351,14 @@ export class DashboardController extends UIController {
                                     if (!collection_version) {
                                         createCollection()
                                     }
-                                    const dbVersion = Database.version;
+                                    Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version").then((database_version) => {
+                                        const dbVersion: number = database_version.version;
+                                        if (dbVersion != Database.version) {
+                                            updateVersion(dbVersion)
+                                        }
+                                    })
+
+
                                 }
                             }, [])
 
@@ -297,7 +407,9 @@ export class DashboardController extends UIController {
                                                     fullScreen
                                                 >
                                                     <DialogContent>
-                                                        Güncelleme Yapılıyor, Lütfen Bekleyiniz...
+                                                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                                            <h3>Güncelleme yapılıyor, lütfen bekleyiniz ve sayfayı yenilemeyiniz.</h3>
+                                                        </div>
                                                     </DialogContent>
                                                 </Dialog>
                                             </div>

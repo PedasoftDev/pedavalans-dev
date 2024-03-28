@@ -1503,6 +1503,39 @@ const Database: IDatabase = {
             ]
         },
         {
+            "id": "database_version",
+            "name": "Database Version",
+            "description": {
+                "en": "Database Version is a collection of database versions.",
+                "tr": "Veritabanı versiyonlarının koleksiyonudur."
+            },
+            "version": 1,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "version",
+                    "type": "number",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                }
+            ]
+        },
+        {
             "id": "collection_version",
             "name": "Collection Version",
             "description": {
