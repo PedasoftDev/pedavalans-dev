@@ -206,11 +206,11 @@ export const PortalMenu = (selectedMenuTitle: string) => {
         isLoading || !me || tableAuth == null ? VStack().shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px') :
             VStack({ alignment: cTop })(
                 HStack({ spacing: 15 })(
-                    UIImage(CustomIcons.customLogo).width(60),
+                    UIImage(CustomIcons.customLogo).width(60).paddingBottom("15px"),
                     VStack({ alignment: cLeading })(
                         Text("Pedavalans").fontFamily("Poppins")
                             .foregroundColor(Resources.Colors.themeColor)
-                            .fontWeight("400").fontSize("30px"),
+                            .fontWeight("600").fontSize("30px"),
                         UIViewBuilder(() => {
                             const { organization } = useGetOrganization({ organizationId: me?.prefs?.organization })
                             return Text(organization?.name).fontFamily("Poppins").fontSize("13px").fontWeight("500").foregroundColor(Resources.Colors.themeColor)
@@ -262,7 +262,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     VStack(Icon("\\e9ba")).fontSize("20px").transition("all .2s ease-in-out").cornerRadius("3px")
                         .cursor("pointer").padding("5px").background({ hover: "lightgray" }).onClick(() => logout()).height().width(),
                     Spacer(),
-                    Text("v" + Database.version).fontSize("10px")
+                    Text("v1.2.0").fontSize("10px")
                 ).height().padding("10px")
             ).shadow("5px 0 10px -5px #3BA2EE").width(290).minWidth('290px').maxWidth('290px')
     )

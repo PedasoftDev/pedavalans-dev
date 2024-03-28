@@ -259,7 +259,23 @@ export class DashboardController extends UIController {
                                     updateVersionTask.Task(async () => {
                                         try {
                                             setIsUpdate(true)
+                                            console.log("version", updateVersion)
                                             await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, collection.id, collection.name)
+
+                                        } catch (error) {
+                                            console.log(error)
+                                        }
+                                    })
+                                    updateVersionTask.Wait(1)
+                                    updateVersionTask.Task(async () => {
+                                        try {
+                                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, collection.id, {
+                                                id: collection.id,
+                                                collection_id: collection.id,
+                                                version: updateVersion,
+                                                is_active: true,
+                                                is_deleted: false
+                                            })
                                         } catch (error) {
                                             console.log(error)
                                         }
@@ -280,6 +296,21 @@ export class DashboardController extends UIController {
                                             }
                                         })
                                         updateVersionTask.Wait(1)
+                                        updateVersionTask.Task(async () => {
+                                            try {
+                                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, nanoid(), {
+                                                    id: collection.id + "_a_" + attr.key,
+                                                    collection_id: collection.id,
+                                                    attribute_id: attr.key,
+                                                    version: updateVersion,
+                                                    is_active: true,
+                                                    is_deleted: false
+                                                })
+                                            } catch (error) {
+                                                console.log(error)
+                                            }
+                                        })
+                                        updateVersionTask.Wait(1)
                                     })
 
                                 })
@@ -289,6 +320,7 @@ export class DashboardController extends UIController {
                                         version: updateVersion
                                     })
                                 })
+                                
                                 updateVersionTask.Wait(1)
                                 updateVersionTask.Task(async () => {
                                     setIsUpdate(false)
