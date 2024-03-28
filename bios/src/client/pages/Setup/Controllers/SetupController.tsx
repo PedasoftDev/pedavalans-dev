@@ -11,6 +11,7 @@ import { ConsoleText, ConsoleView, Container, HeaderLabel } from "../Views/Setup
 import { Toast } from "../../../components/Toast";
 import { Resources } from "../../../assets/Resources";
 import { Umay } from "@tuval/core";
+import Collections from "../../../../server/core/Collections";
 
 
 export class SetupController extends UIController {
@@ -71,6 +72,7 @@ export class SetupController extends UIController {
                 const tasks = new Umay();
                 const crashedStringTasks: { projectId: string, databaseId: string, collectionId: string, key: string, size: number, required: boolean }[] = []
                 const crashedBooleanTasks: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean, xdefault?: boolean }[] = []
+                const crashedNumberTasks: { projectId: string, databaseId: string, collectionId: string, key: string, required: boolean }[] = []
                 for (let i = 0; i < collections.length; i++) {
                     tasks.Task(async () => {
                         const collection = collections[i];
@@ -118,6 +120,22 @@ export class SetupController extends UIController {
                                         })
                                         break;
                                     }
+                                case "number":
+                                    try {
+                                        console.log(name, key);
+                                        await Services.Databases.createIntegerAttribute(AppInfo.Name, database.$id, col.$id, key, false);
+                                        break;
+                                    } catch (error) {
+                                        console.log(error);
+                                        crashedNumberTasks.push({
+                                            projectId: AppInfo.Name,
+                                            databaseId: database.$id,
+                                            collectionId: col.$id,
+                                            key: key,
+                                            required: false
+                                        })
+                                        break;
+                                    }
                             }
                         }
                     })
@@ -139,6 +157,15 @@ export class SetupController extends UIController {
                         console.log(crashedBooleanTasks[i]);
                         const { projectId, databaseId, collectionId, key, required, xdefault } = crashedBooleanTasks[i];
                         await Services.Databases.createBooleanAttribute(projectId, databaseId, collectionId, key, required, xdefault);
+                    }
+                })
+                tasks.Wait(1);
+
+                tasks.Task(async () => {
+                    for (let i = 0; i < crashedNumberTasks.length; i++) {
+                        console.log(crashedNumberTasks[i]);
+                        const { projectId, databaseId, collectionId, key, required } = crashedNumberTasks[i];
+                        await Services.Databases.createIntegerAttribute(projectId, databaseId, collectionId, key, required);
                     }
                 })
                 tasks.Wait(1);
@@ -171,6 +198,47 @@ export class SetupController extends UIController {
                         })
                         localStorage.setItem(localStr, "false");
                     }
+                })
+                tasks.Wait(1);
+
+                tasks.Task(async () => {
+                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version", {
+                        id: "database_version",
+                        version: Database.version,
+                        is_active: true,
+                        is_deleted: false
+                    })
+                })
+                tasks.Wait(1)
+
+                Database.collections.forEach((collection) => {
+
+                    tasks.Task(async () => {
+                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, nanoid(), {
+                            id: collection.id,
+                            collection_id: collection.id,
+                            version: collection.version,
+                            is_active: true,
+                            is_deleted: false
+                        })
+                    })
+                    tasks.Wait(1);
+
+                    collection.attributes.forEach((attribute) => {
+
+                        tasks.Task(async () => {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, nanoid(), {
+                                id: collection.id + "_a_" + attribute.key,
+                                collection_id: collection.id,
+                                attribute_id: attribute.key,
+                                version: collection.version,
+                                is_active: true,
+                                is_deleted: false
+                            })
+                        })
+                        tasks.Wait(1);
+
+                    })
                 })
                 tasks.Wait(1);
 
