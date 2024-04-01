@@ -335,49 +335,49 @@ const EmployeeListView = (
 
             const failedEmployees: string[] = [];
             excelData.map((employee, index) => {
-                let department = createdDepartments.find(x => x.record_id === employee.departman_kodu);
-                let title = createdTitles.find(x => x.record_id === employee.unvan_kodu);
-                let position = createdPositions.find(x => x.record_id === employee.pozisyon_kodu);
-                let line = createdLines.find(x => x.record_id === employee.hat_kodu);
-                if (!department) {
-                    department = props.departments.find(x => x.record_id === employee.departman_kodu);
-                }
-                if (!title) {
-                    title = props.titles.find(x => x.record_id === employee.unvan_kodu);
-                }
-                if (!position) {
-                    position = props.positions.find(x => x.record_id === employee.pozisyon_kodu);
-                }
-                if (!line) {
-                    line = props.lines.find(x => x.record_id === employee.hat_kodu);
-                }
-                const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
-                    id: employee.sicil_no,
-                    first_name: employee.adi,
-                    last_name: employee.soyadi,
-                    department_id: department?.id,
-                    title_id: title?.id,
-                    position_id: position?.id,
-                    line_id: line?.id,
-                    manager_id: null,
-                    realm_id: props.me?.prefs?.organization,
-                    tenant_id: props.me?.prefs?.organization
-                }
-                if (data.first_name && data.last_name) {
-                    tasks.Task(async () => {
-                        if (!props.employees.find(x => x.id === employee.sicil_no)) {
-                            try {
-                                if (!props.employees.find(x => x.id === employee.sicil_no)) {
+                tasks.Task(async () => {
+                    if (!props.employees.find(x => x.id === employee.sicil_no)) {
+                        try {
+                            let department = createdDepartments.find(x => x.record_id === employee.departman_kodu);
+                            let title = createdTitles.find(x => x.record_id === employee.unvan_kodu);
+                            let position = createdPositions.find(x => x.record_id === employee.pozisyon_kodu);
+                            let line = createdLines.find(x => x.record_id === employee.hat_kodu);
+                            if (!department) {
+                                department = props.departments.find(x => x.record_id === employee.departman_kodu);
+                            }
+                            if (!title) {
+                                title = props.titles.find(x => x.record_id === employee.unvan_kodu);
+                            }
+                            if (!position) {
+                                position = props.positions.find(x => x.record_id === employee.pozisyon_kodu);
+                            }
+                            if (!line) {
+                                line = props.lines.find(x => x.record_id === employee.hat_kodu);
+                            }
+                            const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
+                                id: employee.sicil_no,
+                                first_name: employee.adi,
+                                last_name: employee.soyadi,
+                                department_id: department?.id,
+                                title_id: title?.id,
+                                position_id: position?.id,
+                                line_id: line?.id,
+                                manager_id: null,
+                                realm_id: props.me?.prefs?.organization,
+                                tenant_id: props.me?.prefs?.organization
+                            }
+                            if (!props.employees.find(x => x.id === employee.sicil_no)) {
+                                if (data.first_name && data.last_name) {
                                     await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
                                     setTransferPercent(index / excelData.length * 100);
                                 }
-                            } catch (error) {
-                                failedEmployees.push(employee.sicil_no);
                             }
+                        } catch (error) {
+                            failedEmployees.push(employee.sicil_no);
                         }
-                    });
-                    tasks.Wait(1);
-                }
+                    }
+                });
+                tasks.Wait(1);
             })
 
 

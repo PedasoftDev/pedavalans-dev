@@ -382,6 +382,10 @@ export class DashboardController extends UIController {
                                     const collection_version = collections.find(collection => collection.$id === "collection_version")
                                     if (!collection_version) {
                                         createCollection()
+                                    } else {
+                                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion).then((collectionVersionList) => {
+                                            
+                                        })
                                     }
                                     Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version").then((database_version) => {
                                         const dbVersion: number = database_version.version;
