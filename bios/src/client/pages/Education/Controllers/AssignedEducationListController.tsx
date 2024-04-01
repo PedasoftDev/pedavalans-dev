@@ -1,15 +1,20 @@
-import { Button, IconButton, TextField, Tooltip } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
 import { HStack, ReactView, Spinner, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
 import React, { useState } from "react";
 import { Views } from "../../../components/Views";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import { useGetMe } from "@realmocean/sdk";
+import { Services, useGetMe } from "@realmocean/sdk";
 import Education from "../../../../server/hooks/education/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
 import { Resources } from "../../../assets/Resources";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
+import IAssignedEducationResult from "../../../interfaces/IAssignedEducationResult";
+import AssignEducationResult from "../../../../server/hooks/assignEducationResult/main";
+import { Toast } from "../../../components/Toast";
+import AppInfo from "../../../../AppInfo";
+import Collections from "../../../../server/core/Collections";
 
 
 export class AssignedEducationListController extends UIFormController {
@@ -20,14 +25,110 @@ export class AssignedEducationListController extends UIFormController {
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
         const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization);
+        const { assignedEducationResultList, isLoadingAssignedEducationResultList } = AssignEducationResult.GetList(me?.prefs?.organization);
+        const { updateAssignedEducation } = AssignEducation.Update();
+        const { createAssignedEducationResult } = AssignEducationResult.Create();
 
         const [rowsActive, setRowsActive] = useState(true);
         const [filterKey, setFilterKey] = useState("");
 
         return (
-            isLoading || isLoadingAssignedEducationList ? VStack(Spinner()) :
+            isLoading || isLoadingAssignedEducationList || isLoadingAssignedEducationResultList ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
+                        const resetFormDialog: IAssignedEducationResult.ICreate = {
+                            assigned_education_id: "",
+                            educator_comment: "",
+                            education_id: "",
+                            educator_id: "",
+                            educator_name: "",
+                            employee_id: "",
+                            employee_name: "",
+                            is_education_completed: false,
+                            tenant_id: ""
+                        }
+
+                        const [selectedAssinedEducationId, setSelectedAssinedEducationId] = useState<string>("");
+                        const [open, setOpen] = useState(false);
+                        const [dialogForm, setDialogForm] = useState<IAssignedEducationResult.ICreate>({
+                            assigned_education_id: "",
+                            educator_comment: "",
+                            education_id: "",
+                            educator_id: "",
+                            educator_name: "",
+                            employee_id: "",
+                            employee_name: "",
+                            is_education_completed: false,
+                            tenant_id: "",
+                        });
+
+
+                        const handleOpenDialog = (assigned_education_id: string) => {
+                            setSelectedAssinedEducationId(assigned_education_id);
+                            if (assignedEducationResultList.find((item) => item.assigned_education_id === assigned_education_id)) {
+                                const result = assignedEducationResultList.find((item) => item.assigned_education_id === assigned_education_id);
+                                setDialogForm({
+                                    assigned_education_id: result.assigned_education_id,
+                                    educator_comment: result.educator_comment,
+                                    education_id: result.education_id,
+                                    educator_id: result.educator_id,
+                                    educator_name: result.educator_name,
+                                    employee_id: result.employee_id,
+                                    employee_name: result.employee_name,
+                                    is_education_completed: result.is_education_completed,
+                                    tenant_id: result.tenant_id
+                                })
+                            }
+                            setOpen(true);
+                        }
+
+                        const handleCloseDialog = () => {
+                            setOpen(false);
+                        }
+
+                        const handleSubmitDialog = () => {
+                            const submitData: IAssignedEducationResult.ICreate = {
+                                assigned_education_id: selectedAssinedEducationId,
+                                educator_comment: dialogForm.educator_comment,
+                                education_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_id,
+                                educator_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_id,
+                                educator_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_name,
+                                employee_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_id,
+                                employee_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name,
+                                is_education_completed: dialogForm.is_education_completed,
+                                tenant_id: me?.prefs?.organization
+                            }
+                            createAssignedEducationResult({
+                                data: submitData,
+                                documentId: selectedAssinedEducationId
+                            }, () => {
+                                if (submitData.is_education_completed) {
+                                    updateAssignedEducation({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.AssignedEducation,
+                                        documentId: selectedAssinedEducationId,
+                                        data: { status: "completed" }
+                                    }, () => {
+                                        setOpen(false);
+                                        setSelectedAssinedEducationId("");
+                                        Toast.fire({
+                                            icon: "success",
+                                            title: "Eğitim sonucu başarıyla kaydedildi."
+                                        })
+                                    })
+                                } else {
+                                    setOpen(false);
+                                    setSelectedAssinedEducationId("");
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Eğitim sonucu başarıyla kaydedildi."
+                                    })
+                                }
+
+                            })
+                        }
+
+
                         const columns: GridColDef[] = [
                             {
                                 field: "education_code",
@@ -66,6 +167,18 @@ export class AssignedEducationListController extends UIFormController {
                                 valueGetter: (params) => {
                                     return params.value === "completed" ? "Tamamlandı" : "Açık";
                                 }
+                            },
+                            {
+                                field: "$id",
+                                headerName: "İşlemler",
+                                width: 100,
+                                renderCell: (params) => {
+                                    return (
+                                        <Button onClick={() => handleOpenDialog(params.value)} size="small" fullWidth variant="text">
+                                            İncele
+                                        </Button>
+                                    )
+                                }
                             }
                         ];
 
@@ -91,6 +204,37 @@ export class AssignedEducationListController extends UIFormController {
                                             gap: "10px",
                                             width: "100%",
                                         }}>
+                                            <Dialog
+                                                open={open}
+                                                onClose={handleCloseDialog}
+                                            >
+                                                <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
+                                                <DialogContent>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
+                                                        <TextField label="Eğitim Bilgisi" value={assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name} size="small" fullWidth />
+                                                        <TextField label="Eğitim Alacak Personel" value={assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name} size="small" fullWidth />
+                                                        <TextField label="Eğitimcinin Yorumu" size="small" fullWidth multiline rows={4} value={dialogForm.educator_comment} onChange={(e) => setDialogForm({ ...dialogForm, educator_comment: e.target.value })} />
+                                                        <FormControlLabel
+                                                            sx={{ width: "100%", alignContent: "end" }}
+                                                            onChange={(e: any) => {
+                                                                setDialogForm({ ...dialogForm, is_education_completed: e.target.checked })
+                                                            }}
+                                                            value={dialogForm.is_education_completed}
+                                                            control={<Switch color="primary"
+                                                                checked={dialogForm.is_education_completed}
+                                                            />
+                                                            }
+                                                            label="Eğitim Gerçekleşti"
+                                                            labelPlacement="start"
+                                                        />
+                                                    </div>
+                                                </DialogContent>
+                                                <DialogActions>
+                                                    <Button onClick={handleCloseDialog} color='error' variant='contained'>İptal</Button>
+                                                    {!assignedEducationResultList.find((item) => item.assigned_education_id === selectedAssinedEducationId) &&
+                                                        <Button variant='contained' color='primary' onClick={handleSubmitDialog}>Kaydet</Button>}
+                                                </DialogActions>
+                                            </Dialog>
                                             <div style={{
                                                 display: "flex",
                                                 gap: "10px",

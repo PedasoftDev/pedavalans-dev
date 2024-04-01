@@ -126,6 +126,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     const [openDialog, setOpenDialog] = useState(false);
                     const [description, setDescription] = useState("");
                     const [selectedCompetencyId, setSelectedCompetencyId] = useState("");
+                    
 
                     // dialog for education
                     const [form, setForm] = useState({

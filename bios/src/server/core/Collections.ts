@@ -20,6 +20,7 @@ namespace Collections {
     export const OrganizationStructureLine: string = "organization_line";
     export const OrganizationStructureEmployee: string = "organization_employee";
     export const AssignedEducation = "assigned_education";
+    export const AssignedEducationResult = "assigned_education_result";
     export const CompetencyGradeValue = "competency_grade_value";
     export const CollectionVersion = "collection_version";
     export const CollectionAttributeVersion = "collection_attribute_version";

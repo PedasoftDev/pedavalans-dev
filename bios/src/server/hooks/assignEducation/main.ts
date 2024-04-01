@@ -1,4 +1,4 @@
-import { Query, useCreateDocument, useListDocuments } from '@realmocean/sdk'
+import { Query, useCreateDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo'
 import Collections from '../../core/Collections'
 import IAssignedEducation from '../../../client/interfaces/IAssignedEducation'
@@ -20,6 +20,13 @@ namespace AssignEducation {
         return {
             assignedEducationList: documents as any,
             isLoadingAssignedEducationList: isLoading
+        }
+    }
+
+    export const Update = () => {
+        const { updateDocument } = useUpdateDocument(AppInfo.Name)
+        return {
+            updateAssignedEducation: updateDocument
         }
     }
 }
