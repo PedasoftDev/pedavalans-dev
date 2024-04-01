@@ -57,8 +57,16 @@ export function getReportToExcelByEmployee(employeName: string, data: IData[]) {
     data.forEach((item, index) => {
         const row = [
             { v: item.competency_name, t: 's', s: { alignment: { vertical: "center" } } },
-            { v: item.competency_target_value, t: 's', s: { alignment: alignCenter } },
-            { v: item.competency_real_value, t: 's', s: { alignment: alignCenter } },
+            {
+                v: item.competency_target_value == "no-target" ? "Hedefi Yok" : item.competency_target_value,
+                t: 's',
+                s: { alignment: alignCenter }
+            },
+            {
+                v: item.competency_target_value == "no-target" ? "Hedefi Yok" : item.competency_real_value,
+                t: 's',
+                s: { alignment: alignCenter }
+            },
             { v: item.competency_value_desc, t: 's', s: { alignment: { vertical: "center" } } },
         ];
         appendData.push(row);

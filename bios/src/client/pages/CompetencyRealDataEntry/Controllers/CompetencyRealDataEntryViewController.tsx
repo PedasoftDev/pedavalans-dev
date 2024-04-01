@@ -300,95 +300,102 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
                     const columns: GridColDef[] = [
                         { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
-                        { field: "competency_target_value", headerName: "Hedef Değer", align: "center", width: 100, minWidth: 100 },
+                        {
+                            field: "competency_target_value", headerName: "Hedef Değer", align: "center", width: 100, minWidth: 100,
+                            valueGetter: (params) => {
+                                return params.row.competency_target_value === "no-target" ? "Hedefi Yok" : params.row.competency_target_value
+                            }
+                        },
                         {
                             field: "competency_real_value", headerName: "Gerçekleşme Değeri", width: 150, minWidth: 150,
                             renderCell: (params) => (
                                 <FormControl fullWidth size="small">
-                                    <Select
-                                        name="competency_real_value"
-                                        value={params.value}
-                                        onChange={(e) => {
-                                            const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === params.row.competency_id);
-                                            if (alreadyExist) {
-                                                updateEmployeeCompetencyValue({
-                                                    databaseId: AppInfo.Database,
-                                                    collectionId: "employee_competency_value",
-                                                    documentId: alreadyExist?.employee_competency_value_id,
-                                                    data: {
-                                                        ...removeDollarProperties(alreadyExist),
-                                                        competency_real_value: e.target.value,
-                                                    }
-                                                }, () => {
-                                                    Toast.fire({
-                                                        icon: "success",
-                                                        title: "Değer güncellendi.",
-                                                        timer: 1000
-                                                    })
-                                                    setEmployeeCompetencyValue(employeeCompetencyValue.map((value) => {
-                                                        if (value.competency_id === params.row.competency_id) {
-                                                            return {
-                                                                ...value,
-                                                                competency_real_value: e.target.value,
-                                                            }
+                                    {params.row.competency_target_value != "no-target" &&
+                                        <Select
+                                            name="competency_real_value"
+                                            value={params.value}
+                                            onChange={(e) => {
+                                                const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === params.row.competency_id);
+                                                if (alreadyExist) {
+                                                    updateEmployeeCompetencyValue({
+                                                        databaseId: AppInfo.Database,
+                                                        collectionId: "employee_competency_value",
+                                                        documentId: alreadyExist?.employee_competency_value_id,
+                                                        data: {
+                                                            ...removeDollarProperties(alreadyExist),
+                                                            competency_real_value: e.target.value,
                                                         }
-                                                        return value;
-                                                    }));
-                                                })
-                                            } else {
-                                                const docId: string = nanoid();
-                                                const createObj: IEmployeeCompetencyValue.IEmployeeCompetencyValue = {
-                                                    employee_competency_value_id: docId,
-                                                    competency_department_id: selectedTable.polyvalence_department_id,
-                                                    competency_department_name: selectedTable.polyvalence_department_name,
-                                                    competency_evaluation_period: selectedPeriod,
-                                                    competency_id: params.row.competency_id,
-                                                    competency_name: params.row.competency_name,
-                                                    competency_target_value: "",
-                                                    competency_real_value: e.target.value,
-                                                    competency_value_desc: "",
-                                                    employee_id: selectedEmployeeId,
-                                                    employee_name: employees.find((employee) => employee.id === selectedEmployeeId)?.first_name
-                                                        + " " + employees.find((employee) => employee.id === selectedEmployeeId)?.last_name,
-                                                    polyvalence_table_id: selectedTable.polyvalence_table_id,
-                                                    polyvalence_table_name: selectedTable.polyvalence_table_name,
-                                                    tenant_id: me?.prefs?.organization,
-                                                    realm_id: me?.prefs?.organization,
-                                                    is_deleted_competency_value: false,
-                                                    is_active_competency_value: true
-                                                }
-                                                createEmployeeCompetencyValue({
-                                                    documentId: docId,
-                                                    data: createObj
-                                                }, () => {
-                                                    Toast.fire({
-                                                        icon: "success",
-                                                        title: "Değer eklendi.",
-                                                        timer: 1000
+                                                    }, () => {
+                                                        Toast.fire({
+                                                            icon: "success",
+                                                            title: "Değer güncellendi.",
+                                                            timer: 1000
+                                                        })
+                                                        setEmployeeCompetencyValue(employeeCompetencyValue.map((value) => {
+                                                            if (value.competency_id === params.row.competency_id) {
+                                                                return {
+                                                                    ...value,
+                                                                    competency_real_value: e.target.value,
+                                                                }
+                                                            }
+                                                            return value;
+                                                        }));
                                                     })
-                                                    setEmployeeCompetencyValue([...employeeCompetencyValue, createObj]);
-                                                })
-                                            }
-                                            setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
-                                                if (competency.competency_id === params.row.competency_id) {
-                                                    return {
-                                                        ...competency,
+                                                } else {
+                                                    const docId: string = nanoid();
+                                                    const createObj: IEmployeeCompetencyValue.IEmployeeCompetencyValue = {
+                                                        employee_competency_value_id: docId,
+                                                        competency_department_id: selectedTable.polyvalence_department_id,
+                                                        competency_department_name: selectedTable.polyvalence_department_name,
+                                                        competency_evaluation_period: selectedPeriod,
+                                                        competency_id: params.row.competency_id,
+                                                        competency_name: params.row.competency_name,
+                                                        competency_target_value: "",
                                                         competency_real_value: e.target.value,
+                                                        competency_value_desc: "",
+                                                        employee_id: selectedEmployeeId,
+                                                        employee_name: employees.find((employee) => employee.id === selectedEmployeeId)?.first_name
+                                                            + " " + employees.find((employee) => employee.id === selectedEmployeeId)?.last_name,
+                                                        polyvalence_table_id: selectedTable.polyvalence_table_id,
+                                                        polyvalence_table_name: selectedTable.polyvalence_table_name,
+                                                        tenant_id: me?.prefs?.organization,
+                                                        realm_id: me?.prefs?.organization,
+                                                        is_deleted_competency_value: false,
+                                                        is_active_competency_value: true
                                                     }
+                                                    createEmployeeCompetencyValue({
+                                                        documentId: docId,
+                                                        data: createObj
+                                                    }, () => {
+                                                        Toast.fire({
+                                                            icon: "success",
+                                                            title: "Değer eklendi.",
+                                                            timer: 1000
+                                                        })
+                                                        setEmployeeCompetencyValue([...employeeCompetencyValue, createObj]);
+                                                    })
                                                 }
-                                                return competency;
-                                            }));
-                                        }}
-                                        size="small"
-                                        required
-                                    >
-                                        {competencyGradeValueList.filter(x => x.competency_id === params.row.competency_id)
-                                            .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
-                                            .map((value) => (
-                                                <MenuItem value={value.grade_level_number} key={value.competency_grade_value_id}>{value.grade_level_number}</MenuItem>
-                                            ))}
-                                    </Select>
-                                </FormControl>
+                                                setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
+                                                    if (competency.competency_id === params.row.competency_id) {
+                                                        return {
+                                                            ...competency,
+                                                            competency_real_value: e.target.value,
+                                                        }
+                                                    }
+                                                    return competency;
+                                                }));
+                                            }}
+                                            size="small"
+                                            required
+                                        >
+                                            {competencyGradeValueList.filter(x => x.competency_id === params.row.competency_id)
+                                                .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
+                                                .map((value) => (
+                                                    <MenuItem value={value.grade_level_number} key={value.competency_grade_value_id}>{value.grade_level_number}</MenuItem>
+                                                ))}
+                                        </Select>
+                                    }
+                                </FormControl >
 
                             )
                         },

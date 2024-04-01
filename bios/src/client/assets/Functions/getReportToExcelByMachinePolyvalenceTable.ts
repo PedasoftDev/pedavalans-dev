@@ -118,7 +118,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
 
     competencies.forEach((competencyWithValue, index) => {
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
-            if (employeeCompetencyValue.competency_id === competencyWithValue.competency_id) {
+            if (employeeCompetencyValue.competency_id === competencyWithValue.competency_id && employeeCompetencyValue.competency_target_value != "no-target") {
                 const selectedMachine = machines.find(x => x.$id === competencyWithValue.id);
                 let difficultyCoefficient = 1;
                 if (selectedMachine) {
@@ -289,7 +289,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
             if (selectedMachine) {
                 difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
             }
-            if (employeeCompetencyValue) {
+            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value != "no-target") {
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
                 totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
             }
@@ -306,7 +306,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
             if (selectedMachine) {
                 difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
             }
-            if (employeeCompetencyValue) {
+            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value != "no-target") {
                 if (parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient < parseInt(employeeCompetencyValue.competency_target_value)) {
                     competencyToBeImprovedCount++;
                 }
@@ -345,9 +345,13 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
             }
 
             if (employeeCompetencyValue) {
-                employeeRow[startFirstCompetencyIndex + index] = { v: employeeCompetencyValue.competency_target_value, t: 's', s: waitingValueStyle }
+                employeeRow[startFirstCompetencyIndex + index] = {
+                    v: employeeCompetencyValue.competency_target_value === "no-target" ? "Hedefi Yok" : employeeCompetencyValue.competency_target_value,
+                    t: 's',
+                    s: waitingValueStyle
+                }
                 employeeRowPlusOne[startFirstCompetencyIndex + index] = {
-                    v: difficultyCoefficient === 1 ? employeeCompetencyValue.competency_real_value : (parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient).toFixed(1),
+                    v: employeeCompetencyValue.competency_target_value === "no-target" ? "Hedefi Yok" : difficultyCoefficient === 1 ? employeeCompetencyValue.competency_real_value : (parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient).toFixed(1),
                     t: 's',
                     s: realValueStyle
                 }
@@ -406,7 +410,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
                 if (selectedMachine) {
                     difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
                 }
-                if ((realValue * difficultyCoefficient) < parseInt(employeeCompetencyValue.competency_target_value)) {
+                if (employeeCompetencyValue.competency_target_value != "no-target" && (realValue * difficultyCoefficient) < parseInt(employeeCompetencyValue.competency_target_value)) {
                     employeeCount++;
                 }
             }
@@ -431,7 +435,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         let totalTargetValue = 0;
         let totalRealValue = 0;
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
-            if (competencies.find(x => x.competency_id === employeeCompetencyValue.competency_id)?.competency_group_id === group.competency_group_id) {
+            if (competencies.find(x => x.competency_id === employeeCompetencyValue.competency_id)?.competency_group_id === group.competency_group_id && employeeCompetencyValue.competency_target_value != "no-target") {
                 const selectedMachine = machines.find(x => x.$id === employeeCompetencyValue.competency_id);
                 let difficultyCoefficient = 1;
                 if (selectedMachine) {

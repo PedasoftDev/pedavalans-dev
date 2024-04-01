@@ -229,6 +229,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                             .map((value) => (
                                                 <MenuItem value={value.grade_level_number} key={value.competency_grade_value_id}>{value.grade_level_number}</MenuItem>
                                             ))}
+                                        <MenuItem value={"no-target"} key={"-"}>{"Hedefi Yok"}</MenuItem>
                                     </Select>
                                 </FormControl>
 
