@@ -320,7 +320,7 @@ export class DashboardController extends UIController {
                                         version: updateVersion
                                     })
                                 })
-                                
+
                                 updateVersionTask.Wait(1)
                                 updateVersionTask.Task(async () => {
                                     setIsUpdate(false)

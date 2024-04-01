@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 2,
+    "version": 3,
     "collections": [
         {
             "id": "competency",
@@ -1502,284 +1502,353 @@ const Database: IDatabase = {
                 }
             ]
         },
-        // {
-        //     "id": "database_version",
-        //     "name": "Database Version",
-        //     "description": {
-        //         "en": "Database Version is a collection of database versions.",
-        //         "tr": "Veritabanı versiyonlarının koleksiyonudur."
-        //     },
-        //     "version": 1,
-        //     "attributes": [
-        //         {
-        //             "key": "id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "version",
-        //             "type": "number",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_active",
-        //             "type": "boolean",
-        //             "version": 1,
-        //             "default": true
-        //         },
-        //         {
-        //             "key": "is_deleted",
-        //             "type": "boolean",
-        //             "version": 1,
-        //             "default": false
-        //         }
-        //     ]
-        // },
-        // {
-        //     "id": "collection_version",
-        //     "name": "Collection Version",
-        //     "description": {
-        //         "en": "Collection Version is a collection of collection versions.",
-        //         "tr": "Koleksiyon versiyonlarının koleksiyonudur."
-        //     },
-        //     "version": 1,
-        //     "attributes": [
-        //         {
-        //             "key": "id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "collection_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "version",
-        //             "type": "number",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_active",
-        //             "type": "boolean",
-        //             "version": 1,
-        //             "default": true
-        //         },
-        //         {
-        //             "key": "is_deleted",
-        //             "type": "boolean",
-        //             "version": 1,
-        //             "default": false
-        //         }
-        //     ]
-        // },
-        // {
-        //     "id": "collection_attribute_version",
-        //     "name": "Collection Attribute Version",
-        //     "description": {
-        //         "en": "Collection Attribute Version is a collection of collection attribute versions.",
-        //         "tr": "Koleksiyon nitelik versiyonlarının koleksiyonudur."
-        //     },
-        //     "version": 1,
-        //     "attributes": [
-        //         {
-        //             "key": "id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "collection_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "attribute_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "version",
-        //             "type": "number",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_active",
-        //             "type": "boolean",
-        //             "version": 1,
-        //             "default": true
-        //         },
-        //         {
-        //             "key": "is_deleted",
-        //             "type": "boolean",
-        //             "version": 1,
-        //             "default": false
-        //         }
-        //     ]
-        // },
-        // {
-        //     "id": "education",
-        //     "name": "Education",
-        //     "description": {
-        //         en: "Education is a collection of educations.",
-        //         tr: "Eğitimlerin koleksiyonudur."
-        //     },
-        //     "version": 2,
-        //     "attributes": [
-        //         {
-        //             "key": "code",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "name",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "type",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "tenant_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_active",
-        //             "type": "boolean",
-        //             "default": true,
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_deleted",
-        //             "type": "boolean",
-        //             "default": false,
-        //             "version": 1
-        //         }
-        //     ]
-        // },
-        // {
-        //     "id": "education_competency_relation",
-        //     "name": "Education Competency Relation",
-        //     "description": {
-        //         en: "Education Competency Relation is a collection of education competency relations.",
-        //         tr: "Eğitim yetkinlik ilişkilerinin koleksiyonudur."
-        //     },
-        //     "version": 2,
-        //     "attributes": [
-        //         {
-        //             "key": "education_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "competency_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "competency_name",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "tenant_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_active",
-        //             "type": "boolean",
-        //             "default": true,
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_deleted",
-        //             "type": "boolean",
-        //             "default": false,
-        //             "version": 1
-        //         }
-        //     ]
-        // },
-        // {
-        //     "id": "assigned_education",
-        //     "name": "Assigned Education",
-        //     "description": {
-        //         en: "Assigned Education is a collection of assigned educations.",
-        //         tr: "Atanmış eğitimlerin koleksiyonudur."
-        //     },
-        //     "version": 2,
-        //     "attributes": [
-        //         {
-        //             "key": "education_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "education_code",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "education_name",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "employee_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "employee_name",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "educator_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "educator_name",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "start_date",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "end_date",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "status",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "tenant_id",
-        //             "type": "string",
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_active",
-        //             "type": "boolean",
-        //             "default": true,
-        //             "version": 1
-        //         },
-        //         {
-        //             "key": "is_deleted",
-        //             "type": "boolean",
-        //             "default": false,
-        //             "version": 1
-        //         }
-        //     ]
-        // }
+        {
+            "id": "database_version",
+            "name": "Database Version",
+            "description": {
+                "en": "Database Version is a collection of database versions.",
+                "tr": "Veritabanı versiyonlarının koleksiyonudur."
+            },
+            "version": 1,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "version",
+                    "type": "number",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                }
+            ]
+        },
+        {
+            "id": "collection_version",
+            "name": "Collection Version",
+            "description": {
+                "en": "Collection Version is a collection of collection versions.",
+                "tr": "Koleksiyon versiyonlarının koleksiyonudur."
+            },
+            "version": 1,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "collection_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "version",
+                    "type": "number",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                }
+            ]
+        },
+        {
+            "id": "collection_attribute_version",
+            "name": "Collection Attribute Version",
+            "description": {
+                "en": "Collection Attribute Version is a collection of collection attribute versions.",
+                "tr": "Koleksiyon nitelik versiyonlarının koleksiyonudur."
+            },
+            "version": 1,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "collection_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "attribute_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "version",
+                    "type": "number",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                }
+            ]
+        },
+        {
+            "id": "education",
+            "name": "Education",
+            "description": {
+                en: "Education is a collection of educations.",
+                tr: "Eğitimlerin koleksiyonudur."
+            },
+            "version": 2,
+            "attributes": [
+                {
+                    "key": "code",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "education_competency_relation",
+            "name": "Education Competency Relation",
+            "description": {
+                en: "Education Competency Relation is a collection of education competency relations.",
+                tr: "Eğitim yetkinlik ilişkilerinin koleksiyonudur."
+            },
+            "version": 2,
+            "attributes": [
+                {
+                    "key": "education_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "competency_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "competency_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "assigned_education",
+            "name": "Assigned Education",
+            "description": {
+                en: "Assigned Education is a collection of assigned educations.",
+                tr: "Atanmış eğitimlerin koleksiyonudur."
+            },
+            "version": 2,
+            "attributes": [
+                {
+                    "key": "education_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "education_code",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "education_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "employee_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "educator_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "educator_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "start_date",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "end_date",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "assigned_education_result",
+            "name": "Assigned Education Result",
+            "description": {
+                "en": "Assigned Education Result is a collection of assigned education results.",
+                "tr": "Atanmış eğitim sonuçlarının koleksiyonudur."
+            },
+            "version": 3,
+            "attributes": [
+                {
+                    "key": "assigned_education_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "education_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "employee_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "educator_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "educator_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "educator_comment",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_education_completed",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        }
     ]
 }
 
