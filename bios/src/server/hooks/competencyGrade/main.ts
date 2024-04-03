@@ -38,6 +38,15 @@ namespace CompetencyGrade {
         }
     }
 
+    export const GetGradeLevelList = (): { levels: ICompetencyGrade.ICompetencyGradeLevel[], total: Number, isLoadingLevels: boolean } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_grade_level", [Query.limit(10000), Query.equal("is_deleted_level", false)])
+        return {
+            levels: documents as any[],
+            total,
+            isLoadingLevels: isLoading
+        }
+    }
+
     export const CreateGradeLevel = () => {
         const { createDocument, isLoading, isSuccess, isError, error } = useCreateDocument(AppInfo.Name, AppInfo.Database, "competency_grade_level")
         return {

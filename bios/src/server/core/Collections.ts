@@ -25,6 +25,7 @@ namespace Collections {
     export const CollectionVersion = "collection_version";
     export const CollectionAttributeVersion = "collection_attribute_version";
     export const DatabaseVersion = "database_version";
+    export const EmployeeCompetencyValue = "employee_competency_value";
 }
 
 export default Collections;

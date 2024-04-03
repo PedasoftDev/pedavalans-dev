@@ -110,7 +110,6 @@ export class CompetencyReportDataViewController extends UIController {
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<IData[]>([]);
-                    const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
 
                     // radar=true or table=false
                     const [isRadar, setIsRadar] = useState<boolean>(false);
@@ -127,7 +126,6 @@ export class CompetencyReportDataViewController extends UIController {
                         setSelectedEmployeeId("")
                         setSelectedGroupId("")
                         setSelectedCompetencyList([])
-                        setEmployeeCompetencyValue([])
                         if (table.polyvalence_evaluation_frequency == "Yıl") {
                             setDataYear(getYearPeriods(periodYear))
                         }
@@ -153,7 +151,12 @@ export class CompetencyReportDataViewController extends UIController {
 
                     const columns: GridColDef[] = [
                         { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
-                        { field: "competency_target_value", headerName: "Hedef Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150 },
+                        {
+                            field: "competency_target_value", headerName: "Hedef Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150,
+                            valueGetter: (params) => {
+                                return params.value === "no-target" ? "Hedefi Yok" : params.value;
+                            }
+                        },
                         { field: "competency_real_value", headerName: "Gerçekleşen Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150 },
                         {
                             field: "value", headerName: "Dönem Ortalaması", width: 150, minWidth: 150,
@@ -202,7 +205,6 @@ export class CompetencyReportDataViewController extends UIController {
                                 Query.equal("tenant_id", me?.prefs?.organization),
                                 Query.limit(10000)
                             ]).then((res) => {
-                                setEmployeeCompetencyValue(res.documents as any[]);
                                 competencyList.forEach((competency) => {
                                     competencyDepartments.forEach((department) => {
                                         if (competency.competency_id === department.competency_id) {
@@ -295,7 +297,6 @@ export class CompetencyReportDataViewController extends UIController {
                                                         setSelectedEmployeeId("")
                                                         setSelectedGroupId("")
                                                         setSelectedCompetencyList([])
-                                                        setEmployeeCompetencyValue([])
                                                     }}
                                                     size="small"
                                                     required

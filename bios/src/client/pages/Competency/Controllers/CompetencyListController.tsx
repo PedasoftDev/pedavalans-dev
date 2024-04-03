@@ -45,7 +45,7 @@ export class CompetencyListController extends UIController {
         const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
 
         return (
-            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyDepartmentList ? VStack(Spinner()) :
+            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyDepartmentList || isLoadingResult ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [filterKey, setFilterKey] = useState("");

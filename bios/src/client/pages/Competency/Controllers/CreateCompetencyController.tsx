@@ -136,20 +136,20 @@ export class CreateCompetencyController extends UIController {
                     })
                 }
 
-                for (let i = 0; i < levels.length; i++) {
-                    const comp_grade_level_id = nanoid();
-                    createCompetencyGradeValue({
-                        documentId: comp_grade_level_id,
-                        data: {
-                            competency_grade_value_id: comp_grade_level_id,
-                            grade_level_id: levels[i].grade_level_id,
-                            grade_level_name: levels[i].grade_level_name,
-                            grade_level_number: levels[i].grade_level_number,
-                            competency_id: competency_id,
-                            tenant_id: me?.prefs?.organization
-                        }
-                    })
-                }
+                // for (let i = 0; i < levels.length; i++) {
+                //     const comp_grade_level_id = nanoid();
+                //     createCompetencyGradeValue({
+                //         documentId: comp_grade_level_id,
+                //         data: {
+                //             competency_grade_value_id: comp_grade_level_id,
+                //             grade_level_id: levels[i].grade_level_id,
+                //             grade_level_name: levels[i].grade_level_name,
+                //             grade_level_number: levels[i].grade_level_number,
+                //             competency_id: competency_id,
+                //             tenant_id: me?.prefs?.organization
+                //         }
+                //     })
+                // }
 
                 if (lineBased[0]?.is_active) {
                     for (let i = 0; i < selectedLines.length; i++) {

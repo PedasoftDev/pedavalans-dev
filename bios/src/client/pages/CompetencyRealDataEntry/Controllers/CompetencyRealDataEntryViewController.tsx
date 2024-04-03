@@ -34,6 +34,7 @@ import Education from "../../../../server/hooks/education/main";
 import IEducation from "../../../interfaces/IEducation";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -100,7 +101,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
-        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
@@ -112,8 +113,8 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
         return (
             isLoading || this.polyvalenceUnitList == null || isLoadingPeriods
-                || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList
-                //  || isLoadingEducation || isLoadingAccounts 
+                || isLoadingEmployees || isLoadingGroups || isLoadingLevels || isLoadingCompetencyList
+                || isLoadingEducation || isLoadingAccounts
                 ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
@@ -126,7 +127,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     const [openDialog, setOpenDialog] = useState(false);
                     const [description, setDescription] = useState("");
                     const [selectedCompetencyId, setSelectedCompetencyId] = useState("");
-                    
+
 
                     // dialog for education
                     const [form, setForm] = useState({
@@ -389,10 +390,10 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                             size="small"
                                             required
                                         >
-                                            {competencyGradeValueList.filter(x => x.competency_id === params.row.competency_id)
+                                            {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
                                                 .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                                 .map((value) => (
-                                                    <MenuItem value={value.grade_level_number} key={value.competency_grade_value_id}>{value.grade_level_number}</MenuItem>
+                                                    <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
                                                 ))}
                                         </Select>
                                     }
@@ -409,11 +410,11 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     }}>
                                         <TbPencilPlus />
                                     </IconButton>
-                                    {/* <IconButton color="primary" onClick={() => {
+                                    <IconButton color="primary" onClick={() => {
                                         handleOpenEducationDialog(params.row.employee_id)
                                     }}>
                                         <MdOutlineLibraryBooks />
-                                    </IconButton> */}
+                                    </IconButton>
                                 </div>
                             )
                         }

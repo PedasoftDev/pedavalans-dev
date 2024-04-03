@@ -6,7 +6,7 @@ import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvalu
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -27,6 +27,10 @@ import AppInfo from "../../../../AppInfo";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
+import { FaRegCopy } from "react-icons/fa6";
+import Swal from "sweetalert2";
+import AccountRelation from "../../../../server/hooks/accountRelation/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -90,24 +94,98 @@ export class CompetencyTargetDataEntryViewController extends UIController {
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
+        const { periods: periodList, isLoading: isLoadingPeriodList } = CompetencyEvaluationPeriod.GetCompetencyEvaluationPeriods(me?.prefs?.organization);
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
-        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
 
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyGradeValueList || isLoadingCompetencyList ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                     const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                     const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
                     const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
+
+                    // Dialog State
+                    const [dialogOpen, setDialogOpen] = useState(false);
+                    const [dialogForm, setDialogForm] = useState<{ polyvalence_table_id: string, previous_evaluation_period: string, current_evaluation_period: string }>({
+                        polyvalence_table_id: "",
+                        previous_evaluation_period: "",
+                        current_evaluation_period: ""
+                    });
+                    const [dialogDataYear, setDialogDataYear] = useState<{ name: string }[]>([]);
+                    const [startDialogTransferData, setStartDialogTransferData] = useState(false);
+                    const [dialogAlreadyExistData, setDialogAlreadyExistData] = useState(false);
+
+                    const handleOpenDialog = () => {
+                        setDialogOpen(true);
+                    }
+
+                    const handleCloseDialog = () => {
+                        setDialogOpen(false);
+                        setDialogDataYear([]);
+                        setDialogForm({
+                            polyvalence_table_id: "",
+                            previous_evaluation_period: "",
+                            current_evaluation_period: ""
+                        })
+                    }
+
+                    const handleStartDialogTransferData = () => {
+                        setStartDialogTransferData(true);
+                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
+                            [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
+                            Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.current_evaluation_period)]
+                        ).then((currentPeriodData) => {
+                            if (currentPeriodData.documents.length > 0) {
+                                setDialogAlreadyExistData(true);
+                            } else {
+                                alert("Veri aktarımı başlatıldı.")
+                            }
+                        })
+                    }
+
+                    const onChangeTableToDialog = (e: SelectChangeEvent<string>) => {
+                        const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                        const appedValue = []
+                        setDialogForm({
+                            ...dialogForm,
+                            polyvalence_table_id: e.target.value
+                        })
+                        if (table.polyvalence_evaluation_frequency == "Yıl") {
+                            periodList.forEach((period) => {
+                                getYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                            })
+                            setDialogDataYear(appedValue)
+                        }
+                        else if (table.polyvalence_evaluation_frequency == "Yarıyıl") {
+                            periodList.forEach((period) => {
+                                getHalfYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                            })
+                            setDialogDataYear(appedValue)
+                        }
+                        else if (table.polyvalence_evaluation_frequency == "Çeyrekyıl") {
+                            periodList.forEach((period) => {
+                                getQuarterYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                            })
+                            setDialogDataYear(appedValue)
+                        }
+                        else if (table.polyvalence_evaluation_frequency == "Ay") {
+                            periodList.forEach((period) => {
+                                getMonthPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                            })
+                            setDialogDataYear(appedValue)
+                        }
+                    }
 
                     const onChangeTable = (e: SelectChangeEvent<string>) => {
                         const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
@@ -224,15 +302,14 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                         size="small"
                                         required
                                     >
-                                        {competencyGradeValueList.filter(x => x.competency_id === params.row.competency_id)
+                                        {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
                                             .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                             .map((value) => (
-                                                <MenuItem value={value.grade_level_number} key={value.competency_grade_value_id}>{value.grade_level_number}</MenuItem>
+                                                <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
                                             ))}
                                         <MenuItem value={"no-target"} key={"-"}>{"Hedefi Yok"}</MenuItem>
                                     </Select>
                                 </FormControl>
-
                             )
                         },
                     ];
@@ -292,7 +369,15 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                     return (
                         VStack(
                             HStack({ alignment: cLeading })(
-                                Views.Title("Yetkinlik Hedef Değer Girişi").paddingTop("10px")
+                                Views.Title("Yetkinlik Hedef Değer Girişi").paddingTop("10px"),
+                                accountRelations[0].is_admin &&
+                                HStack(
+                                    ReactView(
+                                        <FaRegCopy size={18} />
+                                    )
+                                ).width().height().paddingTop("10px").marginLeft("10px").tooltip("Önceki Dönemden Veri Aktarımı").cursor("pointer").onClick(() => {
+                                    handleOpenDialog();
+                                })
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             ReactView(
                                 <Container>
@@ -387,6 +472,100 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                             </div>
                                         </RightContainer>
                                     }
+                                    <Dialog
+                                        open={dialogOpen}
+                                        onClose={handleCloseDialog}
+                                    >
+                                        <DialogTitle>Önceki Dönemden Veri Aktarımı</DialogTitle>
+                                        <DialogContent>
+                                            {startDialogTransferData ?
+                                                <div>
+                                                    {dialogAlreadyExistData ?
+                                                        <div>
+                                                            <p>Seçtiğiniz dönem için veri zaten mevcut.</p>
+                                                            <p>Üzerine yazmak istiyor musunuz? Bu işlem geri alınamaz.</p>
+                                                            <Button color="error" onClick={handleCloseDialog}>
+                                                                İptal
+                                                            </Button>
+                                                            <Button onClick={() => { alert("Aktarım Başlatıldı") }}>
+                                                                Verilerin Üzerine Yaz ve Aktarımı Başlat
+                                                            </Button>
+                                                        </div>
+                                                        :
+                                                        <div>
+                                                            <p>Veri aktarımı başlatıldı.</p>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                : <div style={{ width: "400px" }}>
+                                                    <FormControl fullWidth size="small" margin="normal">
+                                                        <InputLabel>Polivalans Tablosu</InputLabel>
+                                                        <Select
+                                                            name="polyvalence_table_id"
+                                                            value={dialogForm.polyvalence_table_id}
+                                                            label="Polivalans Tablosu"
+                                                            onChange={onChangeTableToDialog}
+                                                            size="small"
+                                                            required
+                                                        >
+                                                            {this.polyvalenceUnitList.map((unit) => (
+                                                                <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                    <FormControl fullWidth size="small" margin="normal">
+                                                        <InputLabel>Önceki Değerlendirme Dönemi</InputLabel>
+                                                        <Select
+                                                            name="evaluation_period"
+                                                            value={dialogForm.previous_evaluation_period}
+                                                            label="Önceki Değerlendirme Dönemi"
+                                                            onChange={(e) => {
+                                                                setDialogForm({
+                                                                    ...dialogForm,
+                                                                    previous_evaluation_period: e.target.value
+                                                                })
+                                                            }}
+                                                            size="small"
+                                                            required
+                                                        >
+                                                            {dialogDataYear.map((period, i) => (
+                                                                <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                    <FormControl fullWidth size="small" margin="normal">
+                                                        <InputLabel>Mevcut Değerlendirme Dönemi</InputLabel>
+                                                        <Select
+                                                            name="evaluation_period"
+                                                            value={dialogForm.current_evaluation_period}
+                                                            label="Mevcut Değerlendirme Dönemi"
+                                                            onChange={(e) => {
+                                                                setDialogForm({
+                                                                    ...dialogForm,
+                                                                    current_evaluation_period: e.target.value
+                                                                })
+                                                            }}
+                                                            size="small"
+                                                            required
+                                                        >
+                                                            {dialogDataYear.filter((period) => period.name !== dialogForm.previous_evaluation_period)
+                                                                .filter((period) => Number(period.name.slice(0, 4)) >= Number(dialogForm.previous_evaluation_period.slice(0, 4)))
+                                                                .map((period, i) => (
+                                                                    <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
+                                                                ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                </div>}
+                                        </DialogContent>
+                                        {!startDialogTransferData && <DialogActions>
+                                            <Button color={"error"} onClick={handleCloseDialog}>
+                                                İptal
+                                            </Button>
+                                            <Button onClick={handleStartDialogTransferData}>
+                                                Aktarımı Başlat
+                                            </Button>
+                                        </DialogActions>}
+                                    </Dialog>
                                 </Container>
                             )
                         ).padding("0 20px")
