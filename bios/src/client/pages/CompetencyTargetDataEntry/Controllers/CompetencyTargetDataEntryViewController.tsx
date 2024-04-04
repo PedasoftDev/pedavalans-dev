@@ -31,6 +31,8 @@ import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import { FaRegCopy } from "react-icons/fa6";
 import Swal from "sweetalert2";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
+import { Umay } from "@tuval/core";
+import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel'
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -125,6 +127,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                     const [dialogDataYear, setDialogDataYear] = useState<{ name: string }[]>([]);
                     const [startDialogTransferData, setStartDialogTransferData] = useState(false);
                     const [dialogAlreadyExistData, setDialogAlreadyExistData] = useState(false);
+                    const [dialogPercent, setDialogPercent] = useState(0);
 
                     const handleOpenDialog = () => {
                         setDialogOpen(true);
@@ -140,6 +143,48 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                         })
                     }
 
+                    const confirmTransferData = async () => {
+                        const tasks = new Umay();
+                        const data = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
+                            [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
+                            Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.previous_evaluation_period)]).then((res) => res.documents)
+                        data.forEach((value, index) => {
+                            tasks.Task(async () => {
+                                const docId: string = nanoid();
+                                const createObj: IEmployeeCompetencyValue.ICreateEmployeeCompetencyValue = {
+                                    competency_department_id: value.competency_department_id,
+                                    competency_department_name: value.competency_department_name,
+                                    competency_evaluation_period: dialogForm.current_evaluation_period,
+                                    competency_id: value.competency_id,
+                                    competency_name: value.competency_name,
+                                    competency_real_value: "",
+                                    competency_target_value: value.competency_target_value,
+                                    competency_value_desc: "",
+                                    employee_id: value.employee_id,
+                                    employee_name: value.employee_name,
+                                    polyvalence_table_id: value.polyvalence_table_id,
+                                    polyvalence_table_name: value.polyvalence_table_name,
+                                    tenant_id: value.tenant_id,
+                                    employee_competency_value_id: docId,
+                                    realm_id: value.realm_id,
+                                }
+                                try {
+                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, docId, createObj)
+                                    setDialogPercent(((index + 1) / data.length) * 100)
+                                }
+                                catch (err) {
+                                    console.error(err)
+                                }
+                            })
+                            tasks.Wait(1);
+                        })
+                        tasks.Wait(1);
+                        tasks.Task(() => {
+                            window.location.reload();
+                        })
+                        tasks.Run();
+                    }
+
                     const handleStartDialogTransferData = () => {
                         setStartDialogTransferData(true);
                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
@@ -149,7 +194,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                             if (currentPeriodData.documents.length > 0) {
                                 setDialogAlreadyExistData(true);
                             } else {
-                                alert("Veri aktarımı başlatıldı.")
+                                confirmTransferData();
                             }
                         })
                     }
@@ -487,13 +532,14 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                             <Button color="error" onClick={handleCloseDialog}>
                                                                 İptal
                                                             </Button>
-                                                            <Button onClick={() => { alert("Aktarım Başlatıldı") }}>
+                                                            <Button onClick={() => { confirmTransferData(); }}>
                                                                 Verilerin Üzerine Yaz ve Aktarımı Başlat
                                                             </Button>
                                                         </div>
                                                         :
                                                         <div>
-                                                            <p>Veri aktarımı başlatıldı.</p>
+                                                            <p>Veri aktarımı başlatıldı. Lütfen bekleyin ve işlem tamamlanana kadar sayfayı kapatmayın.</p>
+                                                            <LinearProgressWithLabel value={dialogPercent} />
                                                         </div>
                                                     }
                                                 </div>

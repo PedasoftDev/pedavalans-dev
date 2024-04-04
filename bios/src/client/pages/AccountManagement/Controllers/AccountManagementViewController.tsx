@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
-import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts, useCreateTeamMembership } from "@realmocean/sdk";
+import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts } from "@realmocean/sdk";
 import { Button, FormControlLabel, Switch, TextField } from "@mui/material";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
@@ -50,10 +50,8 @@ export class AccountManagementViewController extends UIController {
 
         const { me, isLoading } = useGetMe("console");
         const { updateAccountRelation } = AccountRelation.Update();
-        const { createTeamMembership } = useCreateTeamMembership(AppInfo.Name)
         const {
             createAccount,
-            isSuccess: isCreateAccountSuccess,
             isError: isCreateAccountError,
             error: createAccountError
         } = useCreateAccount('console');
@@ -62,7 +60,7 @@ export class AccountManagementViewController extends UIController {
         const { createAccountRelation } = AccountRelation.Create()
 
         return (
-            isLoading || isLoadingAccounts ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingResult ? VStack(Spinner()) :
                 me == null ? VStack(UINavigate("/login")) :
                     UIViewBuilder(() => {
 
@@ -97,19 +95,7 @@ export class AccountManagementViewController extends UIController {
                         }, [])
 
                         const handleSubmit = async () => {
-                            updateAccountRelation({
-                                databaseId: AppInfo.Database,
-                                collectionId: "account_relation",
-                                documentId: accountRelation.id,
-                                data: accountRelation
-                            }, (data) => {
-                                Toast.fire({
-                                    icon: 'success',
-                                    title: 'Hesap bilgileri güncellendi'
-                                })
 
-                                setAccountRelation(removeDollarProperties(data))
-                            })
                         }
 
                         const handleChangePassword = () => {
@@ -274,11 +260,13 @@ export class AccountManagementViewController extends UIController {
                                                                 label="E-posta"
                                                                 value={accountInfo.email}
                                                                 size="small"
+                                                                onChange={(e) => setAccountInfo({ ...accountInfo, email: e.target.value })}
                                                             />
                                                             <TextField
                                                                 size="small"
                                                                 label="Adı Soyadı"
                                                                 value={accountInfo.name}
+                                                                onChange={(e) => setAccountInfo({ ...accountInfo, name: e.target.value })}
                                                             />
                                                             <TextField
                                                                 size="small"
@@ -296,23 +284,18 @@ export class AccountManagementViewController extends UIController {
                                                                     }
                                                                 }}
                                                             />
-                                                            {/* <TextField
-                                                                size="small"
-                                                                label="Ad"
-                                                                value={accountRelation.first_name}
-                                                                onChange={(e) => setAccountRelation({ ...accountRelation, first_name: e.target.value })}
-                                                            />
-                                                            <TextField
-                                                                size="small"
-                                                                label="Soyad"
-                                                                value={accountRelation.last_name}
-                                                                onChange={(e) => setAccountRelation({ ...accountRelation, last_name: e.target.value })}
-                                                            /> */}
-                                                            {accountRelation.is_admin && <FormControlLabel
-                                                                sx={{ alignContent: "end" }}
-                                                                control={<Switch checked={accountRelation.is_active} />}
-                                                                label="Hesap aktif mi?"
-                                                            />}
+                                                            {
+                                                                accountRelation.is_admin &&
+                                                                <FormControlLabel
+                                                                    sx={{ alignContent: "end" }}
+                                                                    control={
+                                                                        <Switch
+                                                                            checked={accountRelation.is_active}
+                                                                        />
+                                                                    }
+                                                                    label="Hesap aktif mi?"
+                                                                />
+                                                            }
                                                             <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
                                                         </div>
                                                     </div>
