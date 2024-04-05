@@ -95,7 +95,7 @@ export class AccountManagementViewController extends UIController {
                         }, [])
 
                         const handleSubmit = async () => {
-
+                           await Services.Accounts.updateName(accountInfo.name);
                         }
 
                         const handleChangePassword = () => {

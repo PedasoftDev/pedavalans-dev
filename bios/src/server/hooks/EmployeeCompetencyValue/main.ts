@@ -12,6 +12,13 @@ namespace EmployeeCompetencyValue {
         const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name);
         return { updateEmployeeCompetencyValue: updateDocument, errorUpdateEmployeeCompetencyValue: error, isErrorUpdateEmployeeCompetencyValue: isError, isLoadingUpdateEmployeeCompetencyValue: isLoading, isSuccessUpdateEmployeeCompetencyValue: isSuccess };
     }
+    export const List = (): {
+        listEmployeeCompetencyValue: IEmployeeCompetencyValue.IEmployeeCompetencyValue[],
+        isLoadingListEmployeeCompetencyValue: boolean
+    } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value", [Query.limit(100000)]);
+        return { listEmployeeCompetencyValue: documents as any, isLoadingListEmployeeCompetencyValue: isLoading };
+    }
 }
 
 export default EmployeeCompetencyValue;

@@ -473,8 +473,8 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                         .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
                                                         .sort((a, b) => a.first_name.localeCompare(b.first_name))
                                                         .map((employee, i) =>
-                                                            <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.id} onClick={() => selectEmployee(employee.id)}>
-                                                                <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.id && { color: "#3BA2EE" })} />
+                                                            <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>
+                                                                <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.$id && { color: "#3BA2EE" })} />
                                                                 {employee.first_name} {employee.last_name}
                                                             </LeftContainerContentItem>
                                                         )
