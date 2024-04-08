@@ -1,7 +1,6 @@
 import {
     cTop,
     ReactView,
-    RequiredRule,
     Spinner,
     State,
     UIFormController,
@@ -15,12 +14,24 @@ import React, { useState, useEffect } from 'react';
 import Form from '../Views/Form';
 import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
-import ICompetencyGrade from '../../../interfaces/ICompetencyGrade';
 import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import AppInfo from '../../../../AppInfo';
 import { useGetMe } from '@realmocean/sdk';
+import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
+import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
+
+const resetForm: ICompetencyGroup.IGetCompetencyGroup = {
+    competency_group_name: "",
+    competency_grade_id: "",
+    competency_grade_name: "",
+    is_active_group: true,
+    competency_group_id: "",
+    is_deleted_group: false,
+    realm_id: "",
+    tenant_id: "",
+}
 
 export class UpdateCompetencyGroupController extends UIFormController {
 
@@ -33,7 +44,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
         // group
         const { group, isLoading } = CompetencyGroup.GetCompetencyGroup(id);
         const { updateDocument } = CompetencyGroup.UpdateCompetencyGroup();
-        const [isActive, setIsActive] = useState(true);
+
 
         // grade
         const { grades, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrades(me?.prefs?.organization);
@@ -41,17 +52,26 @@ export class UpdateCompetencyGroupController extends UIFormController {
         return (
             isLoading || isLoadingGrade || isLoadingMe ? VStack(Spinner()) :
                 UIViewBuilder(() => {
+                    const [groupForm, setGroupForm] = useState<ICompetencyGroup.IGetCompetencyGroup>(resetForm)
+                    const [isActive, setIsActive] = useState(true);
+
                     const navigateToList = () => {
                         navigate("/app/competency-group/list")
                     }
 
                     const handleSelectGrade = (e: SelectChangeEvent<string>) => {
-                        this.SetValue("competency_grade_id", e.target.value)
-                        this.SetValue("competency_grade_name", grades.find((grade) => grade.competency_grade_id === e.target.value)?.competency_grade_name)
+                        setGroupForm({
+                            ...groupForm,
+                            competency_grade_id: e.target.value,
+                            competency_grade_name: grades.find((grade) => grade.competency_grade_id === e.target.value)?.competency_grade_name
+                        })
                     }
 
                     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                        this.SetValue(e.target.name, e.target.value)
+                        setGroupForm({
+                            ...groupForm,
+                            [e.target.name]: e.target.value
+                        })
                     }
 
                     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,7 +84,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                             databaseId: AppInfo.Database,
                             collectionId: "competency_group",
                             documentId: id,
-                            data: this.GetFormData()
+                            data: groupForm
                         }, () => {
                             Toast.fire({
                                 icon: 'success',
@@ -92,7 +112,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                                     collectionId: "competency_group",
                                     documentId: id,
                                     data: {
-                                        ...this.GetFormData(),
+                                        ...groupForm,
                                         is_deleted_group: true
                                     }
                                 }, () => {
@@ -107,10 +127,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                     }
 
                     useEffect(() => {
-                        for (let key in group) {
-                            if (key.startsWith("$")) continue;
-                            this.SetValue(key, group[key])
-                        }
+                        setGroupForm(removeDollarProperties(group))
                         setIsActive(group.is_active_group)
                     }, [])
 
@@ -135,7 +152,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                                                     variant="outlined"
                                                     fullWidth
                                                     size="small"
-                                                    value={this.GetValue("competency_group_name")}
+                                                    value={groupForm.competency_group_name}
                                                     onChange={handleChange}
                                                     required
                                                 />
@@ -143,7 +160,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                                                     <InputLabel>Yetkinlik Düzeyi</InputLabel>
                                                     <Select
                                                         name="competency_grade_id"
-                                                        value={this.GetValue("competency_grade_id")}
+                                                        value={groupForm.competency_grade_id}
                                                         label="Yetkinlik Düzeyi"
                                                         onChange={handleSelectGrade}
                                                         size="small"
@@ -157,8 +174,10 @@ export class UpdateCompetencyGroupController extends UIFormController {
 
                                                 <FormControlLabel
                                                     sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
-                                                    onChange={(e: any) => this.SetValue("is_active_group", Boolean(e.target.checked))}
-                                                    control={<Switch color="primary" checked={this.GetValue("is_active_group")} />}
+                                                    onChange={(e: any) =>
+                                                        setGroupForm({ ...groupForm, is_active_group: e.target.checked })
+                                                    }
+                                                    control={<Switch color="primary" checked={groupForm.is_active_group} />}
                                                     label="Aktif mi?"
                                                     labelPlacement="start"
                                                 />

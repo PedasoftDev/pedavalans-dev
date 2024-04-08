@@ -19,6 +19,7 @@ import OrganizationStructureTitle from '../../../../server/hooks/organizationStr
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main';
+import Competency from '../../../../server/hooks/competency/main';
 
 
 export class DashboardController extends UIController {
@@ -35,6 +36,7 @@ export class DashboardController extends UIController {
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
         const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.List();
+        const { competencyList,isLoadingCompetencyList} = Competency.GetList(me?.prefs?.organization)
 
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management, me?.prefs?.organization)
@@ -45,7 +47,7 @@ export class DashboardController extends UIController {
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingListEmployeeCompetencyValue || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingCompetencyList || isLoadingResult || isLoadingListEmployeeCompetencyValue || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         UIViewBuilder(() => {
@@ -61,6 +63,12 @@ export class DashboardController extends UIController {
                             ])
                             const [employeePerformance, setEmployeePerformance] = useState<{ label: string, value: number }[]>([
                                 { label: "Bulunamadı", value: 0 }
+                            ])
+                            const [successfullFiveDepartments, setSuccessfullFiveDepartments] = useState<{ departmentName: string, percentage: number }[]>([
+                                { departmentName: "Bulunamadı", percentage: 0 }
+                            ])
+                            const [competencyNeedsToBeImproved, setCompetencyNeedsToBeImproved] = useState<{ competencyName: string, percentage: number }[]>([
+                                { competencyName: "Bulunamadı", percentage: 0 }
                             ])
 
 
@@ -383,7 +391,7 @@ export class DashboardController extends UIController {
                                 const employeePerformanceData: { name: string, performance: number }[] = []
 
                                 employees.forEach((employee) => {
-                                    
+
                                     if (employee.title_id) {
                                         const title = titles.find(title => title.$id === employee.title_id)
                                         if (title) {
@@ -434,6 +442,42 @@ export class DashboardController extends UIController {
                                     }
 
                                 })
+
+                                const successfullFiveDepartmentsData = []
+                                const competencyNeedsToBeImprovedData = []
+                                departments.forEach((department) => {
+                                    const employeeValuesByDepartment = listEmployeeCompetencyValue.filter((competency) => competency.competency_department_id === department.$id)
+                                    let target = 0;
+                                    let current = 0;
+                                    employeeValuesByDepartment.forEach((competency) => {
+                                        if (competency.competency_target_value != "no-target") {
+                                            target += Number(competency.competency_target_value);
+                                            current += Number(competency.competency_real_value);
+                                        }
+                                    })
+                                    if (target > 0 && current > 0) {
+                                        const percentage = (current / target) * 100
+                                        successfullFiveDepartmentsData.push({ departmentName: department.name, percentage: percentage })
+                                    }
+                                })
+
+
+                                competencyList.forEach((competency) => {
+                                    const employeeValuesByCompetency = listEmployeeCompetencyValue.filter((competencyValue) => competencyValue.competency_id === competency.$id)
+                                    let target = 0;
+                                    let current = 0;
+                                    employeeValuesByCompetency.forEach((competencyValue) => {
+                                        if (competencyValue.competency_target_value != "no-target") {
+                                            target += Number(competencyValue.competency_target_value);
+                                            current += Number(competencyValue.competency_real_value);
+                                        }
+                                    })
+                                    if (target > 0 && current > 0) {
+                                        const percentage = (current / target) * 100
+                                        competencyNeedsToBeImprovedData.push({ competencyName: competency.competency_name, percentage: percentage })
+                                    }
+                                })
+
 
                                 if (employeesByTitleData.length != 0) {
                                     setEmployeesByTitle(employeesByTitleData.sort((a, b) => a.employeeCount - b.employeeCount))
@@ -487,6 +531,13 @@ export class DashboardController extends UIController {
                                     }));
                                     setEmployeePerformance(pieData)
                                 }
+                                if (competencyNeedsToBeImprovedData.length != 0) {
+                                    setCompetencyNeedsToBeImproved(competencyNeedsToBeImprovedData.sort((a, b) => a.percentage - b.percentage))
+                                }
+                                if (successfullFiveDepartmentsData.length != 0) {
+                                    setSuccessfullFiveDepartments(successfullFiveDepartmentsData.sort((a, b) => b.percentage - a.percentage).slice(0, 5))
+                                }
+
                             }, [])
 
                             return (
@@ -500,6 +551,8 @@ export class DashboardController extends UIController {
                                                     employeesByDepartment={employeesByDepartment}
                                                     employeesByPosition={employeesByPosition}
                                                     employeePerformanceData={employeePerformance}
+                                                    successfullFiveDepartments={successfullFiveDepartments}
+                                                    competencyNeedsToBeImproved={competencyNeedsToBeImproved}
                                                 />
 
                                                 <Dialog

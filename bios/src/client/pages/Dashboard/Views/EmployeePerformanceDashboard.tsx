@@ -15,12 +15,14 @@ export const EmployeePerformanceDashboard: React.FC<{
     employeesByDepartment: { departmentName: string, employeeCount: number }[];
     employeesByPosition: { positionName: string, employeeCount: number }[];
     employeePerformanceData: { label: string, value: number }[];
+    successfullFiveDepartments: { departmentName: string, percentage: number }[];
+    competencyNeedsToBeImproved: { competencyName: string, percentage: number }[];
 }> = (props) => {
 
     return (
         <Box sx={{ flexGrow: 1, padding: "10px 16px" }}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={6} lg={6}>
+                <Grid item xs={12} md={6} lg={4}>
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
@@ -46,7 +48,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                         />
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={6} lg={6}>
+                <Grid item xs={12} md={6} lg={4}>
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
@@ -62,7 +64,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                         />
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={6} lg={6}>
+                <Grid item xs={12} md={6} lg={4}>
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
@@ -70,23 +72,25 @@ export const EmployeePerformanceDashboard: React.FC<{
                             </Typography>
                         </CardHeader>
                         <BarChart
-                            series={[
-                                {
-                                    data: props.employeesByPosition.map((x) => x.employeeCount),
-                                },
-                            ]}
-                            xAxis={[
+                            title="Çalışanların Pozisyon Bazlı Dağılım Grafiği"
+                            series={[{
+                                data: props.employeesByPosition.map((x) => x.employeeCount),
+                                layout: "horizontal",
+                                color: "#1D5291"
+                            }]}
+                            height={300}
+                            yAxis={[
                                 {
                                     data: props.employeesByPosition.map((x) => x.positionName),
                                     scaleType: "band",
-                                    labelStyle: { fontSize: 10 },
+                                    tickLabelStyle: { margin: "0", padding: "0" },
                                 },
                             ]}
-                            height={400}
+                            margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
                         />
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={6} lg={6}>
+                <Grid item xs={12} md={6} lg={4}>
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
@@ -106,7 +110,65 @@ export const EmployeePerformanceDashboard: React.FC<{
                                     },
                                 },
                             ]}
-                            height={400}
+                            height={300}
+                        />
+                    </Card>
+                </Grid>
+                <Grid item xs={12} md={6} lg={4}>
+                    <Card>
+                        <CardHeader>
+                            <Typography variant="h6">
+                                En Başarılı 5 Departman
+                            </Typography>
+                        </CardHeader>
+                        <BarChart
+                            title="En Başarılı 5 Departman"
+                            series={[{
+                                data: props.successfullFiveDepartments.map((x) => x.percentage),
+                                valueFormatter(value) {
+                                    return `${value.toFixed(2)}%`;
+                                },
+                                layout: "horizontal",
+                                color: "#1D5291"
+                            }]}
+                            height={300}
+                            yAxis={[
+                                {
+                                    data: props.successfullFiveDepartments.map((x) => x.departmentName),
+                                    scaleType: "band",
+                                    tickLabelStyle: { margin: "0", padding: "0" },
+                                },
+                            ]}
+                            margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
+                        />
+                    </Card>
+                </Grid>
+                <Grid item xs={12} md={6} lg={4}>
+                    <Card>
+                        <CardHeader>
+                            <Typography variant="h6">
+                                Geliştirilmesi Gereken Yetkinlikler
+                            </Typography>
+                        </CardHeader>
+                        <BarChart
+                            title="Geliştirilmesi Gereken Yetkinlikler"
+                            series={[{
+                                data: props.competencyNeedsToBeImproved.map((x) => x.percentage),
+                                valueFormatter(value) {
+                                    return `${value.toFixed(2)}%`;
+                                },
+                                layout: "horizontal",
+                                color: "#1D5291"
+                            }]}
+                            height={300}
+                            yAxis={[
+                                {
+                                    data: props.competencyNeedsToBeImproved.map((x) => x.competencyName),
+                                    scaleType: "band",
+                                    tickLabelStyle: { margin: "0", padding: "0" },
+                                },
+                            ]}
+                            margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
                         />
                     </Card>
                 </Grid>

@@ -313,8 +313,8 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                     competency_real_value: "",
                                                     competency_value_desc: "",
                                                     employee_id: selectedEmployeeId,
-                                                    employee_name: employees.find((employee) => employee.id === selectedEmployeeId)?.first_name
-                                                        + " " + employees.find((employee) => employee.id === selectedEmployeeId)?.last_name,
+                                                    employee_name: employees.find((employee) => employee.$id === selectedEmployeeId)?.first_name
+                                                        + " " + employees.find((employee) => employee.$id === selectedEmployeeId)?.last_name,
                                                     polyvalence_table_id: selectedTable.polyvalence_table_id,
                                                     polyvalence_table_name: selectedTable.polyvalence_table_name,
                                                     tenant_id: me?.prefs?.organization,
@@ -360,7 +360,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                     ];
 
                     const getCompetencies = async (employee_id: string) => {
-                        const selectedEmployeeInfo = employees.find((employee) => employee.id === employee_id);
+                        const selectedEmployeeInfo = employees.find((employee) => employee.$id === employee_id);
                         const appendToSelectedCompetencyList = [];
                         await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
                             [

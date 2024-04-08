@@ -2,7 +2,7 @@ import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBui
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
 import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts } from "@realmocean/sdk";
-import { Button, FormControlLabel, Switch, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Switch, TextField } from "@mui/material";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import AppInfo from "../../../../AppInfo";
@@ -84,6 +84,10 @@ export class AccountManagementViewController extends UIController {
 
                         const [selectedTab, setSelectedTab] = useState(0)
 
+                        // dialog
+                        const [dialogOpen, setDialogOpen] = useState(false)
+                        const [dialogPassword, setDialogPassword] = useState("")
+
                         useEffect(() => {
                             if (me) {
                                 setAccountInfo(me)
@@ -95,7 +99,14 @@ export class AccountManagementViewController extends UIController {
                         }, [])
 
                         const handleSubmit = async () => {
-                           await Services.Accounts.updateName(accountInfo.name);
+                            await Services.Accounts.updateName(accountInfo.name);
+                            await Services.Accounts.updateEmail(accountInfo.email, dialogPassword);
+                            setDialogOpen(false)
+                            setDialogPassword("")
+                        }
+
+                        const handleDialogOpen = () => {
+                            setDialogOpen(true)
                         }
 
                         const handleChangePassword = () => {
@@ -296,9 +307,29 @@ export class AccountManagementViewController extends UIController {
                                                                     label="Hesap aktif mi?"
                                                                 />
                                                             }
-                                                            <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
+                                                            <Button variant="contained" onClick={handleDialogOpen}>Kaydet</Button>
                                                         </div>
                                                     </div>
+                                                    <Dialog open={dialogOpen}>
+                                                        <DialogTitle>İşlemi Onaylayın</DialogTitle>
+                                                        <DialogContent>
+                                                            <div style={{ padding: "10px" }}>
+                                                                <TextField
+                                                                    size="small"
+                                                                    label="Şifrenizi girin"
+                                                                    type="password"
+                                                                    value={dialogPassword}
+                                                                    onChange={(e) => setDialogPassword(e.target.value)}
+                                                                />
+                                                            </div>
+                                                        </DialogContent>
+                                                        <DialogActions>
+                                                            <Button onClick={() => { setDialogOpen(false), setDialogPassword("") }}>İptal</Button>
+                                                            <Button onClick={() => {
+                                                                handleSubmit()
+                                                            }}>Onayla</Button>
+                                                        </DialogActions>
+                                                    </Dialog>
                                                     <div style={{
                                                         border: "1px solid #e0e0e0",
                                                         borderRadius: "5px",

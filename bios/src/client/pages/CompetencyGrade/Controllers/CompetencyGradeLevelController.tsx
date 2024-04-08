@@ -140,7 +140,7 @@ export class CompetencyGradeLevelController extends UIFormController {
                 headerName: "İşlemler",
                 width: 200,
                 renderCell: (params) => (
-                    <ButtonGroup>
+                    <div style={{ display: "flex", gap: "10px" }}>
                         <Button onClick={() => {
                             setSelectedRow(params.row)
                             setOpenDialog(true)
@@ -148,7 +148,7 @@ export class CompetencyGradeLevelController extends UIFormController {
                         <Button onClick={() => {
                             onDelete(params.value)
                         }} variant="outlined" size="small" fullWidth>Sil</Button>
-                    </ButtonGroup>
+                    </div>
                 )
             }
         ]
