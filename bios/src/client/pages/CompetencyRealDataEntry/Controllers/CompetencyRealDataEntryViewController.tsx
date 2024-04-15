@@ -158,7 +158,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     }
 
                     const handleOpenEducationDialog = (employee_id: string) => {
-                        const selectedEmployee = employees.find((employee) => employee.id === employee_id);
+                        const selectedEmployee = employees.find((employee) => employee.$id === employee_id);
                         if (selectedEmployee) {
                             setSelectedEmployees([selectedEmployee]);
                             setOpenEducationDialog(true);

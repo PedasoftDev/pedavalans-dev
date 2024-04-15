@@ -55,6 +55,8 @@ import { UpdateMachineController } from './pages/Machines/Controllers/UpdateMach
 import { MachineListController } from './pages/Machines/Controllers/MachineListController';
 import { AssignedEducationListController } from './pages/Education/Controllers/AssignedEducationListController';
 import { AssignEducationController } from './pages/Education/Controllers/AssignEducationController';
+import { PendindTasksController } from './pages/PendingTasks/Controllers/PendingTasksController';
+import { PendingTaskListController } from './pages/PendingTasks/Controllers/PendingTaskListController';
 
 export const Routes = () => {
     return (
@@ -156,6 +158,10 @@ export const Routes = () => {
                 ),
 
                 UIRoute('organization', OrganizationViewController),
+
+                UIRoute('pending-task', PendindTasksController).children(
+                    UIRoute('list', PendingTaskListController)
+                ),
 
                 // not found
                 UIRoute('*', NotFoundController),

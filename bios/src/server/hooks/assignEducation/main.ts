@@ -29,6 +29,19 @@ namespace AssignEducation {
             updateAssignedEducation: updateDocument
         }
     }
+
+    export const GetOpenListByEducator = (educator_id: string): {
+        assignedEducationList: IAssignedEducation.IBase[],
+        isLoadingAssignedEducationList: boolean,
+        totalAssignedEducation: number
+    } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation, [Query.equal("educator_id", educator_id), Query.equal("status", "open"), Query.equal("is_deleted", false), Query.limit(10000)])
+        return {
+            assignedEducationList: documents as any,
+            isLoadingAssignedEducationList: isLoading,
+            totalAssignedEducation: total
+        }
+    }
 }
 
 export default AssignEducation

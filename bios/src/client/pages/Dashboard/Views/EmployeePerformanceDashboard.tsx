@@ -1,9 +1,9 @@
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Grid, Typography } from "@mui/material";
 import { Card, CardHeader } from "../Views/Card";
-
+import { Chart, CommonSeriesSettings, Series } from 'devextreme-react/chart';
 export interface EmployeePerformanceData {
     id: number;
     name: string;
@@ -15,14 +15,14 @@ export const EmployeePerformanceDashboard: React.FC<{
     employeesByDepartment: { departmentName: string, employeeCount: number }[];
     employeesByPosition: { positionName: string, employeeCount: number }[];
     employeePerformanceData: { label: string, value: number }[];
-    successfullFiveDepartments: { departmentName: string, percentage: number }[];
-    competencyNeedsToBeImproved: { competencyName: string, percentage: number }[];
+    successfulFiveDepartments: { departmentName: string, percentage: number }[];
+    unsuccessfulFiveDepartments: { departmentName: string, percentage: number }[];
 }> = (props) => {
 
     return (
         <Box sx={{ flexGrow: 1, padding: "10px 16px" }}>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={6} lg={4}>
+                <Grid item xs={12} md={6} lg={6}>
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
@@ -48,7 +48,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                         />
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={6} lg={4}>
+                <Grid item xs={12} md={6} lg={6}>
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
@@ -64,32 +64,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                         />
                     </Card>
                 </Grid>
-                <Grid item xs={12} md={6} lg={4}>
-                    <Card>
-                        <CardHeader>
-                            <Typography variant="h6">
-                                Çalışanların Pozisyon Bazlı Dağılım Grafiği
-                            </Typography>
-                        </CardHeader>
-                        <BarChart
-                            title="Çalışanların Pozisyon Bazlı Dağılım Grafiği"
-                            series={[{
-                                data: props.employeesByPosition.map((x) => x.employeeCount),
-                                layout: "horizontal",
-                                color: "#1D5291"
-                            }]}
-                            height={300}
-                            yAxis={[
-                                {
-                                    data: props.employeesByPosition.map((x) => x.positionName),
-                                    scaleType: "band",
-                                    tickLabelStyle: { margin: "0", padding: "0" },
-                                },
-                            ]}
-                            margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
-                        />
-                    </Card>
-                </Grid>
+
                 <Grid item xs={12} md={6} lg={4}>
                     <Card>
                         <CardHeader>
@@ -124,17 +99,17 @@ export const EmployeePerformanceDashboard: React.FC<{
                         <BarChart
                             title="En Başarılı 5 Departman"
                             series={[{
-                                data: props.successfullFiveDepartments.map((x) => x.percentage),
-                                valueFormatter(value) {
-                                    return `${value.toFixed(2)}%`;
-                                },
+                                data: props.successfulFiveDepartments.map((x) => x.percentage),
                                 layout: "horizontal",
-                                color: "#1D5291"
+                                color: "#1D5291",
+                                valueFormatter(value) {
+                                    return `${value}%`;
+                                },
                             }]}
                             height={300}
                             yAxis={[
                                 {
-                                    data: props.successfullFiveDepartments.map((x) => x.departmentName),
+                                    data: props.successfulFiveDepartments.map((x) => x.departmentName),
                                     scaleType: "band",
                                     tickLabelStyle: { margin: "0", padding: "0" },
                                 },
@@ -147,23 +122,23 @@ export const EmployeePerformanceDashboard: React.FC<{
                     <Card>
                         <CardHeader>
                             <Typography variant="h6">
-                                Geliştirilmesi Gereken Yetkinlikler
+                                En Başarısız 5 Departman
                             </Typography>
                         </CardHeader>
                         <BarChart
-                            title="Geliştirilmesi Gereken Yetkinlikler"
+                            title="En Başarısız 5 Departman"
                             series={[{
-                                data: props.competencyNeedsToBeImproved.map((x) => x.percentage),
-                                valueFormatter(value) {
-                                    return `${value.toFixed(2)}%`;
-                                },
+                                data: props.unsuccessfulFiveDepartments.map((x) => x.percentage),
                                 layout: "horizontal",
-                                color: "#1D5291"
+                                color: "#1D5291",
+                                valueFormatter(value) {
+                                    return `${value}%`;
+                                },
                             }]}
                             height={300}
                             yAxis={[
                                 {
-                                    data: props.competencyNeedsToBeImproved.map((x) => x.competencyName),
+                                    data: props.unsuccessfulFiveDepartments.map((x) => x.departmentName),
                                     scaleType: "band",
                                     tickLabelStyle: { margin: "0", padding: "0" },
                                 },
@@ -171,6 +146,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                             margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
                         />
                     </Card>
+
                 </Grid>
             </Grid>
         </Box>
