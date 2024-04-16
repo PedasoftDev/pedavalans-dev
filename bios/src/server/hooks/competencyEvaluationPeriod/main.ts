@@ -31,6 +31,15 @@ namespace CompetencyEvaluationPeriod {
         }
     }
 
+    export const GetDefaultCompetencyEvaluationPeriodWithoutTenant = (): { periods: ICompetencyEvaluationPeriod.ICompetencyEvaluationPeriod[], isLoading: boolean, total: number } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_evaluation_period", [Query.equal("is_default_year", "true")])
+        return {
+            periods: documents as any,
+            isLoading,
+            total
+        }
+    }
+
     export const UpdateCompetencyEvaluationPeriod = () => {
         const { updateDocument, isLoading, isSuccess, isError, error } = useUpdateDocument(AppInfo.Name)
         return { updateDocument, isLoading, isSuccess, isError, error }
