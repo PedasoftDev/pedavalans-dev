@@ -357,7 +357,7 @@ export class CompetencyReportDataViewController extends UIController {
                                                     {isRadar ? "Tablo" : "Grafik"}
                                                 </Button>
                                                 <IconButton onClick={() => {
-                                                    const employee = employees.find((employee) => employee.id === selectedEmployeeId);
+                                                    const employee = employees.find((employee) => employee.$id === selectedEmployeeId);
                                                     const employeeName = `${employee?.first_name} ${employee?.last_name}`;
                                                     getReportToExcelByEmployee(employeeName, selectedCompetencyList)
                                                 }}>

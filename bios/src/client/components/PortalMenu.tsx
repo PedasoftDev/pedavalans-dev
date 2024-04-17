@@ -65,7 +65,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             icon: ReactView(
                 <RxDashboard size={25} />
             ),
-            isVisible: true
+            isVisible: tableAuth ? isAdmin : true
         },
         {
             title: "Bekleyen Görevler",

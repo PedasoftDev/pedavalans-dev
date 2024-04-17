@@ -19,8 +19,6 @@ import OrganizationStructureTitle from '../../../../server/hooks/organizationStr
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main';
-import Competency from '../../../../server/hooks/competency/main';
-
 
 export class DashboardController extends UIController {
 
@@ -346,17 +344,18 @@ export class DashboardController extends UIController {
                                             localStorage.setItem("isAdmin", "false")
                                             localStorage.setItem("isResponsible", "false")
                                             localStorage.setItem("isViewer", "true")
+                                            navigate("/app/pending-task/list")
                                         }
                                         else if (accountRelations[0]?.authorization_profile === "responsible") {
                                             localStorage.setItem("isResponsible", "true")
                                             localStorage.setItem("isAdmin", "false")
                                             localStorage.setItem("isViewer", "false")
+                                            navigate("/app/pending-task/list")
                                         }
                                         else {
                                             localStorage.setItem("isAdmin", "false")
                                             localStorage.setItem("isViewer", "false")
                                             localStorage.setItem("isResponsible", "false")
-
                                             Toast.fire({
                                                 icon: "error",
                                                 title: "Yetkisiz Giriş"

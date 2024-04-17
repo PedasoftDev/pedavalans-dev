@@ -21,6 +21,7 @@ import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetency
 
 export class PendingTaskListController extends UIController {
 
+    @State()
     private polyvalenceTables;
 
     @State()
@@ -79,18 +80,16 @@ export class PendingTaskListController extends UIController {
 
 
         return (
-            this.isLoading || isLoading || isLoadingAssignedEducationList || isLoadingPeriods || isLoadingListEmployeeCompetencyValue ? VStack(Spinner()) :
+            this.isLoading || !this.polyvalenceTables || isLoading || isLoadingAssignedEducationList || isLoadingPeriods || isLoadingListEmployeeCompetencyValue ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [isOpen, setIsOpen] = useState(-1);
 
                     useEffect(() => {
-                        console.log(this.polyvalenceTables)
-                        console.log(periods)
-                        console.log(listEmployeeCompetencyValue)
                         const waitingTargets = []
                         listEmployeeCompetencyValue.forEach((item) => {
                             if (this.polyvalenceTables.find((x) => x.polyvalence_table_id === item.polyvalence_table_id)
                                 //   && item.competency_evaluation_period.includes(periods[0].evaluation_period_year)
+                                && item.competency_target_value != null && item.competency_target_value != "no-target"
                             ) {
                                 waitingTargets.push(item)
                             }
