@@ -1,7 +1,7 @@
 import { cTop, cTopLeading, HStack, nanoid, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
 import React, { Fragment, useEffect, useState } from 'react';
 import { PortalMenu } from '../../../components/PortalMenu';
-import { Query, Services, useGetMe, useListCollections } from '@realmocean/sdk';
+import { Query, Services, useGetMe, useListAttributes, useListCollections, useListDocumentLogs } from '@realmocean/sdk';
 import Main from '../../../../server/hooks/main/Main';
 import Parameters from '../../../../server/hooks/parameters/main';
 import { Resources } from '../../../assets/Resources';
@@ -26,7 +26,7 @@ export class DashboardController extends UIController {
 
         const { me, isLoading } = useGetMe("console");
         const { required, isLoading: isLoadingDb } = Main.SetupRequired();
-        const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)])
+        const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)]);
 
         // dashboard query
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
@@ -301,8 +301,56 @@ export class DashboardController extends UIController {
                                         updateVersionTask.Wait(1)
                                     })
 
+
                                 })
-                                updateVersionTask.Wait(2)
+                                updateVersionTask.Wait(2);
+
+
+                                const updateAttributes = []
+                                Database.collections.forEach((collection) => {
+                                    collection.attributes.forEach((attr) => {
+                                        if (attr.version == updateVersion) {
+                                            updateAttributes.push({
+                                                ...attr,
+                                                collection_id: collection.id
+                                            })
+                                        }
+                                    })
+                                })
+                                updateAttributes.forEach((attr) => {
+                                    updateVersionTask.Task(async () => {
+                                        try {
+                                            if (attr.type === "string") {
+                                                await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, attr.collection_id, attr.key, 256, false)
+                                            } else if (attr.type === "number") {
+                                                await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, attr.collection_id, attr.key, false)
+                                            } else if (attr.type === "boolean") {
+                                                await Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, attr.collection_id, attr.key, false, attr.default)
+                                            }
+                                        } catch (error) {
+                                            console.log(error)
+                                        }
+                                    })
+                                    updateVersionTask.Wait(1)
+                                    updateVersionTask.Task(async () => {
+                                        try {
+                                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CollectionAttributeVersion, nanoid(), {
+                                                id: attr.collection_id + "_a_" + attr.key,
+                                                collection_id: attr.collection_id,
+                                                attribute_id: attr.key,
+                                                version: updateVersion,
+                                                is_active: true,
+                                                is_deleted: false
+                                            })
+                                        } catch (error) {
+                                            console.log(error)
+                                        }
+                                    })
+                                    updateVersionTask.Wait(1)
+                                })
+
+
+                                updateVersionTask.Wait(2);
                                 updateVersionTask.Task(async () => {
                                     await Services.Databases.updateDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version", {
                                         version: updateVersion
@@ -515,7 +563,6 @@ export class DashboardController extends UIController {
                                     setSuccessfullFiveDepartments(successfullFiveDepartmentsData.sort((a, b) => b.percentage - a.percentage).slice(0, 5))
                                     setUnsuccessfulFiveDepartments(successfullFiveDepartmentsData.sort((a, b) => a.percentage - b.percentage).slice(0, 5))
                                 }
-
                             }, [])
 
                             return (

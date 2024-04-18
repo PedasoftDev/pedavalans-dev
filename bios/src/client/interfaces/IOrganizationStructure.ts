@@ -13,6 +13,7 @@ export namespace IOrganizationStructure {
             line_id: string;
             manager_id: string;
             department_id: string;
+            job_start_date: string;
             tenant_id: string;
             realm_id: string;
         }
@@ -26,6 +27,7 @@ export namespace IOrganizationStructure {
             manager_id: string;
             line_id: string;
             department_id: string;
+            job_start_date: string;
             is_active: boolean;
             is_deleted: boolean;
             tenant_id: string;

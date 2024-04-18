@@ -94,7 +94,7 @@ export class PendingTaskListController extends UIController {
                                 waitingTargets.push(item)
                             }
                         })
-                        console.log(waitingTargets, "targets")
+
                         pendingTasks[0].value = waitingTargets.length,
                             pendingTasks[0].view =
                             <List>

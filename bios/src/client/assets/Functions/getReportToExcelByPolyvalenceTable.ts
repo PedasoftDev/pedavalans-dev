@@ -39,6 +39,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
                 manager_id: "",
                 position_id: "",
                 realm_id: "",
+                job_start_date: "",
                 is_active: true,
                 is_deleted: false,
                 tenant_id: "",

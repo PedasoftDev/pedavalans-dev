@@ -19,6 +19,7 @@ namespace Collections {
     export const OrganizationStructurePosition: string = "organization_position";
     export const OrganizationStructureLine: string = "organization_line";
     export const OrganizationStructureEmployee: string = "organization_employee";
+    export const OrganizationStructureEmployeeLog: string = "organization_employee_log";
     export const AssignedEducation = "assigned_education";
     export const AssignedEducationResult = "assigned_education_result";
     export const CompetencyGradeValue = "competency_grade_value";

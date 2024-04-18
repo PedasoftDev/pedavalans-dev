@@ -40,6 +40,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
                 line_id: "",
                 manager_id: "",
                 position_id: "",
+                job_start_date: "",
                 realm_id: "",
                 is_active: true,
                 is_deleted: false,

@@ -7,6 +7,11 @@ import { Toast } from '../../../../components/Toast';
 import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
 import AppInfo from '../../../../../AppInfo';
 import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
+import { Services } from '@realmocean/sdk';
+import Collections from '../../../../../server/core/Collections';
+import { nanoid } from '@tuval/forms';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 
 
 const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
@@ -16,6 +21,7 @@ const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
     title_id: "",
     position_id: "",
     department_id: "",
+    job_start_date: "",
     line_id: "",
     manager_id: "",
     is_active: true,
@@ -84,11 +90,31 @@ const EditEmployeeView = (
             documentId: formEmployee.$id,
             data: removeDollarProperties(formEmployee),
         }, () => {
-            Toast.fire({
-                icon: "success",
-                title: "Personel başarıyla güncellendi"
+            Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
+                employee_id: formEmployee.$id,
+                employee_name: formEmployee.first_name + " " + formEmployee.last_name,
+                log_date: new Date().toISOString(),
+                log_type: props.selectedEmployee.is_active ? formEmployee.is_active ? "update" : "deactivate" : formEmployee.is_active ? "activate" : "update",
+                department_id: formEmployee.department_id,
+                department_name: props.departments.find((department) => department.id === formEmployee.department_id)?.name,
+                title_id: formEmployee.title_id,
+                title_name: props.titles.find((title) => title.id === formEmployee.title_id)?.name,
+                position_id: formEmployee.position_id,
+                position_name: props.positions.find((position) => position.id === formEmployee.position_id)?.name,
+                line_id: formEmployee.line_id,
+                line_name: props.lines.find((line) => line.id === formEmployee.line_id)?.name,
+                manager_id: formEmployee.manager_id,
+                manager_name: formEmployee.manager_id ?
+                    props.employees.find((employee) => employee.id === formEmployee.manager_id)?.first_name + " "
+                    + props.employees.find((employee) => employee.id === formEmployee.manager_id)?.last_name : "",
+                tenant_id: formEmployee.tenant_id
+            }).then(() => {
+                Toast.fire({
+                    icon: "success",
+                    title: "Personel başarıyla güncellendi"
+                })
+                onReset()
             })
-            onReset()
         })
         if (!updateIsLoading && updateIsError) {
             Toast.fire({
@@ -130,11 +156,31 @@ const EditEmployeeView = (
                         is_deleted: true
                     },
                 }, () => {
-                    Toast.fire({
-                        icon: "success",
-                        title: "Personel başarıyla silindi"
+                    Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
+                        employee_id: formEmployee.$id,
+                        employee_name: formEmployee.first_name + " " + formEmployee.last_name,
+                        log_date: new Date().toISOString(),
+                        log_type: "delete",
+                        department_id: formEmployee.department_id,
+                        department_name: props.departments.find((department) => department.id === formEmployee.department_id)?.name,
+                        title_id: formEmployee.title_id,
+                        title_name: props.titles.find((title) => title.id === formEmployee.title_id)?.name,
+                        position_id: formEmployee.position_id,
+                        position_name: props.positions.find((position) => position.id === formEmployee.position_id)?.name,
+                        line_id: formEmployee.line_id,
+                        line_name: props.lines.find((line) => line.id === formEmployee.line_id)?.name,
+                        manager_id: formEmployee.manager_id,
+                        manager_name: formEmployee.manager_id ?
+                            props.employees.find((employee) => employee.id === formEmployee.manager_id)?.first_name + " "
+                            + props.employees.find((employee) => employee.id === formEmployee.manager_id)?.last_name : "",
+                        tenant_id: formEmployee.tenant_id
+                    }).then(() => {
+                        Toast.fire({
+                            icon: "success",
+                            title: "Personel başarıyla silindi"
+                        })
+                        onReset()
                     })
-                    onReset()
                 })
                 if (!updateIsLoading && updateIsError) {
                     Toast.fire({
@@ -176,7 +222,18 @@ const EditEmployeeView = (
                         value={formEmployee.last_name}
                         onChange={onChange}
                     />
-
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker label="Eğitim Başlangıç Tarihi"
+                            format="DD/MM/YYYY"
+                            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                            onChange={(e: any) => {
+                                if (e.$D < 10) {
+                                    setFormEmployee({ ...formEmployee, job_start_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
+                                } else {
+                                    setFormEmployee({ ...formEmployee, job_start_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
+                                }
+                            }} />
+                    </LocalizationProvider>
                     {selectFormStates.map((selectFormState) => {
                         return (
                             <FormControl fullWidth size="small">

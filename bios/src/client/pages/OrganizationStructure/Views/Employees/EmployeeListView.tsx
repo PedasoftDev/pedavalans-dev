@@ -361,6 +361,7 @@ const EmployeeListView = (
                                 department_id: department?.id,
                                 title_id: title?.id,
                                 position_id: position?.id,
+                                job_start_date: "",
                                 line_id: line?.id,
                                 manager_id: null,
                                 realm_id: props.me?.prefs?.organization,
@@ -368,7 +369,23 @@ const EmployeeListView = (
                             }
                             if (!props.employees.find(x => x.id === employee.sicil_no)) {
                                 if (data.first_name && data.last_name) {
-                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
+                                    const employeeNanoId = nanoid();
+                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, employeeNanoId, data);
+                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
+                                        employee_id: employeeNanoId,
+                                        employee_name: data.first_name + " " + data.last_name,
+                                        log_date: new Date().toISOString(),
+                                        log_type: "create",
+                                        department_id: data.department_id,
+                                        department_name: department?.name,
+                                        title_id: data.title_id,
+                                        title_name: title?.name,
+                                        position_id: data.position_id,
+                                        position_name: position?.name,
+                                        line_id: data.line_id,
+                                        line_name: line?.name,
+                                        tenant_id: props.me?.prefs?.organization
+                                    });
                                     setTransferPercent(index / excelData.length * 100);
                                 }
                             }
@@ -394,6 +411,7 @@ const EmployeeListView = (
                             title_id: createdTitles.find(x => x.record_id === employee.unvan_kodu)?.id || null,
                             position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
                             line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
+                            job_start_date: "",
                             manager_id: null,
                             realm_id: props.me?.prefs?.organization,
                             tenant_id: props.me?.prefs?.organization

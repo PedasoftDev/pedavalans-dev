@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 3,
+    "version": 4,
     "collections": [
         {
             "id": "competency",
@@ -1392,6 +1392,11 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "job_start_date",
+                    "type": "string",
+                    "version": 4
+                },
+                {
                     "key": "is_active",
                     "type": "boolean",
                     "version": 1,
@@ -1829,6 +1834,109 @@ const Database: IDatabase = {
                     "type": "boolean",
                     "version": 1,
                     "default": false
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "organization_employee_log",
+            "name": "Organization Employee Log",
+            "description": {
+                "en": "Organization Employee Log is a collection of organization employee logs.",
+                "tr": "Organizasyon çalışan loglarının koleksiyonudur."
+            },
+            "version": 4,
+            "attributes": [
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "employee_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "log_date",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "log_type",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "job_start_date",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "department_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "department_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "position_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "position_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "line_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "line_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "title_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "title_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "manager_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "manager_name",
+                    "type": "string",
+                    "version": 1
                 },
                 {
                     "key": "tenant_id",
