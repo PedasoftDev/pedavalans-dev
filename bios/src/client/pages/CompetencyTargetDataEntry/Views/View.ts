@@ -5,6 +5,9 @@ export const Container = styled.div`
     width: calc(100vw - 330px);
     height: calc(100vh - 70px);
     padding: 5px 0;
+    @media (max-width: 1200px) {
+        width: 100%;
+    }
 `;
 
 export const LeftContainer = styled.div`

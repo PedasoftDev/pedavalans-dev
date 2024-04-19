@@ -1,7 +1,7 @@
 import { cTop, cTopLeading, HStack, nanoid, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
 import React, { Fragment, useEffect, useState } from 'react';
 import { PortalMenu } from '../../../components/PortalMenu';
-import { Query, Services, useGetMe, useListAttributes, useListCollections, useListDocumentLogs } from '@realmocean/sdk';
+import { Query, Services, useGetMe, useListCollections } from '@realmocean/sdk';
 import Main from '../../../../server/hooks/main/Main';
 import Parameters from '../../../../server/hooks/parameters/main';
 import { Resources } from '../../../assets/Resources';
