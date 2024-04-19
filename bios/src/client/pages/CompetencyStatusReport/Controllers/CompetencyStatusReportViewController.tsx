@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { HStack, Spinner, ReactView, UIController, UIView, UIViewBuilder, VStack, cLeading, cTopLeading, cTop } from "@tuval/forms";
+import { HStack, Spinner, ReactView, UIController, UIView, UIViewBuilder, VStack, cLeading, cTopLeading, cTop, useNavigate } from "@tuval/forms";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { Views as ViewsMain } from "../../../components/Views";
@@ -29,6 +29,7 @@ export class CompetencyStatusReportViewController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
         const { periods, isLoading: isLoadingPeriod } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
+        const navigate = useNavigate();
 
         return (
 
@@ -177,7 +178,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                             </Views.ListEmployeePercentage>
                                                             <Views.ListEmployeeLink>
                                                                 <Views.ListEmployeeLinkIcon>
-                                                                    <RiExternalLinkFill size={25} cursor={"pointer"} />
+                                                                    <RiExternalLinkFill size={25} cursor={"pointer"} onClick={(e)=> navigate('/app/employee-dashboard/view/' + item.employee_id)}/>
                                                                 </Views.ListEmployeeLinkIcon>
                                                             </Views.ListEmployeeLink>
                                                         </Views.ListItem>

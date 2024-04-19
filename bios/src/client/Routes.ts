@@ -57,6 +57,8 @@ import { AssignedEducationListController } from './pages/Education/Controllers/A
 import { AssignEducationController } from './pages/Education/Controllers/AssignEducationController';
 import { PendindTasksController } from './pages/PendingTasks/Controllers/PendingTasksController';
 import { PendingTaskListController } from './pages/PendingTasks/Controllers/PendingTaskListController';
+import { EmployeeDashboardController } from './pages/EmployeeDashboard/Controllers/EmployeeDashboardController';
+import { EmployeeDashboard } from './pages/EmployeeDashboard/Controllers/EmployeeDashboard';
 
 export const Routes = () => {
     return (
@@ -161,6 +163,10 @@ export const Routes = () => {
 
                 UIRoute('pending-task', PendindTasksController).children(
                     UIRoute('list', PendingTaskListController)
+                ),
+
+                UIRoute('employee-dashboard', EmployeeDashboardController).children(
+                    UIRoute('view/:id', EmployeeDashboard)
                 ),
 
                 // not found

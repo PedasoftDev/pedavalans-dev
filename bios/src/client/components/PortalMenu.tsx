@@ -1,28 +1,27 @@
-import React, { Fragment, ReactElement, useEffect, useState } from 'react'
-import Drawer from '@mui/material/Drawer'
-import Button from '@mui/material/Button'
+import React, { Fragment, ReactElement, useEffect, useState } from 'react';
+import Drawer from '@mui/material/Drawer';
+import Button from '@mui/material/Button';
 import {
     useNavigate,
     ReactView,
     VStack,
     UIViewBuilder,
     Text,
-} from '@tuval/forms'
-import { NavbarDiv } from '../components/Navbar'
-import MenuIcon from '@mui/icons-material/Menu'
-import { Resources } from '../assets/Resources'
-import { RxColorWheel, RxDashboard, RxTable } from 'react-icons/rx'
-import { IoGitNetworkOutline } from 'react-icons/io5'
-import { FaLayerGroup, FaSignal } from 'react-icons/fa'
-import { BsCalendar4Week } from 'react-icons/bs'
-import { TbHeartRateMonitor, TbReportAnalytics } from 'react-icons/tb'
-import { BiCalendarPlus, BiCalendarCheck } from 'react-icons/bi'
-import { VscOrganization } from 'react-icons/vsc'
-import { TiFlowParallel } from 'react-icons/ti'
-import { MdOutlineManageAccounts, MdOutlineLibraryBooks } from 'react-icons/md'
-import { useGetMe, useGetOrganization } from '@realmocean/sdk'
-import LogoutIcon from '@mui/icons-material/Logout'
-import Database from '../../server/core/Database'
+} from '@tuval/forms';
+import { NavbarDiv, PortalMenuLink } from '../components/Navbar';
+import MenuIcon from '@mui/icons-material/Menu';
+import { Resources } from '../assets/Resources';
+import { RxColorWheel, RxDashboard, RxTable } from 'react-icons/rx';
+import { IoGitNetworkOutline } from 'react-icons/io5';
+import { FaLayerGroup, FaSignal } from 'react-icons/fa';
+import { BsCalendar4Week } from 'react-icons/bs';
+import { TbHeartRateMonitor, TbReportAnalytics } from 'react-icons/tb';
+import { BiCalendarPlus, BiCalendarCheck } from 'react-icons/bi';
+import { VscOrganization } from 'react-icons/vsc';
+import { TiFlowParallel } from 'react-icons/ti';
+import { MdOutlineManageAccounts, MdOutlineLibraryBooks } from 'react-icons/md';
+import { useGetMe, useGetOrganization } from '@realmocean/sdk';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -308,41 +307,16 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                                             position: 'relative',
                                                         }}
                                                     >
-                                                        <a
+                                                        <PortalMenuLink
                                                             onClick={() => navigate(menuItem.link)}
                                                             key={index}
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                flexDirection: 'row',
-                                                                cursor: 'pointer',
-                                                                height: '45px',
-                                                                width: '254px',
-                                                                borderRadius: '.5rem',
-                                                                paddingLeft: '0.8rem',
-                                                                marginTop: '0.2rem',
-                                                                marginLeft: '0.2rem',
-                                                                textDecoration: 'none',
-                                                                transition: 'all .2s ease-in-out',
-                                                                backgroundColor:
-                                                                    menuItem.title === selectedMenuTitle
-                                                                        ? Resources.Colors.themeColor
-                                                                        : '',
-                                                                color:
-                                                                    menuItem.title === selectedMenuTitle
-                                                                        ? 'white'
-                                                                        : Resources.Colors.themeColor,
-                                                                boxShadow:
-                                                                    menuItem.title === selectedMenuTitle
-                                                                        ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}`
-                                                                        : '',
-                                                            }}
+                                                            selected={menuItem.title === selectedMenuTitle}
                                                         >
                                                             {menuItem.icon}
                                                             <span style={{ paddingLeft: '.5rem' }}>
                                                                 {menuItem.title}
                                                             </span>
-                                                        </a>
+                                                        </PortalMenuLink>
                                                     </div>
                                                 )
                                                 : menuItem.isVisible && (
@@ -360,40 +334,17 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                                         {menuItem.subMenu.map(
                                                             (subItem, subIndex) =>
                                                                 subItem.isVisible && (
-                                                                    <a
+                                                                    <PortalMenuLink
+                                                                        selected={subItem.title === selectedMenuTitle}
                                                                         onClick={() => navigate(subItem.link)}
                                                                         key={subIndex}
-                                                                        style={{
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            cursor: 'pointer',
-                                                                            height: '45px',
-                                                                            width: '254px',
-                                                                            borderRadius: '.5rem',
-                                                                            paddingLeft: '0.8rem',
-                                                                            marginTop: '0.5rem',
-                                                                            marginLeft: '0.2rem',
-                                                                            textDecoration: 'none',
-                                                                            transition: 'all .2s ease-in-out',
-                                                                            backgroundColor:
-                                                                                subItem.title === selectedMenuTitle
-                                                                                    ? Resources.Colors.themeColor
-                                                                                    : '',
-                                                                            color:
-                                                                                subItem.title === selectedMenuTitle
-                                                                                    ? 'white'
-                                                                                    : Resources.Colors.themeColor,
-                                                                            boxShadow:
-                                                                                subItem.title === selectedMenuTitle
-                                                                                    ? `0 0 #0000, 0 0 #0000, 0 0 #0000, 0 0 #0000, 0 4px 6px -1px ${Resources.Colors.themeColor}, 0 2px 4px -2px ${Resources.Colors.themeColor}`
-                                                                                    : '',
-                                                                        }}
+                                                                        
                                                                     >
                                                                         {subItem.icon}
                                                                         <span style={{ paddingLeft: '.5rem' }}>
                                                                             {subItem.title}
                                                                         </span>
-                                                                    </a>
+                                                                    </PortalMenuLink>
                                                                 )
                                                         )}
                                                     </div>
