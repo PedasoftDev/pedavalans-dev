@@ -19,7 +19,7 @@ import { TbHeartRateMonitor, TbReportAnalytics } from 'react-icons/tb';
 import { BiCalendarPlus, BiCalendarCheck } from 'react-icons/bi';
 import { VscOrganization } from 'react-icons/vsc';
 import { TiFlowParallel } from 'react-icons/ti';
-import { MdOutlineManageAccounts, MdOutlineLibraryBooks } from 'react-icons/md';
+import { MdOutlineManageAccounts, MdOutlineLibraryBooks, MdPendingActions } from 'react-icons/md';
 import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import LogoutIcon from '@mui/icons-material/Logout';
 
@@ -99,6 +99,12 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             link: '/app/machine/list',
             icon: <RxColorWheel size={25} />,
             isVisible: machineBased,
+        },
+        {
+            title: "Bekleyen Görevler",
+            link: "/app/pending-task/list",
+            icon: <MdPendingActions size={25} />,
+            isVisible: true
         },
         {
             title: 'Yetkinlik Durum İzleme Raporu',
@@ -338,7 +344,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                                                         selected={subItem.title === selectedMenuTitle}
                                                                         onClick={() => navigate(subItem.link)}
                                                                         key={subIndex}
-                                                                        
+
                                                                     >
                                                                         {subItem.icon}
                                                                         <span style={{ paddingLeft: '.5rem' }}>

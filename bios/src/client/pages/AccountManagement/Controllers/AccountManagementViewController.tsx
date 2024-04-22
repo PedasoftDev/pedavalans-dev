@@ -99,6 +99,8 @@ export class AccountManagementViewController extends UIController {
                         }, [])
 
                         const handleSubmit = async () => {
+                            await Services.Client.setProject("console");
+                            await Services.Client.setMode(undefined);
                             await Services.Accounts.updateName(accountInfo.name);
                             await Services.Accounts.updateEmail(accountInfo.email, dialogPassword);
                             setDialogOpen(false)

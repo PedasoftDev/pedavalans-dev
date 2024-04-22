@@ -223,7 +223,7 @@ const EditEmployeeView = (
                         onChange={onChange}
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker label="Eğitim Başlangıç Tarihi"
+                        <DatePicker label="İşe Başlama Tarihi"
                             format="DD/MM/YYYY"
                             slotProps={{ textField: { size: 'small', fullWidth: true } }}
                             onChange={(e: any) => {
