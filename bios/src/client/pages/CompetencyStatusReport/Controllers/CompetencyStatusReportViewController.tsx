@@ -39,7 +39,11 @@ export class CompetencyStatusReportViewController extends UIController {
                     // tablo, dönem, yüzdelik filtresi
                     const [formFilters, setFormFilters] = useState(resetForm);
                     const [evaluationPeriod, setEvaluationPeriod] = useState([]);
-                    const [employeePercentages, setEmployeePercentages] = useState([]);
+                    const [employeePercentages, setEmployeePercentages] = useState<{
+                        employee_id: string,
+                        employee_name: string,
+                        percentage: number
+                    }[]>([]);
                     const [isLoading, setIsLoading] = useState(false);
 
                     const handleChangePolyvalenceTable = (e) => {
@@ -174,11 +178,11 @@ export class CompetencyStatusReportViewController extends UIController {
                                                                 {item.employee_name}
                                                             </Views.ListEmployeeName>
                                                             <Views.ListEmployeePercentage>
-                                                                <CircularProgressbar value={item.percentage} text={`${item.percentage}%`} />
+                                                                <CircularProgressbar value={item.percentage} text={`${item.percentage.toFixed(1)}%`} />
                                                             </Views.ListEmployeePercentage>
                                                             <Views.ListEmployeeLink>
                                                                 <Views.ListEmployeeLinkIcon>
-                                                                    <RiExternalLinkFill size={25} cursor={"pointer"} onClick={(e)=> navigate('/app/employee-dashboard/view/' + item.employee_id)}/>
+                                                                    <RiExternalLinkFill size={25} cursor={"pointer"} onClick={(e) => navigate('/app/employee-dashboard/view/' + item.employee_id)} />
                                                                 </Views.ListEmployeeLinkIcon>
                                                             </Views.ListEmployeeLink>
                                                         </Views.ListItem>
