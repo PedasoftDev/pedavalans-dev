@@ -170,11 +170,10 @@ const AddEmployeeView = (
                                 format="DD/MM/YYYY"
                                 slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                 onChange={(e: any) => {
-                                    if (e.$D < 10) {
-                                        setFormEmployee({ ...formEmployee, job_start_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
-                                    } else {
-                                        setFormEmployee({ ...formEmployee, job_start_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
-                                    }
+                                    setFormEmployee({
+                                        ...formEmployee,
+                                        job_start_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                    })
                                 }} />
                         </LocalizationProvider>
                         {selectFormStates.map((selectFormState) => {

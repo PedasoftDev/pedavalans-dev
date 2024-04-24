@@ -235,13 +235,17 @@ export class CompetencyReportDataViewController extends UIController {
                                         }
                                     })
                                 })
-                                setRadarData(appendToSelectedCompetencyList.map((competency) => {
-                                    return {
-                                        name: competency.competency_name,
-                                        target: competency.competency_target_value,
-                                        real: competency.competency_real_value
+                                const setRadarDataValues = []
+                                appendToSelectedCompetencyList.forEach((competency) => {
+                                    if (competency.competency_target_value !== "no-target") {
+                                        setRadarDataValues.push({
+                                            name: competency.competency_name,
+                                            target: competency.competency_target_value,
+                                            real: competency.competency_real_value
+                                        })
                                     }
-                                }))
+                                })
+                                setRadarData(setRadarDataValues)
                             })
                         setSelectedCompetencyList(appendToSelectedCompetencyList);
                     }

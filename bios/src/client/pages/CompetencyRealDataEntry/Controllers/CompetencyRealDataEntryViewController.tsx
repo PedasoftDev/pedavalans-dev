@@ -16,7 +16,6 @@ import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
-import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
@@ -28,7 +27,7 @@ import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import { MdOutlineLibraryBooks } from "react-icons/md";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DatePicker, LocalizationProvider, trTR as DateTR } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Education from "../../../../server/hooks/education/main";
 import IEducation from "../../../interfaces/IEducation";
@@ -682,23 +681,23 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             format="DD/MM/YYYY"
                                                             slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                                             onChange={(e: any) => {
-                                                                if (e.$D < 10) {
-                                                                    setForm({ ...form, start_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                                } else {
-                                                                    setForm({ ...form, start_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                                }
+                                                                setForm({
+                                                                    ...form,
+                                                                    start_date: e.$d.toString().split("GMT")[0],
+                                                                    end_date: e.$d.toString().split("GMT")[0]
+                                                                });
                                                             }} />
                                                     </LocalizationProvider>
                                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                         <DatePicker label="Eğitim Bitiş Tarihi"
                                                             format="DD/MM/YYYY"
+                                                            localeText={DateTR.components.MuiLocalizationProvider.defaultProps.localeText}
                                                             slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                                             onChange={(e: any) => {
-                                                                if (e.$D < 10) {
-                                                                    setForm({ ...form, end_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                                } else {
-                                                                    setForm({ ...form, end_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                                }
+                                                                setForm({
+                                                                    ...form,
+                                                                    end_date: e.$d.toString().split("GMT")[0]
+                                                                });
                                                             }} />
                                                     </LocalizationProvider>
                                                 </div>

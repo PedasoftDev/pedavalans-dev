@@ -12,6 +12,7 @@ import Collections from '../../../../../server/core/Collections';
 import { nanoid } from '@tuval/forms';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
 
 
 const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
@@ -224,14 +225,14 @@ const EditEmployeeView = (
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker label="İşe Başlama Tarihi"
+                            value={dayjs(formEmployee.job_start_date)}
                             format="DD/MM/YYYY"
                             slotProps={{ textField: { size: 'small', fullWidth: true } }}
                             onChange={(e: any) => {
-                                if (e.$D < 10) {
-                                    setFormEmployee({ ...formEmployee, job_start_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
-                                } else {
-                                    setFormEmployee({ ...formEmployee, job_start_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
-                                }
+                                setFormEmployee({
+                                    ...formEmployee,
+                                    job_start_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                })
                             }} />
                     </LocalizationProvider>
                     {selectFormStates.map((selectFormState) => {
