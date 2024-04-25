@@ -7,6 +7,7 @@ overflow: hidden;
 border: 1px solid #90caf925;
 overflow: hidden;
 position: relative;
+transition: all 0.5s ease-in-out;
 &:after {
     content: " ";
     position: absolute;
@@ -46,12 +47,19 @@ color: lightgray;
 const List = styled.ul`
 padding: 15px 15px;
 list-style: none;
-
+height: calc(100vh/1.6 - 100px);
+overflow-y: auto;
 `;
 
 const ListElement = styled.li`
 padding: 5px 0;
-
+display: flex;
+gap: 5px;
+align-items: center;
+&:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
 `;
 
 export { TaskCard, TaskCardHeader, TaskCardSubHeader, ExpandIconRight, List, ListElement };

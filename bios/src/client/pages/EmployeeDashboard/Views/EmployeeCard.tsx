@@ -16,6 +16,7 @@ const EmployeeCard = ({
   experience,
   skills,
   startDate,
+  yearOfSeniority,
 }) => {
   return (
     <Card
@@ -89,9 +90,9 @@ const EmployeeCard = ({
               color: 'rgba(128, 128, 128,1)',
             }}
           >
-            Birimdeki Çalışma Süresi :
+            Toplam Kıdem Süresi :
           </span>{' '}
-          {experience}
+          {yearOfSeniority}
         </Typography>
         <Typography
           variant="body2"
@@ -120,6 +121,20 @@ const EmployeeCard = ({
             İşe Başlama Tarihi :
           </span>{' '}
           {startDate}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="InfoText"
+          style={{ fontSize: '1rem' }}
+        >
+          <span
+            style={{
+              color: 'rgba(128, 128, 128,1)',
+            }}
+          >
+            Birimdeki Çalışma Süresi :
+          </span>{' '}
+          {experience}
         </Typography>
       </CardContent>
     </Card>

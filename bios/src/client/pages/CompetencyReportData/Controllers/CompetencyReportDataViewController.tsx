@@ -383,14 +383,15 @@ export class CompetencyReportDataViewController extends UIController {
                                                                 <PolarAngleAxis dataKey={"name"}
                                                                     tickFormatter={(value) => truncateText(value, 30)}
                                                                 />
-                                                                <Radar name="Hedef" dataKey="target" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                                                                <Radar name="Gerçekleşen" dataKey="real" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                                                                <Radar name="Hedef" dataKey="target" stroke="#00008B" fill="#00008B" fillOpacity={0.6} />
+                                                                <Radar name="Gerçekleşen" dataKey="real" stroke="#7FFF00" fill="#7FFF00" fillOpacity={0.6} />
                                                                 <Tooltip />
                                                                 <Legend />
                                                             </RadarChart>
                                                         </ResponsiveContainer>
                                                     </div>
                                                     : <StyledDataGrid
+
                                                         columns={columns}
                                                         rows={selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList}
                                                         getRowId={(row) => row.competency_id}

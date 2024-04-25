@@ -1,4 +1,4 @@
-import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
+import { HStack, ReactView, Spinner, State, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../Views/View";
 import { Views } from "../../../components/Views";
@@ -110,513 +110,514 @@ export class CompetencyTargetDataEntryViewController extends UIController {
 
         return (
             isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
-                UIViewBuilder(() => {
+                me === null ? UINavigate("/login") :
+                    UIViewBuilder(() => {
 
-                    const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
-                    const [selectedGroupId, setSelectedGroupId] = useState<string>("");
-                    const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
-                    const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
+                        const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
+                        const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+                        const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
+                        const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
 
-                    // Dialog State
-                    const [dialogOpen, setDialogOpen] = useState(false);
-                    const [dialogForm, setDialogForm] = useState<{ polyvalence_table_id: string, previous_evaluation_period: string, current_evaluation_period: string }>({
-                        polyvalence_table_id: "",
-                        previous_evaluation_period: "",
-                        current_evaluation_period: ""
-                    });
-                    const [dialogDataYear, setDialogDataYear] = useState<{ name: string }[]>([]);
-                    const [startDialogTransferData, setStartDialogTransferData] = useState(false);
-                    const [dialogAlreadyExistData, setDialogAlreadyExistData] = useState(false);
-                    const [dialogPercent, setDialogPercent] = useState(0);
-
-                    const handleOpenDialog = () => {
-                        setDialogOpen(true);
-                    }
-
-                    const handleCloseDialog = () => {
-                        setDialogOpen(false);
-                        setDialogDataYear([]);
-                        setDialogForm({
+                        // Dialog State
+                        const [dialogOpen, setDialogOpen] = useState(false);
+                        const [dialogForm, setDialogForm] = useState<{ polyvalence_table_id: string, previous_evaluation_period: string, current_evaluation_period: string }>({
                             polyvalence_table_id: "",
                             previous_evaluation_period: "",
                             current_evaluation_period: ""
-                        })
-                    }
+                        });
+                        const [dialogDataYear, setDialogDataYear] = useState<{ name: string }[]>([]);
+                        const [startDialogTransferData, setStartDialogTransferData] = useState(false);
+                        const [dialogAlreadyExistData, setDialogAlreadyExistData] = useState(false);
+                        const [dialogPercent, setDialogPercent] = useState(0);
 
-                    const confirmTransferData = async () => {
-                        const tasks = new Umay();
-                        const data = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
-                            [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
-                            Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.previous_evaluation_period)]).then((res) => res.documents)
-                        data.forEach((value, index) => {
-                            tasks.Task(async () => {
-                                const docId: string = nanoid();
-                                const createObj: IEmployeeCompetencyValue.ICreateEmployeeCompetencyValue = {
-                                    competency_department_id: value.competency_department_id,
-                                    competency_department_name: value.competency_department_name,
-                                    competency_evaluation_period: dialogForm.current_evaluation_period,
-                                    competency_id: value.competency_id,
-                                    competency_name: value.competency_name,
-                                    competency_real_value: "",
-                                    competency_target_value: value.competency_target_value,
-                                    competency_value_desc: "",
-                                    employee_id: value.employee_id,
-                                    employee_name: value.employee_name,
-                                    polyvalence_table_id: value.polyvalence_table_id,
-                                    polyvalence_table_name: value.polyvalence_table_name,
-                                    tenant_id: value.tenant_id,
-                                    employee_competency_value_id: docId,
-                                    realm_id: value.realm_id,
-                                }
-                                try {
-                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, docId, createObj)
-                                    setDialogPercent(((index + 1) / data.length) * 100)
-                                }
-                                catch (err) {
-                                    console.error(err)
-                                }
+                        const handleOpenDialog = () => {
+                            setDialogOpen(true);
+                        }
+
+                        const handleCloseDialog = () => {
+                            setDialogOpen(false);
+                            setDialogDataYear([]);
+                            setDialogForm({
+                                polyvalence_table_id: "",
+                                previous_evaluation_period: "",
+                                current_evaluation_period: ""
+                            })
+                        }
+
+                        const confirmTransferData = async () => {
+                            const tasks = new Umay();
+                            const data = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
+                                [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
+                                Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.previous_evaluation_period)]).then((res) => res.documents)
+                            data.forEach((value, index) => {
+                                tasks.Task(async () => {
+                                    const docId: string = nanoid();
+                                    const createObj: IEmployeeCompetencyValue.ICreateEmployeeCompetencyValue = {
+                                        competency_department_id: value.competency_department_id,
+                                        competency_department_name: value.competency_department_name,
+                                        competency_evaluation_period: dialogForm.current_evaluation_period,
+                                        competency_id: value.competency_id,
+                                        competency_name: value.competency_name,
+                                        competency_real_value: "",
+                                        competency_target_value: value.competency_target_value,
+                                        competency_value_desc: "",
+                                        employee_id: value.employee_id,
+                                        employee_name: value.employee_name,
+                                        polyvalence_table_id: value.polyvalence_table_id,
+                                        polyvalence_table_name: value.polyvalence_table_name,
+                                        tenant_id: value.tenant_id,
+                                        employee_competency_value_id: docId,
+                                        realm_id: value.realm_id,
+                                    }
+                                    try {
+                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, docId, createObj)
+                                        setDialogPercent(((index + 1) / data.length) * 100)
+                                    }
+                                    catch (err) {
+                                        console.error(err)
+                                    }
+                                })
+                                tasks.Wait(1);
                             })
                             tasks.Wait(1);
-                        })
-                        tasks.Wait(1);
-                        tasks.Task(() => {
-                            window.location.reload();
-                        })
-                        tasks.Run();
-                    }
+                            tasks.Task(() => {
+                                window.location.reload();
+                            })
+                            tasks.Run();
+                        }
 
-                    const handleStartDialogTransferData = () => {
-                        setStartDialogTransferData(true);
-                        Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
-                            [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
-                            Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.current_evaluation_period)]
-                        ).then((currentPeriodData) => {
-                            if (currentPeriodData.documents.length > 0) {
-                                setDialogAlreadyExistData(true);
-                            } else {
-                                confirmTransferData();
+                        const handleStartDialogTransferData = () => {
+                            setStartDialogTransferData(true);
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
+                                [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
+                                Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.current_evaluation_period)]
+                            ).then((currentPeriodData) => {
+                                if (currentPeriodData.documents.length > 0) {
+                                    setDialogAlreadyExistData(true);
+                                } else {
+                                    confirmTransferData();
+                                }
+                            })
+                        }
+
+                        const onChangeTableToDialog = (e: SelectChangeEvent<string>) => {
+                            const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                            const appedValue = []
+                            setDialogForm({
+                                ...dialogForm,
+                                polyvalence_table_id: e.target.value
+                            })
+                            if (table.polyvalence_evaluation_frequency == "Yıl") {
+                                periodList.forEach((period) => {
+                                    getYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                                })
+                                setDialogDataYear(appedValue)
                             }
-                        })
-                    }
+                            else if (table.polyvalence_evaluation_frequency == "Yarıyıl") {
+                                periodList.forEach((period) => {
+                                    getHalfYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                                })
+                                setDialogDataYear(appedValue)
+                            }
+                            else if (table.polyvalence_evaluation_frequency == "Çeyrekyıl") {
+                                periodList.forEach((period) => {
+                                    getQuarterYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                                })
+                                setDialogDataYear(appedValue)
+                            }
+                            else if (table.polyvalence_evaluation_frequency == "Ay") {
+                                periodList.forEach((period) => {
+                                    getMonthPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
+                                })
+                                setDialogDataYear(appedValue)
+                            }
+                        }
 
-                    const onChangeTableToDialog = (e: SelectChangeEvent<string>) => {
-                        const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
-                        const appedValue = []
-                        setDialogForm({
-                            ...dialogForm,
-                            polyvalence_table_id: e.target.value
-                        })
-                        if (table.polyvalence_evaluation_frequency == "Yıl") {
-                            periodList.forEach((period) => {
-                                getYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
-                            })
-                            setDialogDataYear(appedValue)
+                        const onChangeTable = (e: SelectChangeEvent<string>) => {
+                            const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                            const periodYear = Number(periods[0].evaluation_period_year);
+                            setSelectedTable(table)
+                            setSelectedPeriod("")
+                            setSelectedEmployeeId("")
+                            setSelectedGroupId("")
+                            setSelectedCompetencyList([])
+                            setEmployeeCompetencyValue([])
+                            if (table.polyvalence_evaluation_frequency == "Yıl") {
+                                setDataYear(getYearPeriods(periodYear))
+                            }
+                            else if (table.polyvalence_evaluation_frequency == "Yarıyıl") {
+                                setDataYear(getHalfYearPeriods(periodYear))
+                            }
+                            else if (table.polyvalence_evaluation_frequency == "Çeyrekyıl") {
+                                setDataYear(getQuarterYearPeriods(periodYear))
+                            }
+                            else if (table.polyvalence_evaluation_frequency == "Ay") {
+                                setDataYear(getMonthPeriods(periodYear))
+                            }
                         }
-                        else if (table.polyvalence_evaluation_frequency == "Yarıyıl") {
-                            periodList.forEach((period) => {
-                                getHalfYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
-                            })
-                            setDialogDataYear(appedValue)
-                        }
-                        else if (table.polyvalence_evaluation_frequency == "Çeyrekyıl") {
-                            periodList.forEach((period) => {
-                                getQuarterYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
-                            })
-                            setDialogDataYear(appedValue)
-                        }
-                        else if (table.polyvalence_evaluation_frequency == "Ay") {
-                            periodList.forEach((period) => {
-                                getMonthPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
-                            })
-                            setDialogDataYear(appedValue)
-                        }
-                    }
 
-                    const onChangeTable = (e: SelectChangeEvent<string>) => {
-                        const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
-                        const periodYear = Number(periods[0].evaluation_period_year);
-                        setSelectedTable(table)
-                        setSelectedPeriod("")
-                        setSelectedEmployeeId("")
-                        setSelectedGroupId("")
-                        setSelectedCompetencyList([])
-                        setEmployeeCompetencyValue([])
-                        if (table.polyvalence_evaluation_frequency == "Yıl") {
-                            setDataYear(getYearPeriods(periodYear))
+                        const selectEmployee = (id: string) => {
+                            if (selectedEmployeeId === id) {
+                                setSelectedEmployeeId("");
+                            } else {
+                                setSelectedEmployeeId(id);
+                                getCompetencies(id);
+                            }
                         }
-                        else if (table.polyvalence_evaluation_frequency == "Yarıyıl") {
-                            setDataYear(getHalfYearPeriods(periodYear))
-                        }
-                        else if (table.polyvalence_evaluation_frequency == "Çeyrekyıl") {
-                            setDataYear(getQuarterYearPeriods(periodYear))
-                        }
-                        else if (table.polyvalence_evaluation_frequency == "Ay") {
-                            setDataYear(getMonthPeriods(periodYear))
-                        }
-                    }
 
-                    const selectEmployee = (id: string) => {
-                        if (selectedEmployeeId === id) {
-                            setSelectedEmployeeId("");
-                        } else {
-                            setSelectedEmployeeId(id);
-                            getCompetencies(id);
-                        }
-                    }
-
-                    const columns: GridColDef[] = [
-                        { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
-                        {
-                            field: "competency_target_value", headerName: "Hedef Değer", width: 100, minWidth: 100,
-                            renderCell: (params) => (
-                                <FormControl fullWidth size="small">
-                                    <Select
-                                        name="competency_target_value"
-                                        value={params.value}
-                                        onChange={(e) => {
-                                            const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === params.row.competency_id);
-                                            if (alreadyExist) {
-                                                updateEmployeeCompetencyValue({
-                                                    databaseId: AppInfo.Database,
-                                                    collectionId: "employee_competency_value",
-                                                    documentId: alreadyExist?.employee_competency_value_id,
-                                                    data: {
-                                                        ...removeDollarProperties(alreadyExist),
-                                                        competency_target_value: e.target.value
-                                                    }
-                                                }, () => {
-                                                    Toast.fire({
-                                                        icon: "success",
-                                                        title: "Değer güncellendi.",
-                                                        timer: 1000
-                                                    })
-                                                    setEmployeeCompetencyValue(employeeCompetencyValue.map((value) => {
-                                                        if (value.competency_id === params.row.competency_id) {
-                                                            return {
-                                                                ...value,
-                                                                competency_target_value: e.target.value
-                                                            }
+                        const columns: GridColDef[] = [
+                            { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
+                            {
+                                field: "competency_target_value", headerName: "Hedef Değer", width: 100, minWidth: 100,
+                                renderCell: (params) => (
+                                    <FormControl fullWidth size="small">
+                                        <Select
+                                            name="competency_target_value"
+                                            value={params.value}
+                                            onChange={(e) => {
+                                                const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === params.row.competency_id);
+                                                if (alreadyExist) {
+                                                    updateEmployeeCompetencyValue({
+                                                        databaseId: AppInfo.Database,
+                                                        collectionId: "employee_competency_value",
+                                                        documentId: alreadyExist?.employee_competency_value_id,
+                                                        data: {
+                                                            ...removeDollarProperties(alreadyExist),
+                                                            competency_target_value: e.target.value
                                                         }
-                                                        return value;
-                                                    }));
-                                                })
-                                            } else {
-                                                const docId: string = nanoid();
-                                                const createObj: IEmployeeCompetencyValue.IEmployeeCompetencyValue = {
-                                                    employee_competency_value_id: docId,
-                                                    competency_department_id: selectedTable.polyvalence_department_id,
-                                                    competency_department_name: selectedTable.polyvalence_department_name,
-                                                    competency_evaluation_period: selectedPeriod,
-                                                    competency_id: params.row.competency_id,
-                                                    competency_name: params.row.competency_name,
-                                                    competency_target_value: e.target.value,
-                                                    competency_real_value: "",
-                                                    competency_value_desc: "",
-                                                    employee_id: selectedEmployeeId,
-                                                    employee_name: employees.find((employee) => employee.$id === selectedEmployeeId)?.first_name
-                                                        + " " + employees.find((employee) => employee.$id === selectedEmployeeId)?.last_name,
+                                                    }, () => {
+                                                        Toast.fire({
+                                                            icon: "success",
+                                                            title: "Değer güncellendi.",
+                                                            timer: 1000
+                                                        })
+                                                        setEmployeeCompetencyValue(employeeCompetencyValue.map((value) => {
+                                                            if (value.competency_id === params.row.competency_id) {
+                                                                return {
+                                                                    ...value,
+                                                                    competency_target_value: e.target.value
+                                                                }
+                                                            }
+                                                            return value;
+                                                        }));
+                                                    })
+                                                } else {
+                                                    const docId: string = nanoid();
+                                                    const createObj: IEmployeeCompetencyValue.IEmployeeCompetencyValue = {
+                                                        employee_competency_value_id: docId,
+                                                        competency_department_id: selectedTable.polyvalence_department_id,
+                                                        competency_department_name: selectedTable.polyvalence_department_name,
+                                                        competency_evaluation_period: selectedPeriod,
+                                                        competency_id: params.row.competency_id,
+                                                        competency_name: params.row.competency_name,
+                                                        competency_target_value: e.target.value,
+                                                        competency_real_value: "",
+                                                        competency_value_desc: "",
+                                                        employee_id: selectedEmployeeId,
+                                                        employee_name: employees.find((employee) => employee.$id === selectedEmployeeId)?.first_name
+                                                            + " " + employees.find((employee) => employee.$id === selectedEmployeeId)?.last_name,
+                                                        polyvalence_table_id: selectedTable.polyvalence_table_id,
+                                                        polyvalence_table_name: selectedTable.polyvalence_table_name,
+                                                        tenant_id: me?.prefs?.organization,
+                                                        realm_id: me?.prefs?.organization,
+                                                        is_deleted_competency_value: false,
+                                                        is_active_competency_value: true
+                                                    }
+                                                    createEmployeeCompetencyValue({
+                                                        documentId: docId,
+                                                        data: createObj
+                                                    }, () => {
+                                                        Toast.fire({
+                                                            icon: "success",
+                                                            title: "Değer eklendi.",
+                                                            timer: 1000
+                                                        })
+                                                        setEmployeeCompetencyValue([...employeeCompetencyValue, createObj]);
+                                                    })
+                                                }
+                                                setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
+                                                    if (competency.competency_id === params.row.competency_id) {
+                                                        return {
+                                                            ...competency,
+                                                            competency_target_value: e.target.value
+                                                        }
+                                                    }
+                                                    return competency;
+                                                }));
+                                            }}
+                                            size="small"
+                                            required
+                                        >
+                                            {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
+                                                .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
+                                                .map((value) => (
+                                                    <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
+                                                ))}
+                                            <MenuItem value={"no-target"} key={"-"}>{"Hedefi Yok"}</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                )
+                            },
+                        ];
+
+                        const getCompetencies = async (employee_id: string) => {
+                            const selectedEmployeeInfo = employees.find((employee) => employee.$id === employee_id);
+                            const appendToSelectedCompetencyList = [];
+                            await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
+                                [
+                                    Query.limit(10000), Query.equal("employee_id", employee_id), Query.equal("competency_evaluation_period", selectedPeriod),
+                                    Query.equal("polyvalence_table_id", selectedTable.polyvalence_table_id), Query.equal("is_deleted_competency_value", false),
+                                    Query.equal("tenant_id", me?.prefs?.organization)
+                                ]).then((res) => {
+                                    setEmployeeCompetencyValue(res.documents as any[]);
+                                    competencyList.forEach((competency) => {
+                                        competencyDepartments.forEach((department) => {
+                                            if (competency.competency_id === department.competency_id) {
+                                                const listItem = removeDollarProperties(competency);
+                                                const target_value = res.documents.find((value) => value.competency_id === listItem.competency_id)?.competency_target_value;
+                                                appendToSelectedCompetencyList.push({
+                                                    ...listItem,
+                                                    employee_id: employee_id,
+                                                    employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
                                                     polyvalence_table_id: selectedTable.polyvalence_table_id,
                                                     polyvalence_table_name: selectedTable.polyvalence_table_name,
-                                                    tenant_id: me?.prefs?.organization,
-                                                    realm_id: me?.prefs?.organization,
-                                                    is_deleted_competency_value: false,
-                                                    is_active_competency_value: true
-                                                }
-                                                createEmployeeCompetencyValue({
-                                                    documentId: docId,
-                                                    data: createObj
-                                                }, () => {
-                                                    Toast.fire({
-                                                        icon: "success",
-                                                        title: "Değer eklendi.",
-                                                        timer: 1000
-                                                    })
-                                                    setEmployeeCompetencyValue([...employeeCompetencyValue, createObj]);
+                                                    competency_evaluation_period: selectedPeriod,
+                                                    competency_department_id: department.competency_department_id,
+                                                    competency_department_name: department.competency_department_name,
+                                                    competency_target_value: target_value ? target_value : ""
                                                 })
                                             }
-                                            setSelectedCompetencyList(selectedCompetencyList.map((competency) => {
-                                                if (competency.competency_id === params.row.competency_id) {
-                                                    return {
-                                                        ...competency,
-                                                        competency_target_value: e.target.value
-                                                    }
-                                                }
-                                                return competency;
-                                            }));
-                                        }}
-                                        size="small"
-                                        required
-                                    >
-                                        {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
-                                            .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
-                                            .map((value) => (
-                                                <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
-                                            ))}
-                                        <MenuItem value={"no-target"} key={"-"}>{"Hedefi Yok"}</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            )
-                        },
-                    ];
-
-                    const getCompetencies = async (employee_id: string) => {
-                        const selectedEmployeeInfo = employees.find((employee) => employee.$id === employee_id);
-                        const appendToSelectedCompetencyList = [];
-                        await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value",
-                            [
-                                Query.limit(10000), Query.equal("employee_id", employee_id), Query.equal("competency_evaluation_period", selectedPeriod),
-                                Query.equal("polyvalence_table_id", selectedTable.polyvalence_table_id), Query.equal("is_deleted_competency_value", false),
-                                Query.equal("tenant_id", me?.prefs?.organization)
-                            ]).then((res) => {
-                                setEmployeeCompetencyValue(res.documents as any[]);
-                                competencyList.forEach((competency) => {
-                                    competencyDepartments.forEach((department) => {
-                                        if (competency.competency_id === department.competency_id) {
-                                            const listItem = removeDollarProperties(competency);
-                                            const target_value = res.documents.find((value) => value.competency_id === listItem.competency_id)?.competency_target_value;
-                                            appendToSelectedCompetencyList.push({
-                                                ...listItem,
-                                                employee_id: employee_id,
-                                                employee_name: `${selectedEmployeeInfo?.first_name} ${selectedEmployeeInfo?.last_name}`,
-                                                polyvalence_table_id: selectedTable.polyvalence_table_id,
-                                                polyvalence_table_name: selectedTable.polyvalence_table_name,
-                                                competency_evaluation_period: selectedPeriod,
-                                                competency_department_id: department.competency_department_id,
-                                                competency_department_name: department.competency_department_name,
-                                                competency_target_value: target_value ? target_value : ""
-                                            })
-                                        }
+                                        })
                                     })
                                 })
-                            })
-                        console.log(appendToSelectedCompetencyList)
-                        setSelectedCompetencyList(appendToSelectedCompetencyList);
-                    }
-
-
-                    useEffect(() => {
-                        if (!me) {
-                            Toast.fire({
-                                icon: "warning",
-                                title: "Kişi bilgileri alınamadı."
-                            })
-                            navigate("/login")
+                            console.log(appendToSelectedCompetencyList)
+                            setSelectedCompetencyList(appendToSelectedCompetencyList);
                         }
-                        if (!periods[0]) {
-                            Toast.fire({
-                                icon: "warning",
-                                title: "Henüz bir yetkinlik değerlendirme dönemi tanımlanmamış."
-                            })
-                            navigate("/app/competency-evaluation-period/list")
-                        }
-                    }, [])
 
-                    return (
-                        VStack(
-                            HStack({ alignment: cLeading })(
-                                Views.Title("Yetkinlik Hedef Değer Girişi").paddingTop("10px"),
-                                accountRelations[0].is_admin &&
-                                HStack(
-                                    ReactView(
-                                        <FaRegCopy size={18} />
-                                    )
-                                ).width().height().paddingTop("10px").marginLeft("10px").tooltip("Önceki Dönemden Veri Aktarımı").cursor("pointer").onClick(() => {
-                                    handleOpenDialog();
+
+                        useEffect(() => {
+                            if (!me) {
+                                Toast.fire({
+                                    icon: "warning",
+                                    title: "Kişi bilgileri alınamadı."
                                 })
-                            ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
-                            ReactView(
-                                <Container>
-                                    <LeftContainer>
-                                        <LeftContainerHeader>
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Polivalans Tablosu</InputLabel>
-                                                <Select
-                                                    name="polyvalence_table_id"
-                                                    value={selectedTable?.polyvalence_table_id}
-                                                    label="Polivalans Tablosu"
-                                                    onChange={onChangeTable}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {this.polyvalenceUnitList.map((unit) => (
-                                                        <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Değerlendirme Dönemi</InputLabel>
-                                                <Select
-                                                    name="evaluation_period"
-                                                    value={selectedPeriod}
-                                                    label="Değerlendirme Dönemi"
-                                                    onChange={(e) => {
-                                                        setSelectedPeriod(e.target.value);
-                                                        setSelectedEmployeeId("")
-                                                        setSelectedGroupId("")
-                                                        setSelectedCompetencyList([])
-                                                        setEmployeeCompetencyValue([])
-                                                    }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {dataYear.map((period, i) => (
-                                                        <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                        </LeftContainerHeader>
-                                        {
-                                            selectedTable && selectedPeriod &&
-                                            <LeftContainerContent>
-                                                {
-                                                    employees
-                                                        .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
-                                                        .sort((a, b) => a.first_name.localeCompare(b.first_name))
-                                                        .map((employee, i) =>
-                                                            <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>
-                                                                <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.$id && { color: "#3BA2EE" })} />
-                                                                {employee.first_name} {employee.last_name}
-                                                            </LeftContainerContentItem>
-                                                        )
-                                                }
-                                            </LeftContainerContent>
-                                        }
-                                    </LeftContainer>
-                                    {
-                                        selectedTable && selectedPeriod && selectedEmployeeId &&
-                                        <RightContainer>
-                                            <RightContainerHeader>
+                                navigate("/login")
+                            }
+                            if (!periods[0]) {
+                                Toast.fire({
+                                    icon: "warning",
+                                    title: "Henüz bir yetkinlik değerlendirme dönemi tanımlanmamış."
+                                })
+                                navigate("/app/competency-evaluation-period/list")
+                            }
+                        }, [])
+
+                        return (
+                            VStack(
+                                HStack({ alignment: cLeading })(
+                                    Views.Title("Yetkinlik Hedef Değer Girişi").paddingTop("10px"),
+                                    accountRelations[0].is_admin &&
+                                    HStack(
+                                        ReactView(
+                                            <FaRegCopy size={18} />
+                                        )
+                                    ).width().height().paddingTop("10px").marginLeft("10px").tooltip("Önceki Dönemden Veri Aktarımı").cursor("pointer").onClick(() => {
+                                        handleOpenDialog();
+                                    })
+                                ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
+                                ReactView(
+                                    <Container>
+                                        <LeftContainer>
+                                            <LeftContainerHeader>
                                                 <FormControl fullWidth size="small">
-                                                    <InputLabel>Yetkinlik Grubu</InputLabel>
+                                                    <InputLabel>Polivalans Tablosu</InputLabel>
                                                     <Select
-                                                        name="group"
-                                                        value={selectedGroupId}
-                                                        label="Yetkinlik Grubu"
-                                                        onChange={(e) => setSelectedGroupId(e.target.value)}
+                                                        name="polyvalence_table_id"
+                                                        value={selectedTable?.polyvalence_table_id}
+                                                        label="Polivalans Tablosu"
+                                                        onChange={onChangeTable}
                                                         size="small"
                                                         required
                                                     >
-                                                        <MenuItem value="" key="all">Tümü</MenuItem>
-                                                        {groups.map((group, i) => (
-                                                            <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
+                                                        {this.polyvalenceUnitList.map((unit) => (
+                                                            <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
                                                         ))}
                                                     </Select>
                                                 </FormControl>
-                                            </RightContainerHeader>
-                                            <div style={{
-                                                height: "calc(100vh - 120px)",
-                                                width: "100%",
-                                                padding: "0 20px"
-                                            }}>
-                                                <StyledDataGrid
-                                                    columns={columns}
-                                                    rows={selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList}
-                                                    getRowId={(row) => row.competency_id}
-                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                />
-                                            </div>
-                                        </RightContainer>
-                                    }
-                                    <Dialog
-                                        open={dialogOpen}
-                                        onClose={handleCloseDialog}
-                                    >
-                                        <DialogTitle>Önceki Dönemden Veri Aktarımı</DialogTitle>
-                                        <DialogContent>
-                                            {startDialogTransferData ?
-                                                <div>
-                                                    {dialogAlreadyExistData ?
-                                                        <div>
-                                                            <p>Seçtiğiniz dönem için veri zaten mevcut.</p>
-                                                            <p>Üzerine yazmak istiyor musunuz? Bu işlem geri alınamaz.</p>
-                                                            <Button color="error" onClick={handleCloseDialog}>
-                                                                İptal
-                                                            </Button>
-                                                            <Button onClick={() => { confirmTransferData(); }}>
-                                                                Verilerin Üzerine Yaz ve Aktarımı Başlat
-                                                            </Button>
-                                                        </div>
-                                                        :
-                                                        <div>
-                                                            <p>Veri aktarımı başlatıldı. Lütfen bekleyin ve işlem tamamlanana kadar sayfayı kapatmayın.</p>
-                                                            <LinearProgressWithLabel value={dialogPercent} />
-                                                        </div>
+                                                <FormControl fullWidth size="small">
+                                                    <InputLabel>Değerlendirme Dönemi</InputLabel>
+                                                    <Select
+                                                        name="evaluation_period"
+                                                        value={selectedPeriod}
+                                                        label="Değerlendirme Dönemi"
+                                                        onChange={(e) => {
+                                                            setSelectedPeriod(e.target.value);
+                                                            setSelectedEmployeeId("")
+                                                            setSelectedGroupId("")
+                                                            setSelectedCompetencyList([])
+                                                            setEmployeeCompetencyValue([])
+                                                        }}
+                                                        size="small"
+                                                        required
+                                                    >
+                                                        {dataYear.map((period, i) => (
+                                                            <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </LeftContainerHeader>
+                                            {
+                                                selectedTable && selectedPeriod &&
+                                                <LeftContainerContent>
+                                                    {
+                                                        employees
+                                                            .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
+                                                            .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                                                            .map((employee, i) =>
+                                                                <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>
+                                                                    <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.$id && { color: "#3BA2EE" })} />
+                                                                    {employee.first_name} {employee.last_name}
+                                                                </LeftContainerContentItem>
+                                                            )
                                                     }
+                                                </LeftContainerContent>
+                                            }
+                                        </LeftContainer>
+                                        {
+                                            selectedTable && selectedPeriod && selectedEmployeeId &&
+                                            <RightContainer>
+                                                <RightContainerHeader>
+                                                    <FormControl fullWidth size="small">
+                                                        <InputLabel>Yetkinlik Grubu</InputLabel>
+                                                        <Select
+                                                            name="group"
+                                                            value={selectedGroupId}
+                                                            label="Yetkinlik Grubu"
+                                                            onChange={(e) => setSelectedGroupId(e.target.value)}
+                                                            size="small"
+                                                            required
+                                                        >
+                                                            <MenuItem value="" key="all">Tümü</MenuItem>
+                                                            {groups.map((group, i) => (
+                                                                <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                </RightContainerHeader>
+                                                <div style={{
+                                                    height: "calc(100vh - 120px)",
+                                                    width: "100%",
+                                                    padding: "0 20px"
+                                                }}>
+                                                    <StyledDataGrid
+                                                        columns={columns}
+                                                        rows={selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList}
+                                                        getRowId={(row) => row.competency_id}
+                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                    />
                                                 </div>
-                                                : <div style={{ width: "400px" }}>
-                                                    <FormControl fullWidth size="small" margin="normal">
-                                                        <InputLabel>Polivalans Tablosu</InputLabel>
-                                                        <Select
-                                                            name="polyvalence_table_id"
-                                                            value={dialogForm.polyvalence_table_id}
-                                                            label="Polivalans Tablosu"
-                                                            onChange={onChangeTableToDialog}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            {this.polyvalenceUnitList.map((unit) => (
-                                                                <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
-                                                    <FormControl fullWidth size="small" margin="normal">
-                                                        <InputLabel>Önceki Değerlendirme Dönemi</InputLabel>
-                                                        <Select
-                                                            name="evaluation_period"
-                                                            value={dialogForm.previous_evaluation_period}
-                                                            label="Önceki Değerlendirme Dönemi"
-                                                            onChange={(e) => {
-                                                                setDialogForm({
-                                                                    ...dialogForm,
-                                                                    previous_evaluation_period: e.target.value
-                                                                })
-                                                            }}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            {dialogDataYear.map((period, i) => (
-                                                                <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
-                                                    <FormControl fullWidth size="small" margin="normal">
-                                                        <InputLabel>Mevcut Değerlendirme Dönemi</InputLabel>
-                                                        <Select
-                                                            name="evaluation_period"
-                                                            value={dialogForm.current_evaluation_period}
-                                                            label="Mevcut Değerlendirme Dönemi"
-                                                            onChange={(e) => {
-                                                                setDialogForm({
-                                                                    ...dialogForm,
-                                                                    current_evaluation_period: e.target.value
-                                                                })
-                                                            }}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            {dialogDataYear.filter((period) => period.name !== dialogForm.previous_evaluation_period)
-                                                                .filter((period) => Number(period.name.slice(0, 4)) >= Number(dialogForm.previous_evaluation_period.slice(0, 4)))
-                                                                .map((period, i) => (
+                                            </RightContainer>
+                                        }
+                                        <Dialog
+                                            open={dialogOpen}
+                                            onClose={handleCloseDialog}
+                                        >
+                                            <DialogTitle>Önceki Dönemden Veri Aktarımı</DialogTitle>
+                                            <DialogContent>
+                                                {startDialogTransferData ?
+                                                    <div>
+                                                        {dialogAlreadyExistData ?
+                                                            <div>
+                                                                <p>Seçtiğiniz dönem için veri zaten mevcut.</p>
+                                                                <p>Üzerine yazmak istiyor musunuz? Bu işlem geri alınamaz.</p>
+                                                                <Button color="error" onClick={handleCloseDialog}>
+                                                                    İptal
+                                                                </Button>
+                                                                <Button onClick={() => { confirmTransferData(); }}>
+                                                                    Verilerin Üzerine Yaz ve Aktarımı Başlat
+                                                                </Button>
+                                                            </div>
+                                                            :
+                                                            <div>
+                                                                <p>Veri aktarımı başlatıldı. Lütfen bekleyin ve işlem tamamlanana kadar sayfayı kapatmayın.</p>
+                                                                <LinearProgressWithLabel value={dialogPercent} />
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    : <div style={{ width: "400px" }}>
+                                                        <FormControl fullWidth size="small" margin="normal">
+                                                            <InputLabel>Polivalans Tablosu</InputLabel>
+                                                            <Select
+                                                                name="polyvalence_table_id"
+                                                                value={dialogForm.polyvalence_table_id}
+                                                                label="Polivalans Tablosu"
+                                                                onChange={onChangeTableToDialog}
+                                                                size="small"
+                                                                required
+                                                            >
+                                                                {this.polyvalenceUnitList.map((unit) => (
+                                                                    <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+                                                        <FormControl fullWidth size="small" margin="normal">
+                                                            <InputLabel>Önceki Değerlendirme Dönemi</InputLabel>
+                                                            <Select
+                                                                name="evaluation_period"
+                                                                value={dialogForm.previous_evaluation_period}
+                                                                label="Önceki Değerlendirme Dönemi"
+                                                                onChange={(e) => {
+                                                                    setDialogForm({
+                                                                        ...dialogForm,
+                                                                        previous_evaluation_period: e.target.value
+                                                                    })
+                                                                }}
+                                                                size="small"
+                                                                required
+                                                            >
+                                                                {dialogDataYear.map((period, i) => (
                                                                     <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
                                                                 ))}
-                                                        </Select>
-                                                    </FormControl>
-                                                </div>}
-                                        </DialogContent>
-                                        {!startDialogTransferData && <DialogActions>
-                                            <Button color={"error"} onClick={handleCloseDialog}>
-                                                İptal
-                                            </Button>
-                                            <Button onClick={handleStartDialogTransferData}>
-                                                Aktarımı Başlat
-                                            </Button>
-                                        </DialogActions>}
-                                    </Dialog>
-                                </Container>
-                            )
-                        ).padding("0 20px")
-                    )
-                })
+                                                            </Select>
+                                                        </FormControl>
+                                                        <FormControl fullWidth size="small" margin="normal">
+                                                            <InputLabel>Mevcut Değerlendirme Dönemi</InputLabel>
+                                                            <Select
+                                                                name="evaluation_period"
+                                                                value={dialogForm.current_evaluation_period}
+                                                                label="Mevcut Değerlendirme Dönemi"
+                                                                onChange={(e) => {
+                                                                    setDialogForm({
+                                                                        ...dialogForm,
+                                                                        current_evaluation_period: e.target.value
+                                                                    })
+                                                                }}
+                                                                size="small"
+                                                                required
+                                                            >
+                                                                {dialogDataYear.filter((period) => period.name !== dialogForm.previous_evaluation_period)
+                                                                    .filter((period) => Number(period.name.slice(0, 4)) >= Number(dialogForm.previous_evaluation_period.slice(0, 4)))
+                                                                    .map((period, i) => (
+                                                                        <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
+                                                                    ))}
+                                                            </Select>
+                                                        </FormControl>
+                                                    </div>}
+                                            </DialogContent>
+                                            {!startDialogTransferData && <DialogActions>
+                                                <Button color={"error"} onClick={handleCloseDialog}>
+                                                    İptal
+                                                </Button>
+                                                <Button onClick={handleStartDialogTransferData}>
+                                                    Aktarımı Başlat
+                                                </Button>
+                                            </DialogActions>}
+                                        </Dialog>
+                                    </Container>
+                                )
+                            ).padding("0 20px")
+                        )
+                    })
         )
     }
 }

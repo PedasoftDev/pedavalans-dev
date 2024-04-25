@@ -1,30 +1,36 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
 import { HStack, ReactView, Spinner, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Views } from "../../../components/Views";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import { Services, useGetMe } from "@realmocean/sdk";
-import Education from "../../../../server/hooks/education/main";
-import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
-import { Resources } from "../../../assets/Resources";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import IAssignedEducationResult from "../../../interfaces/IAssignedEducationResult";
 import AssignEducationResult from "../../../../server/hooks/assignEducationResult/main";
 import { Toast } from "../../../components/Toast";
 import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
+import AccountRelation from "../../../../server/hooks/accountRelation/main";
+import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { selectAssignEducation, setAssignEducationToNull } from "../../../features/assignEducation";
+import { ContainerDataGrid, DialogLabel } from "../Views/Views";
 
 export class AssignedEducationListController extends UIFormController {
 
 
     public LoadView(): UIView {
 
+        const dispatch = useAppDispatch();
+        const selector = useAppSelector;
+        const setAssignEducationNull = () => dispatch(setAssignEducationToNull());
+
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization);
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
         const { assignedEducationResultList, isLoadingAssignedEducationResultList } = AssignEducationResult.GetList(me?.prefs?.organization);
         const { updateAssignedEducation } = AssignEducation.Update();
         const { createAssignedEducationResult } = AssignEducationResult.Create();
@@ -33,23 +39,17 @@ export class AssignedEducationListController extends UIFormController {
         const [filterKey, setFilterKey] = useState("");
 
         return (
-            isLoading || isLoadingAssignedEducationList || isLoadingAssignedEducationResultList ? VStack(Spinner()) :
+            isLoading || isLoadingResult || isLoadingAssignedEducationResultList ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
-                        const resetFormDialog: IAssignedEducationResult.ICreate = {
-                            assigned_education_id: "",
-                            educator_comment: "",
-                            education_id: "",
-                            educator_id: "",
-                            educator_name: "",
-                            employee_id: "",
-                            employee_name: "",
-                            is_education_completed: false,
-                            tenant_id: ""
-                        }
 
+                        const [assignedEducationList, setAssignedEducationList] = useState<IAssignedEducation.IBase[]>([]);
                         const [selectedAssinedEducationId, setSelectedAssinedEducationId] = useState<string>("");
                         const [open, setOpen] = useState(false);
+
+                        /* GLOBAL STATE ASSIGN EDUCATION */
+                        const assignEducationState: IAssignedEducation.IBase = selector(selectAssignEducation);
+
                         const [dialogForm, setDialogForm] = useState<IAssignedEducationResult.ICreate>({
                             assigned_education_id: "",
                             educator_comment: "",
@@ -109,6 +109,7 @@ export class AssignedEducationListController extends UIFormController {
                                         documentId: selectedAssinedEducationId,
                                         data: { status: "completed" }
                                     }, () => {
+                                        getAssignedEducationList();
                                         setOpen(false);
                                         setSelectedAssinedEducationId("");
                                         Toast.fire({
@@ -117,6 +118,7 @@ export class AssignedEducationListController extends UIFormController {
                                         })
                                     })
                                 } else {
+                                    getAssignedEducationList();
                                     setOpen(false);
                                     setSelectedAssinedEducationId("");
                                     Toast.fire({
@@ -154,11 +156,17 @@ export class AssignedEducationListController extends UIFormController {
                                 field: "start_date",
                                 headerName: "Eğitim Başlangıç Tarihi",
                                 flex: 1,
+                                valueGetter: (params) => {
+                                    return new Date(params.value).toLocaleDateString("tr-TR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                }
                             },
                             {
                                 field: "end_date",
                                 headerName: "Eğitim Bitiş Tarihi",
                                 flex: 1,
+                                valueGetter: (params) => {
+                                    return new Date(params.value).toLocaleDateString("tr-TR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                }
                             },
                             {
                                 field: "status",
@@ -190,6 +198,31 @@ export class AssignedEducationListController extends UIFormController {
                             setFilterKey(e.target.value);
                         }
 
+                        const getAssignedEducationList = async () => {
+
+                            if (accountRelations[0].is_admin) {
+                                const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]).then((res) => res.documents as any[]);
+                                setAssignedEducationList(assignedData);
+                            } else {
+                                const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_active", true)]).then((res) => res.documents as any[]);
+                                setAssignedEducationList(assignedData);
+                            }
+                        };
+
+                        useEffect(() => {
+
+                            getAssignedEducationList();
+                            if (assignEducationState) {
+                                handleOpenDialog(assignEducationState.$id);
+                                setTimeout(() => {
+                                    setAssignEducationNull();
+                                }, 1000);
+                            }
+
+                        }, [])
+
 
                         return (
                             VStack({ spacing: 15, alignment: cTopLeading })(
@@ -211,8 +244,8 @@ export class AssignedEducationListController extends UIFormController {
                                                 <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
                                                 <DialogContent>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
-                                                        <TextField label="Eğitim Bilgisi" value={assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name} size="small" fullWidth />
-                                                        <TextField label="Eğitim Alacak Personel" value={assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name} size="small" fullWidth />
+                                                        <DialogLabel><strong>Eğitim Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name}</DialogLabel>
+                                                        <DialogLabel><strong>Çalışan Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name}</DialogLabel>
                                                         <TextField label="Eğitimcinin Yorumu" size="small" fullWidth multiline rows={4} value={dialogForm.educator_comment} onChange={(e) => setDialogForm({ ...dialogForm, educator_comment: e.target.value })} />
                                                         <FormControlLabel
                                                             sx={{ width: "100%", alignContent: "end" }}
@@ -235,6 +268,7 @@ export class AssignedEducationListController extends UIFormController {
                                                         <Button variant='contained' color='primary' onClick={handleSubmitDialog}>Kaydet</Button>}
                                                 </DialogActions>
                                             </Dialog>
+
                                             <div style={{
                                                 display: "flex",
                                                 gap: "10px",
@@ -257,14 +291,14 @@ export class AssignedEducationListController extends UIFormController {
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
                                                 </div>
                                             </div>
-                                            <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                            <ContainerDataGrid>
                                                 <StyledDataGrid
                                                     rows={assignedEducationList.filter((item) => item.is_active === rowsActive).filter((item) => item.education_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
-                                            </div>
+                                            </ContainerDataGrid>
                                         </div>
                                     )
                                 )

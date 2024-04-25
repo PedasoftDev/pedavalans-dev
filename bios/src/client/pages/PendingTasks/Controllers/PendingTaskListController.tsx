@@ -1,4 +1,4 @@
-import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useState } from "@tuval/forms";
+import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useState } from "@tuval/forms";
 import React, { useEffect } from "react";
 import { Views } from "../../../components/Views";
 import { Box, Grid } from "@mui/material";
@@ -14,7 +14,11 @@ import { Resources } from "../../../assets/Resources";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
+import AccountRelation from "../../../../server/hooks/accountRelation/main";
+import { MdOutlineFindInPage } from "react-icons/md";
 
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { setAssignEducation } from "../../../features/assignEducation";
 
 
 
@@ -74,35 +78,91 @@ export class PendingTaskListController extends UIController {
     public LoadView(): UIView {
 
         const { me, isLoading } = useGetMe("console");
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
+        const navigate = useNavigate();
+
+        // global state
+        const dispatch = useAppDispatch();
+        const setAssignEducationToHook = (value: IAssignedEducation.IBase) => dispatch(setAssignEducation(value));
+
         const { assignedEducationList, isLoadingAssignedEducationList, totalAssignedEducation } = AssignEducation.GetOpenListByEducator(me?.$id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriodWithoutTenant();
-        const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.ListByRealValueNotSubmitted();
+        const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.List();
 
 
         return (
-            this.isLoading || !this.polyvalenceTables || isLoading || isLoadingAssignedEducationList || isLoadingPeriods || isLoadingListEmployeeCompetencyValue ? VStack(Spinner()) :
+            this.isLoading || !this.polyvalenceTables || isLoading || isLoadingAssignedEducationList || isLoadingPeriods || isLoadingListEmployeeCompetencyValue || isLoadingResult ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [isOpen, setIsOpen] = useState(-1);
 
-                    useEffect(() => {
-                        const waitingTargets = []
-                        listEmployeeCompetencyValue.forEach((item) => {
-                            if (this.polyvalenceTables.find((x) => x.polyvalence_table_id === item.polyvalence_table_id)
-                                //   && item.competency_evaluation_period.includes(periods[0].evaluation_period_year)
-                                && item.competency_target_value != null && item.competency_target_value != "no-target"
-                            ) {
-                                waitingTargets.push(item)
-                            }
-                        })
+                    const handleClickAssignedEducation = (assignedEducation: IAssignedEducation.IBase) => {
+                        navigate("/app/education/assigned");
+                        setAssignEducationToHook(assignedEducation);
+                    }
 
-                        pendingTasks[0].value = waitingTargets.length,
-                            pendingTasks[0].view =
-                            <List>
-                                {waitingTargets.map((task: any) => (
-                                    <ListElement>{`${task.employee_name} - ${task.competency_name}`}</ListElement>
-                                ))}
-                            </List>
-                        setPendingTasks([...pendingTasks])
+                    useEffect(() => {
+                        const getPendingTasks = async () => {
+                            const queriesAssignedEducation = [Query.limit(10000), Query.equal("status", "open")]
+                            if (!accountRelations[0].is_admin && accountRelations[0].authorization_profile !== "admin") {
+                                queriesAssignedEducation.push(Query.equal("educator_id", me?.$id))
+                            }
+                            const assignedEducationsOpen: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation, queriesAssignedEducation).then(x => x.documents as any);
+                            setPendingTasks((prev) => {
+                                prev[1].value = assignedEducationsOpen.length;
+                                prev[1].view =
+                                    <List>
+                                        {assignedEducationList.map((task: IAssignedEducation.IBase, i) => (
+                                            <ListElement onClick={() => handleClickAssignedEducation(task)} key={i}>
+                                                <MdOutlineFindInPage size={20} />
+                                                <p>{`${task.education_name} - ${task.employee_name}`}</p>
+                                            </ListElement>
+                                        ))}
+                                    </List>
+                                return [...prev];
+                            });
+                        }
+
+                        getPendingTasks();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        // const waitingTargets = []
+                        // listEmployeeCompetencyValue.forEach((item) => {
+                        //     if (this.polyvalenceTables.find((x) => x.polyvalence_table_id === item.polyvalence_table_id)
+                        //         //   && item.competency_evaluation_period.includes(periods[0].evaluation_period_year)
+                        //         && item.competency_target_value != null && item.competency_target_value != "no-target"
+                        //     ) {
+                        //         waitingTargets.push(item)
+                        //     }
+                        // })
+
+                        // pendingTasks[0].value = waitingTargets.length,
+                        //     pendingTasks[0].view =
+                        //     <List>
+                        //         {waitingTargets.map((task: any) => (
+                        //             <ListElement>
+                        //                 <p>{`${task.employee_name} - ${task.competency_name}`}</p>
+                        //             </ListElement>
+                        //         ))}
+                        //     </List>
+                        // setPendingTasks([...pendingTasks])
                     }, [])
 
                     const [pendingTasks, setPendingTasks] = useState([
@@ -120,7 +180,9 @@ export class PendingTaskListController extends UIController {
                             view:
                                 <List>
                                     {assignedEducationList.map((task: IAssignedEducation.IBase) => (
-                                        <ListElement>{`${task.education_name} - ${task.employee_name}`}</ListElement>
+                                        <ListElement>
+                                            <p>{`${task.education_name} - ${task.employee_name}`}</p>
+                                        </ListElement>
                                     ))}
                                 </List>
                         }
@@ -136,7 +198,7 @@ export class PendingTaskListController extends UIController {
                                     <Box sx={{ flexGrow: 1, padding: "16px" }}>
                                         <Grid container spacing={2}>
                                             {pendingTasks.map((item, index) => (
-                                                <Grid item xs={12} sm={6} md={4} lg={3}>
+                                                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                                                     <TaskCard
                                                         onClick={() => {
                                                             if (isOpen == index) {
@@ -145,7 +207,6 @@ export class PendingTaskListController extends UIController {
                                                                 setIsOpen(index);
                                                             }
                                                         }}
-                                                        style={{ cursor: "pointer" }}
                                                     >
                                                         <TaskCardHeader>{item.title}</TaskCardHeader>
                                                         <TaskCardSubHeader>{item.value}</TaskCardSubHeader>

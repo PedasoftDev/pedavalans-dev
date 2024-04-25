@@ -42,12 +42,17 @@ import { red } from '@mui/material/colors'
 import { BarChart, Gauge, gaugeClasses } from '@mui/x-charts'
 import AssignEducation from '../../../../server/hooks/assignEducation/main'
 import { Views } from '../../../components/Views'
+import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main'
+import CompetencyEvaluationPeriod from '../../../../server/hooks/competencyEvaluationPeriod/main'
+import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main'
+import OrganizationStructureEmployeeLog from '../../../../server/hooks/organizationStructureEmployeeLog/main'
+
 
 export class EmployeeDashboard extends UIController {
   public LoadView(): UIView {
     const navigate = useNavigate()
     const { me, isLoading } = useGetMe('console')
-    const { id } = useParams()
+    const { id, period } = useParams()
 
     const { departments, isLoadingDepartments } =
       OrganizationStructureDepartment.GetList(me?.prefs?.organization)
@@ -66,6 +71,13 @@ export class EmployeeDashboard extends UIController {
     const { assignedEducationList, isLoadingAssignedEducationList } =
       AssignEducation.GetList(me?.prefs?.organization)
 
+    const { employees, isLoadingEmployees } =
+      OrganizationStructureEmployee.GetList(me?.prefs?.organization)
+
+    const {employeeLog,isLoadingEmployeeLog} = OrganizationStructureEmployeeLog.List(me?.prefs?.organization)
+
+
+
     const EmployeeInfos = {
       name: '',
       avatar: '',
@@ -78,6 +90,8 @@ export class EmployeeDashboard extends UIController {
     const EducationInfos = {
       educationName: '',
     }
+
+    
     //Gauge için ayarlar
 
     const getColor = (value) => {
@@ -92,18 +106,29 @@ export class EmployeeDashboard extends UIController {
       }
     }
     //
+
     const [employee, setEmployee] = useState(EmployeeInfos)
 
     const [education, setEducation] = useState(EducationInfos)
 
     const [employeeGaugeValue, setEmployeeGaugeValue] = useState(0)
 
+    const [employeeBarValue, setEmployeeBarValue] = useState(0)
+    const [barMaxValue, setBarMaxValue] = useState(0)
+
+
+
+
+    const transformPeriodName = period.split("&").join(" ").split("C").join("Ç").split("i").join("ı").split("o").join("ö").split("Dönemı").join("Dönemi")
+
     return isLoading ||
       isLoadingDepartments ||
       isLoadingPositions ||
       isLoadingCompetencyDepartmentList ||
       isLoadingListEmployeeCompetencyValue ||
-      isLoadingAssignedEducationList
+      isLoadingAssignedEducationList ||
+      isLoadingEmployees || isLoadingEmployeeLog
+      
       ? VStack(Spinner())
       : UIViewBuilder(() => {
           useEffect(() => {
@@ -132,7 +157,7 @@ export class EmployeeDashboard extends UIController {
                   AppInfo.Name,
                   AppInfo.Database,
                   Collections.EmployeeCompetencyValue,
-                  [Query.limit(10000), Query.equal('employee_id', id)]
+                  [Query.limit(10000), Query.equal('employee_id', id), Query.equal('competency_evaluation_period', transformPeriodName)]
                 ).then((res) => {
                   let totalValue = 0
                   let totalTargetValue = 0
@@ -140,11 +165,19 @@ export class EmployeeDashboard extends UIController {
                     totalValue += Number(element.competency_real_value)
                     totalTargetValue += Number(element.competency_target_value)
                   })
-
                   const averagePercentage =
                     (100 * totalValue) / totalTargetValue || 0
-
                   setEmployeeGaugeValue(averagePercentage)
+
+                  let totalBarValue = 0
+                  let totalPiece = 0
+                  res.documents.forEach((element) => {
+                    totalBarValue += Number(element.competency_real_value)
+                    totalPiece = res.documents.length
+                  })
+                  const averageBarValue = totalBarValue / totalPiece || 0
+                  setEmployeeBarValue(averageBarValue)
+                  setBarMaxValue(Math.max(...res.documents.map((x) => x.competency_target_value)))
                 })
               })
               .then(() => {
@@ -163,7 +196,35 @@ export class EmployeeDashboard extends UIController {
                   })
                 })
               })
+
           }, [])
+
+          //Çalışanın birimdeki toplam kidem süresini hesaplar
+          const employeeDateStr = employees.find((x) => x.$id === id)?.job_start_date;
+          const date = new Date(employeeDateStr);
+          const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+          const today = new Date();
+          const differenceMilliSecond = today.getTime() - date.getTime();
+          const differenceYear = Math.floor(differenceMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
+          const differenceMonth = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
+          const differenceDay = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+
+          //Çalışanın birimdeki toplam kidem süresini hesaplar
+
+          //Çalışanın birimdeki çalısma süresini hesaplar
+          // const employeePozitionWorkDate = employeeLog.filter((x) => x.employee_id === id).filter((x) => x.position_name === positions.find((x) => x.id === employee.position)?.name).log_date
+          // const employeeDate = new Date(employeePozitionWorkDate).toLocaleDateString();
+          // const formattedEmployeeDate = `${employeeDate.getDate()}/${employeeDate.getMonth() + 1}/${employeeDate.getFullYear()}`;
+
+          // const todayDay = new Date();
+          // const differenceEmployeeMilliSecond = todayDay.getTime() - employeeDate.getTime();
+          // const differenceEmployeeYear = Math.floor(differenceEmployeeMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
+          // const differenceEmployeeMonth = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
+          // const differenceEmployeeDay = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+
+          //Çalışanın toplam kıdem süresini hesaplar
+
 
           return VStack({ alignment: cTopLeading })(
             HStack({ alignment: cLeading })(
@@ -212,14 +273,17 @@ export class EmployeeDashboard extends UIController {
                         departments.find((x) => x.id === employee.department)
                           ?.name
                       }
-                      experience="1 Yıl 2 Ay 10 Gün"
                       skills={
                         competencyDepartmentList.filter(
                           (x) =>
                             x.competency_department_id === employee.department
                         ).length
                       }
-                      startDate="12.01.2022"
+                      startDate={
+                        new Date(employees.find((x) => x.$id === id)?.job_start_date).toLocaleDateString()
+                           }
+                      experience={`${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
+                      yearOfSeniority={`${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
                     />
                     <EmployeeCertificateCard />
                   </div>
@@ -258,6 +322,7 @@ export class EmployeeDashboard extends UIController {
                       >
                         {listEmployeeCompetencyValue
                           .filter((x) => x.employee_id === id)
+                          .filter((x) => x.competency_evaluation_period === transformPeriodName)
                           .slice()
                           .sort((a, b) => {
                             const percentageA =
@@ -346,7 +411,26 @@ export class EmployeeDashboard extends UIController {
                           text={({ value }) => `%${value}`}
                         />
                         <BarChart
-                          series={[{ data: [4] }]}
+                          series={[{
+                            data: [employeeBarValue],
+                            layout: "vertical",
+                            color: "#1D5291"
+                        }]}
+                          xAxis={[
+                            {
+                                data: ["Ortalama"],
+                                scaleType: "band",
+                                tickLabelStyle: { margin: "0", padding: "0" },
+                            },
+                        ]}
+                        yAxis={[
+                          //min ve max number değeri min 0 max 5 olacak şekilde ayarla
+                          {
+                              min: 0,
+                              max: barMaxValue,
+                              tickLabelStyle: { margin: "0", padding: "0" },
+                          },
+                        ]}
                           width={300}
                           height={300}
                         />
@@ -354,7 +438,12 @@ export class EmployeeDashboard extends UIController {
                     </Card>
                   </div>
 
-                  <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '13px',
+                    }}
+                  >
                     <Card
                       sx={{
                         width: `100%`, // 680'di
@@ -433,6 +522,79 @@ export class EmployeeDashboard extends UIController {
                             </Table>
                           </TableContainer>
                         )}
+                      </CardContent>
+                    </Card>
+
+                    <Card
+                      sx={{
+                        width: `100%`, // 680'di
+                        border: '0px',
+                        boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
+                        borderRadius: '8px',
+                        paddingBottom: '35px',
+                      }}
+                    >
+                      <CardHeader
+                        title={
+                          <Typography variant="h6" style={{ fontSize: '1rem' }}>
+                            Daha Önce Görev Yaptığı Birimler
+                          </Typography>
+                        }
+                        style={{
+                          borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
+                        }}
+                      />
+                      <CardContent
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '5px',
+                        }}
+                      >
+                        <TableContainer component={Paper}>
+                          <Table
+                            sx={{ width: `100%` }}
+                            aria-label="simple table"
+                          >
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>
+                                  Daha Önce Çalıştığı Birim Adı
+                                </TableCell>
+                                <TableCell align="center">
+                                  Çalışma Süresi
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {employeeLog
+                                .filter((x) => x.employee_id === id)
+                                .filter(
+                                  (x) =>
+                                    x.position_name !==
+                                    positions.find(
+                                      (x) => x.id === employee.position
+                                    )?.name
+                                )
+                                .map((log) => (
+                                  <TableRow
+                                    sx={{
+                                      '&:last-child td, &:last-child th': {
+                                        border: 0,
+                                      },
+                                    }}
+                                  >
+                                    <TableCell component="th" scope="row">
+                                      {log.position_name}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      {log.job_start_date} - ???
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
                       </CardContent>
                     </Card>
                   </div>

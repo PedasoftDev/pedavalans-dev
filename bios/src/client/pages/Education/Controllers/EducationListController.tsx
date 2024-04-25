@@ -9,6 +9,7 @@ import { useGetMe } from "@realmocean/sdk";
 import Education from "../../../../server/hooks/education/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
 import { Resources } from "../../../assets/Resources";
+import AccountRelation from "../../../../server/hooks/accountRelation/main";
 
 
 export class EducationListController extends UIFormController {
@@ -18,6 +19,7 @@ export class EducationListController extends UIFormController {
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
         const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
         const { educationCompetencyRelationList, isLoading: isLoadingRelation } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
 
@@ -25,7 +27,7 @@ export class EducationListController extends UIFormController {
         const [filterKey, setFilterKey] = useState("");
 
         return (
-            isLoading || isLoadingEducation || isLoadingRelation ? VStack(Spinner()) :
+            isLoading || isLoadingEducation || isLoadingRelation || isLoadingResult ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
                         const columns: GridColDef[] = [
@@ -110,7 +112,7 @@ export class EducationListController extends UIFormController {
                                                     display: "flex",
                                                     gap: "10px"
                                                 }}>
-                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>
+                                                    {accountRelations[0].is_admin && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>}
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
                                                 </div>
                                             </div>

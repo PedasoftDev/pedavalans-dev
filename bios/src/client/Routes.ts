@@ -136,7 +136,7 @@ export const Routes = () => {
 
                 // competency status report
                 UIRoute('competency-status-report', CompetencyStatusReportController).children(
-                    UIRoute('view', CompetencyStatusReportViewController)
+                    UIRoute('view', CompetencyStatusReportViewController),
                 ),
 
                 // authorization profile
@@ -166,7 +166,7 @@ export const Routes = () => {
                 ),
 
                 UIRoute('employee-dashboard', EmployeeDashboardController).children(
-                    UIRoute('view/:id', EmployeeDashboard)
+                    UIRoute('view/:id/:period', EmployeeDashboard)
                 ),
 
                 // not found

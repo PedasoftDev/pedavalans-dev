@@ -100,7 +100,8 @@ const AddEmployeeView = (
                 manager_name: formEmployee.manager_id ?
                     props.employees.find((employee) => employee.id === formEmployee.manager_id)?.first_name + " "
                     + props.employees.find((employee) => employee.id === formEmployee.manager_id)?.last_name : "",
-                tenant_id: me?.prefs?.organization
+                tenant_id: me?.prefs?.organization,
+                job_start_date: formEmployee.job_start_date
             }).then(() => {
                 Toast.fire({
                     icon: 'success',

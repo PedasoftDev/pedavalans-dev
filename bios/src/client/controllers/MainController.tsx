@@ -1,9 +1,9 @@
 
-import { BiosController, UIView } from "@tuval/forms";
+import { BiosController, ReactView, UIView } from "@tuval/forms";
 import { Routes } from "../Routes";
-import Parameters from "../../server/hooks/parameters/main";
-import { Resources } from "../assets/Resources";
-
+import { Provider } from 'react-redux'
+import store from "../store";
+import React, { Fragment } from "react";
 export class MainController extends BiosController {
     public override LoadBiosView(): UIView {
         // title
@@ -15,7 +15,13 @@ export class MainController extends BiosController {
         // burada me yok o yüzden parametreleri alamıyor
 
         return (
-            Routes()
+            ReactView(
+                <Provider store={store}>
+                    <Fragment>
+                        {Routes().render()}
+                    </Fragment>
+                </Provider>
+            )
         )
     }
 }

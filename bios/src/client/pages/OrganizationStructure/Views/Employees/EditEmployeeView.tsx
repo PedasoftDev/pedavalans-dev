@@ -108,7 +108,8 @@ const EditEmployeeView = (
                 manager_name: formEmployee.manager_id ?
                     props.employees.find((employee) => employee.id === formEmployee.manager_id)?.first_name + " "
                     + props.employees.find((employee) => employee.id === formEmployee.manager_id)?.last_name : "",
-                tenant_id: formEmployee.tenant_id
+                tenant_id: formEmployee.tenant_id,
+                job_start_date: formEmployee.job_start_date
             }).then(() => {
                 Toast.fire({
                     icon: "success",
@@ -174,7 +175,8 @@ const EditEmployeeView = (
                         manager_name: formEmployee.manager_id ?
                             props.employees.find((employee) => employee.id === formEmployee.manager_id)?.first_name + " "
                             + props.employees.find((employee) => employee.id === formEmployee.manager_id)?.last_name : "",
-                        tenant_id: formEmployee.tenant_id
+                        tenant_id: formEmployee.tenant_id,
+                        job_start_date: formEmployee.job_start_date
                     }).then(() => {
                         Toast.fire({
                             icon: "success",

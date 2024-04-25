@@ -19,6 +19,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
+import { DateTimePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
 
 const resetForm: IAssignedEducation.ICreate = {
     education_code: "",
@@ -166,28 +168,29 @@ export class AssignEducationController extends UIFormController {
                                                 display: "flex",
                                                 gap: "10px",
                                             }}>
-                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                    <DatePicker label="Eğitim Başlangıç Tarihi"
-                                                        format="DD/MM/YYYY"
+                                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="tr">
+                                                    <DateTimePicker label="Eğitim Başlangıç Tarihi"
+                                                        format="DD/MM/YYYY HH:mm"
+                                                        value={dayjs(form.start_date)}
                                                         slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                                         onChange={(e: any) => {
-                                                            if (e.$D < 10) {
-                                                                setForm({ ...form, start_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                            } else {
-                                                                setForm({ ...form, start_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                            }
+                                                            setForm({
+                                                                ...form,
+                                                                start_date: e.$d.toString(),
+                                                                end_date: e.$d.toString()
+                                                            });
                                                         }} />
                                                 </LocalizationProvider>
-                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                    <DatePicker label="Eğitim Bitiş Tarihi"
-                                                        format="DD/MM/YYYY"
+                                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="tr">
+                                                    <DateTimePicker label="Eğitim Bitiş Tarihi"
+                                                        format="DD/MM/YYYY HH:mm"
+                                                        value={dayjs(form.end_date)}
                                                         slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                                         onChange={(e: any) => {
-                                                            if (e.$D < 10) {
-                                                                setForm({ ...form, end_date: `0${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                            } else {
-                                                                setForm({ ...form, end_date: `${e.$D}/${e.$M + 1}/${e.$y}` });
-                                                            }
+                                                            setForm({
+                                                                ...form,
+                                                                end_date: e.$d.toString()
+                                                            });
                                                         }} />
                                                 </LocalizationProvider>
                                             </div>
