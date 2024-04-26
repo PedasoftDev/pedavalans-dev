@@ -19,7 +19,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
-import { DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 
 const resetForm: IAssignedEducation.ICreate = {
@@ -31,6 +30,7 @@ const resetForm: IAssignedEducation.ICreate = {
     tenant_id: "",
     education_id: "",
     education_name: "",
+    hour: "0:00",
     educator_name: "",
     employee_name: "",
     status: "open",
@@ -69,6 +69,7 @@ export class AssignEducationController extends UIFormController {
                                     education_name: form.education_name,
                                     educator_id: form.educator_id,
                                     educator_name: form.educator_name,
+                                    hour: form.hour,
                                     employee_name: `${employee.first_name} ${employee.last_name}`,
                                     start_date: form.start_date,
                                     end_date: form.end_date,
@@ -168,31 +169,76 @@ export class AssignEducationController extends UIFormController {
                                                 display: "flex",
                                                 gap: "10px",
                                             }}>
-                                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="tr">
-                                                    <DateTimePicker label="Eğitim Başlangıç Tarihi"
-                                                        format="DD/MM/YYYY HH:mm"
-                                                        value={dayjs(form.start_date)}
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker label="Eğitim Başlangıç Tarihi"
+                                                        format="DD/MM/YYYY"
                                                         slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                                        value={dayjs(form.start_date)}
                                                         onChange={(e: any) => {
                                                             setForm({
                                                                 ...form,
-                                                                start_date: e.$d.toString(),
-                                                                end_date: e.$d.toString()
+                                                                start_date: e.$d,
+                                                                end_date: e.$d
                                                             });
                                                         }} />
                                                 </LocalizationProvider>
-                                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="tr">
-                                                    <DateTimePicker label="Eğitim Bitiş Tarihi"
-                                                        format="DD/MM/YYYY HH:mm"
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker label="Eğitim Bitiş Tarihi"
+                                                        format="DD/MM/YYYY"
                                                         value={dayjs(form.end_date)}
                                                         slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                                         onChange={(e: any) => {
-                                                            setForm({
-                                                                ...form,
-                                                                end_date: e.$d.toString()
-                                                            });
+                                                            setForm({ ...form, end_date: e.$d });
                                                         }} />
                                                 </LocalizationProvider>
+                                            </div>
+                                            <div style={{
+                                                display: "flex",
+                                                gap: "10px",
+                                            }}>
+                                                <TextField
+                                                    label="Saat"
+                                                    name="hour"
+                                                    value={form.hour.split(":")[0]}
+                                                    onChange={(e) => {
+                                                        const minute = form.hour.split(":")[1];
+                                                        let hour = e.target.value;
+                                                        if (hour.startsWith("0")) {
+                                                            hour = hour.substring(1);
+                                                        }
+                                                        setForm({ ...form, hour: `${hour}:${minute}` });
+                                                    }}
+                                                    size="small"
+                                                    required
+                                                    fullWidth
+                                                    type="number"
+                                                    inputProps={{
+                                                        min: 0
+                                                    }}
+                                                />
+                                                <TextField
+                                                    label="Dakika"
+                                                    name="minute"
+                                                    fullWidth
+                                                    value={form.hour.split(":")[1]}
+                                                    onChange={(e) => {
+                                                        const hour = form.hour.split(":")[0];
+                                                        if (e.target.value.startsWith("0")) {
+                                                            e.target.value = e.target.value.substring(1);
+                                                        }
+                                                        if (parseInt(e.target.value) > 59) {
+                                                            e.target.value = "59";
+                                                        }
+                                                        setForm({ ...form, hour: `${hour}:${e.target.value}` });
+                                                    }}
+                                                    size="small"
+                                                    required
+                                                    type="number"
+                                                    inputProps={{
+                                                        min: 0,
+                                                        max: 59,
+                                                    }}
+                                                />
                                             </div>
                                             <div
                                                 style={{

@@ -11,6 +11,7 @@ namespace IAssignedEducation {
         educator_name: string;
         start_date: string;
         end_date: string;
+        hour: string;
         status: string;
         is_active: boolean;
         is_deleted: boolean;
@@ -25,6 +26,7 @@ namespace IAssignedEducation {
         educator_name: string;
         start_date: string;
         end_date: string;
+        hour: string;
         status: string;
         tenant_id: string;
     }

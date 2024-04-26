@@ -108,34 +108,6 @@ const EmployeeCard = ({
           </span>{' '}
           {skills}
         </Typography>
-        <Typography
-          variant="body2"
-          color="InfoText"
-          style={{ fontSize: '1rem' }}
-        >
-          <span
-            style={{
-              color: 'rgba(128, 128, 128,1)',
-            }}
-          >
-            İşe Başlama Tarihi :
-          </span>{' '}
-          {startDate}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="InfoText"
-          style={{ fontSize: '1rem' }}
-        >
-          <span
-            style={{
-              color: 'rgba(128, 128, 128,1)',
-            }}
-          >
-            Birimdeki Çalışma Süresi :
-          </span>{' '}
-          {experience}
-        </Typography>
       </CardContent>
     </Card>
   )

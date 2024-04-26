@@ -14,7 +14,6 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
-
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectAssignEducation, setAssignEducationToNull } from "../../../features/assignEducation";
 import { ContainerDataGrid, DialogLabel } from "../Views/Views";
@@ -157,7 +156,7 @@ export class AssignedEducationListController extends UIFormController {
                                 headerName: "Eğitim Başlangıç Tarihi",
                                 flex: 1,
                                 valueGetter: (params) => {
-                                    return new Date(params.value).toLocaleDateString("tr-TR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                    return new Date(params.value).toLocaleDateString('tr-TR')
                                 }
                             },
                             {
@@ -165,8 +164,13 @@ export class AssignedEducationListController extends UIFormController {
                                 headerName: "Eğitim Bitiş Tarihi",
                                 flex: 1,
                                 valueGetter: (params) => {
-                                    return new Date(params.value).toLocaleDateString("tr-TR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                    return new Date(params.value).toLocaleDateString('tr-TR')
                                 }
+                            },
+                            {
+                                field: "hour",
+                                headerName: "Saat",
+                                width: 100,
                             },
                             {
                                 field: "status",
