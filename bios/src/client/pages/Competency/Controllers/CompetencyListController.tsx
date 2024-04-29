@@ -295,7 +295,15 @@ export class CompetencyListController extends UIController {
                             minWidth: 200,
                             editable: false,
                             disableColumnMenu: true,
-                            flex: 1
+                            flex: 1,
+                            renderCell: (params) => { // renderCell özelliğini ekleyerek hücreyi özelleştir
+                                return (
+                                    <div style={{ cursor: "pointer" }} onClick={() => navigate(`/app/competency-dashboard/view/${params.row.competency_id}`)}>
+                                        {params.value}
+                                    </div>
+                                );
+                            }
+
                         },
                         {
                             field: "competency_group_name",
