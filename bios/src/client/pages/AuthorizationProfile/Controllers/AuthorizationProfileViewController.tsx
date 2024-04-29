@@ -12,6 +12,7 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import { Toast } from "../../../components/Toast";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
+import { GridContainer } from "../Views/View";
 
 export class AuthorizationProfileViewController extends UIController {
 
@@ -113,14 +114,14 @@ export class AuthorizationProfileViewController extends UIController {
                                             gap: "10px",
                                             width: "100%",
                                         }}>
-                                            <div style={{ height: "calc(100vh - 125px)", width: "calc(100vw - 330px)" }}>
+                                          <GridContainer>
                                                 <StyledDataGrid
                                                     rows={accounts}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
-                                            </div>
+                                            </GridContainer>
                                         </div>
                                     )
                                 )

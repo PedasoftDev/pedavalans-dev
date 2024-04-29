@@ -1,0 +1,26 @@
+import {
+  HStack,
+  UIController,
+  UIRouteOutlet,
+  UIScene,
+  UIView,
+  cTopLeading,
+  useState,
+} from '@tuval/forms'
+import { PortalMenu } from '../../../components/PortalMenu'
+
+export class VocationalQualificationTypeController extends UIController {
+  public LoadView(): any {
+    const [theme] = useState(
+      JSON.parse(localStorage.getItem('pedavalans_theme'))
+    )
+    return UIScene(
+      HStack({ alignment: cTopLeading })(
+        PortalMenu('Mesleki Yeterlilik Belge Türü'),
+        UIRouteOutlet().width('100%').height('100%').minWidth('')
+      )
+        .background(theme ? 'rgba(0,0,0,.85)' : '')
+        .foregroundColor(theme ? 'white' : '')
+    )
+  }
+}

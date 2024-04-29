@@ -22,6 +22,7 @@ import ICompetencyGrade from "../../../interfaces/ICompetencyGrade";
 import { Umay } from "@tuval/core";
 import { Toast } from "../../../components/Toast";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
+import { GridContainer } from "../Views/View";
 
 interface ICompetencyImportFromExcel {
     yetkinlik_adi: string;
@@ -400,14 +401,14 @@ export class CompetencyListController extends UIController {
                                                 }
                                             </div>
                                         </div>
-                                        <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                        <GridContainer>
                                             <StyledDataGrid
                                                 rows={competencyList.filter((item) => item.is_active_competency === rowsActive).filter((item) => item.competency_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                 columns={columns}
                                                 getRowId={(row) => row.$id}
                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                             />
-                                        </div>
+                                        </GridContainer>
                                         <Dialog
                                             open={open}
                                             onClose={handleClose}

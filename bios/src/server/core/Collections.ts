@@ -27,6 +27,8 @@ namespace Collections {
     export const CollectionAttributeVersion = "collection_attribute_version";
     export const DatabaseVersion = "database_version";
     export const EmployeeCompetencyValue = "employee_competency_value";
+    export const VocationalQualificationType: string = 'vocational_qualification_type'
+    export const VocationalQualification: string = 'vocational_qualification'
 }
 
 export default Collections;

@@ -8,6 +8,7 @@ import { Views } from '../../../components/Views';
 import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 import { useGetMe } from '@realmocean/sdk';
+import { GridContainer } from '../Views/View';
 
 export class CompetencyGroupListController extends UIFormController {
 
@@ -106,14 +107,14 @@ export class CompetencyGroupListController extends UIFormController {
                                                 <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency-group/create")}>Yeni Yetkinlik Grubu</Button>
                                             </div>
                                         </div>
-                                        <div style={{ height: "calc(100vh - 225px)", width: "calc(100vw - 330px)" }}>
+                                        <GridContainer>
                                             <StyledDataGrid
                                                 rows={filteredRows()}
                                                 columns={columns}
                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 getRowId={(row) => row.$id}
                                             />
-                                        </div>
+                                        </GridContainer>
                                     </div>
                                 )
                             )

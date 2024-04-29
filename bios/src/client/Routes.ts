@@ -59,6 +59,15 @@ import { PendindTasksController } from './pages/PendingTasks/Controllers/Pending
 import { PendingTaskListController } from './pages/PendingTasks/Controllers/PendingTaskListController';
 import { EmployeeDashboardController } from './pages/EmployeeDashboard/Controllers/EmployeeDashboardController';
 import { EmployeeDashboard } from './pages/EmployeeDashboard/Controllers/EmployeeDashboard';
+import { VocationalQualificationTypeListController } from './pages/VocationalQualificationType/Controllers/VocationalQualificationTypeListController'
+import { CreateQualificationTypeController } from './pages/VocationalQualificationType/Controllers/CreateQualificationTypeController'
+import { VocationalQualificationTypeController } from './pages/VocationalQualificationType/Controllers/VocationalQualificationTypeController'
+import { UpdateVocationalQualificationTypeController } from './pages/VocationalQualificationType/Controllers/UpdateVocationalQualificationTypeController'
+import { VocationalQualificationController } from './pages/VocationalQualification/Controllers/VocationalQualificationController'
+import { VocationalQualificationListController } from './pages/VocationalQualification/Controllers/VocationalQualificationListController'
+import { UpdateVocationalQualificationController } from './pages/VocationalQualification/Controllers/UpdateVocationalQualificationController'
+import { CreateVocationalQualificationController } from './pages/VocationalQualification/Controllers/CreateVocationalQualificationController'
+
 
 export const Routes = () => {
     return (
@@ -167,6 +176,21 @@ export const Routes = () => {
 
                 UIRoute('employee-dashboard', EmployeeDashboardController).children(
                     UIRoute('view/:id/:period', EmployeeDashboard)
+                ),
+
+                UIRoute(
+                    'vocational-qualification',
+                    VocationalQualificationController
+                ).children(
+                    UIRoute('list', VocationalQualificationListController),
+                    UIRoute('create', CreateVocationalQualificationController),
+                    UIRoute('edit/:id', UpdateVocationalQualificationController)
+                ),
+
+                UIRoute('vocational-qualification-type', VocationalQualificationTypeController).children(
+                    UIRoute('list', VocationalQualificationTypeListController),
+                    UIRoute('create', CreateQualificationTypeController),
+                    UIRoute('edit/:id', UpdateVocationalQualificationTypeController)
                 ),
 
                 // not found

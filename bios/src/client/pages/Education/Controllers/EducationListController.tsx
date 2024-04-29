@@ -10,6 +10,7 @@ import Education from "../../../../server/hooks/education/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
 import { Resources } from "../../../assets/Resources";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
+import { GridContainer } from "../Views/Views";
 
 
 export class EducationListController extends UIFormController {
@@ -116,14 +117,14 @@ export class EducationListController extends UIFormController {
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
                                                 </div>
                                             </div>
-                                            <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                            <GridContainer>
                                                 <StyledDataGrid
                                                     rows={educationList.filter((item) => item.is_active === rowsActive).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
-                                            </div>
+                                            </GridContainer>
                                         </div>
                                     )
                                 )

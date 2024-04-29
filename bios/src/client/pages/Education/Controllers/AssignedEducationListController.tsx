@@ -16,7 +16,7 @@ import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectAssignEducation, setAssignEducationToNull } from "../../../features/assignEducation";
-import { ContainerDataGrid, DialogLabel } from "../Views/Views";
+import { ContainerDataGrid, DialogLabel, GridContainer } from "../Views/Views";
 
 export class AssignedEducationListController extends UIFormController {
 
@@ -295,14 +295,14 @@ export class AssignedEducationListController extends UIFormController {
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
                                                 </div>
                                             </div>
-                                            <ContainerDataGrid>
+                                            <GridContainer>
                                                 <StyledDataGrid
                                                     rows={assignedEducationList.filter((item) => item.is_active === rowsActive).filter((item) => item.education_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
-                                            </ContainerDataGrid>
+                                            </GridContainer>
                                         </div>
                                     )
                                 )

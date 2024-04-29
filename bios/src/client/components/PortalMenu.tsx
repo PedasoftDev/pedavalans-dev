@@ -1,6 +1,7 @@
 import React, { Fragment, ReactElement, useEffect, useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
+import { GrCertificate } from "react-icons/gr";
 import {
     useNavigate,
     ReactView,
@@ -167,6 +168,12 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     title: 'Yetkinlik Düzeyleri',
                     link: '/app/competency-grade/list',
                     icon: <FaSignal size={25} />,
+                    isVisible: tableAuth ? isAdmin : true,
+                },
+                {
+                    title: 'Mesleki Belge ve Sertifikalar',
+                    link: '/app/vocational-qualification/list',
+                    icon: <GrCertificate size={25} />,
                     isVisible: tableAuth ? isAdmin : true,
                 },
                 {

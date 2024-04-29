@@ -14,6 +14,7 @@ import { Tab } from "../Views/Form";
 import { IoPersonAddOutline } from "react-icons/io5";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import Swal from "sweetalert2";
+import { GridContainer } from "../Views/View";
 
 
 const resetMe: IAccount.IBase = {
@@ -391,10 +392,7 @@ export class AccountManagementViewController extends UIController {
                                                 </div>
                                             }
                                             {selectedTab === 1 &&
-                                                <div style={{
-                                                    height: "calc(100vh - 150px)",
-                                                    width: "calc(100vw - 310px)"
-                                                }}>
+                                                <GridContainer>
                                                     <StyledDataGrid
                                                         columns={[
                                                             { field: '$id', headerName: 'ID', width: 100 },
@@ -407,7 +405,7 @@ export class AccountManagementViewController extends UIController {
                                                         ]}
                                                         rows={accounts}
                                                         getRowId={(row) => row.$id} />
-                                                </div>
+                                                </GridContainer>
                                             }
                                             {selectedTab === 2 &&
                                                 <div style={{

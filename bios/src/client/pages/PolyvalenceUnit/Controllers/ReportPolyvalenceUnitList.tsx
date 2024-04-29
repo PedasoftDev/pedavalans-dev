@@ -22,6 +22,7 @@ import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import { getReportToExcelByMachinePolyvalenceTable } from "../../../assets/Functions/getReportToExcelByMachinePolyvalenceTable";
+import { GridContainer } from "../Views/View";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -174,11 +175,11 @@ export class ReportPolyvalenceUnitList extends UIController {
                                 ).height().paddingTop("15px"),
                                 VStack(
                                     ReactView(
-                                        <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                        <GridContainer>
                                             {rows.length != 0 &&
                                                 <StyledDataGrid rows={rows} columns={columns} localeText={trTR.components.MuiDataGrid.defaultProps.localeText} style={{ width: "100%" }} />
                                             }
-                                        </div>
+                                        </GridContainer>
                                     )
                                 )
                             ).padding("0 20px")

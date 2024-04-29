@@ -9,6 +9,7 @@ import { useGetMe } from "@realmocean/sdk";
 import Machine from "../../../../server/hooks/machine/main";
 import Competency from "../../../../server/hooks/competency/main";
 import CompetencyMachineAssociation from "../../../../server/hooks/competencyMachineAssocation/main";
+import { GridContainer } from "../Views/View";
 
 export class MachineListController extends UIFormController {
 
@@ -106,14 +107,14 @@ export class MachineListController extends UIFormController {
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/machine/create")}>Yeni Makine</Button>
                                                 </div>
                                             </div>
-                                            <div style={{ height: "calc(100vh - 150px)", width: "calc(100vw - 330px)" }}>
+                                            <GridContainer>
                                                 <StyledDataGrid
                                                     rows={machineList.filter((item) => item.is_active === rowsActive).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                 />
-                                            </div>
+                                            </GridContainer>
                                         </div>
                                     )
                                 )
