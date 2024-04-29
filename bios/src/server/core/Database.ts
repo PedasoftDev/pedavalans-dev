@@ -1966,108 +1966,108 @@ const Database: IDatabase = {
             id: 'vocational_qualification_type',
             name: 'Vocational Qualification Type',
             description: {
-              en: 'A collection of logs of Vocational Qualification types.',
-              tr: 'Mesleki Yeterlilik türlerinin loglarının koleksiyonudur.',
+                en: 'A collection of logs of Vocational Qualification types.',
+                tr: 'Mesleki Yeterlilik türlerinin loglarının koleksiyonudur.',
             },
             version: 5,
             attributes: [
-              {
-                key: 'document_type_id',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_type_code',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_type_name',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_is_validity_period',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'is_active',
-                type: 'boolean',
-                default: true,
-                version: 1,
-              },
-              {
-                key: 'is_deleted',
-                type: 'boolean',
-                default: false,
-                version: 1,
-              },
-              {
-                key: 'tenant_id',
-                type: 'string',
-                version: 1,
-              },
+                {
+                    key: 'document_type_id',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_type_code',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_type_name',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_is_validity_period',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'is_active',
+                    type: 'boolean',
+                    default: true,
+                    version: 1,
+                },
+                {
+                    key: 'is_deleted',
+                    type: 'boolean',
+                    default: false,
+                    version: 1,
+                },
+                {
+                    key: 'tenant_id',
+                    type: 'string',
+                    version: 1,
+                },
             ],
-          },
-          {
+        },
+        {
             id: 'vocational_qualification',
             name: 'Vocational Qualification',
             description: {
-              en: 'A collection of logs of Vocational Qualification.',
-              tr: 'Mesleki Yeterliliğin loglarının koleksiyonudur.',
+                en: 'A collection of logs of Vocational Qualification.',
+                tr: 'Mesleki Yeterliliğin loglarının koleksiyonudur.',
             },
             version: 5,
             attributes: [
-              {
-                key: 'document_id',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_code',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_name',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_validity_period',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_type_id',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'document_type_name',
-                type: 'string',
-                version: 1,
-              },
-              {
-                key: 'is_active',
-                type: 'boolean',
-                default: true,
-                version: 1,
-              },
-              {
-                key: 'is_deleted',
-                type: 'boolean',
-                default: false,
-                version: 1,
-              },
-              {
-                key: 'tenant_id',
-                type: 'string',
-                version: 1,
-              },
+                {
+                    key: 'document_id',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_code',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_name',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_validity_period',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_type_id',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'document_type_name',
+                    type: 'string',
+                    version: 1,
+                },
+                {
+                    key: 'is_active',
+                    type: 'boolean',
+                    default: true,
+                    version: 1,
+                },
+                {
+                    key: 'is_deleted',
+                    type: 'boolean',
+                    default: false,
+                    version: 1,
+                },
+                {
+                    key: 'tenant_id',
+                    type: 'string',
+                    version: 1,
+                },
             ],
-          }
+        }
     ]
 }
 
