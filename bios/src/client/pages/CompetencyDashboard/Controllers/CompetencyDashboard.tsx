@@ -30,7 +30,7 @@
 //   Typography,
 // } from '@mui/material'
 // import { Views } from '../../../components/Views'
-// import PositionCard from '../Views/PositionCard'
+// import PositionCard from '../Views/CompetencyCard'
 // import AppInfo from '../../../../AppInfo';
 // import Collections from '../../../../server/core/Collections';
 // import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
@@ -47,218 +47,14 @@
 //     const { me, isLoading } = useGetMe('console')
 //     const { id,period } = useParams()
 
-//     const {positions,isLoadingPositions} = OrganizationStructurePosition.GetList(me?.prefs?.organization)
-//     const {employees,isLoadingEmployees} = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
-//     const {competencyList,isLoadingCompetencyList} = Competency.GetList(me?.prefs?.organization)
-//     const {employeeLog,isLoadingEmployeeLog} = OrganizationStructureEmployeeLog.List(me?.prefs?.organization)
-
-
-//     const [competencyLength, setCompetencyLength] = useState(0)
-//     const [competencyAverageValue, setCompetencyAverageValue] = useState(0)
-//     const [employeesList, setEmployeesList] = useState([])
-//     const [competencyAverageValues, setCompetencyAverageValues] = useState({});
-//     const [competencyData, setCompetencyData] = useState([]);
-
-
 //     const transformPeriodName = period.split("&").join(" ").split("C").join("Ç").split("i").join("ı").split("o").join("ö").split("Dönemı").join("Dönemi")
 
 
-//     return isLoading || isLoadingPositions || isLoadingEmployees || isLoadingEmployeeLog || isLoadingCompetencyList
+//     return isLoading
       
 //       ? VStack(Spinner())
 //       : UIViewBuilder(() => {
-//           useEffect(() => {
-//             Services.Databases.listDocuments(
-//               AppInfo.Name,
-//               AppInfo.Database,
-//               Collections.OrganizationStructureEmployee,
-//               [
-//                 Query.limit(10000),
-//                 Query.equal("position_id", id),
-//               ]
-//             ).then((res) => {
-//               const employees = res.documents.map((doc) => doc.first_name + ' ' + doc.last_name)
-//               setEmployeesList(employees)
-//               const departmen_id = res.documents.map((doc) => doc.department_id)
-//               Services.Databases.listDocuments(
-//                 AppInfo.Name,
-//                 AppInfo.Database,
-//                 Collections.CompetencyDepartment,
-//                 [
-//                   Query.limit(10000),
-//                   Query.equal("competency_department_id", departmen_id),
-//                 ]
-//               ).then((res) => {
-//                 const competency_id = res.documents.map((doc) => doc.competency_id)
-//                 Services.Databases.listDocuments(
-//                   AppInfo.Name,
-//                   AppInfo.Database,
-//                   Collections.Competency,
-//                   [
-//                     Query.limit(10000),
-//                     Query.equal("competency_id", competency_id),
-//                   ]
-//                 ).then((res) => {
-//                   setCompetencyLength(res.documents.length)
-//                   Services.Databases.listDocuments(
-//                     AppInfo.Name,
-//                     AppInfo.Database,
-//                     Collections.EmployeeCompetencyValue,
-//                     [
-//                       Query.limit(10000),
-//                       Query.equal("competency_id", competency_id),
-//                       Query.equal('competency_evaluation_period', transformPeriodName),
-//                     ]
-//                     ).then((res) => {
-//                       let sumRealValue = 0
-//                       res.documents.forEach((doc) => {
-//                         sumRealValue += Number(doc.competency_real_value)
-//                       })
-//                       const finishValue = (sumRealValue / res.documents.length)
-//                       setCompetencyAverageValue(finishValue)
-//                     })
-//                 })
-//               })
-//             }).then(() => {
-//               Services.Databases.listDocuments(
-//                 AppInfo.Name,
-//                 AppInfo.Database,
-//                 Collections.OrganizationStructureEmployee,
-//                 [
-//                   Query.limit(10000),
-//                   Query.equal("position_id", id),
-//                 ]
-//               ).then((res) => {
-//                 const employeeIds = res.documents.map((doc) => doc.$id);
-//                 const promises = employeeIds.map(employeeId => {
-//                   return Services.Databases.listDocuments(
-//                     AppInfo.Name,
-//                     AppInfo.Database,
-//                     Collections.EmployeeCompetencyValue,
-//                     [
-//                       Query.limit(10000),
-//                       Query.equal("employee_id", employeeId),
-//                       Query.equal('competency_evaluation_period', transformPeriodName),
-//                     ]
-//                   ).then((res) => {
-//                     const competencyValues = res.documents.map(doc => parseInt(doc.competency_real_value));
-//                     const totalCompetencyValue = competencyValues.reduce((acc, val) => acc + val, 0);
-//                     const averageCompetencyValue = totalCompetencyValue / competencyValues.length;
 
-//                     setCompetencyAverageValues(prevState => ({
-//                       ...prevState,
-//                       [employeeId]: averageCompetencyValue,
-//                     }));
-//                   })
-//                 });
-//                 Promise.all(promises).then(() => {
-//                   setEmployeesList(employeeIds);
-//                 });
-//               })
-//             }).then(() => {
-//               Services.Databases.listDocuments(
-//                 AppInfo.Name,
-//                 AppInfo.Database,
-//                 Collections.OrganizationStructureEmployee,
-//                 [
-//                   Query.limit(10000),
-//                   Query.equal("position_id", id),
-//                 ]
-//               ).then((res) => {
-//                 const employeeIds = res.documents.map((doc) => doc.$id);
-//                 const competencySums = {};
-//                 const competencyCounts = {};
-//                 employeeIds.forEach(employeeId => {
-//                   Services.Databases.listDocuments(
-//                     AppInfo.Name,
-//                     AppInfo.Database,
-//                     Collections.EmployeeCompetencyValue,
-//                     [
-//                       Query.limit(10000),
-//                       Query.equal("employee_id", employeeId),
-//                       Query.equal('competency_evaluation_period', transformPeriodName)
-//                     ]
-//                   ).then((competencyRes) => {
-//                     competencyRes.documents.forEach((competencyDoc) => {
-//                       const { competency_real_value, competency_target_value, competency_id } = competencyDoc;
-//                       const percentage = (competency_real_value * 100) / competency_target_value;
-            
-//                       // Eğer bu competency_id zaten varsa, yüzdelik değeri topla
-//                       if (competencySums[competency_id]) {
-//                         competencySums[competency_id] += percentage;
-//                         competencyCounts[competency_id]++;
-//                       } else { // Yoksa, yeni bir nesne oluştur ve yüzdelik değerini ekle
-//                         competencySums[competency_id] = percentage;
-//                         competencyCounts[competency_id] = 1;
-//                       }
-//                     });
-//                   });
-//                 });
-//                 Object.keys(competencySums).forEach(competencyId => {
-//                   const totalPercentage = competencySums[competencyId];
-//                   const count = competencyCounts[competencyId];
-//                   const average = totalPercentage / count;
-//                   console.log(`Competency ID: ${competencyId}, Total Percentage: ${totalPercentage.toFixed(2)}%, Count: ${count}, Average: ${average.toFixed(2)}%`);
-//                 });
-//               })
-//             }).then(() => {
-//               Services.Databases.listDocuments(
-//                 AppInfo.Name,
-//                 AppInfo.Database,
-//                 Collections.OrganizationStructureEmployee,
-//                 [
-//                   Query.limit(10000),
-//                   Query.equal("position_id", id),
-//                 ]
-//               ).then((res) => {
-//                 const employeeIds = res.documents.map((doc) => doc.$id);
-            
-//                 // Objeleri tanımla
-//                 const competencySums = {};
-//                 const competencyCounts = {};
-            
-//                 const promises = [];
-            
-//                 employeeIds.forEach(employeeId => {
-//                   promises.push(
-//                     Services.Databases.listDocuments(
-//                       AppInfo.Name,
-//                       AppInfo.Database,
-//                       Collections.EmployeeCompetencyValue,
-//                       [
-//                         Query.limit(10000),
-//                         Query.equal("employee_id", employeeId),
-//                         Query.equal('competency_evaluation_period', transformPeriodName)
-//                       ]
-//                     ).then((competencyRes) => {
-//                       competencyRes.documents.forEach((competencyDoc) => {
-//                         const { competency_real_value, competency_target_value, competency_id } = competencyDoc;
-//                         const percentage = (competency_real_value * 100) / competency_target_value;
-//                         if (competencySums[competency_id]) {
-//                           competencySums[competency_id] += percentage;
-//                           competencyCounts[competency_id]++;
-//                         } else {
-//                           competencySums[competency_id] = percentage;
-//                           competencyCounts[competency_id] = 1;
-//                         }
-//                       })
-//                     })
-//                   );
-//                 });
-            
-//                 Promise.all(promises).then(() => {
-//                   const competencyData = Object.keys(competencySums).map(competencyId => {
-//                     const totalPercentage = competencySums[competencyId];
-//                     const count = competencyCounts[competencyId];
-//                     const average = totalPercentage / count;
-//                     return { competencyId, totalPercentage, count, average };
-//                   });
-//                   setCompetencyData(competencyData);
-//                 });
-//               });
-//             })
-//           }, [])
-      
 //           return VStack({ alignment: cTopLeading })(
 //             HStack({ alignment: cLeading })(
 //               Views.Title('Pozisyon Bazlı Dashboard').paddingTop('10px')

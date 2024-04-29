@@ -1,3 +1,6 @@
 node_modules
 .DS_Store
-/bios/dist_web
+bios/dist_web
+bios/dist_web/enterprise.bios
+bios/dist_web/index.js
+bios/dist_web/index.js.map
