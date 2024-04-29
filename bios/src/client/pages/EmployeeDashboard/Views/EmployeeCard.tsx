@@ -5,7 +5,7 @@ import {
   CardHeader,
   Typography,
 } from '@mui/material'
-import { red } from '@mui/material/colors'
+import { useNavigate } from '@tuval/forms'
 import React from 'react'
 
 const EmployeeCard = ({
@@ -13,11 +13,12 @@ const EmployeeCard = ({
   avatar,
   position,
   department,
-  experience,
   skills,
-  startDate,
   yearOfSeniority,
+  positionId,
+  period
 }) => {
+  const navigate = useNavigate()
   return (
     <Card
       sx={{
@@ -54,8 +55,9 @@ const EmployeeCard = ({
       >
         <Typography
           variant="body2"
-          color="InfoText"
-          style={{ fontSize: '1rem' }}
+          style={{
+            color: 'rgba(57, 90, 192,1)',
+          }}
         >
           <span
             style={{
@@ -64,7 +66,7 @@ const EmployeeCard = ({
           >
             Pozisyon :
           </span>{' '}
-          {position}
+          <a onClick={() => navigate("/app/position-dashboard/view/" + positionId + "/" + period)}>{position}</a>
         </Typography>
         <Typography
           variant="body2"

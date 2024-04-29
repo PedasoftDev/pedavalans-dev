@@ -67,6 +67,8 @@ import { VocationalQualificationController } from './pages/VocationalQualificati
 import { VocationalQualificationListController } from './pages/VocationalQualification/Controllers/VocationalQualificationListController'
 import { UpdateVocationalQualificationController } from './pages/VocationalQualification/Controllers/UpdateVocationalQualificationController'
 import { CreateVocationalQualificationController } from './pages/VocationalQualification/Controllers/CreateVocationalQualificationController'
+import { PositionDashboardController } from './pages/PositionDashboard/Controllers/PositionDashboardController';
+import { PositionDashboard } from './pages/PositionDashboard/Controllers/PositionDashboard';
 
 
 export const Routes = () => {
@@ -191,6 +193,10 @@ export const Routes = () => {
                     UIRoute('list', VocationalQualificationTypeListController),
                     UIRoute('create', CreateQualificationTypeController),
                     UIRoute('edit/:id', UpdateVocationalQualificationTypeController)
+                ),
+
+                UIRoute('position-dashboard', PositionDashboardController).children(
+                    UIRoute('view/:id/:period', PositionDashboard)
                 ),
 
                 // not found

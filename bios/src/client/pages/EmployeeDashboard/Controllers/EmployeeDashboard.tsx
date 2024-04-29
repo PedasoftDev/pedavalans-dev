@@ -279,11 +279,9 @@ export class EmployeeDashboard extends UIController {
                             x.competency_department_id === employee.department
                         ).length
                       }
-                      startDate={
-                        new Date(employees.find((x) => x.$id === id)?.job_start_date).toLocaleDateString()
-                           }
-                      experience={`${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
                       yearOfSeniority={`${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
+                      period={period}
+                      positionId={employee.position}
                     />
                     <EmployeeCertificateCard />
                   </div>
