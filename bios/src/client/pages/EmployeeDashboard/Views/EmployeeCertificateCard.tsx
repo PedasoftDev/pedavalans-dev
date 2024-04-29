@@ -20,8 +20,8 @@ const rows = [
 
 const EmployeeCertificateCard = () => {
   return (
-    <TableContainer component={Paper} sx={{ width: 650 }}>
-      <Table sx={{ width: 650 }} aria-label="simple table">
+    <TableContainer component={Paper} sx={{ width: `100%` }}>
+      <Table  aria-label="simple table">
         <TableHead>
           <TableRow>
             <TableCell>Belge / Sertifika Adı</TableCell>
@@ -49,3 +49,4 @@ const EmployeeCertificateCard = () => {
 }
 
 export default EmployeeCertificateCard
+
