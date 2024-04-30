@@ -136,10 +136,12 @@ export class PendingTaskListController extends UIController {
                                 evaluation_period: string
                             }[] = [];
 
-                            this.polyvalenceTables.forEach(async (polyTable: IPolyvalenceUnit.IPolyvalenceUnit) => {
+                            this.polyvalenceTables.forEach(async (polyTable: IPolyvalenceUnit.IPolyvalenceUnit, index) => {
                                 const query = [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("is_active", true)];
-                                const employees: IOrganizationStructure.IEmployees.IEmployee[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, [...query, Query.equal("department_id", polyTable.polyvalence_department_id)]).then(x => x.documents as any);
-                                const competencyDepartmentRelation: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment, [...query, Query.equal("competency_department_id", polyTable.polyvalence_department_id)]).then(x => x.documents as any);
+                                const employees: IOrganizationStructure.IEmployees.IEmployee[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee,
+                                    [...query, Query.equal("department_id", polyTable.polyvalence_department_id)]).then(x => x.documents as any);
+                                const competencyDepartmentRelation: ICompetencyDepartment.ICompetencyDepartment[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment,
+                                    [...query, Query.equal("competency_department_id", polyTable.polyvalence_department_id)]).then(x => x.documents as any);
                                 const evaluationFrequency = getPeriodFromCurrentDate(periods[0].evaluation_period_year, polyTable.polyvalence_evaluation_frequency);
 
                                 const periodEnteredValues = listEmployeeCompetencyValue.filter((x) =>
@@ -152,6 +154,7 @@ export class PendingTaskListController extends UIController {
                                         enteredOnlyTargetValues++;
                                     }
                                 })
+
                                 if (enteredOnlyTargetValues != 0) {
                                     onlyEnteredTargetValues.push({
                                         polyvalence_table_name: polyTable.polyvalence_table_name,
@@ -170,8 +173,40 @@ export class PendingTaskListController extends UIController {
                                     })
                                 }
 
-                            })
+                                if (this.polyvalenceTables.length - 1 === index) {
 
+                                    let totalValue = 0
+                                    anyValueNotEnteredPolyvalenceTables.forEach((item) => {
+                                        totalValue += item.number_of_employee_x_competency
+                                    })
+                                    onlyEnteredTargetValues.forEach((item) => {
+                                        totalValue += item.number_of_employee_x_competency
+                                    })
+                                    // need to configure
+                                    setPendingTasks((prev) => {
+                                        prev[0].value = totalValue
+                                        prev[0].view =
+                                            <div>
+                                                <List>
+                                                    {anyValueNotEnteredPolyvalenceTables.map((task: any) => (
+                                                        <ListElement>
+                                                            <p>{`${task.polyvalence_table_name} - ${task.evaluation_period}`}</p>
+                                                        </ListElement>
+                                                    ))}
+                                                </List>
+                                                <List>
+                                                    {onlyEnteredTargetValues.map((task: any) => (
+                                                        <ListElement>
+                                                            <p>{`${task.polyvalence_table_name} - ${task.evaluation_period}`}</p>
+                                                        </ListElement>
+                                                    ))}
+                                                </List>
+                                            </div>
+                                        return [...prev];
+                                    })
+                                }
+
+                            })
                         }
 
                         const getPendingTasks = async () => {
