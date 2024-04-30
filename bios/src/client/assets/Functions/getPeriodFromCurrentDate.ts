@@ -1,99 +1,51 @@
-
-const getPeriodFromCurrentDate: (currentYear: string) => { yearFrequency: string; halfYearFrequency: string; quarterFrequency: string; monthFrequency: string; } = (currentYear: string) => {
+export default function getPeriodFromCurrentDate(currentYear: string, frequency: string): string {
   const currentMonth = new Date().getMonth() + 1
-  switch (currentMonth) {
-    case 1:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 1. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Ocak Dönemi'
-      }
-    case 2:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 1. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Şubat Dönemi'
-      }
-    case 3:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 1. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Mart Dönemi'
-      }
-    case 4:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 1. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Nisan Dönemi'
-      }
-    case 5:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 2. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Mayıs Dönemi'
-      }
-    case 6:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 2. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Haziran Dönemi'
-      }
-    case 7:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 2. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 2. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Temmuz Dönemi'
-      }
-    case 8:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 2. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 3. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Ağustos Dönemi'
-      }
-    case 9:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 2. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 3. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Eylül Dönemi'
-      }
-    case 10:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 2. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 3. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Ekim Dönemi'
-      }
-    case 11:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 2. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 4. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Kasım Dönemi'
-      }
-    case 12:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 2. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 4. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Aralık Dönemi'
-      }
-    default:
-      return {
-        yearFrequency: currentYear + ' Yılı Dönemi',
-        halfYearFrequency: currentYear + ' 1. Yarıyılı Dönemi',
-        quarterFrequency: currentYear + ' 1. Çeyrekyılı Dönemi',
-        monthFrequency: currentYear + ' Ocak Dönemi'
-      }
+  if (frequency === 'Yıl') {
+    return currentYear + ' Yılı Dönemi'
+  } else if (frequency === 'Yarıyıl') {
+    if (currentMonth >= 1 && currentMonth <= 6) {
+      return currentYear + ' 1. Yarıyılı Dönemi'
+    } else {
+      return currentYear + ' 2. Yarıyılı Dönemi'
+    }
+  } else if (frequency === 'Çeyrekyıl') {
+    if (currentMonth >= 1 && currentMonth <= 3) {
+      return currentYear + ' 1. Çeyrekyılı Dönemi'
+    } else if (currentMonth >= 4 && currentMonth <= 6) {
+      return currentYear + ' 2. Çeyrekyılı Dönemi'
+    } else if (currentMonth >= 7 && currentMonth <= 9) {
+      return currentYear + ' 3. Çeyrekyılı Dönemi'
+    } else {
+      return currentYear + ' 4. Çeyrekyılı Dönemi'
+    }
+  } else if (frequency === 'Ay') {
+    switch (currentMonth) {
+      case 1:
+        return currentYear + ' Ocak Dönemi'
+      case 2:
+        return currentYear + ' Şubat Dönemi'
+      case 3:
+        return currentYear + ' Mart Dönemi'
+      case 4:
+        return currentYear + ' Nisan Dönemi'
+      case 5:
+        return currentYear + ' Mayıs Dönemi'
+      case 6:
+        return currentYear + ' Haziran Dönemi'
+      case 7:
+        return currentYear + ' Temmuz Dönemi'
+      case 8:
+        return currentYear + ' Ağustos Dönemi'
+      case 9:
+        return currentYear + ' Eylül Dönemi'
+      case 10:
+        return currentYear + ' Ekim Dönemi'
+      case 11:
+        return currentYear + ' Kasım Dönemi'
+      case 12:
+        return currentYear + ' Aralık Dönemi'
+      default:
+        return currentYear + ' Ocak Dönemi'
+    }
   }
 }
-
-export default getPeriodFromCurrentDate
