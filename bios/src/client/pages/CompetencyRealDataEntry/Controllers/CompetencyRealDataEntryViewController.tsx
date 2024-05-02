@@ -37,6 +37,10 @@ import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import 'dayjs/locale/tr';
 import dayjs from "dayjs";
 
+
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
+
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
     polyvalence_department_id: "",
@@ -97,6 +101,10 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
         const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
+        const dispatch = useAppDispatch();
+        const selector = useAppSelector;
+        const setAssignEducationNull = () => dispatch(setPendingEvaluationToNull());
+
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
@@ -119,6 +127,9 @@ export class CompetencyRealDataEntryViewController extends UIController {
                 ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
+
+                        /* GLOBAL STATE ASSIGN EDUCATION */
+                        const pendingEvaluation: { polyvalence_table_id: string; evaluation_period: string; } = selector(selectPendingEvaluation);
 
                         const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                         const [selectedGroupId, setSelectedGroupId] = useState<string>("");
@@ -225,8 +236,8 @@ export class CompetencyRealDataEntryViewController extends UIController {
                             setSelectedCompetencyId("");
                         };
 
-                        const onChangeTable = (e: SelectChangeEvent<string>) => {
-                            const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                        const onChangeTable = (polyvalence_table_id: string) => {
+                            const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === polyvalence_table_id);
                             const periodYear = Number(periods[0].evaluation_period_year);
                             setSelectedTable(table)
                             setSelectedPeriod("")
@@ -476,6 +487,15 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                 })
                                 navigate("/app/competency-evaluation-period/list")
                             }
+                            if (pendingEvaluation) {
+                                onChangeTable(pendingEvaluation.polyvalence_table_id);
+                                setSelectedPeriod(pendingEvaluation.evaluation_period);
+                                setSelectedEmployeeId("")
+                                setSelectedGroupId("")
+                                setSelectedCompetencyList([])
+                                setEmployeeCompetencyValue([])
+                                setAssignEducationNull();
+                            }
                         }, [])
 
                         return (
@@ -493,7 +513,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                         name="polyvalence_table_id"
                                                         value={selectedTable?.polyvalence_table_id}
                                                         label="Polivalans Tablosu"
-                                                        onChange={onChangeTable}
+                                                        onChange={(e) => onChangeTable(e.target.value)}
                                                         size="small"
                                                         required
                                                     >

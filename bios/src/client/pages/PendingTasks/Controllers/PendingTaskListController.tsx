@@ -16,12 +16,12 @@ import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvalu
 import EmployeeCompetencyValue from "../../../../server/hooks/EmployeeCompetencyValue/main";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import { MdOutlineFindInPage } from "react-icons/md";
-
 import { useAppDispatch } from "../../../hooks";
 import { setAssignEducation } from "../../../features/assignEducation";
 import getPeriodFromCurrentDate from "../../../assets/Functions/getPeriodFromCurrentDate";
 import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
 import ICompetencyDepartment from "../../../interfaces/ICompetencyDepartment";
+import { setPendingEvaluation } from "../../../features/pendingEvaluation";
 
 
 
@@ -37,6 +37,7 @@ export class PendingTaskListController extends UIController {
         // global state
         const dispatch = useAppDispatch();
         const setAssignEducationToHook = (value: IAssignedEducation.IBase) => dispatch(setAssignEducation(value));
+        const setPendingEvaluationToHook = (value: { polyvalence_table_id: string; evaluation_period: string; }) => dispatch(setPendingEvaluation(value));
 
         const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetOpenListByEducator(me?.$id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriodWithoutTenant();
@@ -134,7 +135,10 @@ export class PendingTaskListController extends UIController {
                                                     <List>
                                                         <p>{`Bekleyen Gerçekleşme Girişleri - (${totalValue})`}</p>
                                                         {onlyEnteredTargetValues.map((task: any) => (
-                                                            <ListElement>
+                                                            <ListElement onClick={() => {
+                                                                setPendingEvaluationToHook({ polyvalence_table_id: task.polyvalence_table_id, evaluation_period: task.evaluation_period })
+                                                                navigate("/app/competency-real-data-entry/view")
+                                                            }}>
                                                                 <p>{`${task.polyvalence_table_name} - ${task.evaluation_period} - ${task.number_of_employee_x_competency}`}</p>
                                                             </ListElement>
                                                         ))}
@@ -143,7 +147,10 @@ export class PendingTaskListController extends UIController {
                                                         <br />
                                                         <p>{`Bekleyen Değerlendirmeler - (${totalAnyValue})`}</p>
                                                         {anyValueNotEnteredPolyvalenceTables.map((task: any) => (
-                                                            <ListElement>
+                                                            <ListElement onClick={() => {
+                                                                setPendingEvaluationToHook({ polyvalence_table_id: task.polyvalence_table_id, evaluation_period: task.evaluation_period })
+                                                                navigate("/app/competency-target-data-entry/view")
+                                                            }}>
                                                                 <p>{`${task.polyvalence_table_name} - ${task.evaluation_period} - ${task.number_of_employee_x_competency}`}</p>
                                                             </ListElement>
                                                         ))}
@@ -153,12 +160,12 @@ export class PendingTaskListController extends UIController {
                                                     value: totalValue + totalAnyValue,
                                                     view: list
                                                 }
-
-                                                // need to configure
+                                                // need to configure this part ********
                                                 const pendingTaskState = [...pendingTasks];
                                                 pendingTaskState[0] = firstItem;
                                                 setPendingTasks(pendingTaskState)
                                                 setIsLoadingValues(false);
+                                                // ************************************
                                             }
                                         })
                                 })

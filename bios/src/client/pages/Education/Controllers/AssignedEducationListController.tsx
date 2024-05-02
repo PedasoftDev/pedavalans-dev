@@ -16,7 +16,7 @@ import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectAssignEducation, setAssignEducationToNull } from "../../../features/assignEducation";
-import { ContainerDataGrid, DialogLabel, GridContainer } from "../Views/Views";
+import { DialogLabel, GridContainer } from "../Views/Views";
 
 export class AssignedEducationListController extends UIFormController {
 

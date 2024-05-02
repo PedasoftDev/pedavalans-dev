@@ -5,7 +5,6 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
-import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
@@ -17,7 +16,6 @@ import getMonthPeriods from "../../../assets/Functions/getMonthPeriods";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
-import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 import Competency from "../../../../server/hooks/competency/main";
 import ICompetency from "../../../interfaces/ICompetency";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
@@ -29,10 +27,12 @@ import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import { FaRegCopy } from "react-icons/fa6";
-import Swal from "sweetalert2";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import { Umay } from "@tuval/core";
-import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel'
+import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel';
+
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -90,6 +90,10 @@ export class CompetencyTargetDataEntryViewController extends UIController {
 
     public LoadView(): UIView {
 
+        const dispatch = useAppDispatch();
+        const selector = useAppSelector;
+        const setAssignEducationNull = () => dispatch(setPendingEvaluationToNull());
+
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
         const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
         const [selectedPeriod, setSelectedPeriod] = useState<string>("");
@@ -112,6 +116,9 @@ export class CompetencyTargetDataEntryViewController extends UIController {
             isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
+
+                        /* GLOBAL STATE ASSIGN EDUCATION */
+                        const pendingEvaluation: { polyvalence_table_id: string; evaluation_period: string; } = selector(selectPendingEvaluation);
 
                         const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
                         const [selectedGroupId, setSelectedGroupId] = useState<string>("");
@@ -233,8 +240,8 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                             }
                         }
 
-                        const onChangeTable = (e: SelectChangeEvent<string>) => {
-                            const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                        const onChangeTable = (polyvalence_table_id: string) => {
+                            const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === polyvalence_table_id);
                             const periodYear = Number(periods[0].evaluation_period_year);
                             setSelectedTable(table)
                             setSelectedPeriod("")
@@ -410,6 +417,16 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 })
                                 navigate("/app/competency-evaluation-period/list")
                             }
+                            // eklendi
+                            if (pendingEvaluation) {
+                                onChangeTable(pendingEvaluation.polyvalence_table_id);
+                                setSelectedPeriod(pendingEvaluation.evaluation_period);
+                                setSelectedEmployeeId("")
+                                setSelectedGroupId("")
+                                setSelectedCompetencyList([])
+                                setEmployeeCompetencyValue([])
+                                setAssignEducationNull();
+                            }
                         }, [])
 
                         return (
@@ -435,7 +452,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                         name="polyvalence_table_id"
                                                         value={selectedTable?.polyvalence_table_id}
                                                         label="Polivalans Tablosu"
-                                                        onChange={onChangeTable}
+                                                        onChange={(e) => onChangeTable(e.target.value)}
                                                         size="small"
                                                         required
                                                     >
