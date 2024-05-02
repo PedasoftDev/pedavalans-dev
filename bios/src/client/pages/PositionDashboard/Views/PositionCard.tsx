@@ -20,7 +20,6 @@ const PositionCard = ({
     <Card
       sx={{
         width: `50%`,
-        height: `200px`,
         border: '0px',
         boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
         borderRadius: '8px',

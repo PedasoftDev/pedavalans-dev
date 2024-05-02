@@ -66,7 +66,7 @@ const EmployeeCard = ({
           >
             Pozisyon :
           </span>{' '}
-          <a onClick={() => navigate("/app/position-dashboard/view/" + positionId + "/" + period)}>{position}</a>
+          <a style={{cursor: 'pointer',fontSize: '1rem',}} onClick={() => navigate("/app/position-dashboard/view/" + positionId + "/" + period)}>{position}</a>
         </Typography>
         <Typography
           variant="body2"

@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 import assignEducation from './features/assignEducation'
+import pendingEvaluation from './features/pendingEvaluation'
 // ...
 
 const store: any = configureStore({
   reducer: {
     assignEducation: assignEducation,
+    pendingEvaluation: pendingEvaluation,
   },
 })
 

@@ -47,12 +47,12 @@ color: lightgray;
 const List = styled.ul`
 padding: 15px 15px;
 list-style: none;
-height: calc(100vh/1.6 - 100px);
+height: calc(100vh/1.6);
 overflow-y: auto;
 `;
 
 const ListElement = styled.li`
-padding: 5px 0;
+padding: 2px 0;
 display: flex;
 gap: 5px;
 align-items: center;

@@ -69,6 +69,10 @@ import { UpdateVocationalQualificationController } from './pages/VocationalQuali
 import { CreateVocationalQualificationController } from './pages/VocationalQualification/Controllers/CreateVocationalQualificationController'
 import { PositionDashboardController } from './pages/PositionDashboard/Controllers/PositionDashboardController';
 import { PositionDashboard } from './pages/PositionDashboard/Controllers/PositionDashboard';
+import { CompetencyDashboardController } from './pages/CompetencyDashboard/Controllers/CompetencyDashboardController';
+import { GlobalCompetencyDashboard } from './pages/CompetencyDashboard/Controllers/GlobalCompetencyDashboard';
+import { CompetencyDashboard } from './pages/CompetencyDashboard/Controllers/CompetencyDashboard';
+import { UpdateEducationController } from './pages/Education/Controllers/UpdateEducationController';
 
 
 export const Routes = () => {
@@ -167,7 +171,8 @@ export const Routes = () => {
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
                     UIRoute('assigned', AssignedEducationListController),
-                    UIRoute('assign', AssignEducationController)
+                    UIRoute('assign', AssignEducationController),
+                    UIRoute('edit/:id', UpdateEducationController)
                 ),
 
                 UIRoute('organization', OrganizationViewController),
@@ -175,9 +180,18 @@ export const Routes = () => {
                 UIRoute('pending-task', PendindTasksController).children(
                     UIRoute('list', PendingTaskListController)
                 ),
-
+                // employee,position and competency dashboard
                 UIRoute('employee-dashboard', EmployeeDashboardController).children(
                     UIRoute('view/:id/:period', EmployeeDashboard)
+                ),
+
+                UIRoute('position-dashboard', PositionDashboardController).children(
+                    UIRoute('view/:id/:period', PositionDashboard)
+                ),
+
+                UIRoute('competency-dashboard', CompetencyDashboardController).children(
+                    UIRoute('view/:id/:period', CompetencyDashboard),
+                    UIRoute('view/:id', GlobalCompetencyDashboard)
                 ),
 
                 UIRoute(

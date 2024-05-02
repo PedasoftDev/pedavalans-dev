@@ -295,7 +295,7 @@ export class EmployeeDashboard extends UIController {
                   >
                     <Card
                       sx={{
-                        width: 650,
+                        width: `50%` ,
                         border: '0px',
                         boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
                         borderRadius: '8px',
@@ -343,7 +343,7 @@ export class EmployeeDashboard extends UIController {
                                   color: 'rgba(128, 128, 128,1)',
                                 }}
                               >
-                                {competencyValue.competency_name}
+                                <a style={{cursor: 'pointer', color:'rgba(57, 90, 192,1)',}} onClick={() => navigate("/app/competency-dashboard/view/" + competencyValue.competency_id + "/" + period)}>{competencyValue.competency_name}</a>
                               </span>
                               :
                               <LinearProgressWithLabel
@@ -364,7 +364,7 @@ export class EmployeeDashboard extends UIController {
 
                     <Card
                       sx={{
-                        width: 380,
+                        width:`50%` ,
                         border: '0px',
                         boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
                         borderRadius: '8px',

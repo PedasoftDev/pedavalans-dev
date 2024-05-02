@@ -9,18 +9,18 @@ import {
 import { red } from '@mui/material/colors'
 import React from 'react'
 
-const PositionCard = ({
-  positionName,
+const CompetencyCard = ({
+  competencyName,
   avatar,
   employeeValue,
-  abilityCount,
+  positionValue,
+  departmantValue,
   averageAbilityScore,
 }) => {
   return (
     <Card
       sx={{
         width: `50%`,
-        height: `200px`,
         border: '0px',
         boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
         borderRadius: '8px',
@@ -37,7 +37,7 @@ const PositionCard = ({
         }
         title={
           <Typography variant="h6" style={{ fontSize: '1.5rem' }}>
-            {positionName}
+            {competencyName}
           </Typography>
         }
         style={{
@@ -61,7 +61,7 @@ const PositionCard = ({
               color: 'rgba(128, 128, 128,1)',
             }}
           >
-            Pozisyona Bağlı Kişi Sayısı :
+            Yetkinliğin İzlendiği Kişi Sayısı :
           </span>{' '}
           {employeeValue}
         </Typography>
@@ -75,9 +75,9 @@ const PositionCard = ({
               color: 'rgba(128, 128, 128,1)',
             }}
           >
-            Pozisyona Bağlı Tekil Yetkinlik Sayısı :
+            Yetkinliğe Bağlı Tekil Pozisyon Sayısı :
           </span>{' '}
-          {abilityCount}
+          {positionValue}
         </Typography>
         <Typography
           variant="body2"
@@ -89,7 +89,21 @@ const PositionCard = ({
               color: 'rgba(128, 128, 128,1)',
             }}
           >
-            Pozisyonun Ortalama Yetkinlik Skoru:
+            Yetkinliğe Bağlı Departman/Birim Sayısı :
+          </span>{' '}
+          {departmantValue}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="InfoText"
+          style={{ fontSize: '1.1rem' }}
+        >
+          <span
+            style={{
+              color: 'rgba(128, 128, 128,1)',
+            }}
+          >
+            Yetkinliğin Ortalama Skoru :
           </span>{' '}
           {averageAbilityScore}
         </Typography>
@@ -98,4 +112,4 @@ const PositionCard = ({
   )
 }
 
-export default PositionCard
+export default CompetencyCard
