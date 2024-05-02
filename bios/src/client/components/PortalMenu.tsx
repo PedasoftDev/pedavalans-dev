@@ -87,7 +87,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             title: 'Dashboard',
             link: '/app/dashboard',
             icon: <RxDashboard size={25} />,
-            isVisible: true,
+            isVisible: tableAuth ? isAdmin : true,
         },
         {
             title: 'Birim Polivalans',

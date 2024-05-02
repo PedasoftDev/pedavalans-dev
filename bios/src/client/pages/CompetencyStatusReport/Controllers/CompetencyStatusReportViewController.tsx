@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HStack, Spinner, ReactView, UIController, UIView, UIViewBuilder, VStack, cLeading, cTopLeading, cTop, useNavigate, UINavigate } from "@tuval/forms";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
@@ -16,6 +16,12 @@ import Collections from "../../../../server/core/Collections";
 import { BsPersonCircle } from "react-icons/bs";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { RiExternalLinkFill } from "react-icons/ri";
+import AccountRelation from "../../../../server/hooks/accountRelation/main";
+import PolyvalenceUnitTableDataResponsible from "../../../../server/hooks/polyvalenceUnitTableDataResponsible/main";
+import PolyvalenceUnitTableDataViewer from "../../../../server/hooks/polyvalenceUnitTableDataViewer/main";
+import Parameters from "../../../../server/hooks/parameters/main";
+import { Resources } from "../../../assets/Resources";
+import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 
 const resetForm = {
     polyvalence_table_id: "",
@@ -28,12 +34,16 @@ export class CompetencyStatusReportViewController extends UIController {
 
         const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
+        const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetListByAccountId(me?.$id);
+        const { dataViewer, isLoadingDataViewer } = PolyvalenceUnitTableDataViewer.GetListByAccountId(me?.$id);
+        const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
+        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
         const { periods, isLoading: isLoadingPeriod } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const navigate = useNavigate();
 
         return (
 
-            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriod ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriod || isLoadingResult || isLoadingDataResponsible || isLoadingDataViewer || isLoadingTableAuth ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     UIViewBuilder(() => {
                         // tablo, dönem, yüzdelik filtresi
@@ -45,6 +55,23 @@ export class CompetencyStatusReportViewController extends UIController {
                             percentage: number
                         }[]>([]);
                         const [isLoading, setIsLoading] = useState(false);
+                        const [filteredPolyTable, setFilteredPolyTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit[]>([]);
+
+                        useEffect(() => {
+                            if (tableAuth && tableAuth[0] && tableAuth[0]?.is_active) {
+                                if (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") {
+                                    setFilteredPolyTable(polyvalenceUnitList)
+                                } else if (accountRelations[0].authorization_profile === "responsible") {
+                                    const responsibleTableIds = dataResponsible.map((x) => x.polyvalence_table_id);
+                                    setFilteredPolyTable(polyvalenceUnitList.filter((x) => responsibleTableIds.includes(x.polyvalence_table_id)) as any)
+                                } else if (accountRelations[0].authorization_profile === "viewer") {
+                                    const viewerTableIds = dataViewer.map((x) => x.polyvalence_table_id);
+                                    setFilteredPolyTable(polyvalenceUnitList.filter((x) => viewerTableIds.includes(x.polyvalence_table_id)) as any)
+                                }
+                            } else {
+                                setFilteredPolyTable(polyvalenceUnitList)
+                            }
+                        }, [])
 
                         const handleChangePolyvalenceTable = (e) => {
                             const selectedEvaluationFrequency = polyvalenceUnitList.find((item) => item.$id === e.target.value).polyvalence_evaluation_frequency
@@ -120,7 +147,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                             value={formFilters.polyvalence_table_id}
                                                             onChange={handleChangePolyvalenceTable}
                                                         >
-                                                            {polyvalenceUnitList.map((item) => (
+                                                            {filteredPolyTable.map((item) => (
                                                                 <MenuItem key={item.$id} value={item.$id}>
                                                                     {item.polyvalence_table_name}
                                                                 </MenuItem>

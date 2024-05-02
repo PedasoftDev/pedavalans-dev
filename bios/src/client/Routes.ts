@@ -72,6 +72,7 @@ import { PositionDashboard } from './pages/PositionDashboard/Controllers/Positio
 import { CompetencyDashboardController } from './pages/CompetencyDashboard/Controllers/CompetencyDashboardController';
 import { GlobalCompetencyDashboard } from './pages/CompetencyDashboard/Controllers/GlobalCompetencyDashboard';
 import { CompetencyDashboard } from './pages/CompetencyDashboard/Controllers/CompetencyDashboard';
+import { UpdateEducationController } from './pages/Education/Controllers/UpdateEducationController';
 
 
 export const Routes = () => {
@@ -170,7 +171,8 @@ export const Routes = () => {
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
                     UIRoute('assigned', AssignedEducationListController),
-                    UIRoute('assign', AssignEducationController)
+                    UIRoute('assign', AssignEducationController),
+                    UIRoute('edit/:id', UpdateEducationController)
                 ),
 
                 UIRoute('organization', OrganizationViewController),

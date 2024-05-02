@@ -1,4 +1,4 @@
-import { Query, useCreateDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
+import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo';
 import Collections from '../../core/Collections';
 import IEducation from '../../../client/interfaces/IEducation';
@@ -11,6 +11,16 @@ namespace Education {
     export const GetList = (tenant_id: string): { educationList: IEducation.IBase[], isLoading: boolean } => {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.Education, [Query.equal("tenant_id", tenant_id)])
         return { educationList: documents as any, isLoading }
+    }
+
+    export const Update = () => {
+        const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name)
+        return { updateEducation: updateDocument, error, isError, isLoading, isSuccess }
+    }
+
+    export const Get = (id: string): { education: IEducation.IBase, isLoading: boolean } => {
+        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: Collections.Education, documentId: id })
+        return { education: document as any, isLoading }
     }
 }
 
