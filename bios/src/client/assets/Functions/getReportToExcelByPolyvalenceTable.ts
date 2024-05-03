@@ -207,6 +207,9 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
     thirdRow[startCompetencyIndex + competencies.length + 1] = { v: 'Geliştirilmesi Gereken Yetkinlik Sayısı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight, alignment: { wrapText: true, ...alignCenter } } }
     colWidths[startCompetencyIndex + competencies.length + 1] = { wpx: 150 };
 
+    thirdRow[startCompetencyIndex + competencies.length + 2] = { v: 'Sorumlu Olduğu Yetkinlik Sayısı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+    colWidths[startCompetencyIndex + competencies.length + 2] = { wpx: 200 };
+
     appendData.push(thirdRow);
 
 
@@ -220,9 +223,13 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         // beklentiyi karşılama oranı
         let totalTargetValue = 0;
         let totalRealValue = 0;
+
+        // sorumlu olduğu yetkinlik sayısı
+        let responsibleCompetencyCount = 0;
         competencies.forEach((competencyWithValue, index) => {
             const employeeCompetencyValue = employeeCompetencyValues.find(x => x.competency_id === competencyWithValue.competency_id && x.employee_id === employee.id);
             if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value !== "no-target") {
+                responsibleCompetencyCount++;
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
                 totalRealValue += parseInt(employeeCompetencyValue.competency_real_value);
             }
@@ -291,6 +298,10 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         employeeRow[startFirstCompetencyIndex + competencies.length + 1] = { v: competencyToBeImprovedCount, t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
         employeeRowPlusOne[startFirstCompetencyIndex + competencies.length + 1] = { v: '', t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
 
+        // sorumlu olduğu yetkinlik sayısı
+        employeeRow[startFirstCompetencyIndex + competencies.length + 2] = { v: responsibleCompetencyCount, t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
+        employeeRowPlusOne[startFirstCompetencyIndex + competencies.length + 2] = { v: '', t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
+
         // append
         appendData[startEmployeeIndex] = employeeRow;
         appendData[startEmployeeIndex + 1] = employeeRowPlusOne;
@@ -302,6 +313,8 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         merge.push({ s: { r: startEmployeeIndex + 1, c: 2 }, e: { r: startEmployeeIndex + 1, c: 3 } })
         merge.push({ s: { r: startEmployeeIndex, c: startFirstCompetencyIndex + competencies.length }, e: { r: startEmployeeIndex + 1, c: startFirstCompetencyIndex + competencies.length } })
         merge.push({ s: { r: startEmployeeIndex, c: startFirstCompetencyIndex + competencies.length + 1 }, e: { r: startEmployeeIndex + 1, c: startFirstCompetencyIndex + competencies.length + 1 } })
+        merge.push({ s: { r: startEmployeeIndex, c: startFirstCompetencyIndex + competencies.length + 2 }, e: { r: startEmployeeIndex + 1, c: startFirstCompetencyIndex + competencies.length + 2 } })
+        
 
         startEmployeeIndex += 2;
     })
@@ -309,6 +322,8 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
 
     const numberOfEmployeesDontExpectedCompetencyLevelRow: any[] = []
     const numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne: any[] = []
+    const numberOfEmployeesExpectedCompetencyLevelRow: any[] = []
+    const numberOfEmployeesExpectedCompetencyLevelRowPlusOne: any[] = []
     numberOfEmployeesDontExpectedCompetencyLevelRow[0] = { v: 'Beklentiyi Karşılamayan Personel Sayısı', t: 's', s: { ...headerStyle, border: { top: { style: "thick", color: "000000" }, left: { style: "thick", color: "000000" } } }, align: alignCenter }
     numberOfEmployeesDontExpectedCompetencyLevelRow[1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
     numberOfEmployeesDontExpectedCompetencyLevelRow[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
@@ -319,15 +334,32 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
     numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
     numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne[3] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
 
+    numberOfEmployeesExpectedCompetencyLevelRow[0] = { v: 'Beklentiyi Karşılayan Personel Sayısı', t: 's', s: { ...headerStyle, border: { top: { style: "thick", color: "000000" }, left: { style: "thick", color: "000000" } } }, align: alignCenter }
+    numberOfEmployeesExpectedCompetencyLevelRow[1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRow[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRow[3] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[0] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomLeft } }
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[3] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+
+
     merge.push({ s: { r: employees.length * 2 + 5, c: 0 }, e: { r: employees.length * 2 + 6, c: 3 } })
+    merge.push({ s: { r: employees.length * 2 + 8, c: 0 }, e: { r: employees.length * 2 + 9, c: 3 } })
 
     writingCompetencies.forEach((competency, index) => {
         // beklentiyi karşılamayan personel sayısı
         let employeeCount = 0;
+        // beklentiyi karşılayan personel sayısı
+        let employeeCountExpected = 0;
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
             if (employeeCompetencyValue.competency_id === competency.competency_id && employeeCompetencyValue.competency_target_value !== "no-target") {
                 if (parseInt(employeeCompetencyValue.competency_real_value) < parseInt(employeeCompetencyValue.competency_target_value)) {
                     employeeCount++;
+                }
+                else {
+                    employeeCountExpected++;
                 }
             }
         });
@@ -335,12 +367,20 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         numberOfEmployeesDontExpectedCompetencyLevelRow[4 + index] = { v: employeeCount, t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
         numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne[4 + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
 
+        numberOfEmployeesExpectedCompetencyLevelRow[4 + index] = { v: employeeCountExpected, t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
+        numberOfEmployeesExpectedCompetencyLevelRowPlusOne[4 + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
+
         merge.push({ s: { r: employees.length * 2 + 5, c: 4 + index }, e: { r: employees.length * 2 + 5 + 1, c: 4 + index } })
+
+        merge.push({ s: { r: employees.length * 2 + 8, c: 4 + index }, e: { r: employees.length * 2 + 8 + 1, c: 4 + index } })
     })
 
 
     appendData[employees.length * 2 + 5] = numberOfEmployeesDontExpectedCompetencyLevelRow;
     appendData[employees.length * 2 + 6] = numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne;
+
+    appendData[employees.length * 2 + 8] = numberOfEmployeesExpectedCompetencyLevelRow;
+    appendData[employees.length * 2 + 9] = numberOfEmployeesExpectedCompetencyLevelRowPlusOne;
 
     //  yetkinlik grubu başarı oranı
 

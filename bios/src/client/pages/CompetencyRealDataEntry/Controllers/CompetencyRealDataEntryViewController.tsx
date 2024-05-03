@@ -770,6 +770,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             inputProps={{
                                                                 min: 0,
                                                                 max: 59,
+                                                                step: 15
                                                             }}
                                                         />
                                                     </div>

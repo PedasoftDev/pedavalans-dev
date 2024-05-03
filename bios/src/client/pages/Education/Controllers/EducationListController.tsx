@@ -66,7 +66,8 @@ export class EducationListController extends UIFormController {
                                 renderCell: (params) => {
                                     return (
                                         <div style={{ display: "flex", gap: "10px" }}>
-                                            <Button size="small" variant="outlined" onClick={() => navigate(`/app/education/edit/${params.value}`)}>Düzenle</Button>
+                                            {(accountRelations[0].is_admin || accountRelations[0].authorization_profile == "admin") &&
+                                                <Button size="small" variant="outlined" onClick={() => navigate(`/app/education/edit/${params.value}`)}>Düzenle</Button>}
                                         </div>
                                     )
                                 }
@@ -104,6 +105,11 @@ export class EducationListController extends UIFormController {
                                                     <TextField placeholder="Eğitim Arayın..." size="small" fullWidth onChange={handleSearch} />
                                                 </div>
                                                 <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Eğitimleri Göster`}>
+                                                    <IconButton onClick={handleSetActiveRows}>
+                                                        <FilterAltOutlinedIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title={`Eğitim Raporu`}>
                                                     <IconButton onClick={handleSetActiveRows}>
                                                         <FilterAltOutlinedIcon />
                                                     </IconButton>
