@@ -1,8 +1,8 @@
 
 export interface IRoot {
     $id?: string;
-    $updated_at?: string;
-    $created_at?: string;
-    $updated_by?: string;
-    $created_by?: string;
+    $updatedAt?: string;
+    $createdAt?: string;
+    $updatedBy?: string;
+    $createdBy?: string;
 }

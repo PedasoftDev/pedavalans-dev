@@ -237,6 +237,7 @@ export class AssignEducationController extends UIFormController {
                                                     inputProps={{
                                                         min: 0,
                                                         max: 59,
+                                                        step: 15
                                                     }}
                                                 />
                                             </div>

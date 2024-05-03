@@ -5,6 +5,7 @@ import { Views } from "../../../components/Views";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
+import SummarizeIcon from '@mui/icons-material/Summarize';
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import IAssignedEducationResult from "../../../interfaces/IAssignedEducationResult";
@@ -17,6 +18,10 @@ import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectAssignEducation, setAssignEducationToNull } from "../../../features/assignEducation";
 import { DialogLabel, GridContainer } from "../Views/Views";
+import getEducationReportToExcel from "../../../assets/Functions/getEducationReportToExcel";
+import Education from "../../../../server/hooks/education/main";
+import Competency from "../../../../server/hooks/competency/main";
+import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
 
 export class AssignedEducationListController extends UIFormController {
 
@@ -33,12 +38,15 @@ export class AssignedEducationListController extends UIFormController {
         const { assignedEducationResultList, isLoadingAssignedEducationResultList } = AssignEducationResult.GetList(me?.prefs?.organization);
         const { updateAssignedEducation } = AssignEducation.Update();
         const { createAssignedEducationResult } = AssignEducationResult.Create();
+        const { educationList, isLoading: isLoadingEducations } = Education.GetList(me?.prefs?.organization);
+        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+        const { educationCompetencyRelationList, isLoading: isLoadingRelation } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
 
         const [rowsActive, setRowsActive] = useState(true);
         const [filterKey, setFilterKey] = useState("");
 
         return (
-            isLoading || isLoadingResult || isLoadingAssignedEducationResultList ? VStack(Spinner()) :
+            isLoading || isLoadingResult || isLoadingAssignedEducationResultList || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
@@ -284,6 +292,11 @@ export class AssignedEducationListController extends UIFormController {
                                                 <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Eğitimleri Göster`}>
                                                     <IconButton onClick={handleSetActiveRows}>
                                                         <FilterAltOutlinedIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title={`Eğitim Raporu`}>
+                                                    <IconButton onClick={() => getEducationReportToExcel(educationList, competencyList, educationCompetencyRelationList, assignedEducationList)}>
+                                                        <SummarizeIcon />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <div style={{
