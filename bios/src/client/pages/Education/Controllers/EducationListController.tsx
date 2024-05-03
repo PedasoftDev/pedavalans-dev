@@ -109,11 +109,6 @@ export class EducationListController extends UIFormController {
                                                         <FilterAltOutlinedIcon />
                                                     </IconButton>
                                                 </Tooltip>
-                                                <Tooltip title={`Eğitim Raporu`}>
-                                                    <IconButton onClick={handleSetActiveRows}>
-                                                        <FilterAltOutlinedIcon />
-                                                    </IconButton>
-                                                </Tooltip>
                                                 <div style={{
                                                     width: "30%",
                                                     display: "flex",
