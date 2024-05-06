@@ -103,7 +103,6 @@ export class AccountManagementViewController extends UIController {
                             await Services.Client.setProject("console");
                             await Services.Client.setMode(undefined);
                             await Services.Accounts.updateName(accountInfo.name);
-                            await Services.Accounts.updateEmail(accountInfo.email, dialogPassword);
                             setDialogOpen(false)
                             setDialogPassword("")
                         }
@@ -274,7 +273,6 @@ export class AccountManagementViewController extends UIController {
                                                                 label="E-posta"
                                                                 value={accountInfo.email}
                                                                 size="small"
-                                                                onChange={(e) => setAccountInfo({ ...accountInfo, email: e.target.value })}
                                                             />
                                                             <TextField
                                                                 size="small"
