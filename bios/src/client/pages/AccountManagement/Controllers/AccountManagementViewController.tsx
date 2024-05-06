@@ -85,10 +85,6 @@ export class AccountManagementViewController extends UIController {
 
                         const [selectedTab, setSelectedTab] = useState(0)
 
-                        // dialog
-                        const [dialogOpen, setDialogOpen] = useState(false)
-                        const [dialogPassword, setDialogPassword] = useState("")
-
                         useEffect(() => {
                             if (me) {
                                 setAccountInfo(me)
@@ -100,16 +96,28 @@ export class AccountManagementViewController extends UIController {
                         }, [])
 
                         const handleSubmit = async () => {
-                            await Services.Client.setProject("console");
-                            await Services.Client.setMode(undefined);
-                            await Services.Accounts.updateName(accountInfo.name);
-                            await Services.Accounts.updateEmail(accountInfo.email, dialogPassword);
-                            setDialogOpen(false)
-                            setDialogPassword("")
-                        }
+                            Swal.fire({
+                                title: 'Emin misiniz?',
+                                text: "Bu işlemi geri alamazsınız!",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'Evet, kaydet!',
+                                cancelButtonText: 'İptal'
+                            }).then(async (result) => {
+                                if (result.isConfirmed) {
+                                    await Services.Client.setProject("console");
+                                    await Services.Client.setMode(undefined);
+                                    await Services.Accounts.updateName(accountInfo.name);
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Değişiklikler kaydedildi'
+                                    })
+                                }
 
-                        const handleDialogOpen = () => {
-                            setDialogOpen(true)
+                            })
+
                         }
 
                         const handleChangePassword = () => {
@@ -274,7 +282,6 @@ export class AccountManagementViewController extends UIController {
                                                                 label="E-posta"
                                                                 value={accountInfo.email}
                                                                 size="small"
-                                                                onChange={(e) => setAccountInfo({ ...accountInfo, email: e.target.value })}
                                                             />
                                                             <TextField
                                                                 size="small"
@@ -310,29 +317,10 @@ export class AccountManagementViewController extends UIController {
                                                                     label="Hesap aktif mi?"
                                                                 />
                                                             }
-                                                            <Button variant="contained" onClick={handleDialogOpen}>Kaydet</Button>
+                                                            <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
                                                         </div>
                                                     </div>
-                                                    <Dialog open={dialogOpen}>
-                                                        <DialogTitle>İşlemi Onaylayın</DialogTitle>
-                                                        <DialogContent>
-                                                            <div style={{ padding: "10px" }}>
-                                                                <TextField
-                                                                    size="small"
-                                                                    label="Şifrenizi girin"
-                                                                    type="password"
-                                                                    value={dialogPassword}
-                                                                    onChange={(e) => setDialogPassword(e.target.value)}
-                                                                />
-                                                            </div>
-                                                        </DialogContent>
-                                                        <DialogActions>
-                                                            <Button onClick={() => { setDialogOpen(false), setDialogPassword("") }}>İptal</Button>
-                                                            <Button onClick={() => {
-                                                                handleSubmit()
-                                                            }}>Onayla</Button>
-                                                        </DialogActions>
-                                                    </Dialog>
+
                                                     <div style={{
                                                         border: "1px solid #e0e0e0",
                                                         borderRadius: "5px",
