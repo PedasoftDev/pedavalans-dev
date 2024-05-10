@@ -424,7 +424,7 @@ export class DashboardController extends UIController {
 
                                     Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version").then((database_version) => {
                                         const dbVersion: number = database_version.version;
-                                        if (dbVersion != Database.version) {
+                                        if (dbVersion < Database.version) {
                                             updateVersion(dbVersion)
                                         }
                                     })
