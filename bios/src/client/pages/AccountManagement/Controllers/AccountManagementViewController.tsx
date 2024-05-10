@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid } from "@tuval/forms";
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
-import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts } from "@realmocean/sdk";
+import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts, EmailBroker } from "@realmocean/sdk";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Switch, TextField } from "@mui/material";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
@@ -177,11 +177,24 @@ export class AccountManagementViewController extends UIController {
                                         "account_id": data.$id,
                                         "is_admin": false
                                     }
-                                }, () => {
+                                }, async () => {
+                                    // const key = await EmailBroker.Default.createKey({
+                                    //     smtpServer: "smtp-mail.outlook.com",
+                                    //     smtpPort: "587",
+                                    //     password: "Pedasoft?2024_PDV",
+                                    //     username: "info@pedabilisim.com",
+                                    //     tls: false
+                                    // })
+                                    // await EmailBroker.Default
+                                    //     .setKey(key)
+                                    //     .sendEmail("info@pedabilisim.com", "yusuf.selek@pedabilisim.com", "PEDAVALANS - Yeni Kullanıcı", `<p>Merhaba, {{username}} adlı kullanıcı sisteme eklenmiştir.</p>`, {
+                                    //         username: createAccountForm.username
+                                    //     })
                                     Toast.fire({
                                         icon: 'success',
                                         title: 'Kullanıcı oluşturuldu'
                                     })
+                                    
                                     setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
                                 })
                             })
