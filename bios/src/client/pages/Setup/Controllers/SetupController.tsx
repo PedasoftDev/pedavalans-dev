@@ -171,6 +171,18 @@ export class SetupController extends UIController {
                 tasks.Wait(1);
 
                 tasks.Task(async () => {
+                    const accountRelId = nanoid();
+                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "account_relation", accountRelId, {
+                        "id": accountRelId,
+                        "tenant_id": organization.$id,
+                        "account_id": me.$id,
+                        "is_admin": true
+                    })
+                })
+
+                tasks.Wait(1);
+
+                tasks.Task(async () => {
                     const uuid2 = nanoid();
                     await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "monitoring", uuid2, {
                         "id": uuid2,
@@ -178,13 +190,6 @@ export class SetupController extends UIController {
                         "tenant_id": organization.$id,
                         "is_active": true,
                         "is_deleted": false,
-                    })
-                    const accountRelId = nanoid();
-                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "account_relation", accountRelId, {
-                        "id": accountRelId,
-                        "tenant_id": organization.$id,
-                        "account_id": me.$id,
-                        "is_admin": true
                     })
                     for (let k = 0; k < Resources.Parameters.length; k++) {
                         const uuid = nanoid();
@@ -256,7 +261,8 @@ export class SetupController extends UIController {
                 })
                 tasks.Wait(1);
                 tasks.Task(async () => {
-                    this.navigate('/app/dashboard');
+                    window.location.reload();
+                    // this.navigate('/app/dashboard');
                 })
                 tasks.Run();
             } catch (error: any) {

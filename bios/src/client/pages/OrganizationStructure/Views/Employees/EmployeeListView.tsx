@@ -17,6 +17,7 @@ import { Toast } from '../../../../components/Toast'
 import Swal from 'sweetalert2'
 import IAccountRelation from '../../../../interfaces/IAccountRelation'
 import LinearProgressWithLabel from '../../../../components/LinearProgressWithLabel'
+import { GridContainer } from './Views/View'
 
 interface IEmployeeImportFromExcel {
     sicil_no: string;
@@ -519,9 +520,9 @@ const EmployeeListView = (
                     }
                 </div>
             </div>
-            <div style={{ height: "calc(100vh - 280px)" }}>
+            <GridContainer>
                 <StyledDataGrid rows={props.employees.filter(x => x.is_active === props.active)} columns={props.columns} />
-            </div>
+            </GridContainer>
         </div >
     )
 }

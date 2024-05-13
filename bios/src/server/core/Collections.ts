@@ -29,6 +29,8 @@ namespace Collections {
     export const EmployeeCompetencyValue = "employee_competency_value";
     export const VocationalQualificationType: string = 'vocational_qualification_type'
     export const VocationalQualification: string = 'vocational_qualification'
+    export const OrganizationEmployeeDocument: string = 'organization_employee_document'
+    export const PositionVocationalQualificationRelation: string = "position_vocational_qualification";
 }
 
 export default Collections;

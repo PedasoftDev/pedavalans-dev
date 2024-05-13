@@ -64,8 +64,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { updatePolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Update();
         const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
 
-        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
-        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
+        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
+        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
 
         // selectedAccounts
         const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetByPolyvalenceUnitId(id);

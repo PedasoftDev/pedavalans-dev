@@ -59,7 +59,7 @@ export class VocationalQualificationListController extends UIFormController {
             },
             {
               field: 'document_validity_period',
-              headerName: 'Belgenin Bitiş Ön Hatırlatması',
+              headerName: 'Belgenin Bitiş Ön Hatırlatması(Gün)',
               type: 'number',
               width: 200,
               editable: true,

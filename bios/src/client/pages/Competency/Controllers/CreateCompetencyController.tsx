@@ -54,7 +54,7 @@ export class CreateCompetencyController extends UIController {
 
         const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
-        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+        const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
         const { createCompetencyLineRelation, error, isError, isLoading: isLoadingCreateLineRelation, isSuccess } = CompetencyLineRelation.Create()
 
         // lines

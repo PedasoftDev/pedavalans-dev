@@ -39,7 +39,7 @@ export class ParametersController extends UIFormController {
         const { me, isLoading: isLoad } = useGetMe("console");
         const navigate = useNavigate();
 
-        const { parameters, isLoading } = Parameters.GetParameters(me?.prefs?.organization);
+        const { parameters, isLoading } = Parameters.GetParameters();
         const { monitoring, isLoading: isLoadingMonitoring } = Monitoring.GetMonitoring(me?.prefs?.organization);
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
         const { updateParameter } = Parameters.UpdateParameter();

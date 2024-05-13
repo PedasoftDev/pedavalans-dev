@@ -36,6 +36,29 @@ export namespace IOrganizationStructure {
 
     }
 
+    export namespace IEmployeeVocationalQualificationRelation {
+        export interface IBase extends IRoot {
+          employee_id: string
+          document_id: string
+          document_name: string
+          end_date?: string
+          document_type_id: string
+          document_type_name: string
+          tenant_id: string
+          is_active: boolean
+          is_deleted: boolean
+        }
+        export interface ICreate {
+          employee_id: string
+          document_id: string
+          document_name: string
+          end_date?: string
+          document_type_id: string
+          document_type_name: string
+          tenant_id: string
+        }
+      }
+
     export namespace IDepartments {
         export interface ICreateDepartment {
             id: string;
@@ -110,6 +133,7 @@ export namespace IOrganizationStructure {
             realm_id: string;
             record_id: string;
             name: string;
+            relatedVocationalQualifications?: string[]
         }
 
         export interface IPosition extends IRoot {
@@ -122,6 +146,23 @@ export namespace IOrganizationStructure {
             is_deleted: boolean;
         }
     }
+
+    export namespace IPositionVocationalQualificationRelation {
+        export interface IBase extends IRoot {
+          position_id: string
+          document_id: string
+          document_name: string
+          tenant_id: string
+          is_active: boolean
+          is_deleted: boolean
+        }
+        export interface ICreate {
+          position_id: string
+          document_id: string
+          document_name: string
+          tenant_id: string
+        }
+      }
 
     export namespace ITitles {
         export interface ICreateTitle {
