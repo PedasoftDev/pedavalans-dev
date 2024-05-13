@@ -380,8 +380,6 @@ export class DashboardController extends UIController {
                             }
 
                             useEffect(() => {
-                                assignOrganization()
-
                                 if (me?.prefs?.organization == null) {
                                     assignOrganization()
                                 } else {
