@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import Form from '../ViewForm/Form';
-import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
+import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Toast } from '../../../../components/Toast';
 import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
 import AppInfo from '../../../../../AppInfo';
 import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
-import { Services } from '@realmocean/sdk';
+import { Services, useGetMe } from '@realmocean/sdk';
 import Collections from '../../../../../server/core/Collections';
-import { nanoid } from '@tuval/forms';
+import { nanoid, useNavigate, useParams } from '@tuval/forms';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import VocationalQualificationType from '../../../../../server/hooks/vocationalQualificationType/main';
+import VocationalQualification from '../../../../../server/hooks/vocationalQualification/main';
+import OrganizationEmployeeDocument from '../../../../../server/hooks/organizationEmployeeDocument/main';
+import { Resources } from '../../../../assets/Resources';
+import { GridColDef, trTR } from '@mui/x-data-grid';
+import StyledDataGrid from '../../../../components/StyledDataGrid';
 
 
 const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
@@ -28,6 +34,16 @@ const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
     is_active: true,
     is_deleted: false,
     realm_id: "",
+    tenant_id: ""
+}
+
+const resetFormDocument: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
+    employee_id: "",
+    document_id: "",
+    document_name: "",
+    document_type_id: "",
+    document_type_name: "",
+    end_date: "",
     tenant_id: ""
 }
 
@@ -90,7 +106,7 @@ const EditEmployeeView = (
             collectionId: "organization_employee",
             documentId: formEmployee.$id,
             data: removeDollarProperties(formEmployee),
-        }, () => {
+        }, (res) => {
             Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
                 employee_id: formEmployee.$id,
                 employee_name: formEmployee.first_name + " " + formEmployee.last_name,
@@ -196,144 +212,257 @@ const EditEmployeeView = (
         })
     }
 
+    const navigate = useNavigate()
+    const { me } = useGetMe("console");
+    const [page, setPage] = useState<string>("addEmployee")
+    const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
+
+    const [formDocument, setFormDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate>(resetFormDocument)
+    const [document, setDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[]>([])
+
+    const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
+    const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
+
+    const { updateOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Update()
+    const { organizationEmployeeDocumentList, isLoading: isLoadingDocumentList } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
+
+    const handleSelectType = (e: SelectChangeEvent<string>) => {
+        const selectedValue = e.target.value;
+        const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
+
+        if (selectedDocumentType.document_validity_period === "Süresiz") {
+            setShowValidityPeriod(false);
+            setFormDocument({
+                ...formDocument,
+                [e.target.name]: selectedValue,
+                document_type_name: selectedDocumentType.document_type_name
+            });
+        } else {
+            setShowValidityPeriod(true);
+            setFormDocument({
+                ...formDocument,
+                [e.target.name]: selectedValue,
+                document_type_name: selectedDocumentType.document_type_name
+            });
+        }
+    };
+    const handleSelectDocumentName = (e: SelectChangeEvent<string>) => {
+        const selectedValue = e.target.value;
+        const selectedDocument = documentGetList.find((doc) => doc.document_id === selectedValue);
+
+        setFormDocument({
+            ...formDocument,
+            [e.target.name]: selectedValue,
+            document_name: selectedDocument.document_name
+        });
+
+    };
+
+    const handleDocument = () => {
+        setDocument([...document, { ...formDocument }])
+        setFormDocument(resetFormDocument)
+        setShowValidityPeriod(false);
+    }
+
+    const { id } = useParams()
+
+    const { documentList } = OrganizationEmployeeDocument.Get(id)
+    console.log(documentList);
+
+
+    const [filterKey, setFilterKey] = useState('')
+
+    const columns: GridColDef[] = [
+        {
+            field: 'document_type_name',
+            headerName: 'Belge Türü',
+            flex: 1,
+
+        },
+        {
+            field: 'document_name',
+            headerName: 'Belge Adı',
+            flex: 1,
+        },
+        {
+            field: 'end_date',
+            headerName: 'Belgenin Bitiş Tarihi',
+            width: 200,
+            valueGetter: (params: any) => {
+                return Resources.Functions.formatDate(params.value);
+            }
+        },
+        {
+            field: "$id",
+            headerName: "İşlemler",
+            width: 200,
+            renderCell: (params) => {
+                return (
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <Button size="small" variant="outlined" onClick={() => navigate(`/app/edit-employee_document/${params.value}`)}>Düzenle</Button>
+                    </div>
+                )
+            }
+        }
+    ]
+
     return (
-        <Form
-            title='Tanımlı Personel Düzenle'
-            onSubmit={onSubmit}
-            formContent={
+        <div>
+            <div>
+                <Button onClick={() => setPage("addEmployee")}>Personel Bilgileri</Button>
+                <Button onClick={() => setPage("addEmployeeVQ")}>Belge ve Sertifikalar</Button>
+            </div>
+            <Form
+                title='Tanımlı Personel Düzenle'
+                onSubmit={onSubmit}
+                formContent={
+                    page === "addEmployee" ?
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
+                            <TextField
+                                name='id'
+                                size='small'
+                                label='Sicil No'
+                                value={formEmployee.id}
+                                onChange={onChange}
+                                required
+                            />
+                            <TextField
+                                name='first_name'
+                                size='small'
+                                label='İsim'
+                                value={formEmployee.first_name}
+                                onChange={onChange}
+                                required
+                            />
+                            <TextField
+                                name='last_name'
+                                size='small'
+                                label='Soyisim'
+                                value={formEmployee.last_name}
+                                onChange={onChange}
+                                required
+                            />
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
-                    <TextField
-                        name='id'
-                        size='small'
-                        label='Sicil Numarası'
-                        value={formEmployee.id}
-                        onChange={onChange}
-                    />
-                    <TextField
-                        name='first_name'
-                        size='small'
-                        label='İsim'
-                        value={formEmployee.first_name}
-                        onChange={onChange}
-                    />
-
-                    <TextField
-                        name='last_name'
-                        size='small'
-                        label='Soyisim'
-                        value={formEmployee.last_name}
-                        onChange={onChange}
-                    />
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker label="İşe Başlama Tarihi"
-                            value={dayjs(formEmployee.job_start_date)}
-                            format="DD/MM/YYYY"
-                            slotProps={{ textField: { size: 'small', fullWidth: true } }}
-                            onChange={(e: any) => {
-                                setFormEmployee({
-                                    ...formEmployee,
-                                    job_start_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
-                                })
-                            }} />
-                    </LocalizationProvider>
-                    {selectFormStates.map((selectFormState) => {
-                        return (
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker label="İşe Başlama Tarihi"
+                                    format="DD/MM/YYYY"
+                                    slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                    onChange={(e: any) => {
+                                        setFormEmployee({
+                                            ...formEmployee,
+                                            job_start_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                        })
+                                    }} />
+                            </LocalizationProvider>
+                            {selectFormStates.map((selectFormState) => {
+                                return (
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>{selectFormState.label}</InputLabel>
+                                        <Select
+                                            name={selectFormState.id}
+                                            value={formEmployee[selectFormState.id]}
+                                            label={selectFormState.label}
+                                            onChange={(e: SelectChangeEvent) => {
+                                                setFormEmployee({
+                                                    ...formEmployee,
+                                                    [selectFormState.id]: e.target.value as string
+                                                })
+                                            }}
+                                            size="small"
+                                        >
+                                            {selectFormState.options.map((option) => {
+                                                return (
+                                                    <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>
+                                                )
+                                            })}
+                                        </Select>
+                                    </FormControl>
+                                )
+                            })
+                            }
                             <FormControl fullWidth size="small">
-                                <InputLabel>{selectFormState.label}</InputLabel>
+                                <InputLabel>Amir</InputLabel>
                                 <Select
-                                    name={selectFormState.id}
-                                    value={formEmployee[selectFormState.id]}
-                                    label={selectFormState.label}
+                                    name="manager_id"
+                                    value={formEmployee.manager_id}
+                                    label="Amir"
                                     onChange={(e: SelectChangeEvent) => {
                                         setFormEmployee({
                                             ...formEmployee,
-                                            [selectFormState.id]: e.target.value as string
+                                            manager_id: e.target.value as string
                                         })
                                     }}
                                     size="small"
                                 >
-                                    {selectFormState.options.map((option) => {
+                                    {props.employees.map((option) => {
                                         return (
-                                            <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>
+                                            <MenuItem key={option.id} value={option.id}>{option.first_name + " " + option.last_name}</MenuItem>
                                         )
                                     })}
                                 </Select>
                             </FormControl>
-                        )
-                    })
-                    }
+                            <FormControlLabel
+                                sx={{ width: "100%", alignContent: "end" }}
+                                onChange={(e: any) => setFormEmployee({ ...formEmployee, is_active: e.target.checked })}
+                                value={formEmployee.is_active}
+                                control={<Switch color="primary" checked={formEmployee.is_active} />}
+                                label="Aktif mi?"
+                                labelPlacement="start"
+                            />
+                        </div> :
+                        page === "addEmployeeVQ" &&
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
 
-                    <FormControl fullWidth size="small">
-                        <InputLabel>Amir</InputLabel>
-                        <Select
-                            name="manager_id"
-                            value={formEmployee.manager_id}
-                            label="Amir"
-                            onChange={(e: SelectChangeEvent) => {
-                                setFormEmployee({
-                                    ...formEmployee,
-                                    manager_id: e.target.value as string
-                                })
-                            }}
-                            size="small"
-                        >
-                            {props.employees.filter(x => x.id != props.selectedEmployee.id).map((option) => {
-                                return (
-                                    <MenuItem key={option.id} value={option.id}>{option.first_name + " " + option.last_name}</MenuItem>
-                                )
-                            })}
-                        </Select>
-                    </FormControl>
+                            <StyledDataGrid
+                                rows={organizationEmployeeDocumentList.filter((x) => x.employee_id === formEmployee.$id)}
+                                columns={columns}
+                                getRowId={(row) => row.$id}
+                                localeText={
+                                    trTR.components.MuiDataGrid.defaultProps.localeText
+                                }
+                            />
 
-                    <FormControlLabel
-                        sx={{ width: "100%", alignContent: "end" }}
-                        onChange={(e: any) => setFormEmployee({ ...formEmployee, is_active: e.target.checked })}
-                        value={formEmployee.is_active}
-                        control={<Switch color="primary" checked={formEmployee.is_active} />}
-                        label="Aktif mi?"
-                        labelPlacement="start"
-                    />
+                        </div>
+                }
 
-                </div>
-            }
+                buttons={
+                    isActive ?
+                        [
+                            {
+                                text: "Güncelle",
+                                color: "primary",
+                                type: "submit"
+                            },
+                            {
+                                text: "İptal",
+                                color: "error",
+                                type: "button",
+                                onClick: onReset
+                            }
+                        ]
+                        :
+                        [
+                            {
+                                text: "Güncelle",
+                                color: "primary",
+                                type: "submit"
+                            },
+                            {
+                                text: "Sil",
+                                color: "error",
+                                onClick: onDelete
+                            },
+                            {
+                                text: "İptal",
+                                color: "primary",
+                                type: "button",
+                                onClick: onReset
+                            }
+                        ]
+                }
+            />
+        </div>
 
-            buttons={
-                isActive ?
-                    [
-                        {
-                            text: "Güncelle",
-                            color: "primary",
-                            type: "submit"
-                        },
-                        {
-                            text: "İptal",
-                            color: "error",
-                            type: "button",
-                            onClick: onReset
-                        }
-                    ]
-                    :
-                    [
-                        {
-                            text: "Güncelle",
-                            color: "primary",
-                            type: "submit"
-                        },
-                        {
-                            text: "Sil",
-                            color: "error",
-                            onClick: onDelete
-                        },
-                        {
-                            text: "İptal",
-                            color: "primary",
-                            type: "button",
-                            onClick: onReset
-                        }
-                    ]
-            }
-        />
     )
 }
 

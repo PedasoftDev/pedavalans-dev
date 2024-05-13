@@ -4,6 +4,7 @@ import StyledDataGrid from '../../../../components/StyledDataGrid'
 import { MdDisplaySettings } from 'react-icons/md'
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
 import { GridColDef } from '@mui/x-data-grid'
+import { GridContainer } from './Views/View'
 
 const DepartmentListView = (props: {
     setFilterKeyDepartments: React.Dispatch<React.SetStateAction<string>>,
@@ -36,12 +37,12 @@ const DepartmentListView = (props: {
                     <Button variant='contained' fullWidth onClick={() => props.setDefaultPage("addDepartment")} size='small'>Yeni Departman</Button>
                 </div>
             </div>
-            <div style={{ height: "calc(100vh - 280px)" }}>
+            <GridContainer>
                 <StyledDataGrid
                     rows={props.departments.filter((department) => department.is_active === props.active)}
                     columns={props.columns}
                 />
-            </div>
+            </GridContainer>
         </div>
     )
 }

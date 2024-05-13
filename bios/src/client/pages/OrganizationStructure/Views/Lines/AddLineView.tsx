@@ -38,7 +38,7 @@ const AddLineView = (
 ): JSX.Element => {
     const { createDocument, isLoading, error, isError, isSuccess } = OrganizationStructureLine.Create();
     const { me, isLoading: isLoadingMe } = useGetMe("console");
-    const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+    const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
 
     const { createCompetencyLineRelation } = CompetencyLineRelation.Create();
 

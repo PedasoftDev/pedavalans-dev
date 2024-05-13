@@ -4,6 +4,7 @@ import StyledDataGrid from '../../../../components/StyledDataGrid'
 import { MdDisplaySettings } from 'react-icons/md'
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
 import { GridColDef } from '@mui/x-data-grid'
+import { GridContainer } from './Views/View'
 
 const TitleListView = (
   props: {
@@ -32,9 +33,9 @@ const TitleListView = (
           <Button variant='contained' fullWidth size='small' onClick={() => props.setDefaultPage("addTitle")}>Yeni Ünvan</Button>
         </div>
       </div>
-      <div style={{ height: "calc(100vh - 280px)" }}>
+      <GridContainer>
         <StyledDataGrid rows={props.titles.filter(x => x.is_active === props.active)} columns={props.columns} />
-      </div>
+      </GridContainer>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo';
 import { IOrganizationStructure } from '../../../client/interfaces/IOrganizationStructure';
+import Collections from '../../core/Collections';
 
 namespace OrganizationStructurePosition {
     export const Create = () => {
@@ -32,6 +33,11 @@ namespace OrganizationStructurePosition {
             isLoadingPositions: isLoading,
             totalPositions: total
         }
+    }
+
+    export const Get = (id: string): { positions: IOrganizationStructure.IPositions.IPosition, isLoading: boolean } => {
+        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: Collections.OrganizationStructurePosition, documentId: id })
+        return { positions: document as any, isLoading }
     }
 }
 

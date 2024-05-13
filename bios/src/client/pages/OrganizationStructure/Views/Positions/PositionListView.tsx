@@ -4,6 +4,7 @@ import StyledDataGrid from '../../../../components/StyledDataGrid'
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
 import { GridColDef } from '@mui/x-data-grid'
 import { MdDisplaySettings } from 'react-icons/md'
+import { GridContainer } from './Views/View'
 
 const PositionListView = (
     props: {
@@ -33,9 +34,9 @@ const PositionListView = (
                     <Button variant='contained' fullWidth size='small' onClick={() => setDefaultPage("addPosition")}>Yeni Pozisyon</Button>
                 </div>
             </div>
-            <div style={{ height: "calc(100vh - 280px)" }}>
+            <GridContainer>
                 <StyledDataGrid rows={positions.filter(x => x.is_active === active)} columns={columns} />
-            </div>
+            </GridContainer>
         </div>
     )
 }

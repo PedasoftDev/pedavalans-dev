@@ -35,9 +35,9 @@ export class DashboardController extends UIController {
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
         const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.List();
 
-        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth, me?.prefs?.organization)
-        const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management, me?.prefs?.organization)
-        const { parameters: lineBased, isLoading: isLoadingLineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship, me?.prefs?.organization)
+        const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
+        const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management)
+        const { parameters: lineBased, isLoading: isLoadingLineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
 
 
@@ -372,15 +372,18 @@ export class DashboardController extends UIController {
                                 updateVersionTask.Run()
                             }
 
+                            const assignOrganization = async () => {
+                                await Services.Client.setProject("console");
+                                await Services.Client.setMode(undefined);
+                                await Services.Accounts.updatePrefs({ organization: tableAuth[0].tenant_id })
+                                window.location.reload()
+                            }
+
                             useEffect(() => {
+                                assignOrganization()
 
                                 if (me?.prefs?.organization == null) {
-                                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter).then((result) => {
-                                        Services.Client.setProject("console");
-                                        Services.Client.setMode(undefined);
-                                        Services.Accounts.updatePrefs({ organization: result.documents[0].tenant_id })
-                                        window.location.reload()
-                                    })
+                                    assignOrganization()
                                 } else {
                                     if (tableAuth[0]?.is_active) {
                                         localStorage.setItem("tableAuth", "true")

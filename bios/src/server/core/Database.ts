@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 5,
+    "version": 6,
     "collections": [
         {
             "id": "competency",
@@ -2067,6 +2067,107 @@ const Database: IDatabase = {
                     version: 1,
                 },
             ],
+        },
+        {
+            "id": "position_vocational_qualification",
+            "name": "Position Vocational Qualification Relation",
+            "description": {
+                en: "Position Vocational Qualification Relation is a collection of position vocational qualification relations.",
+                tr: "Poziyonlar ile Mesleki Yeterlilik ilişkilerinin koleksiyonudur."
+            },
+            "version": 6,
+            "attributes": [
+                {
+                    "key": "position_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "document_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "document_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "organization_employee_document",
+            "name": "Organization Employee Document",
+            "description": {
+                en: "Organization Employee Document is a collection of position vocational qualification relations.",
+                tr: "Çalışan dökümanları ilişkilerinin koleksiyonudur."
+            },
+            "version": 6,
+            "attributes": [
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "document_type_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "document_type_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "document_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "document_name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "end_date",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
         }
     ]
 }

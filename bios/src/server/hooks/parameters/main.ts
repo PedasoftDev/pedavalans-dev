@@ -2,8 +2,8 @@ import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDo
 import AppInfo from '../../../AppInfo';
 import IParameters from '../../../client/interfaces/IParameters';
 namespace Parameters {
-    export const GetParameters = (tenant_id: string): { parameters: IParameters.IParameter[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", [Query.limit(10000), Query.equal("tenant_id", tenant_id)])
+    export const GetParameters = (): { parameters: IParameters.IParameter[], isLoading: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", [Query.limit(10000)])
         return {
             parameters: documents as any,
             isLoading
@@ -21,8 +21,8 @@ namespace Parameters {
         }
     }
 
-    export const GetParameterByName = (name: string, tenant_id: string): { parameters: IParameters.IParameter[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", [Query.equal("name", name), Query.equal("tenant_id", tenant_id)])
+    export const GetParameterByName = (name: string): { parameters: IParameters.IParameter[], isLoading: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "pedavalans_parameter", [Query.equal("name", name)])
         return {
             parameters: documents as any,
             isLoading

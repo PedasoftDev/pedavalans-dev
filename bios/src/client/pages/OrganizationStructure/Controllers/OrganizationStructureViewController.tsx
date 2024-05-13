@@ -42,6 +42,7 @@ import EditEmployeeView from '../Views/Employees/EditEmployeeView';
 import EmployeeListView from '../Views/Employees/EmployeeListView';
 import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main';
 import AccountRelation from '../../../../server/hooks/accountRelation/main';
+import VocationalQualification from '../../../../server/hooks/vocationalQualification/main';
 
 const TableClickP = styled.p`
     &:hover {
@@ -122,6 +123,8 @@ export class OrganizationStructureViewController extends UIController {
             employee.last_name.toLowerCase().indexOf(filterKeyEmployees.toLowerCase()) > -1
         ) : [];
 
+        // documents
+        const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
 
 
 
@@ -426,6 +429,7 @@ export class OrganizationStructureViewController extends UIController {
                                                         lines={lines.filter((line) => line.is_active === true)}
                                                         positions={positions.filter((position) => position.is_active === true)}
                                                         titles={titles.filter((title) => title.is_active === true)}
+                                                        documents={documentGetList.filter((document) => document.is_active === true)}
                                                     />
                                                     :
                                                     defaultPage === "editEmployee" ?
