@@ -1,7 +1,7 @@
 import { cTop, cTopLeading, HStack, nanoid, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
 import React, { Fragment, useEffect, useState } from 'react';
 import { PortalMenu } from '../../../components/PortalMenu';
-import { Query, Services, useGetMe, useListCollections } from '@realmocean/sdk';
+import { Query, Services, useGetMe, useListCollections, useListAccounts } from '@realmocean/sdk';
 import Main from '../../../../server/hooks/main/Main';
 import Parameters from '../../../../server/hooks/parameters/main';
 import { Resources } from '../../../assets/Resources';
@@ -19,6 +19,8 @@ import OrganizationStructureTitle from '../../../../server/hooks/organizationStr
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main';
+import IParameters from '../../../interfaces/IParameters';
+import IStringParameter from '../../../interfaces/IStringParameter';
 
 export class DashboardController extends UIController {
 
@@ -39,12 +41,15 @@ export class DashboardController extends UIController {
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management)
         const { parameters: lineBased, isLoading: isLoadingLineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
+        const { accountRelations: accountRelationList, isLoadingResult: isLoadingAccountResult } = AccountRelation.GetList(me?.prefs?.organization)
+        const { accounts, isLoading: isLoadingUsers } = useListAccounts()
+
 
 
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingListEmployeeCompetencyValue || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingAccountResult || isLoadingListEmployeeCompetencyValue || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         UIViewBuilder(() => {
@@ -427,6 +432,105 @@ export class DashboardController extends UIController {
                                         const dbVersion: number = database_version.version;
                                         if (dbVersion < Database.version) {
                                             updateVersion(dbVersion)
+                                        } else {
+                                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.limit(1000)]).then((parameterDocs) => {
+                                                const parameters: IParameters.IParameter[] = parameterDocs.documents as any[];
+                                                if (Resources.Parameters.length > parameters.length) {
+
+                                                    const parameterTasks = new Umay()
+                                                    parameterTasks.Task(async () => {
+                                                        setIsUpdate(true)
+                                                    })
+                                                    Resources.Parameters.forEach(async (param) => {
+                                                        const parameter = parameters.find((p) => p.name === param.localStr)
+                                                        if (!parameter) {
+                                                            parameterTasks.Task(async () => {
+                                                                const paramId = nanoid()
+                                                                try {
+                                                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Parameter, paramId, {
+                                                                        id: paramId,
+                                                                        name: param.localStr
+                                                                    })
+                                                                } catch (error) {
+                                                                    console.log(error)
+                                                                    console.log("Parameter oluşturulamadı", param.localStr)
+                                                                }
+                                                            })
+                                                            parameterTasks.Wait(1)
+                                                        }
+                                                    })
+                                                    parameterTasks.Wait(2)
+                                                    parameterTasks.Task(async () => {
+                                                        window.location.reload()
+                                                    })
+                                                    parameterTasks.Run()
+                                                } else {
+                                                    console.log("Boolean Parametreler eşit")
+                                                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "string_parameter", [Query.limit(1000)]).then((stringDocs) => {
+                                                        const stringParameters: IStringParameter.IBase[] = stringDocs.documents as any[];
+                                                        if (Resources.StringParameters.length > stringParameters.length) {
+                                                            const stringParameterTasks = new Umay()
+                                                            stringParameterTasks.Task(async () => {
+                                                                setIsUpdate(true)
+                                                            })
+                                                            Resources.StringParameters.forEach(async (param) => {
+                                                                const stringParameter = stringParameters.find((m) => m.$id === param.localStr)
+                                                                if (!stringParameter) {
+                                                                    stringParameterTasks.Task(async () => {
+                                                                        try {
+                                                                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "string_parameter", nanoid(), {
+                                                                                name: param.localStr
+                                                                            })
+                                                                        } catch (error) {
+                                                                            console.log(error)
+                                                                            console.log("StringParameter oluşturulamadı", param.localStr)
+                                                                        }
+                                                                    })
+                                                                    stringParameterTasks.Wait(1)
+                                                                }
+                                                            })
+                                                            stringParameterTasks.Wait(2)
+                                                            stringParameterTasks.Task(async () => {
+                                                                window.location.reload()
+                                                            })
+                                                            stringParameterTasks.Run()
+                                                        } else {
+                                                            console.log("String Parametreler eşit")
+                                                            const accountRelationDontHaveMail = accountRelationList.filter((account) => account.mail == null)
+                                                            if (accountRelationDontHaveMail.length > 0) {
+                                                                const accountRelationTasks = new Umay()
+                                                                accountRelationTasks.Task(async () => {
+                                                                    setIsUpdate(true)
+                                                                })
+                                                                accountRelationDontHaveMail.forEach((account) => {
+                                                                    accountRelationTasks.Task(async () => {
+                                                                        
+                                                                        const accountMail = accounts.find((user) => user.$id === account.account_id)
+                                                                        if (accountMail) {
+                                                                            try {
+                                                                                await Services.Databases.updateDocument(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, account.$id, {
+                                                                                    mail: accountMail.email
+                                                                                })
+                                                                            } catch (error) {
+                                                                                console.log(error)
+                                                                                console.log("Mail Güncellenemedi", accountMail.email)
+                                                                            }
+                                                                        }
+                                                                    })
+                                                                    accountRelationTasks.Wait(1)
+                                                                })
+                                                                accountRelationTasks.Wait(2)
+                                                                accountRelationTasks.Task(async () => {
+                                                                    window.location.reload()
+                                                                })
+                                                                accountRelationTasks.Run()
+                                                            } else {
+                                                                console.log("Mailler eşit")
+                                                            }
+                                                        }
+                                                    })
+                                                }
+                                            })
                                         }
                                     })
 

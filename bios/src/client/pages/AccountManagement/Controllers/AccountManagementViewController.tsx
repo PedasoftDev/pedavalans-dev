@@ -38,6 +38,7 @@ const resetAccountRelation: IAccountRelation.IBase = {
     account_id: "",
     // first_name: "",
     // last_name: "",
+    mail: "",
     authorization_profile: "",
     id: "",
     is_active: true,
@@ -175,6 +176,7 @@ export class AccountManagementViewController extends UIController {
                                         "id": docId,
                                         "tenant_id": me?.prefs?.organization,
                                         "account_id": data.$id,
+                                        "mail": data.email,
                                         "is_admin": false
                                     }
                                 }, async () => {
