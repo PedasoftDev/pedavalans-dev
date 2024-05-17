@@ -3,8 +3,6 @@ class PedavalansService extends RealmoceanService {
   static Name = 'pedavalans-service';
 
   async init() {
-
-    const schedule = this.services.get('schedule-service');
     const appName = 'pedavalans';
     const databaseName = 'pedavalans';
     const Competency: string = "competency";
@@ -47,6 +45,7 @@ class PedavalansService extends RealmoceanService {
       tenant_id: string;
       realm_id: string;
     }
+
     const Parameter: string = "pedavalans_parameter";
     const CompetencyGradeLevel: string = "competency_grade_level";
     const Education: string = "education";
@@ -70,15 +69,48 @@ class PedavalansService extends RealmoceanService {
     const OrganizationEmployeeDocument: string = 'organization_employee_document'
     const PositionVocationalQualificationRelation: string = "position_vocational_qualification";
 
-    schedule.addJob('*/5 * * * * *', async () => {
-      const accountRelation: IAccountRelation[] = await this.databaseService.listDocuments(appName, databaseName, AccountRelation).then(x => x.documents);
-      const polyvalenceUnitTables: IPolyvalenceUnitTable[] = await this.databaseService.listDocuments(appName, databaseName, PolyvalenceUnitTable).then(x => x.documents);
-      const polyvalenceUnitTableDataResponsibles: IPolyvalenceUnitTableDataResponsible[] = await this.databaseService.listDocuments(appName, databaseName, PolyvalenceUnitTableDataResponsible).then(x => x.documents);
-      const competencies: any[] = await this.databaseService.listDocuments(appName, databaseName, Competency).then(x => x.documents);
-      // console.log(polyvalenceUnitTables);
-      // console.log(accountRelation);
-      console.log(competencies.length)
+    let isSend = true;
+
+
+
+    this.scheduleService.addJob('*/15 * * * * *', async () => {
+      try {
+        const accountRelation: IAccountRelation[] = await this.databaseService.listDocuments(appName, databaseName, AccountRelation).then(x => x.documents);
+        const polyvalenceUnitTables: IPolyvalenceUnitTable[] = await this.databaseService.listDocuments(appName, databaseName, PolyvalenceUnitTable).then(x => x.documents);
+        const polyvalenceUnitTableDataResponsibles: IPolyvalenceUnitTableDataResponsible[] = await this.databaseService.listDocuments(appName, databaseName, PolyvalenceUnitTableDataResponsible).then(x => x.documents);
+        const competencies: any[] = await this.databaseService.listDocuments(appName, databaseName, Competency).then(x => x.documents);
+
+
+      } catch (error) {
+        console.log(error)
+      }
     })
+  }
+
+  async emailSender(to_email: string, subject: string, html: string, values: any) {
+    try {
+      // const key = await this.emailService.createKey({
+      //   smtpServer: "smtp-mail.outlook.com",
+      //   smtpPort: "587",
+      //   password: "Pedasoft?2024_PDV",
+      //   username: "info@pedabilisim.com",
+      //   tls: false
+      // })
+
+      // await this.emailService.sendEmail(key, "info@pedabilisim.com", "yusuf.selek@pedabilisim.com", "Servis", "{{accounts}}", {
+      //   accounts: accountRelation.map(x => `<p>${x.mail}</p>`).join('')
+      // })
+      const key = await this.emailService.createKey({
+        smtpServer: "smtp-mail.outlook.com",
+        smtpPort: "587",
+        password: "Pedasoft?2024_PDV",
+        username: "info@pedabilisim.com",
+        tls: false
+      })
+      await this.emailService.sendEmail(key, "info@pedabilisim.com", to_email, subject, html, values)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
 
