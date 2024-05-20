@@ -65,11 +65,11 @@ export namespace Resources {
             localStr: "polyvalence_unit_table_mail",
             type: "boolean",
         },
-        // {
-        //     name: "Veri girişi yapılmayan tablolar için hatırlatma maili gönderilsin mi?",
-        //     localStr: "reminder_mail_for_unfilled_tables",
-        //     type: "boolean",
-        // }
+        {
+            name: "Veri girişi yapılmayan tablolar için hatırlatma maili gönderilsin mi?",
+            localStr: "reminder_mail_for_unfilled_tables",
+            type: "boolean",
+        }
     ];
 
     export const StringParameters = [
