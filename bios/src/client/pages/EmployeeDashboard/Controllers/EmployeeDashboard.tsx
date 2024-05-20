@@ -25,16 +25,19 @@ import CompetencyDepartment from '../../../../server/hooks/competencyDepartment/
 import EmployeeCertificateCard from '../Views/EmployeeCertificateCard'
 import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main'
 import {
+  Box,
   Card,
   CardContent,
   CardHeader,
   Paper,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Tabs,
   Typography,
 } from '@mui/material'
 import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel'
@@ -46,6 +49,7 @@ import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main'
 import CompetencyEvaluationPeriod from '../../../../server/hooks/competencyEvaluationPeriod/main'
 import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main'
 import OrganizationStructureEmployeeLog from '../../../../server/hooks/organizationStructureEmployeeLog/main'
+import { AntTab, AntTabs, TabPanel, a11yProps } from '../../../components/Tabs'
 
 
 export class EmployeeDashboard extends UIController {
@@ -115,6 +119,14 @@ export class EmployeeDashboard extends UIController {
 
     const [employeeBarValue, setEmployeeBarValue] = useState(0)
     const [barMaxValue, setBarMaxValue] = useState(0)
+
+    // tabs settings
+    
+    const [value, setValue] = useState(0);
+    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+      setValue(newValue);
+    };
+
 
 
 
@@ -228,7 +240,7 @@ export class EmployeeDashboard extends UIController {
 
           return VStack({ alignment: cTopLeading })(
             HStack({ alignment: cLeading })(
-              Views.Title('Özet Bilgiler').paddingTop('10px')
+              Views.Title('Kişi Bilgileri').paddingTop('10px')
             )
               .height(70)
               .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
@@ -245,12 +257,18 @@ export class EmployeeDashboard extends UIController {
                     padding: '10px',
                   }}
                 >
+                  <AntTabs value={value} onChange={handleChange}>
+                      <AntTab label="Özet Bilgiler" {...a11yProps(0)} />
+                      <AntTab label="Yetkinlil Hedef Bilgileri" {...a11yProps(1)} />
+                  </AntTabs>
+                  <TabPanel value={value} index={0}>
                   <div
                     style={{
                       marginTop: '15px',
                       display: 'flex',
                       flexDirection: 'row',
                       gap: '30px',
+                      padding: '5px 10px',
                     }}
                   >
                     <EmployeeCard
@@ -291,6 +309,7 @@ export class EmployeeDashboard extends UIController {
                       display: 'flex',
                       flexDirection: 'row',
                       gap: '30px',
+                      padding: '5px 10px',
                     }}
                   >
                     <Card
@@ -440,6 +459,7 @@ export class EmployeeDashboard extends UIController {
                     style={{
                       display: 'flex',
                       gap: '13px',
+                      padding: '5px 10px',
                     }}
                   >
                     <Card
@@ -509,7 +529,10 @@ export class EmployeeDashboard extends UIController {
                                         {education.education_name}
                                       </TableCell>
                                       <TableCell align="center">
-                                        {education.start_date}
+                                        {
+                                          new Date(education.start_date)
+                                            .toLocaleDateString()
+                                        }
                                       </TableCell>
                                       <TableCell align="center">
                                         {education.educator_name}
@@ -596,7 +619,10 @@ export class EmployeeDashboard extends UIController {
                       </CardContent>
                     </Card>
                   </div>
+                  </TabPanel>
                 </div>
+                
+               
               )
             )
           ).padding('0 20px')
