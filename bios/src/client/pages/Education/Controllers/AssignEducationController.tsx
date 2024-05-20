@@ -9,7 +9,7 @@ import {
     InputLabel,
     Autocomplete,
 } from "@mui/material";
-import { useGetMe, useListAccounts } from "@realmocean/sdk";
+import { EmailBroker, useGetMe, useListAccounts } from "@realmocean/sdk";
 import Form from "../../Competency/Views/Form";
 import IEducation from "../../../interfaces/IEducation";
 import Education from "../../../../server/hooks/education/main";
@@ -19,6 +19,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
+import assignedEducationTemplate from "../../../components/email/AssignedEducationTemplate";
 import dayjs from "dayjs";
 
 const resetForm: IAssignedEducation.ICreate = {
@@ -78,8 +79,26 @@ export class AssignEducationController extends UIFormController {
                                 }
                                 createAssignedEducation({
                                     data: createForm
-                                }, () => {
+                                }, async () => {
                                     if (_i === selectedEmployees.length - 1) {
+                                        const account = accounts.find(x => x.$id === form.educator_id);
+                                        const emailTemplate = assignedEducationTemplate(selectedEmployees.map(x => `${x.first_name} ${x.last_name}`));
+                                        const key = await EmailBroker.Default.createKey({
+                                            smtpServer: "smtp-mail.outlook.com",
+                                            smtpPort: "587",
+                                            password: "Pedasoft?2024_PDV",
+                                            username: "info@pedabilisim.com",
+                                            tls: false
+                                        })
+                                        await EmailBroker.Default.setKey(key)
+                                            .sendEmail("info@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
+                                                educatorName: form.educator_name,
+                                                code: form.education_code,
+                                                name: form.education_name,
+                                                hour: form.hour,
+                                                startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
+                                                endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
+                                            })
                                         navigateToList();
                                     }
                                 })

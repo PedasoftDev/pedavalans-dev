@@ -181,18 +181,18 @@ export class AccountManagementViewController extends UIController {
                                         "is_admin": false
                                     }
                                 }, async () => {
-                                    const key = await EmailBroker.Default.createKey({
-                                        smtpServer: "smtp-mail.outlook.com",
-                                        smtpPort: "587",
-                                        password: "Pedasoft?2024_PDV",
-                                        username: "info@pedabilisim.com",
-                                        tls: false
-                                    })
-                                    await EmailBroker.Default
-                                        .setKey(key)
-                                        .sendEmail("info@pedabilisim.com", "yusuf.selek@pedabilisim.com", "PEDAVALANS - Yeni Kullanıcı", `<p>Merhaba, {{username}} adlı kullanıcı sisteme eklenmiştir.</p>`, {
-                                            username: createAccountForm.username
-                                        })
+                                    // const key = await EmailBroker.Default.createKey({
+                                    //     smtpServer: "smtp-mail.outlook.com",
+                                    //     smtpPort: "587",
+                                    //     password: "Pedasoft?2024_PDV",
+                                    //     username: "info@pedabilisim.com",
+                                    //     tls: false
+                                    // })
+                                    // await EmailBroker.Default
+                                    //     .setKey(key)
+                                    //     .sendEmail("info@pedabilisim.com", "yusuf.selek@pedabilisim.com", "PEDAVALANS - Yeni Kullanıcı", `<p>Merhaba, {{username}} adlı kullanıcı sisteme eklenmiştir.</p>`, {
+                                    //         username: createAccountForm.username
+                                    //     })
                                     Toast.fire({
                                         icon: 'success',
                                         title: 'Kullanıcı oluşturuldu'
