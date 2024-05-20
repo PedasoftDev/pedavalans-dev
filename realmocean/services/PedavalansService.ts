@@ -36,28 +36,146 @@ class PedavalansService extends RealmoceanService {
   readonly VocationalQualification = 'vocational_qualification';
   readonly OrganizationEmployeeDocument = 'organization_employee_document';
   readonly PositionVocationalQualificationRelation = "position_vocational_qualification";
+  readonly StringParameter = "string_parameter";
 
 
   async init() {
-    // 5 sanıyede bir çalışacak
+    this.scheduleService.addJob('0 0 7 * * *', async () => {
+      await this.checkVocationQualification();
+    })
     this.scheduleService.addJob('*/5 * * * * *', async () => {
-      console.log('Pedavalans Service is working');
-      try {
-        // this.databaseService.Query nin içindeki methodları console'a yazdırır
-        console.log(this.databaseService.Query);
-        await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee, [
-          this.databaseService.Query.limit(1000)
-        ]).then(x => console.log(x));
-      } catch (error) {
-        console.log(error);
+      const queryLimit = [this.databaseService.Query.limit(10000)]
+      interface IRoot {
+        $id?: string;
+        $updatedAt?: string;
+        $createdAt?: string;
+        $updatedBy?: string;
+        $createdBy?: string;
+      }
+      interface IAccountRelation {
+        id: string;
+        tenant_id: string;
+        account_id: string;
+        mail: string;
+        authorization_profile: string;
+        is_admin: boolean;
+        is_active: boolean;
+        is_deleted: boolean;
+      }
+      interface IPolyvalenceUnitTable extends IRoot {
+        polyvalence_table_id: string;
+        polyvalence_table_name: string;
+        polyvalence_department_id: string;
+        polyvalence_department_name: string;
+        polyvalence_evaluation_frequency: string;
+        is_active_table: boolean;
+        is_deleted_table: boolean;
+        tenant_id: string;
+        realm_id: string;
+      }
+      interface IPolyvalenceUnitTableDataResponsible extends IRoot {
+        data_responsible_id: string;
+        responsible_employee_id: string;
+        responsible_employee_name: string;
+        polyvalence_table_id: string;
+        tenant_id: string;
+        realm_id: string;
+        is_active: boolean;
+        is_deleted: boolean;
+      }
+      interface IEmployeeCompetencyValue extends IRoot {
+        employee_competency_value_id: string;
+        employee_id: string;
+        employee_name: string;
+        polyvalence_table_id: string;
+        polyvalence_table_name: string;
+        competency_department_id: string;
+        competency_department_name: string;
+        competency_evaluation_period: string;
+        competency_id: string;
+        competency_name: string;
+        competency_target_value: string;
+        competency_real_value: string;
+        competency_value_desc: string;
+        is_active_competency_value: boolean;
+        is_deleted_competency_value: boolean;
+        tenant_id: string;
+        realm_id: string;
+      }
+      const parameters: any = await this.databaseService.listDocuments(this.appName, this.databaseName, this.Parameter, queryLimit).then(x => x.documents);
+      const parametersString: any = await this.databaseService.listDocuments(this.appName, this.databaseName, this.StringParameter, queryLimit).then(x => x.documents);
+      const accountRelations: IAccountRelation[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.AccountRelation, queryLimit).then(x => x.documents);
+      const polyvalenceTables: IPolyvalenceUnitTable[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.PolyvalenceUnitTable, queryLimit).then(x => x.documents);
+      const polyvalenceTableDataResponsible: IPolyvalenceUnitTableDataResponsible[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.PolyvalenceUnitTableDataResponsible, queryLimit).then(x => x.documents);
+      const employeeCompetencyValues: IEmployeeCompetencyValue[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, queryLimit).then(x => x.documents);
+      for (let i = 0; i < polyvalenceTables.length; i++) {
+        const table = polyvalenceTables[i];
+        const responsibleUsers = polyvalenceTableDataResponsible.filter(x => x.polyvalence_table_id === table.$id);
+        const employeeCompetencyValuesTable = employeeCompetencyValues.filter(x => x.polyvalence_table_id === table.$id);
+        const currentPeriod = await this.getPeriodFromCurrentDate(table.polyvalence_evaluation_frequency);
+        console.log('currentPeriod', currentPeriod)
+        console.log('table', table)
+        console.log('responsibleUsers', responsibleUsers)
+        console.log('accountRelationsWithResponsibleUsers', accountRelations.filter(x => responsibleUsers.map(y => y.responsible_employee_id).includes(x.account_id)))
+        console.log('employeeCompetencyValuesTable', employeeCompetencyValuesTable);
+        console.log('parameters', parameters)
+        console.log('parametersString', parametersString)
       }
     })
-
-    // this.scheduleService.addJob('0 0 7 * * *', async () => {
-    //   await this.checkVocationQualification();
-    // })
   }
 
+  async getPeriodFromCurrentDate(frequency: string) {
+    const currentMonth = new Date().getMonth() + 1
+    const currentYear = new Date().getFullYear()
+    if (frequency === 'Yıl') {
+      return currentYear + ' Yılı Dönemi'
+    } else if (frequency === 'Yarıyıl') {
+      if (currentMonth >= 1 && currentMonth <= 6) {
+        return currentYear + ' 1. Yarıyılı Dönemi'
+      } else {
+        return currentYear + ' 2. Yarıyılı Dönemi'
+      }
+    } else if (frequency === 'Çeyrekyıl') {
+      if (currentMonth >= 1 && currentMonth <= 3) {
+        return currentYear + ' 1. Çeyrekyılı Dönemi'
+      } else if (currentMonth >= 4 && currentMonth <= 6) {
+        return currentYear + ' 2. Çeyrekyılı Dönemi'
+      } else if (currentMonth >= 7 && currentMonth <= 9) {
+        return currentYear + ' 3. Çeyrekyılı Dönemi'
+      } else {
+        return currentYear + ' 4. Çeyrekyılı Dönemi'
+      }
+    } else if (frequency === 'Ay') {
+      switch (currentMonth) {
+        case 1:
+          return currentYear + ' Ocak Dönemi'
+        case 2:
+          return currentYear + ' Şubat Dönemi'
+        case 3:
+          return currentYear + ' Mart Dönemi'
+        case 4:
+          return currentYear + ' Nisan Dönemi'
+        case 5:
+          return currentYear + ' Mayıs Dönemi'
+        case 6:
+          return currentYear + ' Haziran Dönemi'
+        case 7:
+          return currentYear + ' Temmuz Dönemi'
+        case 8:
+          return currentYear + ' Ağustos Dönemi'
+        case 9:
+          return currentYear + ' Eylül Dönemi'
+        case 10:
+          return currentYear + ' Ekim Dönemi'
+        case 11:
+          return currentYear + ' Kasım Dönemi'
+        case 12:
+          return currentYear + ' Aralık Dönemi'
+        default:
+          return currentYear + ' Ocak Dönemi'
+      }
+    }
+  }
 
   // Mesleki Yeterlilik Belgesi/Sertifikası Son Kullanma Tarihi Hatırlatma Mail İşlemi
   async checkVocationQualification() {
@@ -198,14 +316,13 @@ class PedavalansService extends RealmoceanService {
     </html>
     `;
     try {
-      const accountRelation: IAccountRelation[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.AccountRelation).then(x => x.documents);
-      const employees: IOrganizationStructureEmployee[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee, [
-        this.databaseService.Query.limit(10000)
-      ]).then(x => x.documents);
+      const accountRelation: IAccountRelation[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.AccountRelation, [this.databaseService.Query.limit(10000)]).then(x => x.documents);
+      const employees: IOrganizationStructureEmployee[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee, [this.databaseService.Query.limit(10000)]
+      ).then(x => x.documents);
 
-      let vocationalQualification: IVocationalQualification[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.VocationalQualification).then(x => x.documents);
+      let vocationalQualification: IVocationalQualification[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.VocationalQualification, [this.databaseService.Query.limit(10000)]).then(x => x.documents);
       vocationalQualification = vocationalQualification.filter(x => x.document_validity_period !== "Süresiz")
-      let organizationEmployeeDocument: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument).then(x => x.documents);
+      let organizationEmployeeDocument: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument, [this.databaseService.Query.limit(10000)]).then(x => x.documents);
       organizationEmployeeDocument = organizationEmployeeDocument.filter(x => x.end_date !== "")
       if (organizationEmployeeDocument.length > 0) {
         organizationEmployeeDocument.forEach(async (doc) => {
