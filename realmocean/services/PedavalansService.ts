@@ -164,6 +164,15 @@ class PedavalansService extends RealmoceanService {
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
           border-radius: 8px;
         }
+
+        .footer {
+          text-align: center;
+          background-color: #f4f4f9;
+          color: #666666;
+          padding: 10px 0;
+          margin-top: 20px;
+          border-top: 1px solid #dddddd;
+      }
       </style>
     </head>
     
@@ -180,8 +189,9 @@ class PedavalansService extends RealmoceanService {
         <p><strong>Belge No:</strong> <span class="highlight">{{documentNo}}</span></p>
         <p><strong>Belge Adı:</strong> <span class="highlight">{{documentName}}</span></p>
         <p><strong>Bitiş Tarihi:</strong> <span class="highlight">{{endDate}}</span></p>
-        <p class="signature">İyi günler dileriz.</p>
-        <p class="signature">Pedavalans Ekibi</p>
+        <div class="footer">
+            <p>İyi çalışmalar,<br>Pedavalans Ekibi</p>
+        </div>
       </div>
     </body>
     
