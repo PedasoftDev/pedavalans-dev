@@ -39,9 +39,23 @@ class PedavalansService extends RealmoceanService {
 
 
   async init() {
-    this.scheduleService.addJob('0 0 7 * * *', async () => {
-      await this.checkVocationQualification();
+    // 5 sanıyede bir çalışacak
+    this.scheduleService.addJob('*/5 * * * * *', async () => {
+      console.log('Pedavalans Service is working');
+      try {
+        // this.databaseService.Query nin içindeki methodları console'a yazdırır
+        console.log(this.databaseService.Query);
+        await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee, [
+          this.databaseService.Query.limit(1000)
+        ]).then(x => console.log(x));
+      } catch (error) {
+        console.log(error);
+      }
     })
+
+    // this.scheduleService.addJob('0 0 7 * * *', async () => {
+    //   await this.checkVocationQualification();
+    // })
   }
 
 
@@ -175,7 +189,9 @@ class PedavalansService extends RealmoceanService {
     `;
     try {
       const accountRelation: IAccountRelation[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.AccountRelation).then(x => x.documents);
-      const employees: IOrganizationStructureEmployee[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee).then(x => x.documents);
+      const employees: IOrganizationStructureEmployee[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee, [
+        this.databaseService.Query.limit(10000)
+      ]).then(x => x.documents);
 
       let vocationalQualification: IVocationalQualification[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.VocationalQualification).then(x => x.documents);
       vocationalQualification = vocationalQualification.filter(x => x.document_validity_period !== "Süresiz")
