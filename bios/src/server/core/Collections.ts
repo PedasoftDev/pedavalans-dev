@@ -31,6 +31,7 @@ namespace Collections {
     export const VocationalQualification: string = 'vocational_qualification'
     export const OrganizationEmployeeDocument: string = 'organization_employee_document'
     export const PositionVocationalQualificationRelation: string = "position_vocational_qualification";
+    export const StringParameter = "string_parameter";
 }
 
 export default Collections;
