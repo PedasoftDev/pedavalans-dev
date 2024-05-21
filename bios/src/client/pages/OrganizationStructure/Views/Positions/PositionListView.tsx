@@ -2,7 +2,7 @@ import { Button, TextField, Tooltip } from '@mui/material'
 import React from 'react'
 import StyledDataGrid from '../../../../components/StyledDataGrid'
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
-import { GridColDef } from '@mui/x-data-grid'
+import { GridColDef, trTR } from '@mui/x-data-grid'
 import { MdDisplaySettings } from 'react-icons/md'
 import { GridContainer } from './Views/View'
 
@@ -35,7 +35,7 @@ const PositionListView = (
                 </div>
             </div>
             <GridContainer>
-                <StyledDataGrid rows={positions.filter(x => x.is_active === active)} columns={columns} />
+                <StyledDataGrid rows={positions.filter(x => x.is_active === active)} columns={columns} getRowId={(row) => row.$id} localeText={trTR.components.MuiDataGrid.defaultProps.localeText} />
             </GridContainer>
         </div>
     )

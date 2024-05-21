@@ -42,7 +42,7 @@ class PedavalansService extends RealmoceanService {
   async init() {
     this.scheduleService.addJob('0 0 7 * * *', async () => {
       await this.checkVocationQualification();
-      this.checkTargetDateForReminder();
+      await this.checkTargetDateForReminder();
     })
     this.scheduleService.addJob('*/30 * * * * *', async () => {
       console.log('PedavalansService is working...')

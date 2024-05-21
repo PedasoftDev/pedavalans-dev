@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Form from '../ViewForm/Form';
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Toast } from '../../../../components/Toast';
@@ -65,6 +65,21 @@ const EditEmployeeView = (
 
     const [formEmployee, setFormEmployee] = useState(props.selectedEmployee);
     const [isActive, setIsActive] = useState(props.selectedEmployee.is_active);
+
+    const navigate = useNavigate()
+    const { me } = useGetMe("console");
+    const [page, setPage] = useState<string>("addEmployee")
+    const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
+
+    const [formDocument, setFormDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate>(resetFormDocument)
+    const [document, setDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[]>([])
+
+    const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
+    const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
+
+    const { updateOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Update()
+    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
+    const { organizationEmployeeDocumentList, isLoading: isLoadingDocumentList } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
 
 
     const selectFormStates = [
@@ -131,7 +146,7 @@ const EditEmployeeView = (
                     icon: "success",
                     title: "Personel başarıyla güncellendi"
                 })
-                onReset()
+                onReset();
             })
         })
         if (!updateIsLoading && updateIsError) {
@@ -212,20 +227,6 @@ const EditEmployeeView = (
         })
     }
 
-    const navigate = useNavigate()
-    const { me } = useGetMe("console");
-    const [page, setPage] = useState<string>("addEmployee")
-    const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
-
-    const [formDocument, setFormDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate>(resetFormDocument)
-    const [document, setDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[]>([])
-
-    const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
-    const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
-
-    const { updateOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Update()
-    const { organizationEmployeeDocumentList, isLoading: isLoadingDocumentList } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
-
     const handleSelectType = (e: SelectChangeEvent<string>) => {
         const selectedValue = e.target.value;
         const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
@@ -259,18 +260,163 @@ const EditEmployeeView = (
     };
 
     const handleDocument = () => {
-        setDocument([...document, { ...formDocument }])
-        setFormDocument(resetFormDocument)
-        setShowValidityPeriod(false);
+
+        createOrganizationEmployeeDocument({
+            data: {
+                employee_id: formEmployee.$id,
+                document_id: formDocument.document_id,
+                document_name: formDocument.document_name,
+                document_type_id: formDocument.document_type_id,
+                document_type_name: formDocument.document_type_name,
+                end_date: formDocument.end_date,
+                tenant_id: me?.prefs?.organization,
+            }
+        }, () => {
+
+            Toast.fire({
+                icon: "success",
+                title: "Belge başarıyla eklendi."
+            })
+            setFormDocument(resetFormDocument)
+            setShowValidityPeriod(false);
+
+        })
+
     }
 
-    const { id } = useParams()
-
-    const { documentList } = OrganizationEmployeeDocument.Get(id)
-    console.log(documentList);
-
+    const { updateOrganizationEmployeeDocument: updateDocument } = OrganizationEmployeeDocument.Update()
 
     const [filterKey, setFilterKey] = useState('')
+
+    const resetCurrentRowForm: IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase = {
+        employee_id: "",
+        document_id: "",
+        document_name: "",
+        document_type_id: "",
+        document_type_name: "",
+        end_date: "",
+        tenant_id: "",
+        is_active: true,
+        is_deleted: false,
+    }
+
+    const [open, setOpen] = useState(false)
+    const [currentRowData, setCurrentRowData] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase>(resetCurrentRowForm);
+    const [id, setId] = useState(null);
+
+    const handleOpen = (rowData) => {
+
+        if (rowData.end_date === "") {
+            setShowValidityPeriod(false);
+        } else {
+            setShowValidityPeriod(true);
+        }
+        console.log("RowData: ", rowData);
+        setCurrentRowData(rowData);
+        setId(rowData.$id)
+        setOpen(true);
+        console.log("Fonskiyon İçi:" + id);
+    };
+    console.log("Fonskiyon dışı:" + id);
+
+
+
+    const handleSubmit = () => {
+
+        updateDocument(
+            {
+                databaseId: AppInfo.Database,
+                collectionId: 'organization_employee_document',
+                documentId: id,
+                data: removeDollarProperties(currentRowData),
+            },
+            () => {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Belge başarıyla düzenlendi.',
+                });
+                handleClose();
+            }
+        );
+    };
+
+    const handleDelete = () => {
+        setOpen(false)
+        Swal.fire({
+            title: 'Belge Silme',
+            text: 'Belgeyi silmek istediğinize emin misiniz?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sil',
+            cancelButtonText: 'İptal',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Belge siliniyor...',
+                    timer: 5000,
+                })
+                updateDocument(
+                    {
+                        databaseId: AppInfo.Database,
+                        collectionId: 'organization_employee_document',
+                        documentId: id,
+                        data: {
+                            ...removeDollarProperties(currentRowData),
+                            is_deleted: true,
+                        },
+                    },
+                    () => {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Belge başarıyla silindi.',
+                        })
+                        handleClose()
+                    }
+                )
+            }
+        })
+    }
+
+    const handleClose = () => {
+        setOpen(false);
+        setCurrentRowData(resetCurrentRowForm)
+        setId(null)
+    };
+
+    const handleCurrentRowSelectType = (e: SelectChangeEvent<string>) => {
+        const selectedValue = e.target.value;
+        const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
+
+        if (selectedDocumentType.document_validity_period === "Süresiz") {
+            setShowValidityPeriod(false);
+            setCurrentRowData({
+                ...currentRowData,
+                [e.target.name]: selectedValue,
+                document_type_name: selectedDocumentType.document_type_name, end_date: "Süresiz"
+            });
+        } else {
+            setShowValidityPeriod(true);
+            setCurrentRowData({
+                ...currentRowData,
+                [e.target.name]: selectedValue,
+                document_type_name: selectedDocumentType.document_type_name
+            });
+        }
+    };
+    const handleCurrentRowSelectDocumentName = (e: SelectChangeEvent<string>) => {
+        const selectedValue = e.target.value;
+        const selectedDocument = documentGetList.find((doc) => doc.document_id === selectedValue);
+
+        setCurrentRowData({
+            ...currentRowData,
+            [e.target.name]: selectedValue,
+            document_name: selectedDocument.document_name
+        });
+
+    };
 
     const columns: GridColDef[] = [
         {
@@ -288,23 +434,149 @@ const EditEmployeeView = (
             field: 'end_date',
             headerName: 'Belgenin Bitiş Tarihi',
             width: 200,
+            align: "center",
             valueGetter: (params: any) => {
-                return Resources.Functions.formatDate(params.value);
+                if (params.value === "") {
+                    return params.value = "Süresiz"
+                } else {
+                    return Resources.Functions.formatDate(params.value);
+                }
             }
         },
         {
             field: "$id",
             headerName: "İşlemler",
             width: 200,
+            align: "center",
             renderCell: (params) => {
+
                 return (
                     <div style={{ display: "flex", gap: "10px" }}>
-                        <Button size="small" variant="outlined" onClick={() => navigate(`/app/edit-employee_document/${params.value}`)}>Düzenle</Button>
+                        <Button onClick={() => handleOpen(params.row)}>Düzenle</Button>
+
+                        <Modal
+                            open={open}
+                            onClose={handleClose}
+                            aria-labelledby="modal-modal-title"
+                            aria-describedby="modal-modal-description"
+                        >
+                            <div style={{ padding: 20, backgroundColor: 'white', margin: 'auto', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', position: 'absolute', width: "60%" }}>
+                                {currentRowData && (
+                                    <div>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+                                            <FormControl fullWidth size="small">
+                                                <InputLabel>Belge Türü</InputLabel>
+                                                <Select
+                                                    name="document_type_id"
+                                                    value={currentRowData.document_type_id}
+                                                    label="Belge Türü"
+                                                    onChange={handleCurrentRowSelectType}
+                                                    size="small"
+                                                >
+                                                    {documentTypeGetList.map((document_type) => (
+                                                        <MenuItem
+                                                            value={document_type.document_type_id}
+                                                            key={document_type.document_type_id}
+                                                        >
+                                                            {document_type.document_type_name}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                            {currentRowData.document_type_id &&
+                                                <FormControl fullWidth size="small">
+                                                    <InputLabel>Belge Adı</InputLabel>
+                                                    <Select
+                                                        name="document_id"
+                                                        value={currentRowData.document_id}
+                                                        label="Belge Türü"
+                                                        onChange={handleCurrentRowSelectDocumentName}
+                                                        size="small"
+                                                    >
+                                                        {documentGetList.filter((d) => d.document_type_id === currentRowData.document_type_id).map((document) => (
+                                                            <MenuItem
+                                                                value={document.document_id}
+                                                                key={document.document_id}
+                                                            >
+                                                                {document.document_name}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            }
+                                            {showValidityPeriod && (
+                                                <div style={{ display: "flex", gap: "10px", }}>
+                                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                        <DatePicker label="Belge Bitiş Tarihi"
+                                                            format="DD/MM/YYYY"
+                                                            value={dayjs(currentRowData.end_date)}
+                                                            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                                            onChange={(e: any) => {
+                                                                setCurrentRowData({ ...currentRowData, end_date: e.$d });
+                                                            }} />
+                                                    </LocalizationProvider>
+                                                </div>
+                                            )}
+
+                                        </div>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                gap: '10px',
+                                                flexDirection: 'column',
+                                                marginTop: '10px',
+                                            }}
+                                        >
+                                            <Button
+                                                onClick={handleSubmit}
+                                                variant="contained"
+                                                color="primary"
+                                                size="small"
+                                            >
+                                                Güncelle
+                                            </Button>
+
+                                            <Button
+                                                variant="contained"
+                                                color="error"
+                                                size="small"
+                                                onClick={handleDelete}
+                                            >
+                                                Sil
+                                            </Button>
+
+                                            <Button
+                                                variant="contained"
+                                                color="info"
+                                                size="small"
+                                                onClick={handleClose}
+                                            >
+                                                İptal
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                            </div>
+
+                        </Modal>
                     </div>
                 )
             }
         }
     ]
+
+    const boxStyle = {
+        position: 'absolute' as 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+    };
 
     return (
         <div>
@@ -412,6 +684,67 @@ const EditEmployeeView = (
                         </div> :
                         page === "addEmployeeVQ" &&
                         <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Belge Türü</InputLabel>
+                                <Select
+                                    name="document_type_id"
+                                    value={formDocument.document_type_id}
+                                    label="Belge Türü"
+                                    onChange={handleSelectType}
+                                    size="small"
+                                >
+                                    {documentTypeGetList.map((document_type) => (
+                                        <MenuItem
+                                            value={document_type.document_type_id}
+                                            key={document_type.document_type_id}
+                                        >
+                                            {document_type.document_type_name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            {formDocument.document_type_id &&
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Belge Adı</InputLabel>
+                                    <Select
+                                        name="document_id"
+                                        value={formDocument.document_id}
+                                        label="Belge Türü"
+                                        onChange={handleSelectDocumentName}
+                                        size="small"
+                                    >
+                                        {documentGetList.filter((d) => d.document_type_id === formDocument.document_type_id).map((document) => (
+                                            <MenuItem
+                                                value={document.document_id}
+                                                key={document.document_id}
+                                            >
+                                                {document.document_name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            }
+                            {showValidityPeriod && (
+                                <div style={{ display: "flex", gap: "10px", }}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker label="Belge Bitiş Tarihi"
+                                            format="DD/MM/YYYY"
+                                            value={dayjs(formDocument.end_date)}
+                                            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                            onChange={(e: any) => {
+                                                setFormDocument({ ...formDocument, end_date: e.$d });
+                                            }} />
+                                    </LocalizationProvider>
+                                </div>
+                            )}
+                            <Button
+                                onClick={handleDocument}
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                            >
+                                Belge Ekle
+                            </Button>
 
                             <StyledDataGrid
                                 rows={organizationEmployeeDocumentList.filter((x) => x.employee_id === formEmployee.$id)}
