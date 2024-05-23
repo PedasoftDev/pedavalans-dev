@@ -34,7 +34,7 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
-        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
+        const { activeGroups: groups, isLoading: isLoadingGroups } = CompetencyGroup.GetActiveCompetencyGroups();
 
         let excelData: any[] = [];
 

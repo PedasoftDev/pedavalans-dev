@@ -13,12 +13,11 @@ function createData(
 ) {
   return { certificateName, certificateExpirationDate }
 }
-const rows = [
-  createData('Vinç Operator Belgesi', '01.01.2025'),
-  createData('Forklift Belgesi', '15.03.2026'),
-]
 
-const EmployeeCertificateCard = () => {
+
+const EmployeeCertificateCard = ({
+  rows,
+}) => {
   return (
     <TableContainer component={Paper} sx={{ width: `80%` }}>
       <Table  aria-label="simple table">
@@ -49,4 +48,5 @@ const EmployeeCertificateCard = () => {
 }
 
 export default EmployeeCertificateCard
+
 

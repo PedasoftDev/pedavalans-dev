@@ -96,7 +96,8 @@ export class GlobalCompetencyDashboard extends UIController {
                 Collections.EmployeeCompetencyValue,
                 [
                     Query.limit(10000),
-                    Query.equal("competency_id", id)
+                    Query.equal("competency_id", id),
+                    Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                 ]
             ).then((response) => {
                 let totalValue = 0
@@ -111,7 +112,8 @@ export class GlobalCompetencyDashboard extends UIController {
                     Collections.EmployeeCompetencyValue,
                     [
                         Query.limit(10000),
-                        Query.equal("competency_id", id)
+                        Query.equal("competency_id", id),
+                        Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                     ]
                 ).then((response) => { 
                     const departmentTotals = {};
@@ -145,7 +147,8 @@ export class GlobalCompetencyDashboard extends UIController {
                     Collections.EmployeeCompetencyValue,
                     [
                         Query.limit(10000),
-                        Query.equal("competency_id", id)
+                        Query.equal("competency_id", id),
+                        Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                     ]
                     ).then((response) => {
                         const departmentCounts = {};
@@ -181,7 +184,8 @@ export class GlobalCompetencyDashboard extends UIController {
                     Collections.EmployeeCompetencyValue,
                     [
                         Query.limit(10000),
-                        Query.equal("competency_id", id)
+                        Query.equal("competency_id", id),
+                        Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                     ]
                 ).then((response) => {
                     Services.Databases.listDocuments(
@@ -376,3 +380,4 @@ export class GlobalCompetencyDashboard extends UIController {
         })
   }
 }
+
