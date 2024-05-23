@@ -21,6 +21,7 @@ import OrganizationStructurePosition from '../../../../server/hooks/organization
 import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main';
 import IParameters from '../../../interfaces/IParameters';
 import IStringParameter from '../../../interfaces/IStringParameter';
+import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
 
 export class DashboardController extends UIController {
 
@@ -36,6 +37,7 @@ export class DashboardController extends UIController {
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
         const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.List();
+        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetActiveList(me?.prefs?.organization)
 
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management)
@@ -49,7 +51,7 @@ export class DashboardController extends UIController {
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingAccountResult || isLoadingListEmployeeCompetencyValue || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingPolyvalenceUnit || isLoadingUsers || isLoadingAccountResult || isLoadingListEmployeeCompetencyValue || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         accountRelations[0].is_active == false ? UINavigate("/logout") :
@@ -608,7 +610,10 @@ export class DashboardController extends UIController {
                                         })
                                         if (target > 0 && current > 0) {
                                             const percentage = (current / target) * 100
-                                            successfullFiveDepartmentsData.push({ departmentName: department.name, percentage: percentage.toFixed(2) })
+                                            const haveAnyTable = polyvalenceUnitList.find((unit) => unit.polyvalence_department_id === department.$id)
+                                            if (haveAnyTable) {
+                                                successfullFiveDepartmentsData.push({ departmentName: department.name, percentage: percentage.toFixed(2) })
+                                            }
                                         }
                                     })
 
