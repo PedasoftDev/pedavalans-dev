@@ -38,6 +38,7 @@ import OrganizationStructureEmployee from '../../../../server/hooks/organization
 import OrganizationStructureEmployeeLog from '../../../../server/hooks/organizationStructureEmployeeLog/main';
 import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel';
 import Competency from '../../../../server/hooks/competency/main';
+import { average } from '@tuval/core';
 
 
 
@@ -108,6 +109,7 @@ export class PositionDashboard extends UIController {
                       Query.limit(10000),
                       Query.equal("competency_id", competency_id),
                       Query.equal('competency_evaluation_period', transformPeriodName),
+                      Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                     ]
                     ).then((res) => {
                       let sumRealValue = 0
@@ -139,16 +141,17 @@ export class PositionDashboard extends UIController {
                       Query.limit(10000),
                       Query.equal("employee_id", employeeId),
                       Query.equal('competency_evaluation_period', transformPeriodName),
+                      Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                     ]
                   ).then((res) => {
                     const competencyValues = res.documents.map(doc => parseInt(doc.competency_real_value));
                     const totalCompetencyValue = competencyValues.reduce((acc, val) => acc + val, 0);
                     const averageCompetencyValue = totalCompetencyValue / competencyValues.length;
-
                     setCompetencyAverageValues(prevState => ({
                       ...prevState,
                       [employeeId]: averageCompetencyValue,
                     }));
+                    
                   })
                 });
                 Promise.all(promises).then(() => {
@@ -176,7 +179,8 @@ export class PositionDashboard extends UIController {
                     [
                       Query.limit(10000),
                       Query.equal("employee_id", employeeId),
-                      Query.equal('competency_evaluation_period', transformPeriodName)
+                      Query.equal('competency_evaluation_period', transformPeriodName),
+                      Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                     ]
                   ).then((competencyRes) => {
                     competencyRes.documents.forEach((competencyDoc) => {
@@ -228,7 +232,8 @@ export class PositionDashboard extends UIController {
                       [
                         Query.limit(10000),
                         Query.equal("employee_id", employeeId),
-                        Query.equal('competency_evaluation_period', transformPeriodName)
+                        Query.equal('competency_evaluation_period', transformPeriodName),
+                        Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
                       ]
                     ).then((competencyRes) => {
                       competencyRes.documents.forEach((competencyDoc) => {
@@ -320,7 +325,7 @@ export class PositionDashboard extends UIController {
                       <CardHeader
                         title={
                           <Typography variant="h6" style={{ fontSize: '1rem' }}>
-                            Yetkinlik Düzeyi En Yüksek Pozisyon Sahipleri
+                            Yetkinlik Düzeyi En Yüksek Pozisyon Sahipleri(Dönem Bazlı)
                           </Typography>
                         }
                         style={{
@@ -349,6 +354,7 @@ export class PositionDashboard extends UIController {
                               </TableHead>
                               <TableBody>
                                 {
+                                  
                                   employeesList
                                   .sort((a, b) => competencyAverageValues[b] - competencyAverageValues[a])
                                   .slice(0,5)
@@ -504,3 +510,4 @@ export class PositionDashboard extends UIController {
         })
   }
 }
+

@@ -29,7 +29,9 @@ import {
   Card,
   CardContent,
   CardHeader,
+  FormControlLabel,
   Paper,
+  Switch,
   Tab,
   Table,
   TableBody,
@@ -52,6 +54,7 @@ import OrganizationStructureEmployeeLog from '../../../../server/hooks/organizat
 import { AntTab, AntTabs, TabPanel, a11yProps } from '../../../components/Tabs'
 import { SimpleTreeView, TreeItem } from '@mui/x-tree-view'
 import Competency from '../../../../server/hooks/competency/main'
+import OrganizationEmployeeDocument from '../../../../server/hooks/organizationEmployeeDocument/main'
 
 
 export class EmployeeDashboard extends UIController {
@@ -82,6 +85,8 @@ export class EmployeeDashboard extends UIController {
       OrganizationStructureEmployee.GetList(me?.prefs?.organization)
 
     const {employeeLog,isLoadingEmployeeLog} = OrganizationStructureEmployeeLog.List(me?.prefs?.organization)
+
+    const {organizationEmployeeDocumentList,isLoading: employeeDocumentLoading} = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
 
 
 
@@ -125,6 +130,11 @@ export class EmployeeDashboard extends UIController {
 
     const [employeeGroups, setEmployeeGroups] = useState([])
 
+    const [selectedCompetencyId, setSelectedCompetencyId ] = useState('')
+
+    const [switchState, setSwitchState] = useState(true)
+    
+
     // tabs settings
     
     const [value, setValue] = useState(0);
@@ -132,6 +142,7 @@ export class EmployeeDashboard extends UIController {
       setValue(newValue);
     };
 
+    
 
     // treeview settings
 
@@ -146,6 +157,10 @@ export class EmployeeDashboard extends UIController {
     }
 
     const [selectedCompetency, setSelectedCompetency] = useState(SelectedCompetencyInfo)
+
+    const [selectedEvaluationPeriod , setSelectedEvaluationPeriod] = useState([])
+    const [selectedRealValue, setSelectedRealValue] = useState([])
+    const [selectedTargetValue, setSelectedTargetValue] = useState([])
     
 
 
@@ -158,7 +173,7 @@ export class EmployeeDashboard extends UIController {
       isLoadingCompetencyDepartmentList ||
       isLoadingListEmployeeCompetencyValue ||
       isLoadingAssignedEducationList ||
-      isLoadingEmployees || isLoadingEmployeeLog || isLoadingCompetencyList
+      isLoadingEmployees || isLoadingEmployeeLog || isLoadingCompetencyList|| employeeDocumentLoading
       
       ? VStack(Spinner())
       : UIViewBuilder(() => {
@@ -188,7 +203,7 @@ export class EmployeeDashboard extends UIController {
                   AppInfo.Name,
                   AppInfo.Database,
                   Collections.EmployeeCompetencyValue,
-                  [Query.limit(10000), Query.equal('employee_id', id), Query.equal('competency_evaluation_period', transformPeriodName)]
+                  [Query.limit(10000), Query.equal('employee_id', id), Query.equal('competency_evaluation_period', transformPeriodName),Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")]
                 ).then((res) => {
                   let totalValue = 0
                   let totalTargetValue = 0
@@ -232,32 +247,40 @@ export class EmployeeDashboard extends UIController {
               const groupMap = new Map();
 
               listEmployeeCompetencyValue.filter(x => x.employee_id === id).forEach(element => {
-                const competencyWithGroup = competencyList.find(x => x.competency_id === element.competency_id);
-                
-                if (competencyWithGroup) {
-                  const groupId = competencyWithGroup.competency_group_id;
-                  const groupName = competencyWithGroup.competency_group_name;
+                  const competencyWithGroup = competencyList.find(x => x.competency_id === element.competency_id);
                   
-                  if (!groupMap.has(groupId)) {
-                    groupMap.set(groupId, {
-                      group_name: groupName,
-                      group_id: groupId,
-                      competencies: []
-                    });
+                  if (competencyWithGroup) {
+                      const groupId = competencyWithGroup.competency_group_id;
+                      const groupName = competencyWithGroup.competency_group_name;
+                      const competencyId = competencyWithGroup.competency_id;
+                      
+                      if (!groupMap.has(groupId)) {
+                          groupMap.set(groupId, {
+                              group_name: groupName,
+                              group_id: groupId,
+                              competencies: []
+                          });
+                      }
+                      
+                      // Check if the competency already exists in the group's competencies array
+                      const group = groupMap.get(groupId);
+                      const existingCompetency = group.competencies.find(c => c.competency_id === competencyId);
+                      
+                      if (existingCompetency) {
+                          // Merge or update the existing competency data as needed
+                          existingCompetency.details.push(element); // Adjust this line based on how you want to merge the details
+                      } else {
+                          group.competencies.push({
+                              ...element,
+                              group_name: groupName,
+                              group_id: groupId,
+                              details: [element] // Store original details in a sub-array
+                          });
+                      }
                   }
-                  
-                  groupMap.get(groupId).competencies.push({
-                    ...element,
-                    group_name: groupName,
-                    group_id: groupId
-                  });
-                }
               });
-
               groupMap.forEach((value, key) => result.push(value));
-
-              setEmployeeGroups(result); 
-              
+              setEmployeeGroups(result);
               setSelectedCompetency({
                 competency_id: result[0].competencies[0].competency_id,
                 competency_name: result[0].competencies[0].competency_name,
@@ -267,8 +290,15 @@ export class EmployeeDashboard extends UIController {
                 competency_group_id: result[0].competencies[0].group_id,
                 competency_group_name: result[0].competencies[0].group_name
               })
+              console.log(result)
 
+              result.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id).map((y) => {
+                setSelectedEvaluationPeriod(y.details.map((z) => z.competency_evaluation_period))
+                setSelectedRealValue(y.details.map((z) => z.competency_real_value))
+                setSelectedTargetValue(y.details.map((z) => z.competency_target_value))
+              }))
           }, [])
+              
 
           //Çalışanın birimdeki toplam kidem süresini hesaplar
           const employeeDateStr = employees.find((x) => x.$id === id)?.job_start_date;
@@ -318,7 +348,7 @@ export class EmployeeDashboard extends UIController {
                 >
                   <AntTabs value={value} onChange={handleChange}>
                       <AntTab label="Özet Bilgiler" {...a11yProps(0)} />
-                      <AntTab label="Yetkinlil Hedef Bilgileri" {...a11yProps(1)} />
+                      <AntTab label="Çalışanın Yetkinlik Gelişimi" {...a11yProps(1)} />
                   </AntTabs>
                   <TabPanel value={value} index={0}>
                   <div
@@ -360,7 +390,14 @@ export class EmployeeDashboard extends UIController {
                       period={period}
                       positionId={employee.position}
                     />
-                    <EmployeeCertificateCard />
+                    <EmployeeCertificateCard rows={
+                      organizationEmployeeDocumentList
+                      .filter((x) => x.employee_id === id)
+                      .map((x) => ({
+                        certificateName: x.document_name,
+                        certificateExpirationDate: x.end_date ?  new Date(x.end_date).toLocaleDateString() : "Süresiz"
+                      }))
+                    } />
                   </div>
 
                   <div
@@ -399,6 +436,7 @@ export class EmployeeDashboard extends UIController {
                         {listEmployeeCompetencyValue
                           .filter((x) => x.employee_id === id)
                           .filter((x) => x.competency_evaluation_period === transformPeriodName)
+                          .filter((x) => x.competency_target_value !== "no-target" && x.competency_real_value !== "")
                           .slice()
                           .sort((a, b) => {
                             const percentageA =
@@ -695,25 +733,29 @@ export class EmployeeDashboard extends UIController {
                      
                     }}
                   >
-                    <SimpleTreeView defaultExpandedItems={[employeeGroups[0]?.group_id]} defaultSelectedItems={[
+                    <SimpleTreeView 
+                    defaultExpandedItems={[employeeGroups[0]?.group_id]} 
+                    defaultSelectedItems={[
                       selectedCompetency.competency_id
-                    ]} >
+                    ]}
+                    >
                       {
                         employeeGroups.map((x) => (
                           <TreeItem itemId={x.group_id} label={x.group_name}  >
                             {
                               x.competencies.map((y) => (
-                                <TreeItem itemId={y.competency_id} label={y.competency_name} onClick={
-                                  () => setSelectedCompetency({
+                                <TreeItem itemId={y.competency_id} label={y.competency_name} onClick={() => {
+                                  setSelectedCompetencyId(y.competency_id)
+                                  setSelectedCompetency({
                                     competency_id: y.competency_id,
                                     competency_name: y.competency_name,
-                                    competency_real_value: y.competency_real_value,
-                                    competency_target_value: y.competency_target_value,
-                                    competency_evaluation_period: y.competency_evaluation_period,
+                                    competency_real_value: y.details[0].competency_real_value,
+                                    competency_target_value: y.details[0].competency_target_value,
+                                    competency_evaluation_period: y.details[0].competency_evaluation_period,
                                     competency_group_id: y.group_id,
                                     competency_group_name: y.group_name
                                   })
-                                } />
+                                }}/>
                               ))
                             }
                           </TreeItem>
@@ -739,22 +781,87 @@ export class EmployeeDashboard extends UIController {
                         width: "100%",
                         textAlign: "center",
                         padding: "10px",
-                      }}>{selectedCompetency.competency_name}</h1>
-                    <LineChart
-                      xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
-                      series={[
-                        {
-                          data: [2, 5.5, 2, 8.5, 1.5, 5],
-                          valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
-                        },
-                        {
-                          data: [7, 8, 5, 4,2, 5.5, 1],
-                          valueFormatter: (value) => (value == null ? '?' : value.toString()),
-                        },
-                      ]}
-                      height={200}
-                      margin={{ top: 10, bottom: 20 }}
-                    />
+                      }}>
+                        {selectedCompetency.competency_name}
+                      </h1>
+                      <FormControlLabel
+                        value="start"
+                        control={<Switch color="primary" />}
+                        label="Stun Grafiği"
+                        labelPlacement="start"
+                        onChange={() => setSwitchState(!switchState)}
+                        style={{
+                          width: "100%",
+                        }}
+                      />
+                      {
+                        switchState ? (
+                          <LineChart
+                          xAxis={[
+                            {
+                              data:employeeGroups.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id)).map((y) => y[0].details.map((z) => z.competency_evaluation_period))[0],
+                              scaleType: "band",
+                            },
+                          ]}
+                          yAxis={[
+                            {
+                              min: 0,
+                              max: 6,
+                              tickLabelStyle: { margin: "0", padding: "0" },
+                            },
+                          ]}
+                          series={[
+                            {
+                              data:employeeGroups.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id)).map((y) => y[0].details.map((z) => z.competency_real_value))[0],
+                              color: "#1D5291",
+                              label: "Gerçek Değer",
+                            },
+                            {
+                              data: employeeGroups.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id)).map((y) => y[0].details.map((z) => z.competency_target_value))[0],
+                              color: "#03fc73",
+                              label: "Hedef Değer"
+
+                            },
+                          ]}
+                          height={200}
+                          margin={{ top: 50, bottom: 30, left: 120, right: 50 }}
+                        />
+                        )
+                        : (
+                          <BarChart
+                          series={[
+                            {
+                              data: employeeGroups.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id)).map((y) => y[0].details.map((z) => z.competency_real_value))[0],
+                              layout: "vertical",
+                              color: "#1D5291",
+                              label: "Gerçek Değer"
+                          },
+                          {
+                            data: employeeGroups.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id)).map((y) => y[0].details.map((z) => z.competency_target_value))[0],
+                            layout: "vertical",
+                            color: "#03fc73",
+                            label: "Hedef Değer"
+                          }
+                          ]}
+                          xAxis={[
+                            {
+                                data: employeeGroups.filter((x) => x.group_id === selectedCompetency.competency_group_id).map((x) => x.competencies).map((x) => x.filter((y) => y.competency_id === selectedCompetency.competency_id)).map((y) => y[0].details.map((z) => z.competency_evaluation_period))[0],
+                                scaleType: "band",
+                            },
+                        ]}
+                        yAxis={[
+                          //min ve max number değeri min 0 max 5 olacak şekilde ayarla
+                          {
+                              min: 0,
+                              max: 6,
+                          },
+                        ]}
+                          width={600}
+                          height={200}
+                        />
+                        )
+                      }
+                        
                     </div>
                   </div>
                   </div>

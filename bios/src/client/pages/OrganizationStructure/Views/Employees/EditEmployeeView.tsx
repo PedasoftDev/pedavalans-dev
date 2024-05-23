@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Form from '../ViewForm/Form';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
+import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
 import Swal from 'sweetalert2';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Toast } from '../../../../components/Toast';
@@ -66,18 +66,15 @@ const EditEmployeeView = (
     const [formEmployee, setFormEmployee] = useState(props.selectedEmployee);
     const [isActive, setIsActive] = useState(props.selectedEmployee.is_active);
 
-    const navigate = useNavigate()
     const { me } = useGetMe("console");
     const [page, setPage] = useState<string>("addEmployee")
     const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
 
     const [formDocument, setFormDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate>(resetFormDocument)
-    const [document, setDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[]>([])
 
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
 
-    const { updateOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Update()
     const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
     const { organizationEmployeeDocumentList, isLoading: isLoadingDocumentList } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
 
@@ -121,7 +118,7 @@ const EditEmployeeView = (
             collectionId: "organization_employee",
             documentId: formEmployee.$id,
             data: removeDollarProperties(formEmployee),
-        }, (res) => {
+        }, () => {
             Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
                 employee_id: formEmployee.$id,
                 employee_name: formEmployee.first_name + " " + formEmployee.last_name,
@@ -285,8 +282,6 @@ const EditEmployeeView = (
     }
 
     const { updateOrganizationEmployeeDocument: updateDocument } = OrganizationEmployeeDocument.Update()
-
-    const [filterKey, setFilterKey] = useState('')
 
     const resetCurrentRowForm: IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase = {
         employee_id: "",
@@ -459,11 +454,13 @@ const EditEmployeeView = (
                             onClose={handleClose}
                             aria-labelledby="modal-modal-title"
                             aria-describedby="modal-modal-description"
+                            title='Tanımlı Belge Düzenleme'
                         >
                             <div style={{ padding: 20, backgroundColor: 'white', margin: 'auto', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', position: 'absolute', width: "60%" }}>
                                 {currentRowData && (
                                     <div>
                                         <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+                                            <Typography variant='h5' align='center' mb={2}>Tanımlı Belge Düzenleme</Typography>
                                             <FormControl fullWidth size="small">
                                                 <InputLabel>Belge Türü</InputLabel>
                                                 <Select
@@ -566,18 +563,6 @@ const EditEmployeeView = (
         }
     ]
 
-    const boxStyle = {
-        position: 'absolute' as 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 400,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-    };
-
     return (
         <div>
             <div>
@@ -585,7 +570,7 @@ const EditEmployeeView = (
                 <Button onClick={() => setPage("addEmployeeVQ")}>Belge ve Sertifikalar</Button>
             </div>
             <Form
-                title='Tanımlı Personel Düzenle'
+                title='Tanımlı Personel Bilgilerini Düzenle'
                 onSubmit={onSubmit}
                 formContent={
                     page === "addEmployee" ?

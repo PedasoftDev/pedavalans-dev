@@ -116,15 +116,13 @@ export class CompetencyStatusReportViewController extends UIController {
                             })
                             const employeePercentageData = []
                             employees.forEach((employee) => {
-                                if (((employee.realTotal / employee.targetTotal) * 100) < Number(formFilters.percentage)) {
-                                    employeePercentageData.push({
-                                        employee_id: employee.employee_id,
-                                        employee_name: employee.employee_name,
-                                        percentage: (employee.realTotal / employee.targetTotal) * 100
-                                    })
-                                }
+                                employeePercentageData.push({
+                                    employee_id: employee.employee_id,
+                                    employee_name: employee.employee_name,
+                                    percentage: (employee.realTotal / employee.targetTotal) * 100
+                                })
                             })
-                            setEmployeePercentages(employeePercentageData)
+                            setEmployeePercentages(employeePercentageData.sort((a, b) => b.percentage - a.percentage))
                             setIsLoading(false);
                         }
                         return (
@@ -173,7 +171,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                             ))}
                                                         </Select>
                                                     </FormControl>
-                                                    <TextField
+                                                    {/* <TextField
                                                         name="percentage"
                                                         label="Yüzdelik"
                                                         size="small"
@@ -183,7 +181,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                         onChange={(e) => {
                                                             setFormFilters({ ...formFilters, percentage: e.target.value });
                                                         }}
-                                                    />
+                                                    /> */}
                                                     <Tooltip title="Filtrele">
                                                         <IconButton type="submit">
                                                             <FilterAltOutlinedIcon />
