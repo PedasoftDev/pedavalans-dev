@@ -43,10 +43,8 @@ class PedavalansService extends RealmoceanService {
     this.scheduleService.addJob('0 0 7 * * *', async () => {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
-    })
-    this.scheduleService.addJob('*/5 * * * * *', async () => {
       await this.checkRealDataForReminder();
-    })
+    });
   }
 
   async checkRealDataForReminder() {
@@ -360,17 +358,18 @@ class PedavalansService extends RealmoceanService {
                 }
               }
             })
-          } else {
-            accountRelations.forEach(async (account) => {
-              try {
-                await this.emailSender(account.mail, "Polivalans Tablosu Veri Girişi Hatırlatma", mailTemplateWithEmployees, {
-                  day: reminderDayCount
-                })
-              } catch (error) {
-                console.log(error);
-              }
-            })
           }
+          //  else {
+          //   accountRelations.forEach(async (account) => {
+          //     try {
+          //       await this.emailSender(account.mail, "Polivalans Tablosu Veri Girişi Hatırlatma", mailTemplateWithEmployees, {
+          //         day: reminderDayCount
+          //       })
+          //     } catch (error) {
+          //       console.log(error);
+          //     }
+          //   })
+          // }
         }
       }
     }
@@ -685,17 +684,18 @@ class PedavalansService extends RealmoceanService {
                 }
               }
             })
-          } else {
-            accountRelations.forEach(async (account) => {
-              try {
-                await this.emailSender(account.mail, "Polivalans Tablosu Veri Girişi Hatırlatma", mailTemplateWithEmployees, {
-                  day: reminderDayCount
-                })
-              } catch (error) {
-                console.log(error);
-              }
-            })
-          }
+          } 
+          // else {
+          //   accountRelations.forEach(async (account) => {
+          //     try {
+          //       await this.emailSender(account.mail, "Polivalans Tablosu Veri Girişi Hatırlatma", mailTemplateWithEmployees, {
+          //         day: reminderDayCount
+          //       })
+          //     } catch (error) {
+          //       console.log(error);
+          //     }
+          //   })
+          // }
         }
       }
     }

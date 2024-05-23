@@ -33,7 +33,7 @@ export class CompetencyStatusReportViewController extends UIController {
     public LoadView(): UIView {
 
         const { me, isLoading } = useGetMe("console");
-        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
+        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetActiveList(me?.prefs?.organization);
         const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetListByAccountId(me?.$id);
         const { dataViewer, isLoadingDataViewer } = PolyvalenceUnitTableDataViewer.GetListByAccountId(me?.$id);
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);

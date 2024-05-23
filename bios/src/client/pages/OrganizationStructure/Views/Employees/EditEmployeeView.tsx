@@ -603,6 +603,7 @@ const EditEmployeeView = (
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker label="İşe Başlama Tarihi"
                                     format="DD/MM/YYYY"
+                                    value={dayjs(formEmployee.job_start_date)}
                                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                     onChange={(e: any) => {
                                         setFormEmployee({
