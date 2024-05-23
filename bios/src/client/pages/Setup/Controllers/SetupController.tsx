@@ -206,6 +206,22 @@ export class SetupController extends UIController {
                 })
                 tasks.Wait(1);
 
+                Resources.StringParameters.forEach(async (param) => {
+             
+                        tasks.Task(async () => {
+                            try {
+                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "string_parameter", nanoid(), {
+                                    name: param.localStr
+                                })
+                            } catch (error) {
+                                console.log(error)
+                                console.log("StringParameter oluşturulamadı", param.localStr)
+                            }
+                        })
+                        tasks.Wait(1)
+                    
+                })
+
                 tasks.Task(async () => {
                     await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.DatabaseVersion, "database_version", {
                         id: "database_version",

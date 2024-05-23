@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 6,
+    "version": 7,
     "collections": [
         {
             "id": "competency",
@@ -1489,6 +1489,11 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "mail",
+                    "type": "string",
+                    "version": 7
+                },
+                {
                     "key": "is_admin",
                     "type": "boolean",
                     "version": 1,
@@ -2152,6 +2157,39 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "tenant_id",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "string_parameter",
+            "name": "String Parameter",
+            "description": {
+                en: "",
+                tr: ""
+            },
+            "version": 7,
+            "attributes": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "version": 1
+                },
+                {
+                    "key": "value",
                     "type": "string",
                     "version": 1
                 },

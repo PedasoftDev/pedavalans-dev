@@ -6,12 +6,13 @@ import { SchemaService } from "./SchemaService";
 
 declare global {
     const module: {exports: any};
-    export class RealmoceanService {
+    export class RealmoceanService<T = any> {
         Name: string;
         services: any;
         databaseService: DatabaseService;
         schemaService: SchemaService;
         emailService: EmailService;
-        scheduleService: ScheduleService
+        scheduleService: ScheduleService;
+        createKey(params: T): Promise<any>;
     }
 }

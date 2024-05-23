@@ -30,6 +30,9 @@ import removeDollarProperties from '../../../assets/Functions/removeDollarProper
 import { Toast } from '../../../components/Toast';
 import { RxExternalLink } from 'react-icons/rx';
 import AccountRelation from '../../../../server/hooks/accountRelation/main';
+import StringParameter from '../../../../server/hooks/stringParameter/main';
+import CheckIcon from '@mui/icons-material/Check';
+import Collections from '../../../../server/core/Collections';
 
 export class ParametersController extends UIFormController {
 
@@ -42,15 +45,21 @@ export class ParametersController extends UIFormController {
         const { parameters, isLoading } = Parameters.GetParameters();
         const { monitoring, isLoading: isLoadingMonitoring } = Monitoring.GetMonitoring(me?.prefs?.organization);
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
+        const { stringParameters: stringParametersCache, isLoading: isLoadingStringParameters } = StringParameter.GetList();
         const { updateParameter } = Parameters.UpdateParameter();
 
 
         return (
-            isLoad || isLoading || isLoadingMonitoring || isLoadingResult ? VStack(Spinner()) :
+            isLoad || isLoading || isLoadingMonitoring || isLoadingResult || isLoadingStringParameters ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
                         const [theme, setTheme] = useState(JSON.parse(localStorage.getItem("pedavalans_theme")));
+                        const [stringParameters, setStringParameters] = useState([]);
+
+                        useEffect(() => {
+                            setStringParameters(stringParametersCache);
+                        }, [])
 
                         const updateParameterProperty = (parameter: IParameters.IParameter) => {
                             Toast.fire({
@@ -69,6 +78,43 @@ export class ParametersController extends UIFormController {
                                 title: "Parametre güncellendi"
                             })
                         }
+
+                        const StringParameter = ({ stringParameter, index }) => (
+                            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
+                                <div style={{ fontSize: "14px", fontWeight: 400 }}>
+                                    {Resources.StringParameters.find(x => x.localStr === stringParameter?.name)?.name}
+                                </div>
+                                <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center", gap: "5px" }}>
+                                    <TextField
+                                        size="small"
+                                        value={stringParameter.value}
+                                        onChange={(e) => {
+                                            const updatedStringParameters = [...stringParameters];
+                                            updatedStringParameters[index].value = e.target.value;
+                                            setStringParameters(updatedStringParameters);
+                                        }}
+                                    />
+                                    <IconButton onClick={() => {
+                                        updateParameter({
+                                            databaseId: AppInfo.Database,
+                                            collectionId: Collections.StringParameter,
+                                            documentId: stringParameter.$id,
+                                            data: {
+                                                value: stringParameter.value
+                                            }
+                                        }, () => {
+                                            Toast.fire({
+                                                icon: "success",
+                                                title: "Parametre güncellendi"
+                                            });
+                                        });
+                                    }}>
+                                        <CheckIcon />
+                                    </IconButton>
+                                </div>
+                            </div>
+                        );
+
 
                         return (
                             HStack({ alignment: cTopLeading })(
@@ -120,6 +166,14 @@ export class ParametersController extends UIFormController {
                                                             />
                                                         </div>
                                                     </div>
+                                                )}
+                                                {stringParameters.map((stringParameter, i) =>
+                                                    stringParameter.name === "reminder_mail_for_unfilled_tables_day" ?
+                                                        parameters.find(x => x.name === "reminder_mail_for_unfilled_tables" && x.is_active) ?
+                                                            <StringParameter stringParameter={stringParameter} index={i} />
+                                                            : null
+                                                        :
+                                                        <StringParameter stringParameter={stringParameter} index={i} />
                                                 )}
                                                 {monitoring.map((monitor) =>
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>

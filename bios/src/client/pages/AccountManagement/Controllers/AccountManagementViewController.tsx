@@ -38,6 +38,7 @@ const resetAccountRelation: IAccountRelation.IBase = {
     account_id: "",
     // first_name: "",
     // last_name: "",
+    mail: "",
     authorization_profile: "",
     id: "",
     is_active: true,
@@ -72,6 +73,7 @@ export class AccountManagementViewController extends UIController {
                         // edit account info
                         const [selectedAccount, setSelectedAccount] = useState<IAccount.IBase>(resetMe)
                         const [selectedAccountRelation, setSelectedAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
+                        const [selectedAccountRelationIsActive, setSelectedAccountRelationIsActive] = useState<boolean>(true)
 
                         const [passwordChange, setPasswordChange] = useState<IAccount.IPasswordChange>({ password: "", newPassword: "", newPasswordConfirm: "" })
                         const [isRegexError, setIsRegexError] = useState(false)
@@ -175,6 +177,7 @@ export class AccountManagementViewController extends UIController {
                                         "id": docId,
                                         "tenant_id": me?.prefs?.organization,
                                         "account_id": data.$id,
+                                        "mail": data.email,
                                         "is_admin": false
                                     }
                                 }, async () => {
@@ -194,7 +197,7 @@ export class AccountManagementViewController extends UIController {
                                         icon: 'success',
                                         title: 'Kullanıcı oluşturuldu'
                                     })
-                                    
+
                                     setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
                                 })
                             })
@@ -210,6 +213,7 @@ export class AccountManagementViewController extends UIController {
                             console.log(account)
                             setSelectedAccount(account)
                             setSelectedAccountRelation(accountRelations.find((e) => e.account_id === account.$id))
+                            setSelectedAccountRelationIsActive(accountRelations.find((e) => e.account_id === account.$id).is_active)
                             setSelectedTab(3)
                         }
 
@@ -318,18 +322,6 @@ export class AccountManagementViewController extends UIController {
                                                                     }
                                                                 }}
                                                             />
-                                                            {
-                                                                accountRelation.is_admin &&
-                                                                <FormControlLabel
-                                                                    sx={{ alignContent: "end" }}
-                                                                    control={
-                                                                        <Switch
-                                                                            checked={accountRelation.is_active}
-                                                                        />
-                                                                    }
-                                                                    label="Hesap aktif mi?"
-                                                                />
-                                                            }
                                                             <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
                                                         </div>
                                                     </div>
@@ -400,11 +392,19 @@ export class AccountManagementViewController extends UIController {
                                                             { field: 'email', headerName: 'E-posta', flex: 1 },
                                                             { field: 'name', headerName: 'Adı Soyadı', flex: 1 },
                                                             {
+                                                                field: 'is_active', headerName: 'Aktiflik', width: 100, align: "center", renderCell: (params: any) => {
+                                                                    const accountRelation = accountRelations.find((e) => e.account_id === params.row.$id)
+                                                                    let circleRed = <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "red" }}>{" "}</div>
+                                                                    let circleGreen = <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "green" }}>{" "}</div>
+                                                                    return accountRelation ? accountRelation.is_active ? circleGreen : circleRed : circleRed
+                                                                }
+                                                            },
+                                                            {
                                                                 field: 'value', headerName: "İşlemler", width: 150,
                                                                 renderCell: (params: any) => <Button variant="text" onClick={() => setEditAccount(params.row)}>Düzenle</Button>
                                                             }
                                                         ]}
-                                                        rows={accounts}
+                                                        rows={accounts.filter(account => accountRelations.some(relation => relation.account_id === account.$id && !relation.is_deleted))}
                                                         getRowId={(row) => row.$id} />
                                                 </GridContainer>
                                             }
@@ -498,20 +498,6 @@ export class AccountManagementViewController extends UIController {
                                                             value={selectedAccount.phone}
                                                             fullWidth
                                                         />
-                                                        {/* <TextField
-                                                            size="small"
-                                                            label="Adı"
-                                                            value={selectedAccountRelation.first_name}
-                                                            onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, first_name: e.target.value })}
-                                                            fullWidth
-                                                        />
-                                                        <TextField
-                                                            size="small"
-                                                            label="Soyadı"
-                                                            value={selectedAccountRelation.last_name}
-                                                            onChange={(e) => setSelectedAccountRelation({ ...selectedAccountRelation, last_name: e.target.value })}
-                                                            fullWidth
-                                                        /> */}
                                                         {
                                                             accountRelation.is_admin && <FormControlLabel
                                                                 sx={{ alignContent: "end" }}
@@ -524,6 +510,41 @@ export class AccountManagementViewController extends UIController {
                                                             />
                                                         }
                                                         <Button variant="contained" type="submit" fullWidth>Kullanıcıyı Düzenle</Button>
+                                                        {
+                                                            accountRelation.is_admin && selectedAccountRelationIsActive === false &&
+                                                            <Button variant="contained" onClick={() => {
+                                                                Swal.fire({
+                                                                    title: 'Kullanıcıyı Sil',
+                                                                    text: "Kullanıcıyı silmek istediğinizden emin misiniz? Bu işlemi geri alamazsınız!",
+                                                                    icon: 'warning',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonColor: '#3085d6',
+                                                                    cancelButtonColor: '#d33'
+                                                                }).then(async (result) => {
+                                                                    if (result.isConfirmed) {
+                                                                        updateAccountRelation({
+                                                                            databaseId: AppInfo.Database,
+                                                                            collectionId: "account_relation",
+                                                                            documentId: selectedAccountRelation.id,
+                                                                            data: {
+                                                                                ...removeDollarProperties(selectedAccountRelation),
+                                                                                is_deleted: true,
+                                                                                is_active: false
+                                                                            }
+                                                                        }, (data) => {
+                                                                            Toast.fire({
+                                                                                icon: 'success',
+                                                                                title: 'Kullanıcı Silindi!'
+                                                                            })
+                                                                            setSelectedTab(1)
+                                                                            setSelectedAccountRelation(resetAccountRelation)
+                                                                            setSelectedAccountRelationIsActive(true)
+                                                                            setSelectedAccount(resetMe);
+                                                                        })
+                                                                    }
+                                                                })
+                                                            }}>Kullanıcıyı Sil</Button>
+                                                        }
                                                     </form>
                                                 </div>
                                             }

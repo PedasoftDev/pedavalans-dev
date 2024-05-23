@@ -135,8 +135,8 @@ export class UpdateVocationalQualificationController extends UIController {
 
         const onDelete = () => {
           Swal.fire({
-            title: 'Mesleki Yeterlilik Türü Silme',
-            text: 'Mesleki Yeterlilik Türünü silmek istediğinize emin misiniz?',
+            title: 'Mesleki Yeterlilik Silme',
+            text: 'Mesleki Yeterliliği silmek istediğinize emin misiniz?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sil',
@@ -147,13 +147,13 @@ export class UpdateVocationalQualificationController extends UIController {
             if (result.isConfirmed) {
               Toast.fire({
                 icon: 'info',
-                title: 'Mesleki Yeterlilik Türü siliniyor...',
+                title: 'Mesleki Yeterlilik siliniyor...',
                 timer: 5000,
               })
               updateVQ(
                 {
                   databaseId: AppInfo.Database,
-                  collectionId: 'vocational_qualification_type',
+                  collectionId: 'vocational_qualification',
                   documentId: id,
                   data: {
                     ...form,
@@ -163,9 +163,9 @@ export class UpdateVocationalQualificationController extends UIController {
                 () => {
                   Toast.fire({
                     icon: 'success',
-                    title: 'Mesleki Yeterlilik Türü başarıyla silindi.',
+                    title: 'Mesleki Yeterlilik başarıyla silindi.',
                   })
-                  navigate('/app/vocational-qualification-type/list')
+                  navigate('/app/vocational-qualification/list')
                 }
               )
             }
@@ -235,6 +235,14 @@ export class UpdateVocationalQualificationController extends UIController {
                       label="Belge Bitiş Tarihi Ön Hatırlatması Kaç Gün Önce Yapılsın?"
                     />
                   )}
+                  <FormControlLabel
+                    sx={{ width: "100%", alignContent: "end" }}
+                    onChange={(e: any) => setForm({ ...form, is_active: e.target.checked })}
+                    value={form.is_active}
+                    control={<Switch color="primary" checked={form.is_active} />}
+                    label="Aktif mi?"
+                    labelPlacement="start"
+                  />
                   <div
                     style={{
                       display: 'flex',

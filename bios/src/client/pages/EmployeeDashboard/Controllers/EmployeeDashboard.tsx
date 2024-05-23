@@ -25,27 +25,33 @@ import CompetencyDepartment from '../../../../server/hooks/competencyDepartment/
 import EmployeeCertificateCard from '../Views/EmployeeCertificateCard'
 import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main'
 import {
+  Box,
   Card,
   CardContent,
   CardHeader,
   Paper,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Tabs,
   Typography,
 } from '@mui/material'
 import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel'
 import { red } from '@mui/material/colors'
-import { BarChart, Gauge, gaugeClasses } from '@mui/x-charts'
+import { BarChart, Gauge, LineChart, gaugeClasses } from '@mui/x-charts'
 import AssignEducation from '../../../../server/hooks/assignEducation/main'
 import { Views } from '../../../components/Views'
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main'
 import CompetencyEvaluationPeriod from '../../../../server/hooks/competencyEvaluationPeriod/main'
 import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main'
 import OrganizationStructureEmployeeLog from '../../../../server/hooks/organizationStructureEmployeeLog/main'
+import { AntTab, AntTabs, TabPanel, a11yProps } from '../../../components/Tabs'
+import { SimpleTreeView, TreeItem } from '@mui/x-tree-view'
+import Competency from '../../../../server/hooks/competency/main'
 
 
 export class EmployeeDashboard extends UIController {
@@ -63,6 +69,7 @@ export class EmployeeDashboard extends UIController {
     const { competencyDepartmentList, isLoadingCompetencyDepartmentList } =
       CompetencyDepartment.GetList(me?.prefs?.organization)
 
+    const {competencyList,isLoadingCompetencyList} = Competency.GetList(me?.prefs?.organization)
     const {
       listEmployeeCompetencyValue,
       isLoadingListEmployeeCompetencyValue,
@@ -116,6 +123,30 @@ export class EmployeeDashboard extends UIController {
     const [employeeBarValue, setEmployeeBarValue] = useState(0)
     const [barMaxValue, setBarMaxValue] = useState(0)
 
+    const [employeeGroups, setEmployeeGroups] = useState([])
+
+    // tabs settings
+    
+    const [value, setValue] = useState(0);
+    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+      setValue(newValue);
+    };
+
+
+    // treeview settings
+
+    const SelectedCompetencyInfo = {
+      competency_id: '',
+      competency_name: '',
+      competency_real_value: '',
+      competency_target_value: '',
+      competency_evaluation_period: '',
+      competency_group_id: '',
+      competency_group_name: '',
+    }
+
+    const [selectedCompetency, setSelectedCompetency] = useState(SelectedCompetencyInfo)
+    
 
 
 
@@ -127,7 +158,7 @@ export class EmployeeDashboard extends UIController {
       isLoadingCompetencyDepartmentList ||
       isLoadingListEmployeeCompetencyValue ||
       isLoadingAssignedEducationList ||
-      isLoadingEmployees || isLoadingEmployeeLog
+      isLoadingEmployees || isLoadingEmployeeLog || isLoadingCompetencyList
       
       ? VStack(Spinner())
       : UIViewBuilder(() => {
@@ -197,6 +228,46 @@ export class EmployeeDashboard extends UIController {
                 })
               })
 
+              const result = [];
+              const groupMap = new Map();
+
+              listEmployeeCompetencyValue.filter(x => x.employee_id === id).forEach(element => {
+                const competencyWithGroup = competencyList.find(x => x.competency_id === element.competency_id);
+                
+                if (competencyWithGroup) {
+                  const groupId = competencyWithGroup.competency_group_id;
+                  const groupName = competencyWithGroup.competency_group_name;
+                  
+                  if (!groupMap.has(groupId)) {
+                    groupMap.set(groupId, {
+                      group_name: groupName,
+                      group_id: groupId,
+                      competencies: []
+                    });
+                  }
+                  
+                  groupMap.get(groupId).competencies.push({
+                    ...element,
+                    group_name: groupName,
+                    group_id: groupId
+                  });
+                }
+              });
+
+              groupMap.forEach((value, key) => result.push(value));
+
+              setEmployeeGroups(result); 
+              
+              setSelectedCompetency({
+                competency_id: result[0].competencies[0].competency_id,
+                competency_name: result[0].competencies[0].competency_name,
+                competency_real_value: result[0].competencies[0].competency_real_value,
+                competency_target_value: result[0].competencies[0].competency_target_value,
+                competency_evaluation_period: result[0].competencies[0].competency_evaluation_period,
+                competency_group_id: result[0].competencies[0].group_id,
+                competency_group_name: result[0].competencies[0].group_name
+              })
+
           }, [])
 
           //Çalışanın birimdeki toplam kidem süresini hesaplar
@@ -228,7 +299,7 @@ export class EmployeeDashboard extends UIController {
 
           return VStack({ alignment: cTopLeading })(
             HStack({ alignment: cLeading })(
-              Views.Title('Özet Bilgiler').paddingTop('10px')
+              Views.Title('Kişi Bilgileri').paddingTop('10px')
             )
               .height(70)
               .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
@@ -245,12 +316,18 @@ export class EmployeeDashboard extends UIController {
                     padding: '10px',
                   }}
                 >
+                  <AntTabs value={value} onChange={handleChange}>
+                      <AntTab label="Özet Bilgiler" {...a11yProps(0)} />
+                      <AntTab label="Yetkinlil Hedef Bilgileri" {...a11yProps(1)} />
+                  </AntTabs>
+                  <TabPanel value={value} index={0}>
                   <div
                     style={{
                       marginTop: '15px',
                       display: 'flex',
                       flexDirection: 'row',
                       gap: '30px',
+                      padding: '5px 10px',
                     }}
                   >
                     <EmployeeCard
@@ -291,6 +368,7 @@ export class EmployeeDashboard extends UIController {
                       display: 'flex',
                       flexDirection: 'row',
                       gap: '30px',
+                      padding: '5px 10px',
                     }}
                   >
                     <Card
@@ -440,6 +518,7 @@ export class EmployeeDashboard extends UIController {
                     style={{
                       display: 'flex',
                       gap: '13px',
+                      padding: '5px 10px',
                     }}
                   >
                     <Card
@@ -509,7 +588,10 @@ export class EmployeeDashboard extends UIController {
                                         {education.education_name}
                                       </TableCell>
                                       <TableCell align="center">
-                                        {education.start_date}
+                                        {
+                                          new Date(education.start_date)
+                                            .toLocaleDateString()
+                                        }
                                       </TableCell>
                                       <TableCell align="center">
                                         {education.educator_name}
@@ -596,7 +678,92 @@ export class EmployeeDashboard extends UIController {
                       </CardContent>
                     </Card>
                   </div>
+                  </TabPanel>
+                  <TabPanel value={value} index={1}>
+                  <div
+                  style={{
+                    width: '100%',
+                    height: '100vh',
+                    display: 'flex',
+                    gap: '20px',
+                  }}
+                  >
+                  <div
+                    style={{
+                      borderRight: '1px solid rgba(128, 128, 128, 0.2)',
+                      width: '30%',
+                     
+                    }}
+                  >
+                    <SimpleTreeView defaultExpandedItems={[employeeGroups[0]?.group_id]} defaultSelectedItems={[
+                      selectedCompetency.competency_id
+                    ]} >
+                      {
+                        employeeGroups.map((x) => (
+                          <TreeItem itemId={x.group_id} label={x.group_name}  >
+                            {
+                              x.competencies.map((y) => (
+                                <TreeItem itemId={y.competency_id} label={y.competency_name} onClick={
+                                  () => setSelectedCompetency({
+                                    competency_id: y.competency_id,
+                                    competency_name: y.competency_name,
+                                    competency_real_value: y.competency_real_value,
+                                    competency_target_value: y.competency_target_value,
+                                    competency_evaluation_period: y.competency_evaluation_period,
+                                    competency_group_id: y.group_id,
+                                    competency_group_name: y.group_name
+                                  })
+                                } />
+                              ))
+                            }
+                          </TreeItem>
+                        ))
+                      }
+                    </SimpleTreeView>
+                  </div>
+                  <div
+                    style={{
+                      width: '70%',
+                    }}
+                  >
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "50px"
+                    }}>
+                      <h1 style={{
+                        fontSize: "16px",
+                        borderBottom: "1px solid rgba(128, 128, 128, 0.2)",
+                        width: "100%",
+                        textAlign: "center",
+                        padding: "10px",
+                      }}>{selectedCompetency.competency_name}</h1>
+                    <LineChart
+                      xAxis={[{ data: [1, 2, 3, 5, 8, 10, 12, 15, 16] }]}
+                      series={[
+                        {
+                          data: [2, 5.5, 2, 8.5, 1.5, 5],
+                          valueFormatter: (value) => (value == null ? 'NaN' : value.toString()),
+                        },
+                        {
+                          data: [7, 8, 5, 4,2, 5.5, 1],
+                          valueFormatter: (value) => (value == null ? '?' : value.toString()),
+                        },
+                      ]}
+                      height={200}
+                      margin={{ top: 10, bottom: 20 }}
+                    />
+                    </div>
+                  </div>
+                  </div>
+                    
+                  </TabPanel>
+
                 </div>
+                
+               
               )
             )
           ).padding('0 20px')

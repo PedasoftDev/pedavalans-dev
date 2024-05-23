@@ -131,7 +131,7 @@ export class UpdateVocationalQualificationTypeController extends UIController {
                   documentId: id,
                   data: {
                     ...form,
-                    is_deleted_competency: true,
+                    is_deleted: true,
                   },
                 },
                 () => {
@@ -200,6 +200,14 @@ export class UpdateVocationalQualificationTypeController extends UIController {
                     label="Belgenin Geçerlilik Süresi Var mı?"
                     labelPlacement="start"
                   />
+                  <FormControlLabel
+                    sx={{ width: "100%", alignContent: "end" }}
+                    onChange={(e: any) => setForm({ ...form, is_active: e.target.checked })}
+                    value={form.is_active}
+                    control={<Switch color="primary" checked={form.is_active} />}
+                    label="Aktif mi?"
+                    labelPlacement="start"
+                  />
                   <div
                     style={{
                       display: 'flex',
@@ -214,7 +222,7 @@ export class UpdateVocationalQualificationTypeController extends UIController {
                       color="primary"
                       size="small"
                     >
-                      Kaydet
+                      Güncelle
                     </Button>
                     {!isActive && (
                       <Button

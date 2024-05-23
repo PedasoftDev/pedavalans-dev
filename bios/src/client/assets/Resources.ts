@@ -36,6 +36,14 @@ export namespace Resources {
         }
     ];
 
+    export const ParameterLocalStr = {
+        polyvalence_unit_table_auth: "polyvalence_unit_table_auth",
+        machine_based_polyvalence_management: "machine_based_polyvalence_management",
+        line_based_competency_relationship: "line_based_competency_relationship",
+        polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
+        reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables",
+    }
+
     export const Parameters = [
         {
             name: "Polivalans tablolarında yetkilendirme kullanılsın mı?",
@@ -57,14 +65,25 @@ export namespace Resources {
             localStr: "polyvalence_unit_table_mail",
             type: "boolean",
         },
+        {
+            name: "Veri girişi yapılmayan tablolar için hatırlatma maili gönderilsin mi?",
+            localStr: "reminder_mail_for_unfilled_tables",
+            type: "boolean",
+        }
     ];
 
-    export const ParameterLocalStr = {
-        polyvalence_unit_table_auth: "polyvalence_unit_table_auth",
-        machine_based_polyvalence_management: "machine_based_polyvalence_management",
-        line_based_competency_relationship: "line_based_competency_relationship",
-        polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
-    }
+    export const StringParameters = [
+        {
+            name: "Birim polivalans tablosu veri sorumlularına kaç gün öncesinden mail gönderilsin?",
+            localStr: "polyvalence_unit_table_responsible_users_mail_day",
+            type: "string",
+        },
+        {
+            name: "Veri girişi yapılmayan tablolar için hatırlatma maili kaç gün öncesinden gönderilsin?",
+            localStr: "reminder_mail_for_unfilled_tables_day",
+            type: "string",
+        }
+    ]
 
     export const Monitoring = {
         name: "Yetkinlik performansı kabul kriteri(%)?",

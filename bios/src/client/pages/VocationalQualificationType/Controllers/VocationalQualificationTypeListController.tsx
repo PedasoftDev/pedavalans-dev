@@ -129,7 +129,7 @@ export class VocationalQualificationTypeListController extends UIFormController 
                     </div>
                     <Tooltip
                       title={`${rowsActive ? 'Pasif' : 'Aktif'
-                        } Süreli Belge Türlerini Göster`}
+                        } Belge Türlerini Göster`}
                     >
                       <IconButton onClick={handleSetActiveRows}>
                         <FilterAltOutlinedIcon />
