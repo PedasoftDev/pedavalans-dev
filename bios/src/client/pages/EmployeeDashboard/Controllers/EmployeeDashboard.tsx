@@ -348,7 +348,7 @@ export class EmployeeDashboard extends UIController {
                 >
                   <AntTabs value={value} onChange={handleChange}>
                       <AntTab label="Özet Bilgiler" {...a11yProps(0)} />
-                      <AntTab label="Çalışanın Yetkinlik Gelişimi" {...a11yProps(1)} />
+                      {/* <AntTab label="Çalışanın Yetkinlik Gelişimi" {...a11yProps(1)} /> */}
                   </AntTabs>
                   <TabPanel value={value} index={0}>
                   <div
