@@ -102,7 +102,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
-        const { periods: periodList, isLoading: isLoadingPeriodList } = CompetencyEvaluationPeriod.GetCompetencyEvaluationPeriods(me?.prefs?.organization);
+        const { periods: periodList, isLoading: isLoadingPeriodList } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
