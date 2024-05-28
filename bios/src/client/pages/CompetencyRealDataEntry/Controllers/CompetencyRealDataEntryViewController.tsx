@@ -158,32 +158,14 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
 
                         // dialog for education
-                        const [form, setForm] = useState({
-                            education_id: "",
-                            education_name: "",
-                            education_code: "",
-                            educator_id: "",
-                            educator_name: "",
-                            hour: "",
-                            start_date: "",
-                            end_date: "",
-                        });
+                        const [form, setForm] = useState(resetForm);
 
                         const [selectedEmployees, setSelectedEmployees] = useState<typeof employees>([]);
                         const [openEducationDialog, setOpenEducationDialog] = useState(false);
 
                         const handleCloseEducationDialog = () => {
                             setOpenEducationDialog(false);
-                            setForm({
-                                education_id: "",
-                                education_name: "",
-                                education_code: "",
-                                educator_id: "",
-                                educator_name: "",
-                                start_date: "",
-                                hour: "",
-                                end_date: "",
-                            });
+                            setForm(resetForm);
                             setSelectedEmployees([]);
                         }
 
