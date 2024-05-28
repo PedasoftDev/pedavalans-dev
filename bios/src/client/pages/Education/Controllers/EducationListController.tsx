@@ -114,7 +114,7 @@ export class EducationListController extends UIFormController {
                                                     display: "flex",
                                                     gap: "10px"
                                                 }}>
-                                                    {accountRelations[0].is_admin && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>}
+                                                    {accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin" && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>}
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
                                                 </div>
                                             </div>

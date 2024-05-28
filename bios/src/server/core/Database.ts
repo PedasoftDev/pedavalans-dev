@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 8,
+    "version": 7,
     "collections": [
         {
             "id": "competency",

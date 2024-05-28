@@ -53,6 +53,21 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     tenant_id: ""
 }
 
+const resetForm: IAssignedEducation.ICreate = {
+    education_code: "",
+    employee_id: "",
+    educator_id: "",
+    start_date: "",
+    end_date: "",
+    tenant_id: "",
+    education_id: "",
+    education_name: "",
+    hour: "0:00",
+    educator_name: "",
+    employee_name: "",
+    status: "open",
+};
+
 export class CompetencyRealDataEntryViewController extends UIController {
 
     @State()
