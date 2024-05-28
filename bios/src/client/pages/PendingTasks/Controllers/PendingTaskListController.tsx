@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useState } from "@tuval/forms";
 import React, { useEffect } from "react";
 import { Views } from "../../../components/Views";
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, Tooltip } from "@mui/material";
 import { CgArrowsExpandLeft } from "react-icons/cg";
 import { BackgroundDiv, ListItem, PendingTasksDiv, TaskList, ToggleDiv, ToggleDivHeader, WelcomeText } from "../Views/Views";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
@@ -254,7 +254,9 @@ export class PendingTaskListController extends UIController {
                                                                     {task.list.map((taskItem: IAssignedEducation.IBase, i) =>
                                                                         <ListItem onClick={() => handleClickAssignedEducation(taskItem)} key={i}>
                                                                             <MdOutlineFindInPage size={20} />
-                                                                            <p>{`${taskItem.education_name} - ${taskItem.employee_name}`}</p>
+                                                                            <Tooltip title={"Eğitimi Gerçekleştir"} arrow><p>{`${taskItem.education_name} - ${taskItem.employee_name}
+                                                                             | ${new Date(taskItem.start_date).toLocaleDateString("tr-TR")} - ${new Date(taskItem.end_date).toLocaleDateString("tr-TR")}`}</p>
+                                                                            </Tooltip>
                                                                         </ListItem>
                                                                     )}
                                                                 </TaskList>}
