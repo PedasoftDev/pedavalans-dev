@@ -67,7 +67,7 @@ const AddEmployeeView = (
 
     const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
 
-    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
+    const { createOrganizationEmployeeDocument, error: createDocumentError } = OrganizationEmployeeDocument.Create()
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
 
@@ -216,7 +216,19 @@ const AddEmployeeView = (
 
     };
 
+    const isDocumentFull = () => {
+        return formDocument.document_type_id && formDocument.document_id
+    }
+
     const handleDocument = () => {
+        if (!isDocumentFull()) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Boş belge eklenemez.',
+                text: createDocumentError?.message
+            })
+            return
+        }
         setDocument([...document, { ...formDocument }])
         setFormDocument(resetFormDocument)
         setShowValidityPeriod(false);
@@ -241,8 +253,13 @@ const AddEmployeeView = (
             field: 'end_date',
             headerName: 'Belgenin Bitiş Tarihi',
             width: 200,
+            align: "center",
             valueGetter: (params: any) => {
-                return Resources.Functions.formatDate(params.value);
+                if (params.value === "") {
+                    return params.value = "Süresiz"
+                } else {
+                    return Resources.Functions.formatDate(params.value);
+                }
             }
         },
     ]

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Form from '../ViewForm/Form';
 import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
 import Swal from 'sweetalert2';
@@ -75,9 +75,10 @@ const EditEmployeeView = (
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
 
-    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
-    const { organizationEmployeeDocumentList, isLoading: isLoadingDocumentList } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
-
+    const { createOrganizationEmployeeDocument, error: createDocumentError } = OrganizationEmployeeDocument.Create()
+    const { organizationEmployeeDocumentList } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
+    const [organizationEmployeeDocuments, setOrganizationEmployeeDocuments] = useState([]);
+    const [isLoadingDocumentList, setIsLoadingDocumentList] = useState(true);
 
     const selectFormStates = [
         {
@@ -256,7 +257,20 @@ const EditEmployeeView = (
 
     };
 
+    const isDocumentFull = () => {
+        return formDocument.document_type_id && formDocument.document_id
+    }
+
     const handleDocument = () => {
+
+        if (!isDocumentFull()) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Boş belge eklenemez.',
+                text: createDocumentError?.message
+            })
+            return
+        }
 
         createOrganizationEmployeeDocument({
             data: {
@@ -268,7 +282,7 @@ const EditEmployeeView = (
                 end_date: formDocument.end_date,
                 tenant_id: me?.prefs?.organization,
             }
-        }, () => {
+        }, (newDocument) => {
 
             Toast.fire({
                 icon: "success",
@@ -276,6 +290,8 @@ const EditEmployeeView = (
             })
             setFormDocument(resetFormDocument)
             setShowValidityPeriod(false);
+
+            setOrganizationEmployeeDocuments(prevList => [...prevList, newDocument])
 
         })
 
@@ -298,6 +314,16 @@ const EditEmployeeView = (
     const [open, setOpen] = useState(false)
     const [currentRowData, setCurrentRowData] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase>(resetCurrentRowForm);
     const [id, setId] = useState(null);
+
+    const fetchData = async () => {
+        const result = await OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
+        setOrganizationEmployeeDocuments(result.organizationEmployeeDocumentList)
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
 
     const handleOpen = (rowData) => {
 
@@ -335,9 +361,9 @@ const EditEmployeeView = (
         );
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         setOpen(false)
-        Swal.fire({
+        const result = await Swal.fire({
             title: 'Belge Silme',
             text: 'Belgeyi silmek istediğinize emin misiniz?',
             icon: 'warning',
@@ -346,33 +372,36 @@ const EditEmployeeView = (
             cancelButtonText: 'İptal',
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Toast.fire({
-                    icon: 'info',
-                    title: 'Belge siliniyor...',
-                    timer: 5000,
-                })
-                updateDocument(
-                    {
-                        databaseId: AppInfo.Database,
-                        collectionId: 'organization_employee_document',
-                        documentId: id,
-                        data: {
-                            ...removeDollarProperties(currentRowData),
-                            is_deleted: true,
-                        },
-                    },
-                    () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Belge başarıyla silindi.',
-                        })
-                        handleClose()
-                    }
-                )
-            }
         })
+
+        if (result.isConfirmed) {
+            Toast.fire({
+                icon: 'info',
+                title: 'Belge siliniyor...',
+                timer: 5000,
+            })
+            await updateDocument(
+                {
+                    databaseId: AppInfo.Database,
+                    collectionId: 'organization_employee_document',
+                    documentId: id,
+                    data: {
+                        ...removeDollarProperties(currentRowData),
+                        is_deleted: true,
+                    },
+                })
+
+            Toast.fire({
+                icon: 'success',
+                title: 'Belge başarıyla silindi.',
+            })
+
+            setOrganizationEmployeeDocuments(prevList => prevList.filter(doc => doc.$id !== id))
+
+            handleClose()
+
+
+        }
     }
 
     const handleClose = () => {
@@ -567,7 +596,10 @@ const EditEmployeeView = (
         <div>
             <div>
                 <Button onClick={() => setPage("addEmployee")}>Personel Bilgileri</Button>
-                <Button onClick={() => setPage("addEmployeeVQ")}>Belge ve Sertifikalar</Button>
+                <Button onClick={() => {
+                    setPage("addEmployeeVQ")
+                    setOrganizationEmployeeDocuments(organizationEmployeeDocumentList)
+                }}>Belge ve Sertifikalar</Button>
             </div>
             <Form
                 title='Tanımlı Personel Bilgilerini Düzenle'
@@ -733,7 +765,7 @@ const EditEmployeeView = (
                             </Button>
 
                             <StyledDataGrid
-                                rows={organizationEmployeeDocumentList.filter((x) => x.employee_id === formEmployee.$id)}
+                                rows={organizationEmployeeDocuments.filter((x) => x.employee_id === formEmployee.$id)}
                                 columns={columns}
                                 getRowId={(row) => row.$id}
                                 localeText={
