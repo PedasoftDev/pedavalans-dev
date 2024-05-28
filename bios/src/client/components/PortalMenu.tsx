@@ -236,7 +236,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                 <img
                                     src={CustomIcons.customLogo}
                                     alt="Logo"
-                                    style={{ width: '60px', paddingBottom: '15px' }}
+                                    style={{ width: '60px', paddingBottom: '15px', cursor: "pointer" }}
+                                    onClick={() => navigate("/")}
                                 />
                                 <div
                                     style={{
@@ -254,7 +255,9 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                             color: Resources.Colors.themeColor,
                                             fontWeight: '600',
                                             fontSize: '30px',
+                                            cursor: "pointer"
                                         }}
+                                        onClick={() => navigate("/")}
                                     >
                                         Pedavalans
                                     </span>
@@ -445,7 +448,8 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                             <img
                                                 src={CustomIcons.customLogo}
                                                 alt="Logo"
-                                                style={{ width: '60px', paddingBottom: '15px' }}
+                                                style={{ width: '60px', paddingBottom: '15px', cursor: "pointer" }}
+                                                onClick={() => navigate("/")}
                                             />
                                             <div
                                                 style={{
@@ -463,7 +467,9 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                                         color: Resources.Colors.themeColor,
                                                         fontWeight: '600',
                                                         fontSize: '30px',
+                                                        cursor: "pointer"
                                                     }}
+                                                    onClick={() => navigate("/")}
                                                 >
                                                     Pedavalans
                                                 </span>

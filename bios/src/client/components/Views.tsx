@@ -100,11 +100,11 @@ export namespace Views {
                     Spacer(),
                     ReactView(
                         <HiOutlineDocumentReport cursor={"pointer"} size={"18px"} onClick={() => report()} style={{ marginRight: "10px" }} />
-                    ),
+                    ).tooltip("Yetkinlik Matrisi"),
                     item != null ?
                         ReactView(
                             <HiOutlinePencilAlt cursor={"pointer"} size={"18px"} onClick={() => item.action()} />
-                        ) : null,
+                        ).tooltip("Düzenle") : null,
                 ).height(),
                 HStack({ alignment: cLeading })(
                     VStack({ alignment: cLeading })(
