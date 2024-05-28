@@ -22,6 +22,7 @@ import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelat
 const formReset: ICompetency.ICreateCompetency = {
     competency_id: "",
     competency_name: "",
+    competency_description: "",
     competency_group_id: "",
     competency_group_name: "",
     realm_id: "",
@@ -212,6 +213,16 @@ export class CreateCompetencyController extends UIController {
                                             ))}
                                         </Select>
                                     </FormControl>
+                                    <TextField
+                                        fullWidth
+                                        onChange={handleChange}
+                                        value={form.competency_description}
+                                        name="competency_description"
+                                        multiline={true}
+                                        inputProps={{ maxLength: 256 }}
+                                        rows={4}
+                                        label="Yetkinlik Açıklaması"
+                                    />
                                     <div style={{
                                         height: "280px",
                                         width: "100%",

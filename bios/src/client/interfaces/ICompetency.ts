@@ -7,6 +7,7 @@ namespace ICompetency {
         competency_name: string;
         competency_group_id: string;
         competency_group_name: string;
+        competency_description?: string;
         competency_target_value: string;
         competency_real_value: string;
         competency_value_desc: string;
@@ -24,6 +25,7 @@ namespace ICompetency {
     export interface ICreateCompetency {
         competency_id: string;
         competency_name: string;
+        competency_description?: string;
         competency_group_id: string;
         competency_group_name: string;
         tenant_id: string;

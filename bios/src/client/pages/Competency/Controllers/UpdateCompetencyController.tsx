@@ -24,6 +24,7 @@ const formReset: ICompetency.ICompetency = {
     competency_name: "",
     competency_group_id: "",
     competency_group_name: "",
+    competency_description: "",
     competency_evaluation_period: "",
     competency_real_value: "",
     competency_target_value: "",
@@ -280,6 +281,16 @@ export class UpdateCompetencyController extends UIController {
                                                     ))}
                                                 </Select>
                                             </FormControl>
+                                            <TextField
+                                                fullWidth
+                                                onChange={handleChange}
+                                                value={form.competency_description}
+                                                name="competency_description"
+                                                multiline={true}
+                                                inputProps={{ maxLength: 500 }}
+                                                rows={4}
+                                                label="Yetkinlik Açıklaması"
+                                            />
                                             <div style={{
                                                 height: "280px",
                                                 width: "100%",

@@ -424,12 +424,12 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                         <IconButton color="primary" onClick={() => {
                                             handleClickOpenDialog(params.row.competency_value_desc, params.row.competency_id)
                                         }}>
-                                            <TbPencilPlus />
+                                            <TbPencilPlus title="Açıklama Ekle" />
                                         </IconButton>
                                         <IconButton color="primary" onClick={() => {
                                             handleOpenEducationDialog(params.row.employee_id)
                                         }}>
-                                            <MdOutlineLibraryBooks />
+                                            <MdOutlineLibraryBooks title="Eğitim Planla" />
                                         </IconButton>
                                     </div>
                                 )
