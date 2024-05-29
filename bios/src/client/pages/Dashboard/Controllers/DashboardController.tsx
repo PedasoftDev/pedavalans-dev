@@ -22,6 +22,7 @@ import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetency
 import IParameters from '../../../interfaces/IParameters';
 import IStringParameter from '../../../interfaces/IStringParameter';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
+import ReactECharts from 'echarts-for-react';
 
 export class DashboardController extends UIController {
 
@@ -68,8 +69,8 @@ export class DashboardController extends UIController {
                                 const [employeesByPosition, setEmployeesByPosition] = useState<{ positionName: string, employeeCount: number }[]>([
                                     { positionName: "Bulunamadı", employeeCount: 0 }
                                 ])
-                                const [employeePerformance, setEmployeePerformance] = useState<{ label: string, value: number }[]>([
-                                    { label: "Bulunamadı", value: 0 }
+                                const [employeePerformance, setEmployeePerformance] = useState<{ name: string, value: number }[]>([
+                                    { name: "Bulunamadı", value: 0 }
                                 ])
                                 const [successfullFiveDepartments, setSuccessfullFiveDepartments] = useState<{ departmentName: string, percentage: number }[]>([
                                     { departmentName: "Bulunamadı", percentage: 0 }
@@ -100,7 +101,7 @@ export class DashboardController extends UIController {
                                         task.Task(async () => {
                                             if (attr.type === "string") {
                                                 try {
-                                                    await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, 256, false)
+                                                    await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, Collections.CollectionVersion, attr.key, attr.size, false)
                                                 } catch (error) {
                                                     failedAttributes.push({ colName: collectionVersion.name, key: attr.key, type: attr.type })
                                                 }
@@ -253,10 +254,12 @@ export class DashboardController extends UIController {
                                 const updateVersion = async (dbVersion: number) => {
                                     const updateVersion = dbVersion + 1;
                                     const updateVersionTask = new Umay();
+                                    updateVersionTask.Task(async () => {
+                                        setIsUpdate(true)
+                                    })
                                     Database.collections.filter(collection => collection.version == updateVersion).forEach((collection) => {
                                         updateVersionTask.Task(async () => {
                                             try {
-                                                setIsUpdate(true)
                                                 console.log("version", updateVersion)
                                                 await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, collection.id, collection.name)
 
@@ -283,7 +286,7 @@ export class DashboardController extends UIController {
                                             updateVersionTask.Task(async () => {
                                                 try {
                                                     if (attr.type === "string") {
-                                                        await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, 256, false)
+                                                        await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, attr.size, false)
                                                     } else if (attr.type === "number") {
                                                         await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, false)
                                                     } else if (attr.type === "boolean") {
@@ -331,7 +334,7 @@ export class DashboardController extends UIController {
                                         updateVersionTask.Task(async () => {
                                             try {
                                                 if (attr.type === "string") {
-                                                    await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, attr.collection_id, attr.key, 256, false)
+                                                    await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, attr.collection_id, attr.key, attr.size, false)
                                                 } else if (attr.type === "number") {
                                                     await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, attr.collection_id, attr.key, false)
                                                 } else if (attr.type === "boolean") {
@@ -387,6 +390,24 @@ export class DashboardController extends UIController {
                                     await Services.Client.setMode(undefined);
                                     await Services.Accounts.updatePrefs({ organization: tableAuth[0].tenant_id })
                                     window.location.reload()
+                                }
+
+                                const getDashboardPieData = async () => {
+                                    const data = await Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, "chart_value", "dashboard_pie")
+                                    if (data) {
+                                        setEmployeePerformance(JSON.parse(data.value))
+                                    }
+                                }
+
+                                const getDashboardBarData = async () => {
+                                    const dataSuccess = await Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, "chart_value", "dashboard_bar_1")
+                                    const dataUnsuccess = await Services.Databases.getDocument(AppInfo.Name, AppInfo.Database, "chart_value", "dashboard_bar_2")
+                                    if (dataSuccess) {
+                                        setSuccessfullFiveDepartments(JSON.parse(dataSuccess.value))
+                                    }
+                                    if (dataUnsuccess) {
+                                        setUnsuccessfulFiveDepartments(JSON.parse(dataUnsuccess.value))
+                                    }
                                 }
 
                                 useEffect(() => {
@@ -583,42 +604,10 @@ export class DashboardController extends UIController {
                                                 }
                                             }
                                         }
-                                        // const employeeCompetencyValue = listEmployeeCompetencyValue.filter((competency) => competency.employee_id === employee.$id)
-                                        // let target = 0;
-                                        // let current = 0;
-                                        // employeeCompetencyValue.forEach((competency) => {
-                                        //     if (competency.competency_target_value != "no-target") {
-                                        //         console.log(competency)
-                                        //         target += Number(competency.competency_target_value);
-                                        //         current += Number(competency.competency_real_value);
-                                        //     }
-                                        // })
-                                        // if (target > 0 && current > 0) {
-                                        //     employeePerformanceData.push({ name: employee.first_name + " " + employee.last_name, performance: (current / target) * 100 })
-                                        // }
-
                                     })
 
-                                    const successfullFiveDepartmentsData = []
-                                    // departments.forEach((department) => {
-                                    //     const employeeValuesByDepartment = listEmployeeCompetencyValue.filter((competency) => competency.competency_department_id === department.$id)
-                                    //     let target = 0;
-                                    //     let current = 0;
-                                    //     employeeValuesByDepartment.forEach((competency) => {
-                                    //         if (competency.competency_target_value != "no-target") {
-                                    //             target += Number(competency.competency_target_value);
-                                    //             current += Number(competency.competency_real_value);
-                                    //         }
-                                    //     })
-                                    //     if (target > 0 && current > 0) {
-                                    //         const percentage = (current / target) * 100
-                                    //         const haveAnyTable = polyvalenceUnitList.find((unit) => unit.polyvalence_department_id === department.$id)
-                                    //         if (haveAnyTable) {
-                                    //             successfullFiveDepartmentsData.push({ departmentName: department.name, percentage: percentage.toFixed(2) })
-                                    //         }
-                                    //     }
-                                    // })
-
+                                    getDashboardPieData()
+                                    getDashboardBarData()
 
                                     if (employeesByTitleData.length != 0) {
                                         setEmployeesByTitle(employeesByTitleData.sort((a, b) => a.employeeCount - b.employeeCount))
@@ -629,53 +618,6 @@ export class DashboardController extends UIController {
                                     if (employeesByPositionData.length != 0) {
                                         setEmployeesByPosition(employeesByPositionData.sort((a, b) => a.employeeCount - b.employeeCount))
                                     }
-                                    if (employeePerformanceData.length != 0) {
-                                        const performData: any = [
-                                            {
-                                                label: "100% - 80%",
-                                                value: 0,
-                                            },
-                                            {
-                                                label: "80% - 60%",
-                                                value: 0,
-                                            },
-                                            {
-                                                label: "60% - 40%",
-                                                value: 0,
-                                            },
-                                            {
-                                                label: "40% - 20%",
-                                                value: 0,
-                                            },
-                                            {
-                                                label: "20% - 0%",
-                                                value: 0,
-                                            },
-                                        ];
-                                        employeePerformanceData.forEach((employee) => {
-                                            if (employee.performance >= 80) {
-                                                performData.find((x: any) => x.label === "100% - 80%").value += 1;
-                                            } else if (employee.performance < 80 && employee.performance >= 60) {
-                                                performData.find((x: any) => x.label === "80% - 60%").value += 1;
-                                            } else if (employee.performance < 60 && employee.performance >= 40) {
-                                                performData.find((x: any) => x.label === "60% - 40%").value += 1;
-                                            } else if (employee.performance < 40 && employee.performance >= 20) {
-                                                performData.find((x: any) => x.label === "40% - 20%").value += 1;
-                                            } else if (employee.performance < 20 && employee.performance >= 0) {
-                                                performData.find((x: any) => x.label === "20% - 0%").value += 1;
-                                            }
-                                        });
-
-                                        const pieData = performData.map((p: any) => ({
-                                            value: p.value,
-                                            label: p.label,
-                                        }));
-                                        setEmployeePerformance(pieData)
-                                    }
-                                    if (successfullFiveDepartmentsData.length != 0) {
-                                        setSuccessfullFiveDepartments(successfullFiveDepartmentsData.sort((a, b) => b.percentage - a.percentage).slice(0, 5))
-                                        setUnsuccessfulFiveDepartments(successfullFiveDepartmentsData.sort((a, b) => a.percentage - b.percentage).slice(0, 5))
-                                    }
                                 }, [])
 
                                 return (
@@ -684,6 +626,7 @@ export class DashboardController extends UIController {
                                         VStack({ alignment: cTop })(
                                             ReactView(
                                                 <MainView>
+
                                                     <EmployeePerformanceDashboard
                                                         employeesByTitle={employeesByTitle}
                                                         employeesByDepartment={employeesByDepartment}
@@ -692,6 +635,7 @@ export class DashboardController extends UIController {
                                                         successfulFiveDepartments={successfullFiveDepartments}
                                                         unsuccessfulFiveDepartments={unsuccessfulFiveDepartments}
                                                     />
+
 
                                                     <Dialog
                                                         open={isUpdate}

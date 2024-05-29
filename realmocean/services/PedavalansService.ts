@@ -37,6 +37,7 @@ class PedavalansService extends RealmoceanService {
   readonly OrganizationEmployeeDocument = 'organization_employee_document';
   readonly PositionVocationalQualificationRelation = "position_vocational_qualification";
   readonly StringParameter = "string_parameter";
+  readonly ChartValue = "chart_value";
 
 
   async init() {
@@ -44,7 +45,133 @@ class PedavalansService extends RealmoceanService {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
       await this.checkRealDataForReminder();
-    });
+      await this.updateDashboardChartData();
+
+    })
+  }
+
+
+  async updateDashboardChartData() {
+    try {
+      const isAlreadyDataPieForChart = await this.databaseService.listDocuments(this.appName, this.databaseName, this.ChartValue, [this.databaseService.Query.equal("key", "dashboard_pie")]).then((res) => res.documents);
+      if (isAlreadyDataPieForChart) {
+        const employeePerformanceData: { name: string, performance: number }[] = [];
+        const queryLimit = this.databaseService.Query.limit(100000)
+        const employees = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureEmployee, [queryLimit, this.databaseService.Query.equal("is_deleted", false), this.databaseService.Query.equal("is_active", true)]).then((res) => res.documents);
+        const competencies = await this.databaseService.listDocuments(this.appName, this.databaseName, this.Competency, [queryLimit, this.databaseService.Query.equal("is_deleted_competency", false), this.databaseService.Query.equal("is_active_competency", true)]).then((res) => res.documents);
+        const employeeCompetencyValues = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [queryLimit]).then((res) => res.documents);
+        employees.forEach((employee) => {
+          const employeeCompetencyValue = employeeCompetencyValues.filter((competency) => competency.employee_id === employee.$id)
+          let target = 0;
+          let current = 0;
+          employeeCompetencyValue.forEach((competency) => {
+            const competencyIsActive = competencies.find((comp) => comp.$id === competency.competency_id)
+            if (competencyIsActive) {
+              if (competency.competency_target_value != "no-target" && competency.competency_real_value != "") {
+                target += Number(competency.competency_target_value);
+                current += Number(competency.competency_real_value);
+              }
+            }
+          })
+          if (target > 0 && current > 0) {
+            let performance = (current / target) * 100;
+            if (performance > 100) {
+              performance = 100;
+            } else {
+              performance = Math.round(performance);
+            }
+            employeePerformanceData.push({ name: employee.first_name + " " + employee.last_name, performance })
+          }
+        })
+        if (employeePerformanceData.length > 0) {
+          const performData: any = [
+            {
+              name: "100% - 80%",
+              value: 0,
+            },
+            {
+              name: "80% - 60%",
+              value: 0,
+            },
+            {
+              name: "60% - 40%",
+              value: 0,
+            },
+            {
+              name: "40% - 20%",
+              value: 0,
+            },
+            {
+              name: "20% - 0%",
+              value: 0,
+            },
+          ];
+
+          employeePerformanceData.forEach((employee) => {
+            if (employee.performance >= 80) {
+              performData.find((x: any) => x.name === "100% - 80%").value += 1;
+            } else if (employee.performance < 80 && employee.performance >= 60) {
+              performData.find((x: any) => x.name === "80% - 60%").value += 1;
+            } else if (employee.performance < 60 && employee.performance >= 40) {
+              performData.find((x: any) => x.name === "60% - 40%").value += 1;
+            } else if (employee.performance < 40 && employee.performance >= 20) {
+              performData.find((x: any) => x.name === "40% - 20%").value += 1;
+            } else if (employee.performance < 20 && employee.performance >= 0) {
+              performData.find((x: any) => x.name === "20% - 0%").value += 1;
+            }
+          });
+
+          if (isAlreadyDataPieForChart[0]) {
+            console.log("update")
+          } else {
+            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { key: "dashboard_pie", value: JSON.stringify(performData) });
+            console.log("create")
+          }
+        }
+
+        // bar chart section
+        const isAlreadyDataBarForChart = await this.databaseService.listDocuments(this.appName, this.databaseName, this.ChartValue, [this.databaseService.Query.equal("key", "dashboard_bar_1")]).then((res) => res.documents);
+
+        const departments = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationStructureDepartment, [this.databaseService.Query.limit(10000), this.databaseService.Query.equal("is_deleted", false)]).then((res) => res.documents);
+        const polyvalenceUnitList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.PolyvalenceUnitTable, [this.databaseService.Query.limit(10000), this.databaseService.Query.equal("is_deleted_table", false), , this.databaseService.Query.equal("is_active_table", true)]).then((res) => res.documents);
+        const departmentsData = []
+        departments.forEach((department) => {
+          const employeeValuesByDepartment = employeeCompetencyValues.filter((competency) => competency.competency_department_id === department.$id)
+          let target = 0;
+          let current = 0;
+          employeeValuesByDepartment.forEach((competency) => {
+            const competencyIsActive = competencies.find((comp) => comp.$id === competency.competency_id)
+            const employeeIsActive = employees.find((emp) => emp.$id === competency.employee_id && emp.department_id === department.$id)
+            if (competencyIsActive && employeeIsActive && competency.competency_target_value != "no-target") {
+              target += Number(competency.competency_target_value);
+              current += Number(competency.competency_real_value);
+            }
+          })
+          if (target > 0 && current > 0) {
+            const percentage = (current / target) * 100
+            const haveAnyTable = polyvalenceUnitList.find((unit) => unit.polyvalence_department_id === department.$id)
+            if (haveAnyTable) {
+              departmentsData.push({ departmentName: department.name, percentage: percentage.toFixed(2) })
+            }
+          }
+        })
+        if (departmentsData.length > 0) {
+          if (isAlreadyDataBarForChart[0]) {
+            console.log("update")
+          } else {
+            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_bar_1", { key: "dashboard_bar_1", value: JSON.stringify(departmentsData.sort((a, b) => b.percentage - a.percentage).slice(0, 5)) });
+            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_bar_2", { key: "dashboard_bar_2", value: JSON.stringify(departmentsData.sort((a, b) => a.percentage - b.percentage).slice(0, 5)) });
+            console.log("create")
+          }
+        }
+      }
+
+
+
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async checkRealDataForReminder() {
@@ -684,7 +811,7 @@ class PedavalansService extends RealmoceanService {
                 }
               }
             })
-          } 
+          }
           // else {
           //   accountRelations.forEach(async (account) => {
           //     try {

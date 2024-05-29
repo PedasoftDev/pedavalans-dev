@@ -25,6 +25,7 @@ interface ICollection {
     attributes: {
         key: string;
         type: string;
+        size?: number;
         default?: boolean;
         version: number;
     }[];

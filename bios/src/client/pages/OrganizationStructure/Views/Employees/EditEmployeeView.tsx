@@ -31,6 +31,8 @@ const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
     job_start_date: "",
     line_id: "",
     manager_id: "",
+    birth_date: "",
+    gender: "",
     is_active: true,
     is_deleted: false,
     realm_id: "",
@@ -644,6 +646,34 @@ const EditEmployeeView = (
                                         })
                                     }} />
                             </LocalizationProvider>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker label="Doğum Tarihi"
+                                    format="DD/MM/YYYY"
+                                    slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                    onChange={(e: any) => {
+                                        setFormEmployee({
+                                            ...formEmployee,
+                                            birth_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                        })
+                                    }} />
+                            </LocalizationProvider>
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Cinsiyet</InputLabel>
+                                <Select
+                                    value={formEmployee.gender}
+                                    label={"Cinsiyet"}
+                                    onChange={(e: SelectChangeEvent) => {
+                                        setFormEmployee({
+                                            ...formEmployee,
+                                            gender: e.target.value as string
+                                        })
+                                    }}
+                                    size="small"
+                                >
+                                    <MenuItem value="male">Erkek</MenuItem>
+                                    <MenuItem value="female">Kadın</MenuItem>
+                                </Select>
+                            </FormControl>
                             {selectFormStates.map((selectFormState) => {
                                 return (
                                     <FormControl fullWidth size="small">

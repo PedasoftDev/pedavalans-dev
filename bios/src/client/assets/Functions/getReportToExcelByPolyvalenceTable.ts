@@ -38,6 +38,8 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
                 line_id: "",
                 manager_id: "",
                 position_id: "",
+                birth_date: "",
+                gender: "",
                 realm_id: "",
                 job_start_date: "",
                 is_active: true,
@@ -314,7 +316,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         merge.push({ s: { r: startEmployeeIndex, c: startFirstCompetencyIndex + competencies.length }, e: { r: startEmployeeIndex + 1, c: startFirstCompetencyIndex + competencies.length } })
         merge.push({ s: { r: startEmployeeIndex, c: startFirstCompetencyIndex + competencies.length + 1 }, e: { r: startEmployeeIndex + 1, c: startFirstCompetencyIndex + competencies.length + 1 } })
         merge.push({ s: { r: startEmployeeIndex, c: startFirstCompetencyIndex + competencies.length + 2 }, e: { r: startEmployeeIndex + 1, c: startFirstCompetencyIndex + competencies.length + 2 } })
-        
+
 
         startEmployeeIndex += 2;
     })
