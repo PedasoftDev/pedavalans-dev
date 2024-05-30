@@ -45,7 +45,7 @@ export class AssignEducationController extends UIFormController {
 
         const { me, isLoading } = useGetMe("console")
 
-        const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
+        const { educationList, isLoading: isLoadingEducation } = Education.GetList();
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();

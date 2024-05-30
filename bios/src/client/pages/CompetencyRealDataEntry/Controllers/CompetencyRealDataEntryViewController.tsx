@@ -131,7 +131,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
 
-        const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
+        const { educationList, isLoading: isLoadingEducation } = Education.GetList();
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();
 
