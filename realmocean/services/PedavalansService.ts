@@ -157,6 +157,8 @@ class PedavalansService extends RealmoceanService {
         })
         if (departmentsData.length > 0) {
           if (isAlreadyDataBarForChart[0]) {
+            await this.databaseService.updateDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_bar_1", { value: JSON.stringify(departmentsData.sort((a, b) => b.percentage - a.percentage).slice(0, 5)) });
+            await this.databaseService.updateDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_bar_2", { value: JSON.stringify(departmentsData.sort((a, b) => a.percentage - b.percentage).slice(0, 5)) });
             console.log("update")
           } else {
             await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_bar_1", { key: "dashboard_bar_1", value: JSON.stringify(departmentsData.sort((a, b) => b.percentage - a.percentage).slice(0, 5)) });

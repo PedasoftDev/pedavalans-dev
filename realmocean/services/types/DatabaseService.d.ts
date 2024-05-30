@@ -9,4 +9,5 @@ export interface DatabaseService {
     createDocument(projectId: string, databaseId: string, collectionId: string, documentId: string, data: any, permissions?: any);
     listDocuments(projectId: string, databaseId: string, collectionId: string, queries?: string[]);
     createStringAttribute(projectId: string, databaseId: string, collectionId: string, key: string, size: number, required: boolean, xdefault?: string, array?: boolean, encrypt?: any);
+    updateDocument(projectId: string, databaseId: string, collectionId: string, documentId: string, data: any, permissions?: any)
 }
