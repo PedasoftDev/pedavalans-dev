@@ -14,6 +14,14 @@ namespace OrganizationStructureEmployeeLog {
         }
     }
 
+    export const ListByEmployeeId = (employee_id: string) => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("employee_id", employee_id)])
+        return {
+            employeeLog: documents as any,
+            isLoadingEmployeeLog: isLoading,
+        }
+    }
 }
 
 export default OrganizationStructureEmployeeLog
+
