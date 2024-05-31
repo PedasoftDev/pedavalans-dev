@@ -10,7 +10,7 @@ import {
   InputLabel,
   Typography,
 } from "@mui/material";
-import { useGetMe } from "@realmocean/sdk";
+import { useDeleteCache, useGetMe } from "@realmocean/sdk";
 import Competency from "../../../../server/hooks/competency/main";
 import { Resources } from "../../../assets/Resources";
 import Form from "../../Competency/Views/Form";
@@ -42,6 +42,7 @@ export class UpdateEducationController extends UIFormController {
     const { id } = useParams();
 
     const { me, isLoading } = useGetMe("console")
+    const { deleteCache } = useDeleteCache(AppInfo.Name)
 
     const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
     const { updateEducation } = Education.Update()
@@ -115,6 +116,7 @@ export class UpdateEducationController extends UIFormController {
                         icon: "success",
                         title: "Eğitim başarıyla güncellendi!"
                       });
+                      deleteCache();
                       navigateToList();
                     }
                   })
