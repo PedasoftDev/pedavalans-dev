@@ -22,6 +22,10 @@ import PolyvalenceUnitTableDataViewer from "../../../../server/hooks/polyvalence
 import Parameters from "../../../../server/hooks/parameters/main";
 import { Resources } from "../../../assets/Resources";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
+import { useAppDispatch } from "../../../hooks";
+import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
+import IEmployeeDashboard from "../../../interfaces/IEmployeeDashboard";
+import { setEmployeeDashboard } from "../../../features/employeeDashboard";
 
 const resetForm = {
     polyvalence_table_id: "",
@@ -37,9 +41,14 @@ export class CompetencyStatusReportViewController extends UIController {
         const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetListByAccountId(me?.$id);
         const { dataViewer, isLoadingDataViewer } = PolyvalenceUnitTableDataViewer.GetListByAccountId(me?.$id);
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
+        const {employees,isLoadingEmployees} = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { periods, isLoading: isLoadingPeriod } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const navigate = useNavigate();
+
+        const dispatch = useAppDispatch();
+        const setEmployeeDashboardToHook = (value: IEmployeeDashboard.IBase) => dispatch(setEmployeeDashboard(value));
+
 
         return (
 
@@ -207,7 +216,14 @@ export class CompetencyStatusReportViewController extends UIController {
                                                                 </Views.ListEmployeePercentage>
                                                                 <Views.ListEmployeeLink>
                                                                     <Views.ListEmployeeLinkIcon>
-                                                                        <RiExternalLinkFill size={25} cursor={"pointer"} onClick={(e) => navigate('/app/employee-dashboard/view/' + item.employee_id + "/" + formFilters.evaluation_period.split(" ").join("&").split("Ç").join("C").split("ı").join("i").split("ö").join("o"))} />
+                                                                        <RiExternalLinkFill size={25} cursor={"pointer"} onClick={(e) => {
+                                                                            setEmployeeDashboardToHook({
+                                                                                ...employees.find((employee) => employee.$id === item.employee_id),
+                                                                                competency_evaluation_period:formFilters.evaluation_period,
+                                                                                polyvalence_table_id:formFilters.polyvalence_table_id,
+                                                                                frequency:polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
+                                                                                })
+                                                                            navigate('/app/employee-dashboard/view' )}} />
                                                                     </Views.ListEmployeeLinkIcon>
                                                                 </Views.ListEmployeeLink>
                                                             </Views.ListItem>
@@ -223,3 +239,4 @@ export class CompetencyStatusReportViewController extends UIController {
         )
     }
 }
+

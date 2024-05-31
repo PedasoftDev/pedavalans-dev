@@ -365,6 +365,8 @@ const EmployeeListView = (
                                 job_start_date: "",
                                 line_id: line?.id,
                                 manager_id: null,
+                                birth_date: "",
+                                gender: "",
                                 realm_id: props.me?.prefs?.organization,
                                 tenant_id: props.me?.prefs?.organization
                             }
@@ -413,6 +415,8 @@ const EmployeeListView = (
                             position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
                             line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
                             job_start_date: "",
+                            birth_date: "",
+                            gender: "",
                             manager_id: null,
                             realm_id: props.me?.prefs?.organization,
                             tenant_id: props.me?.prefs?.organization

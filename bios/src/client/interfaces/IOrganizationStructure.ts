@@ -14,6 +14,8 @@ export namespace IOrganizationStructure {
             manager_id: string;
             department_id: string;
             job_start_date: string;
+            birth_date: string;
+            gender: string;
             tenant_id: string;
             realm_id: string;
         }
@@ -28,6 +30,8 @@ export namespace IOrganizationStructure {
             line_id: string;
             department_id: string;
             job_start_date: string;
+            birth_date: string;
+            gender: string;
             is_active: boolean;
             is_deleted: boolean;
             tenant_id: string;
@@ -38,26 +42,26 @@ export namespace IOrganizationStructure {
 
     export namespace IEmployeeVocationalQualificationRelation {
         export interface IBase extends IRoot {
-          employee_id: string
-          document_id: string
-          document_name: string
-          end_date?: string
-          document_type_id: string
-          document_type_name: string
-          tenant_id: string
-          is_active: boolean
-          is_deleted: boolean
+            employee_id: string
+            document_id: string
+            document_name: string
+            end_date?: string
+            document_type_id: string
+            document_type_name: string
+            tenant_id: string
+            is_active: boolean
+            is_deleted: boolean
         }
         export interface ICreate {
-          employee_id: string
-          document_id: string
-          document_name: string
-          end_date?: string
-          document_type_id: string
-          document_type_name: string
-          tenant_id: string
+            employee_id: string
+            document_id: string
+            document_name: string
+            end_date?: string
+            document_type_id: string
+            document_type_name: string
+            tenant_id: string
         }
-      }
+    }
 
     export namespace IDepartments {
         export interface ICreateDepartment {
@@ -149,20 +153,20 @@ export namespace IOrganizationStructure {
 
     export namespace IPositionVocationalQualificationRelation {
         export interface IBase extends IRoot {
-          position_id: string
-          document_id: string
-          document_name: string
-          tenant_id: string
-          is_active: boolean
-          is_deleted: boolean
+            position_id: string
+            document_id: string
+            document_name: string
+            tenant_id: string
+            is_active: boolean
+            is_deleted: boolean
         }
         export interface ICreate {
-          position_id: string
-          document_id: string
-          document_name: string
-          tenant_id: string
+            position_id: string
+            document_id: string
+            document_name: string
+            tenant_id: string
         }
-      }
+    }
 
     export namespace ITitles {
         export interface ICreateTitle {

@@ -182,7 +182,7 @@ export const Routes = () => {
                 ),
                 // employee,position and competency dashboard
                 UIRoute('employee-dashboard', EmployeeDashboardController).children(
-                    UIRoute('view/:id/:period', EmployeeDashboard)
+                    UIRoute('view', EmployeeDashboard)
                 ),
 
                 UIRoute('position-dashboard', PositionDashboardController).children(

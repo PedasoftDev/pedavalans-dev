@@ -42,6 +42,19 @@ namespace AssignEducation {
             totalAssignedEducation: total
         }
     }
+
+    export const GetByEmployeeId = (employee_id: string): {
+        assignedEducationList: IAssignedEducation.IBase[],
+        isLoadingAssignedEducationList: boolean,
+    } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation, [Query.equal("employee_id", employee_id), Query.equal("status", "completed"), Query.equal("is_deleted", false), Query.limit(10000)])
+        return {
+            assignedEducationList: documents as any,
+            isLoadingAssignedEducationList: isLoading,
+        }
+    }
+    
 }
 
 export default AssignEducation
+

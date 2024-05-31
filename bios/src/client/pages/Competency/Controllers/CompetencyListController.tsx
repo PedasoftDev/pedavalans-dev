@@ -26,6 +26,7 @@ import { GridContainer } from "../Views/View";
 
 interface ICompetencyImportFromExcel {
     yetkinlik_adi: string;
+    yetkinlik_aciklamasi: string;
     yetkinlik_grubu_adi: string;
     departman_adlari: string;
 }
@@ -145,6 +146,7 @@ export class CompetencyListController extends UIController {
                                 const createCompetency: ICompetency.ICreateCompetency = {
                                     competency_id: nanoid(),
                                     competency_name: competencyItem.yetkinlik_adi,
+                                    competency_description: competencyItem.yetkinlik_aciklamasi,
                                     competency_group_name: competencyItem.yetkinlik_grubu_adi,
                                     tenant_id: me?.prefs?.organization,
                                     competency_group_id: competencyGroup?.$id,
@@ -208,6 +210,7 @@ export class CompetencyListController extends UIController {
                                 const createCompetency: ICompetency.ICreateCompetency = {
                                     competency_id: nanoid(),
                                     competency_name: competencyItem.yetkinlik_adi,
+                                    competency_description: competencyItem.yetkinlik_aciklamasi,
                                     competency_group_name: competencyItem.yetkinlik_grubu_adi,
                                     tenant_id: me?.prefs?.organization,
                                     competency_group_id: competencyGroup?.$id,

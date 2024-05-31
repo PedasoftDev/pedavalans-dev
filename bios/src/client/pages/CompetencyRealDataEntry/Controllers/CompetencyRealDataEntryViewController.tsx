@@ -53,6 +53,21 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     tenant_id: ""
 }
 
+const resetForm: IAssignedEducation.ICreate = {
+    education_code: "",
+    employee_id: "",
+    educator_id: "",
+    start_date: "",
+    end_date: "",
+    tenant_id: "",
+    education_id: "",
+    education_name: "",
+    hour: "0:00",
+    educator_name: "",
+    employee_name: "",
+    status: "open",
+};
+
 export class CompetencyRealDataEntryViewController extends UIController {
 
     @State()
@@ -116,7 +131,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
 
-        const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization);
+        const { educationList, isLoading: isLoadingEducation } = Education.GetList();
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();
 
@@ -143,32 +158,14 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
 
                         // dialog for education
-                        const [form, setForm] = useState({
-                            education_id: "",
-                            education_name: "",
-                            education_code: "",
-                            educator_id: "",
-                            educator_name: "",
-                            hour: "",
-                            start_date: "",
-                            end_date: "",
-                        });
+                        const [form, setForm] = useState(resetForm);
 
                         const [selectedEmployees, setSelectedEmployees] = useState<typeof employees>([]);
                         const [openEducationDialog, setOpenEducationDialog] = useState(false);
 
                         const handleCloseEducationDialog = () => {
                             setOpenEducationDialog(false);
-                            setForm({
-                                education_id: "",
-                                education_name: "",
-                                education_code: "",
-                                educator_id: "",
-                                educator_name: "",
-                                start_date: "",
-                                hour: "",
-                                end_date: "",
-                            });
+                            setForm(resetForm);
                             setSelectedEmployees([]);
                         }
 
@@ -424,12 +421,12 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                         <IconButton color="primary" onClick={() => {
                                             handleClickOpenDialog(params.row.competency_value_desc, params.row.competency_id)
                                         }}>
-                                            <TbPencilPlus />
+                                            <TbPencilPlus title="Açıklama Ekle" />
                                         </IconButton>
                                         <IconButton color="primary" onClick={() => {
                                             handleOpenEducationDialog(params.row.employee_id)
                                         }}>
-                                            <MdOutlineLibraryBooks />
+                                            <MdOutlineLibraryBooks title="Eğitim Planla" />
                                         </IconButton>
                                     </div>
                                 )

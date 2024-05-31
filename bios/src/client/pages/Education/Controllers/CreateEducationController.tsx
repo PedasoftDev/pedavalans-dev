@@ -41,7 +41,7 @@ export class CreateEducationController extends UIFormController {
         const { createEducation } = Education.Create()
 
         const { createEducationCompetencyRelation } = EducationCompetencyRelation.Create()
-        const { educationList, isLoading: isLoadingEducation } = Education.GetList(me?.prefs?.organization)
+        const { educationList, isLoading: isLoadingEducation } = Education.GetList()
 
         return (
             VStack({ alignment: cTop })(

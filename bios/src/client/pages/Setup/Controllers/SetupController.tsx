@@ -78,7 +78,7 @@ export class SetupController extends UIController {
                         const collection = collections[i];
                         ul.current?.scrollTo(0, ul.current.scrollHeight);
                         this.pushHelpText("Tablo oluşturuluyor: " + collection.name);
-                        const { id, name, attributes, description, version } = collection;
+                        const { id, name, attributes, description } = collection;
                         const col = await Services.Databases.createCollection(AppInfo.Name, database.$id, id, name, [], false);
                         this.pushHelpText("Tablo oluşturuldu: " + col.name);
                         ul.current?.scrollTo(0, ul.current.scrollHeight);
@@ -89,7 +89,7 @@ export class SetupController extends UIController {
                                 case "string":
                                     try {
                                         console.log(name, key);
-                                        await Services.Databases.createStringAttribute(AppInfo.Name, database.$id, col.$id, key, 256, false);
+                                        await Services.Databases.createStringAttribute(AppInfo.Name, database.$id, col.$id, key, attributes[j].size, false);
                                         break;
                                     } catch (error) {
                                         console.log(error);

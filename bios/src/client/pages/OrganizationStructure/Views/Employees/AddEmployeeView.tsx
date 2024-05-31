@@ -29,6 +29,8 @@ const formState: IOrganizationStructure.IEmployees.ICreateEmployee = {
     line_id: "",
     manager_id: "",
     job_start_date: new Date().toUTCString(),
+    birth_date: "",
+    gender: "",
     realm_id: "",
     tenant_id: ""
 }
@@ -67,7 +69,7 @@ const AddEmployeeView = (
 
     const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
 
-    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
+    const { createOrganizationEmployeeDocument, error: createDocumentError } = OrganizationEmployeeDocument.Create()
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
 
@@ -216,7 +218,19 @@ const AddEmployeeView = (
 
     };
 
+    const isDocumentFull = () => {
+        return formDocument.document_type_id && formDocument.document_id
+    }
+
     const handleDocument = () => {
+        if (!isDocumentFull()) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Boş belge eklenemez.',
+                text: createDocumentError?.message
+            })
+            return
+        }
         setDocument([...document, { ...formDocument }])
         setFormDocument(resetFormDocument)
         setShowValidityPeriod(false);
@@ -241,8 +255,13 @@ const AddEmployeeView = (
             field: 'end_date',
             headerName: 'Belgenin Bitiş Tarihi',
             width: 200,
+            align: "center",
             valueGetter: (params: any) => {
-                return Resources.Functions.formatDate(params.value);
+                if (params.value === "") {
+                    return params.value = "Süresiz"
+                } else {
+                    return Resources.Functions.formatDate(params.value);
+                }
             }
         },
     ]
@@ -301,6 +320,34 @@ const AddEmployeeView = (
                                             })
                                         }} />
                                 </LocalizationProvider>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DatePicker label="Doğum Tarihi"
+                                        format="DD/MM/YYYY"
+                                        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                        onChange={(e: any) => {
+                                            setFormEmployee({
+                                                ...formEmployee,
+                                                birth_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                            })
+                                        }} />
+                                </LocalizationProvider>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Cinsiyet</InputLabel>
+                                    <Select
+                                        value={formEmployee.gender}
+                                        label={"Cinsiyet"}
+                                        onChange={(e: SelectChangeEvent) => {
+                                            setFormEmployee({
+                                                ...formEmployee,
+                                                gender: e.target.value as string
+                                            })
+                                        }}
+                                        size="small"
+                                    >
+                                        <MenuItem value="male">Erkek</MenuItem>
+                                        <MenuItem value="female">Kadın</MenuItem>
+                                    </Select>
+                                </FormControl>
                                 {selectFormStates.map((selectFormState) => {
                                     return (
                                         <FormControl fullWidth size="small">

@@ -27,6 +27,15 @@ namespace EmployeeCompetencyValue {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value", [Query.limit(100000), Query.equal("competency_real_value", "")]);
         return { listEmployeeCompetencyValue: documents as any, isLoadingListEmployeeCompetencyValue: isLoading };
     }
+
+    export const ListByEmployeeAndTableId = (employee_id, polyvalence_table_id): {
+        listEmployeeCompetencyValue: IEmployeeCompetencyValue.IEmployeeCompetencyValue[],
+        isLoadingListEmployeeCompetencyValue: boolean
+    } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value", [Query.limit(100000),Query.equal("employee_id", employee_id), Query.equal("polyvalence_table_id", polyvalence_table_id)]);
+        return { listEmployeeCompetencyValue: documents as any, isLoadingListEmployeeCompetencyValue: isLoading };
+    }
 }
 
 export default EmployeeCompetencyValue;
+

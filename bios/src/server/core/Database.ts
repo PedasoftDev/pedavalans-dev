@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 7,
+    "version": 9,
     "collections": [
         {
             "id": "competency",
@@ -27,61 +27,79 @@ const Database: IDatabase = {
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
+                },
+                {
+                    "key": "competency_description",
+                    "type": "string",
+                    "size": 512,
+                    "version": 8
                 },
                 {
                     "key": "competency_group_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_group_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_target_value",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_real_value",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_value_desc",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_evaluation_period",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -99,11 +117,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
             ]
@@ -120,21 +140,25 @@ const Database: IDatabase = {
                 {
                     "key": "competency_group_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_group_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_grade_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_grade_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -152,11 +176,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 }
             ]
@@ -173,31 +199,37 @@ const Database: IDatabase = {
                 {
                     "key": "competency_department_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -226,11 +258,13 @@ const Database: IDatabase = {
                 {
                     "key": "competency_grade_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_grade_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -248,11 +282,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
 
@@ -270,26 +306,31 @@ const Database: IDatabase = {
                 {
                     "key": "competency_grade_value_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "grade_level_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "grade_level_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "grade_level_number",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -307,11 +348,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
 
@@ -329,21 +372,25 @@ const Database: IDatabase = {
                 {
                     "key": "grade_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "grade_level_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "grade_level_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "grade_level_number",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -361,11 +408,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
 
@@ -383,21 +432,25 @@ const Database: IDatabase = {
                 {
                     "key": "evaluation_period_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "evaluation_period_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "evaluation_period_year",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "is_default_year",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -409,11 +462,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
             ]
@@ -430,26 +485,31 @@ const Database: IDatabase = {
                 {
                     "key": "polyvalence_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_evaluation_frequency",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -467,11 +527,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
 
@@ -489,26 +551,31 @@ const Database: IDatabase = {
                 {
                     "key": "polyvalence_table_line_relation_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "line_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -531,31 +598,37 @@ const Database: IDatabase = {
                 {
                     "key": "data_responsible_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "responsible_employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "responsible_employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -584,31 +657,37 @@ const Database: IDatabase = {
                 {
                     "key": "data_viewer_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "viewer_employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "viewer_employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
 
@@ -638,66 +717,79 @@ const Database: IDatabase = {
                 {
                     "key": "employee_competency_value_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "polyvalence_table_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_evaluation_period",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_target_value",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_real_value",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_value_desc",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -715,11 +807,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
             ]
@@ -736,21 +830,25 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "lowest_accepted_average",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -779,86 +877,103 @@ const Database: IDatabase = {
                 {
                     "key": "action_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_start_description",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_finish_description",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "year_performance",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_creator_employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_creator_employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_corroborative_employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_corroborative_employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "status",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "year",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_start_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_finish_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -887,86 +1002,103 @@ const Database: IDatabase = {
                 {
                     "key": "action_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_start_description",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_finish_description",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "period_performance",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_creator_employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_creator_employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_corroborative_employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_corroborative_employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "status",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "period",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_start_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "action_finish_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -995,36 +1127,43 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "code",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "is_active_machine",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "difficulty_coefficient",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1053,21 +1192,25 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "machine_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1096,31 +1239,37 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_target_value",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "line_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1149,26 +1298,31 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "record_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1198,36 +1352,43 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "record_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1256,26 +1417,31 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "record_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1305,26 +1471,31 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "record_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1354,47 +1525,68 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "first_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "last_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "title_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "position_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "manager_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "line_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "job_start_date",
                     "type": "string",
+                    "size": 256,
                     "version": 4
+                },
+                {
+                    "key": "birth_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 9
+                },
+                {
+                    "key": "gender",
+                    "type": "string",
+                    "size": 256,
+                    "version": 9
                 },
                 {
                     "key": "is_active",
@@ -1411,11 +1603,13 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "realm_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 }
 
@@ -1433,16 +1627,19 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1471,26 +1668,31 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "authorization_profile",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "account_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "mail",
                     "type": "string",
+                    "size": 256,
                     "version": 7
                 },
                 {
@@ -1524,6 +1726,7 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1557,11 +1760,13 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "collection_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1595,16 +1800,19 @@ const Database: IDatabase = {
                 {
                     "key": "id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "collection_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "attribute_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1638,21 +1846,25 @@ const Database: IDatabase = {
                 {
                     "key": "code",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "type",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1681,21 +1893,25 @@ const Database: IDatabase = {
                 {
                     "key": "education_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "competency_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1724,61 +1940,73 @@ const Database: IDatabase = {
                 {
                     "key": "education_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "education_code",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "education_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "educator_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "educator_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "start_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "end_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "hour",
                     "type": "string",
+                    "size": 256,
                     "version": 5
                 },
                 {
                     "key": "status",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1807,36 +2035,43 @@ const Database: IDatabase = {
                 {
                     "key": "assigned_education_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "education_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "educator_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "educator_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "educator_comment",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1848,6 +2083,7 @@ const Database: IDatabase = {
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -1876,81 +2112,97 @@ const Database: IDatabase = {
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "employee_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "log_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "log_type",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "job_start_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "department_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "position_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "position_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "line_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "line_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "title_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "title_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "manager_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "manager_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -2085,21 +2337,25 @@ const Database: IDatabase = {
                 {
                     "key": "position_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "document_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "document_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -2128,36 +2384,43 @@ const Database: IDatabase = {
                 {
                     "key": "employee_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "document_type_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "document_type_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "document_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "document_name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "end_date",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "tenant_id",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
@@ -2186,11 +2449,48 @@ const Database: IDatabase = {
                 {
                     "key": "name",
                     "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {
                     "key": "value",
                     "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "chart_value",
+            "name": "Chart Value",
+            "description": {
+                "en": "Chart Value is a collection of chart values.",
+                "tr": "Grafik değerlerinin koleksiyonudur."
+            },
+            "version": 9,
+            "attributes": [
+                {
+                    "key": "key",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "value",
+                    "type": "string",
+                    "size": 1024,
                     "version": 1
                 },
                 {

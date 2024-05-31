@@ -38,7 +38,7 @@ export class AssignedEducationListController extends UIFormController {
         const { assignedEducationResultList, isLoadingAssignedEducationResultList } = AssignEducationResult.GetList(me?.prefs?.organization);
         const { updateAssignedEducation } = AssignEducation.Update();
         const { createAssignedEducationResult } = AssignEducationResult.Create();
-        const { educationList, isLoading: isLoadingEducations } = Education.GetList(me?.prefs?.organization);
+        const { educationList, isLoading: isLoadingEducations } = Education.GetList();
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { educationCompetencyRelationList, isLoading: isLoadingRelation } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
 
