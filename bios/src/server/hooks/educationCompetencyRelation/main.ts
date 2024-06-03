@@ -21,7 +21,7 @@ namespace EducationCompetencyRelation {
 
     export const ListByEducation = (education_id: string): { educationCompetencyRelationList: IEducationCompetencyRelation.IBase[], isLoading: boolean } => {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.EducationCompetencyRelation,
-            [Query.equal("education_id", education_id), Query.equal("is_active", true), Query.equal("is_deleted", false)])
+            [Query.limit(10000), Query.equal("education_id", education_id), Query.equal("is_active", true), Query.equal("is_deleted", false)])
         return { educationCompetencyRelationList: documents as any, isLoading }
     }
 }

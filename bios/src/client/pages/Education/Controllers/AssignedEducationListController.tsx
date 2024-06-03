@@ -214,11 +214,11 @@ export class AssignedEducationListController extends UIFormController {
 
                             if (accountRelations[0].is_admin) {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true)]).then((res) => res.documents as any[]);
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
                             } else {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_active", true)]).then((res) => res.documents as any[]);
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_active", true), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
                             }
                         };

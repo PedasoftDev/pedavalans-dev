@@ -38,25 +38,19 @@ export class CreateCompetencyController extends UIController {
 
         const [form, setForm] = useState<ICompetency.ICreateCompetency>(formReset);
 
-        const [competencyGroupId, setCompetencyGroupId] = useState<string>("1");
-
 
         const { me, isLoading } = useGetMe("console");
-        const { departments, isLoadingDepartments, totalDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
-        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
-        const { group, isLoading: isLoadingGroup } = CompetencyGroup.GetCompetencyGroup(competencyGroupId);
-        const { grade, isLoading: isLoadingGrade } = CompetencyGrade.GetCompetencyGrade(group ? group.competency_grade_id : "1")
-        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevels(grade ? grade.competency_grade_id : "1")
+        const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetActiveList(me?.prefs?.organization);
+        const { activeGroups, isLoading: isLoadingActiveGroups } = CompetencyGroup.GetActiveCompetencyGroups();
 
 
         const { createCompetency } = Competency.Create();
         const { createCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
-        const { createCompetencyGradeValue } = CompetencyGradeValue.CreateCompetencyGradeValue();
 
         const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
         const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
-        const { createCompetencyLineRelation, error, isError, isLoading: isLoadingCreateLineRelation, isSuccess } = CompetencyLineRelation.Create()
+        const { createCompetencyLineRelation, isLoading: isLoadingCreateLineRelation } = CompetencyLineRelation.Create()
 
         // lines
         const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
@@ -85,13 +79,12 @@ export class CreateCompetencyController extends UIController {
         ];
 
         const handleChangeGroup = (e: SelectChangeEvent<string>) => {
-            const group = groups.find((group) => group.competency_group_id === e.target.value)
+            const group = activeGroups.find((group) => group.competency_group_id === e.target.value)
             setForm({
                 ...form,
                 [e.target.name as string]: e.target.value,
                 competency_group_name: group?.competency_group_name
             })
-            setCompetencyGroupId(e.target.value)
         }
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +177,7 @@ export class CreateCompetencyController extends UIController {
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingDepartments || isLoadingGroups || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
+                isLoading || isLoadingDepartments || isLoadingActiveGroups || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
                     ReactView(
                         <Form
                             title="Yeni Yetkinlik Ekleyin"
@@ -208,7 +201,7 @@ export class CreateCompetencyController extends UIController {
                                             size="small"
                                             required
                                         >
-                                            {groups.map((groups) => (
+                                            {activeGroups.map((groups) => (
                                                 <MenuItem value={groups.competency_group_id} key={groups.competency_group_id}>{groups.competency_group_name}</MenuItem>
                                             ))}
                                         </Select>

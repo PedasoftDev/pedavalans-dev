@@ -1,6 +1,13 @@
 
 class PedavalansService extends RealmoceanService {
-  static Name = 'pedavalans-service';
+  public get uid(): string {
+    return 'com.pedavalans.service.main';
+  }
+
+  get displayName(): string {
+    return 'Pedavalans Service'
+  }
+
   readonly appName = 'pedavalans';
   readonly databaseName = 'pedavalans';
 
@@ -41,12 +48,19 @@ class PedavalansService extends RealmoceanService {
 
 
   async init() {
+    console.log('PedavalansService running...');
+    await this.updateDashboardChartData();
     this.scheduleService.addJob('0 0 7 * * *', async () => {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
       await this.checkRealDataForReminder();
-      await this.updateDashboardChartData();
 
+
+    })
+
+
+    this.scheduleService.addJob('0 0 * * * *', async () => {
+      await this.updateDashboardChartData();
     })
   }
 

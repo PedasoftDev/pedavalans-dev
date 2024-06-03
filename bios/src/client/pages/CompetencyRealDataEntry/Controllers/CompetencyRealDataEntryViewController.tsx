@@ -580,7 +580,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                     </FormControl>
                                                 </RightContainerHeader>
                                                 <div style={{
-                                                    height: "calc(100vh - 120px)",
+                                                    height: "calc(100vh - 160px)",
                                                     width: "100%",
                                                     padding: "0 20px"
                                                 }}>

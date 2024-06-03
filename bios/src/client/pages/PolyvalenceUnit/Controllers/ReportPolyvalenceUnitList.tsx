@@ -23,6 +23,7 @@ import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import { getReportToExcelByMachinePolyvalenceTable } from "../../../assets/Functions/getReportToExcelByMachinePolyvalenceTable";
 import { GridContainer } from "../Views/View";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -32,14 +33,15 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
-        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
+        const { grades, isLoading: isLoadingGrades } = CompetencyGrade.GetCompetencyGrades(me?.prefs?.organization);
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { activeGroups: groups, isLoading: isLoadingGroups } = CompetencyGroup.GetActiveCompetencyGroups();
 
         let excelData: any[] = [];
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingCompetencyList || isLoadingPeriods || isLoadingCompetencyGradeValueList || isLoadingGroups ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingCompetencyList || isLoadingPeriods || isLoadingGrades || isLoadingLevels || isLoadingGroups ? VStack(Spinner()) :
                 periods.length == 0 ? UINavigate("/") :
                     UIViewBuilder(() => {
                         const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -104,7 +106,8 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                         percentage = (real / target) * 100;
                                                         percentage = isNaN(percentage) ? 0 : percentage;
                                                         percentage = parseFloat(percentage.toFixed(1));
-                                                        targetTotal = competencyGradeValueList.filter((x) => x.competency_id === item.competency_id).length;
+                                                        const grade = grades.find(x => x.$id === groups.find(y => y.$id === competencyList.find(z => z.$id === item.competency_id)?.competency_group_id)?.competency_grade_id);
+                                                        targetTotal = levels.filter(x => x.grade_id === grade?.$id).length;
                                                     }
                                                     return (
                                                         <div style={{ display: "flex", gap: "10px" }}>
