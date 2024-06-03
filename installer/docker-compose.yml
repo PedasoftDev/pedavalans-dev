@@ -36,7 +36,7 @@ services:
       - realmocean
 
   realmocean:
-    container_name: realmocean
+    container_name: realmocean-dev
     image: realmocean/realmocean:dev
     ports:
       - 9501:80

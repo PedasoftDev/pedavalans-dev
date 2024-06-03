@@ -243,7 +243,7 @@ export class CompetencyGradeLevelController extends UIFormController {
                             }
                         />
                     )
-            ).padding("30px 20px").background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : "")
+            ).padding("30px 20px").background(theme ? "rgba(0,0,0,.85)" : "white").foregroundColor(theme ? "white" : "")
         )
     }
 }

@@ -29,7 +29,7 @@ const PasswordChangedSuccessfulTemplate = () => {
     <body>
       <h1>Şifreniz Güncellendi</h1>
       <p style="margin-bottom: 15px;">Merhaba Sayın {{name}},</p>
-      <p>Şifreniz başarıyla güncellendi. Eğer bu işlemi siz yapmadıysanız lütfen bizimle <a href="mailto:info@pedabilisim.com">iletişime</a> geçin.</p>
+      <p>Şifreniz başarıyla güncellendi. Eğer bu işlemi siz yapmadıysanız lütfen bizimle <a href="mailto:notification@pedabilisim.com">iletişime</a> geçin.</p>
       <p style="margin-top: 5px;">İyi günler dileriz.</p>
       <p style="margin-top: 15px;">Pedavalans Ekibi</p>
     </body>

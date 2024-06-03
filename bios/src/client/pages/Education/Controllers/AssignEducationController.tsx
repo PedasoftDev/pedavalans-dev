@@ -86,12 +86,12 @@ export class AssignEducationController extends UIFormController {
                                         const key = await EmailBroker.Default.createKey({
                                             smtpServer: "smtp-mail.outlook.com",
                                             smtpPort: "587",
-                                            password: "Pedasoft?2024_PDV",
-                                            username: "info@pedabilisim.com",
+                                            password: "V%443989818492ug",
+                                            username: "notification@pedabilisim.com",
                                             tls: false
                                         })
                                         await EmailBroker.Default.setKey(key)
-                                            .sendEmail("info@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
+                                            .sendEmail("notification@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
                                                 educatorName: form.educator_name,
                                                 code: form.education_code,
                                                 name: form.education_name,

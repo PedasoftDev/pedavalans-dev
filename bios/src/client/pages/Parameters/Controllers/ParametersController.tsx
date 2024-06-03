@@ -118,12 +118,12 @@ export class ParametersController extends UIFormController {
 
                         return (
                             HStack({ alignment: cTopLeading })(
-                                PortalMenu("Parametreler").background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : ""),
+                                PortalMenu("Parametreler").background(theme ? "rgba(0,0,0,.85)" : "white").foregroundColor(theme ? "white" : ""),
                                 VStack({ alignment: cTop })(
                                     HStack({ spacing: 20 })(
                                         Views.PedaText("Parametreler").fontSize(19),
                                         Icon("\\f0e2").fontSize(30).cursor("pointer").marginRight("15px").foregroundColor({ hover: Color.gray500 })
-                                            .onClick(() => window.location.href = "mailto:info@pedabilisim.com"),
+                                            .onClick(() => window.location.href = "mailto:notification@pedabilisim.com"),
                                         Spacer(),
                                         HStack({ spacing: 5 })(
                                             Icon("\\e518").fontSize(22).foregroundColor("light").paddingBottom("3px"),
@@ -191,7 +191,7 @@ export class ParametersController extends UIFormController {
                                             </div>
                                         )
                                     )
-                                ).padding(40).background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : "")
+                                ).padding(40).background(theme ? "rgba(0,0,0,.85)" : "white").foregroundColor(theme ? "white" : "")
                             )
                         )
                     })

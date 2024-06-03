@@ -12,7 +12,7 @@ export class CompetencyEvaluationPeriodController extends UIController {
                 HStack({ alignment: cTopLeading })(
                     PortalMenu("Değerlendirme Dönemi"),
                     UIRouteOutlet().width('100%').height('100%').minWidth("")
-                ).background(theme ? "rgba(0,0,0,.85)" : "").foregroundColor(theme ? "white" : "")
+                ).background(theme ? "rgba(0,0,0,.85)" : "white").foregroundColor(theme ? "white" : "")
             )
         )
     }

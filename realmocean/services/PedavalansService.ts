@@ -1147,11 +1147,11 @@ class PedavalansService extends RealmoceanService {
       const key = await this.emailService.createKey({
         smtpServer: "smtp-mail.outlook.com",
         smtpPort: "587",
-        password: "Pedasoft?2024_PDV",
-        username: "info@pedabilisim.com",
+        password: "V%443989818492ug",
+        username: "notification@pedabilisim.com",
         tls: false
       })
-      await this.emailService.sendEmail(key, "info@pedabilisim.com", to_email, subject, html, values)
+      await this.emailService.sendEmail(key, "notification@pedabilisim.com", to_email, subject, html, values)
     } catch (error) {
       console.log(error)
     }
