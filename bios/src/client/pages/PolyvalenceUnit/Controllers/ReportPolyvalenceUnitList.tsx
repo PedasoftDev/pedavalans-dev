@@ -19,11 +19,13 @@ import { getReportToExcelByPolyvalenceTable } from "../../../assets/Functions/ge
 import { SiMicrosoftexcel } from "react-icons/si";
 import Competency from "../../../../server/hooks/competency/main";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import { getReportToExcelByMachinePolyvalenceTable } from "../../../assets/Functions/getReportToExcelByMachinePolyvalenceTable";
 import { GridContainer } from "../Views/View";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
+import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -37,11 +39,13 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { activeGroups: groups, isLoading: isLoadingGroups } = CompetencyGroup.GetActiveCompetencyGroups();
+        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
+        const { isLoadingPositions, positions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
 
         let excelData: any[] = [];
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingCompetencyList || isLoadingPeriods || isLoadingGrades || isLoadingLevels || isLoadingGroups ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingPositions || isLoadingCompetencyList || isLoadingPeriods || isLoadingGrades || isLoadingLevels || isLoadingEmployees || isLoadingGroups ? VStack(Spinner()) :
                 periods.length == 0 ? UINavigate("/") :
                     UIViewBuilder(() => {
                         const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -85,7 +89,12 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     })
                                     res.documents.forEach((item: IEmployeeCompetencyValue.IEmployeeCompetencyValue) => {
                                         if (!copyEmployees.some(x => x.id == item.employee_id)) {
-                                            copyEmployees.push({ id: item.employee_id, name: item.employee_name })
+                                            const position = positions.find(x => x.$id === employees.find(y => y.$id === item.employee_id)?.position_id)?.name;
+                                            let employeeName = item.employee_name;
+                                            if (position) {
+                                                employeeName += " - " + position;
+                                            }
+                                            copyEmployees.push({ id: item.employee_id, name: employeeName })
                                         }
                                         if (!copyColumns.some(x => x.field == item.competency_id)) {
                                             copyColumns.push({
@@ -136,7 +145,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                         })
                                     })
                                 } else {
-                                    getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
+                                    getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name, employees, positions)
                                 }
                             })
                         }

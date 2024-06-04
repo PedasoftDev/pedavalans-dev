@@ -13,7 +13,8 @@ const borderStyles = {
     }
 }
 
-export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.ICompetency[], competencyGroups: ICompetencyGroup.IGetCompetencyGroup[], employeeCompetencyValues: IEmployeeCompetencyValue.IEmployeeCompetencyValue[], polyvalence_table_name: string) {
+export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.ICompetency[], competencyGroups: ICompetencyGroup.IGetCompetencyGroup[], employeeCompetencyValues: IEmployeeCompetencyValue.IEmployeeCompetencyValue[], polyvalence_table_name: string,
+    employeeList: IOrganizationStructure.IEmployees.IEmployee[], positions: IOrganizationStructure.IPositions.IPosition[]) {
     const wb = XLSX.utils.book_new();
 
 
@@ -259,8 +260,14 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
 
         // first row
         const employeeRow: any[] = []
+
+        let employeeFullName = employee.first_name;
+        const positionName = positions.find(x => x.$id === employeeList.find(x => x.$id === employee.id)?.position_id)?.name;
+        if (positionName) {
+            employeeFullName += " - " + positionName
+        }
         employeeRow[0] = { v: index + 1, t: 's', s: { border: borderStyles.header.fragment, font: { bold: true }, alignment: alignCenter } }
-        employeeRow[1] = { v: employee.first_name + ' ' + employee.last_name, t: 's', s: { border: borderStyles.header.fragment, font: { bold: true }, alignment: alignCenter } }
+        employeeRow[1] = { v: employeeFullName, t: 's', s: { border: borderStyles.header.fragment, font: { bold: true }, alignment: alignCenter } }
         employeeRow[2] = { v: 'Beklenen', t: 's', s: waitingValueTextStyle }
         employeeRow[3] = { v: '', t: 's', s: waitingValueStyle }
 
