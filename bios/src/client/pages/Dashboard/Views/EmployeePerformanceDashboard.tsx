@@ -27,7 +27,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                         <ReactECharts
                             option={{
                                 title: {
-                                    text: 'Çalışanların Unvan Bazlı Dağılım Grafiği'
+                                    text: 'Çalışanların Pozisyon Bazlı Dağılım Grafiği'
                                 },
                                 tooltip: {
                                     trigger: 'axis',
@@ -36,22 +36,31 @@ export const EmployeePerformanceDashboard: React.FC<{
                                     }
                                 },
                                 yAxis: {
-                                    type: 'category',
-                                    data: props.employeesByTitle.map((x) => x.titleName),
+                                    type: 'value',
                                     axisLabel: {
+                                        formatter: '{value}'
+                                    },
+                                    minInterval: 1,
+                                },
+                                xAxis: {
+                                    type: 'category',
+                                    data: props.employeesByPosition.map((x) => x.positionName),
+                                    axisLabel: {
+                                        interval: 0,
+                                        rotate: 30,
                                         formatter: function (value) {
                                             return value.length > 10 ? value.substr(0, 10) + '...' : value;
                                         }
                                     },
                                 },
-                                xAxis: {
-                                    type: 'value'
-                                },
                                 series: [
                                     {
                                         name: 'Çalışan Sayısı',
                                         type: 'bar',
-                                        data: props.employeesByTitle.map((x) => x.employeeCount)
+                                        data: props.employeesByPosition.map((x) => x.employeeCount),
+                                        itemStyle: {
+                                            color: '#EE7D20'
+                                        }
                                     }
                                 ]
                             }}
@@ -94,6 +103,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                                     }
                                 ]
                             }}
+                            style={{ height: '300px', width: '100%' }}
                         />
                     </Card>
                 </Grid>

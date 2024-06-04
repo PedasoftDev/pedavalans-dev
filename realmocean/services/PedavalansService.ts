@@ -1,6 +1,13 @@
 
 class PedavalansService extends RealmoceanService {
-  static Name = 'pedavalans-service';
+  public get uid(): string {
+    return 'com.pedavalans.service.main';
+  }
+
+  get displayName(): string {
+    return 'Pedavalans Service'
+  }
+
   readonly appName = 'pedavalans';
   readonly databaseName = 'pedavalans';
 
@@ -41,12 +48,19 @@ class PedavalansService extends RealmoceanService {
 
 
   async init() {
+    console.log('PedavalansService running...');
+    await this.updateDashboardChartData();
     this.scheduleService.addJob('0 0 7 * * *', async () => {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
       await this.checkRealDataForReminder();
-      await this.updateDashboardChartData();
 
+
+    })
+
+
+    this.scheduleService.addJob('0 0 * * * *', async () => {
+      await this.updateDashboardChartData();
     })
   }
 
@@ -1133,11 +1147,11 @@ class PedavalansService extends RealmoceanService {
       const key = await this.emailService.createKey({
         smtpServer: "smtp-mail.outlook.com",
         smtpPort: "587",
-        password: "Pedasoft?2024_PDV",
-        username: "info@pedabilisim.com",
+        password: "V%443989818492ug",
+        username: "notification@pedabilisim.com",
         tls: false
       })
-      await this.emailService.sendEmail(key, "info@pedabilisim.com", to_email, subject, html, values)
+      await this.emailService.sendEmail(key, "notification@pedabilisim.com", to_email, subject, html, values)
     } catch (error) {
       console.log(error)
     }

@@ -10,7 +10,7 @@ import {
     InputLabel,
     Typography,
 } from "@mui/material";
-import { useGetMe } from "@realmocean/sdk";
+import { useGetMe, useDeleteCache } from "@realmocean/sdk";
 import Competency from "../../../../server/hooks/competency/main";
 import { Resources } from "../../../assets/Resources";
 import Form from "../../Competency/Views/Form";
@@ -20,6 +20,7 @@ import IEducation from "../../../interfaces/IEducation";
 import Education from "../../../../server/hooks/education/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
 import { Toast } from "../../../components/Toast";
+import AppInfo from "../../../../AppInfo";
 
 const resetForm: IEducation.ICreate = {
     code: "",
@@ -36,6 +37,7 @@ export class CreateEducationController extends UIFormController {
         const navigate = useNavigate();
 
         const { me, isLoading } = useGetMe("console")
+        const { deleteCache } = useDeleteCache(AppInfo.Name)
 
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
         const { createEducation } = Education.Create()
@@ -94,6 +96,7 @@ export class CreateEducationController extends UIFormController {
                                                 icon: "success",
                                                 title: "Eğitim başarıyla eklendi!"
                                             });
+                                            deleteCache();
                                             navigateToList();
                                         }
                                     })

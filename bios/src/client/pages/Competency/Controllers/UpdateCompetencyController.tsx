@@ -50,11 +50,11 @@ export class UpdateCompetencyController extends UIController {
         const { competency, isLoadingCompetency } = Competency.Get(id)
         const { updateCompetency } = Competency.Update();
 
-        const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
-        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
+        const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetActiveList(me?.prefs?.organization);
+        const { activeGroups, isLoading: isLoadingGroups } = CompetencyGroup.GetActiveCompetencyGroups();
 
         const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
-        const { createCompetencyLineRelation, error, isError, isLoading: isLoadingCreateLineRelation, isSuccess } = CompetencyLineRelation.Create();
+        const { createCompetencyLineRelation } = CompetencyLineRelation.Create();
         const { competencyLineRelation, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetByCompetencyId(id, me?.prefs?.organization);
         const { updateCompetencyLineRelation } = CompetencyLineRelation.Update();
 
@@ -111,7 +111,7 @@ export class UpdateCompetencyController extends UIController {
                     }, [])
 
                     const handleChangeGroup = (e: SelectChangeEvent<string>) => {
-                        const group = groups.find((group) => group.competency_group_id === e.target.value)
+                        const group = activeGroups.find((group) => group.competency_group_id === e.target.value)
                         setForm({
                             ...form,
                             [e.target.name as string]: e.target.value,
@@ -276,7 +276,7 @@ export class UpdateCompetencyController extends UIController {
                                                     onChange={handleChangeGroup}
                                                     size="small"
                                                 >
-                                                    {groups.map((group) => (
+                                                    {activeGroups.map((group) => (
                                                         <MenuItem value={group.competency_group_id} key={group.competency_group_id}>{group.competency_group_name}</MenuItem>
                                                     ))}
                                                 </Select>

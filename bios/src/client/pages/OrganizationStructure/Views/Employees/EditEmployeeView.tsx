@@ -334,13 +334,10 @@ const EditEmployeeView = (
         } else {
             setShowValidityPeriod(true);
         }
-        console.log("RowData: ", rowData);
         setCurrentRowData(rowData);
         setId(rowData.$id)
         setOpen(true);
-        console.log("Fonskiyon İçi:" + id);
     };
-    console.log("Fonskiyon dışı:" + id);
 
 
 
@@ -649,6 +646,7 @@ const EditEmployeeView = (
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker label="Doğum Tarihi"
                                     format="DD/MM/YYYY"
+                                    value={dayjs(formEmployee.birth_date)}
                                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                                     onChange={(e: any) => {
                                         setFormEmployee({

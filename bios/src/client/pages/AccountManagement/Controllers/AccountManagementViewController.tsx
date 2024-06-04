@@ -184,13 +184,13 @@ export class AccountManagementViewController extends UIController {
                                     // const key = await EmailBroker.Default.createKey({
                                     //     smtpServer: "smtp-mail.outlook.com",
                                     //     smtpPort: "587",
-                                    //     password: "Pedasoft?2024_PDV",
-                                    //     username: "info@pedabilisim.com",
+                                    //     password: "V%443989818492ug",
+                                    //     username: "notification@pedabilisim.com",
                                     //     tls: false
                                     // })
                                     // await EmailBroker.Default
                                     //     .setKey(key)
-                                    //     .sendEmail("info@pedabilisim.com", "yusuf.selek@pedabilisim.com", "PEDAVALANS - Yeni Kullanıcı", `<p>Merhaba, {{username}} adlı kullanıcı sisteme eklenmiştir.</p>`, {
+                                    //     .sendEmail("notification@pedabilisim.com", "yusuf.selek@pedabilisim.com", "PEDAVALANS - Yeni Kullanıcı", `<p>Merhaba, {{username}} adlı kullanıcı sisteme eklenmiştir.</p>`, {
                                     //         username: createAccountForm.username
                                     //     })
                                     Toast.fire({

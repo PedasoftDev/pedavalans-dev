@@ -18,11 +18,9 @@ import OrganizationStructureEmployee from '../../../../server/hooks/organization
 import OrganizationStructureTitle from '../../../../server/hooks/organizationStructureTitle/main';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
-import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main';
 import IParameters from '../../../interfaces/IParameters';
 import IStringParameter from '../../../interfaces/IStringParameter';
-import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
-import ReactECharts from 'echarts-for-react';
+
 
 export class DashboardController extends UIController {
 
@@ -33,12 +31,10 @@ export class DashboardController extends UIController {
         const { collections, isLoading: isLoadingCollections } = useListCollections(AppInfo.Name, AppInfo.Database, [Query.limit(1000)]);
 
         // dashboard query
-        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
+        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetActiveList(me?.prefs?.organization)
         const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
-        // const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.List();
-        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetActiveList(me?.prefs?.organization)
 
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management)
@@ -48,13 +44,10 @@ export class DashboardController extends UIController {
         const { accounts, isLoading: isLoadingUsers } = useListAccounts()
 
 
-
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingPolyvalenceUnit || isLoadingUsers || isLoadingAccountResult ||
-                // isLoadingListEmployeeCompetencyValue ||
-                isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         accountRelations[0].is_active == false ? UINavigate("/logout") :
@@ -552,6 +545,62 @@ export class DashboardController extends UIController {
                                                                     accountRelationTasks.Run()
                                                                 } else {
                                                                     console.log("Mailler eşit")
+
+                                                                    const employeesByTitleData = []
+                                                                    const employeesByDepartmentData = []
+                                                                    const employeesByPositionData = []
+
+                                                                    employees.forEach((employee) => {
+
+                                                                        if (employee.title_id) {
+                                                                            const title = titles.find(title => title.$id === employee.title_id)
+                                                                            if (title) {
+                                                                                const titleIndex = employeesByTitleData.findIndex(data => data.titleName === title.name)
+                                                                                if (titleIndex === -1) {
+                                                                                    employeesByTitleData.push({ titleName: title.name, employeeCount: 1 })
+                                                                                } else {
+                                                                                    employeesByTitleData[titleIndex].employeeCount += 1
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        if (employee.department_id) {
+                                                                            const department = departments.find(department => department.$id === employee.department_id)
+                                                                            if (department) {
+                                                                                const departmentIndex = employeesByDepartmentData.findIndex(data => data.departmentName === department.name)
+                                                                                if (departmentIndex === -1) {
+                                                                                    employeesByDepartmentData.push({ departmentName: department.name, employeeCount: 1 })
+                                                                                } else {
+                                                                                    employeesByDepartmentData[departmentIndex].employeeCount += 1
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        if (employee.position_id) {
+                                                                            const position = positions.find(position => position.$id === employee.position_id)
+                                                                            if (position) {
+                                                                                const positionIndex = employeesByPositionData.findIndex(data => data.positionName === position.name)
+                                                                                if (positionIndex === -1) {
+                                                                                    employeesByPositionData.push({ positionName: position.name, employeeCount: 1 })
+                                                                                } else {
+                                                                                    employeesByPositionData[positionIndex].employeeCount += 1
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    })
+
+                                                                    getDashboardPieData()
+                                                                    getDashboardBarData()
+
+                                                                    if (employeesByTitleData.length != 0) {
+                                                                        setEmployeesByTitle(employeesByTitleData.sort((a, b) => a.employeeCount - b.employeeCount))
+                                                                    }
+                                                                    if (employeesByDepartmentData.length != 0) {
+                                                                        setEmployeesByDepartment(employeesByDepartmentData.sort((a, b) => a.employeeCount - b.employeeCount))
+                                                                    }
+                                                                    if (employeesByPositionData.length != 0) {
+                                                                        setEmployeesByPosition(employeesByPositionData.sort((a, b) => a.employeeCount - b.employeeCount))
+                                                                    }
                                                                 }
                                                             }
                                                         })
@@ -562,62 +611,6 @@ export class DashboardController extends UIController {
 
                                     }
 
-                                    const employeesByTitleData = []
-                                    const employeesByDepartmentData = []
-                                    const employeesByPositionData = []
-                                    const employeePerformanceData: { name: string, performance: number }[] = []
-
-                                    employees.forEach((employee) => {
-
-                                        if (employee.title_id) {
-                                            const title = titles.find(title => title.$id === employee.title_id)
-                                            if (title) {
-                                                const titleIndex = employeesByTitleData.findIndex(data => data.titleName === title.name)
-                                                if (titleIndex === -1) {
-                                                    employeesByTitleData.push({ titleName: title.name, employeeCount: 1 })
-                                                } else {
-                                                    employeesByTitleData[titleIndex].employeeCount += 1
-                                                }
-                                            }
-                                        }
-
-                                        if (employee.department_id) {
-                                            const department = departments.find(department => department.$id === employee.department_id)
-                                            if (department) {
-                                                const departmentIndex = employeesByDepartmentData.findIndex(data => data.departmentName === department.name)
-                                                if (departmentIndex === -1) {
-                                                    employeesByDepartmentData.push({ departmentName: department.name, employeeCount: 1 })
-                                                } else {
-                                                    employeesByDepartmentData[departmentIndex].employeeCount += 1
-                                                }
-                                            }
-                                        }
-
-                                        if (employee.position_id) {
-                                            const position = positions.find(position => position.$id === employee.position_id)
-                                            if (position) {
-                                                const positionIndex = employeesByPositionData.findIndex(data => data.positionName === position.name)
-                                                if (positionIndex === -1) {
-                                                    employeesByPositionData.push({ positionName: position.name, employeeCount: 1 })
-                                                } else {
-                                                    employeesByPositionData[positionIndex].employeeCount += 1
-                                                }
-                                            }
-                                        }
-                                    })
-
-                                    getDashboardPieData()
-                                    getDashboardBarData()
-
-                                    if (employeesByTitleData.length != 0) {
-                                        setEmployeesByTitle(employeesByTitleData.sort((a, b) => a.employeeCount - b.employeeCount))
-                                    }
-                                    if (employeesByDepartmentData.length != 0) {
-                                        setEmployeesByDepartment(employeesByDepartmentData.sort((a, b) => a.employeeCount - b.employeeCount))
-                                    }
-                                    if (employeesByPositionData.length != 0) {
-                                        setEmployeesByPosition(employeesByPositionData.sort((a, b) => a.employeeCount - b.employeeCount))
-                                    }
                                 }, [])
 
                                 return (
@@ -650,7 +643,7 @@ export class DashboardController extends UIController {
                                                 </MainView>
                                             )
                                         ).width("100%").height("100%")
-                                    )
+                                    ).backgroundColor("white")
 
                                 )
                             })

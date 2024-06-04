@@ -19,10 +19,13 @@ import { getReportToExcelByPolyvalenceTable } from "../../../assets/Functions/ge
 import { SiMicrosoftexcel } from "react-icons/si";
 import Competency from "../../../../server/hooks/competency/main";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import Collections from "../../../../server/core/Collections";
 import { Resources } from "../../../assets/Resources";
 import { getReportToExcelByMachinePolyvalenceTable } from "../../../assets/Functions/getReportToExcelByMachinePolyvalenceTable";
 import { GridContainer } from "../Views/View";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
+import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
 
 export class ReportPolyvalenceUnitList extends UIController {
 
@@ -32,14 +35,17 @@ export class ReportPolyvalenceUnitList extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
-        const { competencyGradeValueList, isLoadingCompetencyGradeValueList } = CompetencyGradeValue.GetList(me?.prefs?.organization);
+        const { grades, isLoading: isLoadingGrades } = CompetencyGrade.GetCompetencyGrades(me?.prefs?.organization);
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { activeGroups: groups, isLoading: isLoadingGroups } = CompetencyGroup.GetActiveCompetencyGroups();
+        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
+        const { isLoadingPositions, positions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
 
         let excelData: any[] = [];
 
         return (
-            isLoading || isLoadingPolyvalenceUnit || isLoadingCompetencyList || isLoadingPeriods || isLoadingCompetencyGradeValueList || isLoadingGroups ? VStack(Spinner()) :
+            isLoading || isLoadingPolyvalenceUnit || isLoadingPositions || isLoadingCompetencyList || isLoadingPeriods || isLoadingGrades || isLoadingLevels || isLoadingEmployees || isLoadingGroups ? VStack(Spinner()) :
                 periods.length == 0 ? UINavigate("/") :
                     UIViewBuilder(() => {
                         const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -74,16 +80,26 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     Query.limit(10000)
                                 ]).then((res: any) => {
                                     const copyColumns: GridColDef[] = []
-                                    const copyEmployees: { id: string, name: string }[] = []
+                                    const copyEmployees: { id: string, name: string, position: string }[] = []
+
                                     copyColumns.push({
                                         field: "id", headerName: "Çalışan Adı Soyadı", minWidth: 200, width: 200,
                                         valueGetter: (params: any) => {
                                             return params.row.name
                                         }
                                     })
+
+                                    copyColumns.push({
+                                        field: "position", headerName: "Pozisyon", minWidth: 200, width: 200,
+                                        valueGetter: (params: any) => {
+                                            return params.row.position
+                                        }
+                                    })
+
                                     res.documents.forEach((item: IEmployeeCompetencyValue.IEmployeeCompetencyValue) => {
                                         if (!copyEmployees.some(x => x.id == item.employee_id)) {
-                                            copyEmployees.push({ id: item.employee_id, name: item.employee_name })
+                                            const position = positions.find(x => x.$id === employees.find(y => y.$id === item.employee_id)?.position_id)?.name;
+                                            copyEmployees.push({ id: item.employee_id, name: item.employee_name, position: position })
                                         }
                                         if (!copyColumns.some(x => x.field == item.competency_id)) {
                                             copyColumns.push({
@@ -104,7 +120,8 @@ export class ReportPolyvalenceUnitList extends UIController {
                                                         percentage = (real / target) * 100;
                                                         percentage = isNaN(percentage) ? 0 : percentage;
                                                         percentage = parseFloat(percentage.toFixed(1));
-                                                        targetTotal = competencyGradeValueList.filter((x) => x.competency_id === item.competency_id).length;
+                                                        const grade = grades.find(x => x.$id === groups.find(y => y.$id === competencyList.find(z => z.$id === item.competency_id)?.competency_group_id)?.competency_grade_id);
+                                                        targetTotal = levels.filter(x => x.grade_id === grade?.$id).length;
                                                     }
                                                     return (
                                                         <div style={{ display: "flex", gap: "10px" }}>
@@ -133,7 +150,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                         })
                                     })
                                 } else {
-                                    getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
+                                    getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name, employees, positions)
                                 }
                             })
                         }

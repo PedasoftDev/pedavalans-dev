@@ -38,16 +38,9 @@ export class PendingTaskListController extends UIController {
         const dispatch = useAppDispatch();
         const setAssignEducationToHook = (value: IAssignedEducation.IBase) => dispatch(setAssignEducation(value));
         const setPendingEvaluationToHook = (value: { polyvalence_table_id: string; evaluation_period: string; }) => dispatch(setPendingEvaluation(value));
-        const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriodWithoutTenant();
-        // const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue } = EmployeeCompetencyValue.List();
-
 
         return (
-            isLoading
-                //  || isLoadingAssignedEducationList
-                || isLoadingPeriods
-                //  || isLoadingListEmployeeCompetencyValue
-                || isLoadingResult ? VStack(Spinner()) :
+            isLoading || isLoadingResult ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [isOpen, setIsOpen] = useState(-1);
                     const [isLoadingValues, setIsLoadingValues] = useState(true);
@@ -65,151 +58,10 @@ export class PendingTaskListController extends UIController {
                         setAssignEducationToHook(assignedEducation);
                     }
 
-                    // const pendingDataEntry = (polyTables) => {
-
-                    //     const anyValueNotEnteredPolyvalenceTables: {
-                    //         polyvalence_table_name: string,
-                    //         polyvalence_table_id: string,
-                    //         number_of_employee_x_competency: number,
-                    //         evaluation_period: string
-                    //     }[] = [];
-
-                    //     const onlyEnteredTargetValues: {
-                    //         polyvalence_table_name: string,
-                    //         polyvalence_table_id: string,
-                    //         number_of_employee_x_competency: number,
-                    //         evaluation_period: string
-                    //     }[] = [];
-
-                    //     polyTables.forEach((polyTable: IPolyvalenceUnit.IPolyvalenceUnit, index) => {
-                    //         const query = [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("is_active", true)];
-                    //         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee,
-                    //             [...query, Query.equal("department_id", polyTable.polyvalence_department_id)]).then(employeesDoc => {
-                    //                 const employees: IOrganizationStructure.IEmployees.IEmployee[] = employeesDoc.documents as any;
-                    //                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment,
-                    //                     [...query, Query.equal("competency_department_id", polyTable.polyvalence_department_id)]).then(competencyDepartmentRelationDoc => {
-                    //                         const competencyDepartmentRelation: ICompetencyDepartment.ICompetencyDepartment[] = competencyDepartmentRelationDoc.documents as any;
-                    //                         const evaluationFrequency = getPeriodFromCurrentDate(periods[0].evaluation_period_year, polyTable.polyvalence_evaluation_frequency);
-                    //                         const periodEnteredValues = listEmployeeCompetencyValue.filter((x) =>
-                    //                             x.polyvalence_table_id === polyTable.polyvalence_table_id && x.competency_evaluation_period === evaluationFrequency
-                    //                         );
-                    //                         let enteredOnlyTargetValues: number = 0;
-                    //                         periodEnteredValues.forEach((item) => {
-                    //                             if (item.competency_target_value != null && item.competency_target_value != "no-target" && item.competency_real_value === "") {
-                    //                                 enteredOnlyTargetValues++;
-                    //                             }
-                    //                         })
-                    //                         if (enteredOnlyTargetValues != 0) {
-                    //                             onlyEnteredTargetValues.push({
-                    //                                 polyvalence_table_name: polyTable.polyvalence_table_name,
-                    //                                 polyvalence_table_id: polyTable.polyvalence_table_id,
-                    //                                 number_of_employee_x_competency: enteredOnlyTargetValues,
-                    //                                 evaluation_period: evaluationFrequency
-                    //                             })
-                    //                         }
-
-                    //                         if (employees.length * competencyDepartmentRelation.length - periodEnteredValues.length != 0) {
-                    //                             anyValueNotEnteredPolyvalenceTables.push({
-                    //                                 polyvalence_table_name: polyTable.polyvalence_table_name,
-                    //                                 polyvalence_table_id: polyTable.polyvalence_table_id,
-                    //                                 number_of_employee_x_competency: employees.length * competencyDepartmentRelation.length - periodEnteredValues.length,
-                    //                                 evaluation_period: evaluationFrequency
-                    //                             })
-                    //                         }
-
-                    //                         if (polyTables.length - 1 === index) {
-                    //                             let totalAnyValue = 0;
-
-                    //                             anyValueNotEnteredPolyvalenceTables.forEach(item => {
-                    //                                 totalAnyValue += item.number_of_employee_x_competency;
-                    //                             });
-
-                    //                             let totalValue = 0;
-                    //                             onlyEnteredTargetValues.forEach(item => {
-                    //                                 totalValue += item.number_of_employee_x_competency;
-                    //                             });
-                    //                             const list =
-                    //                                 <List>
-                    //                                     <p>{`Bekleyen Gerçekleşme Girişleri - (${totalValue})`}</p>
-                    //                                     {onlyEnteredTargetValues.map((task: any) => (
-                    //                                         <ListElement onClick={() => {
-                    //                                             setPendingEvaluationToHook({ polyvalence_table_id: task.polyvalence_table_id, evaluation_period: task.evaluation_period })
-                    //                                             navigate("/app/competency-real-data-entry/view")
-                    //                                         }}>
-                    //                                             <p>{`${task.polyvalence_table_name} - ${task.evaluation_period} - ${task.number_of_employee_x_competency}`}</p>
-                    //                                         </ListElement>
-                    //                                     ))}
-                    //                                     <br />
-                    //                                     <hr />
-                    //                                     <br />
-                    //                                     <p>{`Bekleyen Değerlendirmeler - (${totalAnyValue})`}</p>
-                    //                                     {anyValueNotEnteredPolyvalenceTables.map((task: any) => (
-                    //                                         <ListElement onClick={() => {
-                    //                                             setPendingEvaluationToHook({ polyvalence_table_id: task.polyvalence_table_id, evaluation_period: task.evaluation_period })
-                    //                                             navigate("/app/competency-target-data-entry/view")
-                    //                                         }}>
-                    //                                             <p>{`${task.polyvalence_table_name} - ${task.evaluation_period} - ${task.number_of_employee_x_competency}`}</p>
-                    //                                         </ListElement>
-                    //                                     ))}
-                    //                                 </List>
-                    //                             const firstItem = {
-                    //                                 title: "Bekleyen Değerlendirmeler",
-                    //                                 value: totalValue + totalAnyValue,
-                    //                                 view: list
-                    //                             }
-                    //                             // need to configure this part ********
-                    //                             const pendingTaskState = [...pendingTasks];
-                    //                             pendingTaskState[0] = firstItem;
-                    //                             setPendingTasks(pendingTaskState)
-                    //                             setIsLoadingValues(false);
-                    //                             // ************************************
-                    //                         }
-                    //                     })
-                    //             })
-                    //     })
-                    // }
-
-                    // const getPolyvalenceTables = () => {
-                    //     Services.Accounts.get().then((me) => {
-                    //         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.limit(10000), Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
-                    //             if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
-                    //                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
-                    //                     const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
-                    //                     if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin") {
-
-                    //                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
-                    //                             pendingDataEntry(unitTables.documents as any)
-                    //                         })
-
-                    //                     } else if (accountRelationData.authorization_profile === "responsible") {
-
-                    //                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.limit(10000), Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
-                    //                             const responsibleTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
-                    //                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
-                    //                                 pendingDataEntry(unitTables.documents.filter((x) => responsibleTableIds.includes(x.polyvalence_table_id)) as any)
-                    //                             })
-                    //                         })
-
-                    //                     }
-                    //                 })
-                    //             } else {
-
-                    //                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
-                    //                     pendingDataEntry(unitTables.documents as any)
-                    //                 })
-
-                    //             }
-                    //         })
-                    //     })
-                    // }
-
                     useEffect(() => {
 
                         const getPendingTasks = async () => {
-                            const queriesAssignedEducation = [Query.limit(10000), Query.equal("status", "open")]
-                            if (!accountRelations[0].is_admin && accountRelations[0].authorization_profile !== "admin") {
-                                queriesAssignedEducation.push(Query.equal("educator_id", me?.$id))
-                            }
+                            const queriesAssignedEducation = [Query.limit(10000), Query.equal("status", "open"), Query.equal("educator_id", me?.$id)]
                             const assignedEducationsOpen: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation, queriesAssignedEducation).then(x => x.documents as any);
                             const education = {
                                 title: "Bekleyen Eğitimlerim",
@@ -221,7 +73,6 @@ export class PendingTaskListController extends UIController {
                             setPendingTasks(pendingTaskState);
                             setIsLoadingValues(false);
                         }
-                        // getPolyvalenceTables();
                         getPendingTasks();
                     }, [])
 
