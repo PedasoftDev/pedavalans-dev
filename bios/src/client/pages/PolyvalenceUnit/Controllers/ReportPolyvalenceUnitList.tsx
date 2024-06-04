@@ -80,21 +80,26 @@ export class ReportPolyvalenceUnitList extends UIController {
                                     Query.limit(10000)
                                 ]).then((res: any) => {
                                     const copyColumns: GridColDef[] = []
-                                    const copyEmployees: { id: string, name: string }[] = []
+                                    const copyEmployees: { id: string, name: string, position: string }[] = []
+
                                     copyColumns.push({
                                         field: "id", headerName: "Çalışan Adı Soyadı", minWidth: 200, width: 200,
                                         valueGetter: (params: any) => {
                                             return params.row.name
                                         }
                                     })
+
+                                    copyColumns.push({
+                                        field: "position", headerName: "Pozisyon", minWidth: 200, width: 200,
+                                        valueGetter: (params: any) => {
+                                            return params.row.position
+                                        }
+                                    })
+
                                     res.documents.forEach((item: IEmployeeCompetencyValue.IEmployeeCompetencyValue) => {
                                         if (!copyEmployees.some(x => x.id == item.employee_id)) {
                                             const position = positions.find(x => x.$id === employees.find(y => y.$id === item.employee_id)?.position_id)?.name;
-                                            let employeeName = item.employee_name;
-                                            if (position) {
-                                                employeeName += " - " + position;
-                                            }
-                                            copyEmployees.push({ id: item.employee_id, name: employeeName })
+                                            copyEmployees.push({ id: item.employee_id, name: item.employee_name, position: position })
                                         }
                                         if (!copyColumns.some(x => x.field == item.competency_id)) {
                                             copyColumns.push({
