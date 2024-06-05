@@ -58,6 +58,20 @@ class PedavalansService extends RealmoceanService {
 
     })
 
+    const router = this.webServer.getRouter();
+    // localhost/v1/service/com.pedavalans.service.main/setup
+    router.post("/com.pedavalans.service.main/setup", async (req, res) => {
+
+
+      try {
+
+        return res.json({ status: "success" });
+      } catch (e) {
+        res.statusCode(500)
+        return res.json(e);
+      }
+    });
+
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
       await this.updateDashboardChartData();

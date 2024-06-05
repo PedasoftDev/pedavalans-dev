@@ -10,8 +10,10 @@ export function employeeTransferTemplateByExcel(line_is_active: boolean) {
         "UNVAN_TANIMI",
         "DEPARTMAN_KODU",
         "DEPARTMAN_ADI",
+        "DEPARTMANA_BASLAMA_TARIHI",
         "POZISYON_KODU",
-        "POZISYON_TANIMI"
+        "POZISYON_TANIMI",
+        "POZISYONA_BASLAMA_TARIHI"
     ];
     if (line_is_active) {
         headers.push("HAT_KODU");

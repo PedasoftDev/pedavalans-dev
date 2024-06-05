@@ -31,6 +31,9 @@ const formState: IOrganizationStructure.IEmployees.ICreateEmployee = {
     job_start_date: new Date().toUTCString(),
     birth_date: "",
     gender: "",
+    department_start_date: "",
+    position_start_date: "",
+    phone: "",
     realm_id: "",
     tenant_id: ""
 }
@@ -348,8 +351,8 @@ const AddEmployeeView = (
                                         <MenuItem value="female">Kadın</MenuItem>
                                     </Select>
                                 </FormControl>
-                                {selectFormStates.map((selectFormState) => {
-                                    return (
+                                {selectFormStates.map((selectFormState) =>
+                                    <div key={selectFormState.id}>
                                         <FormControl fullWidth size="small">
                                             <InputLabel>{selectFormState.label}</InputLabel>
                                             <Select
@@ -371,8 +374,40 @@ const AddEmployeeView = (
                                                 })}
                                             </Select>
                                         </FormControl>
-                                    )
-                                })
+                                        {selectFormState.id === "department_id" && formEmployee.department_id && (
+                                            <FormControl fullWidth size="small" sx={{ marginTop: "10px" }}>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker label="Departmana Başlama Tarihi"
+                                                        format="DD/MM/YYYY"
+                                                        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                                        onChange={(e: any) => {
+                                                            setFormEmployee({
+                                                                ...formEmployee,
+                                                                department_start_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                                            })
+                                                        }} />
+                                                </LocalizationProvider>
+                                            </FormControl>
+
+                                        )}
+                                        {selectFormState.id === "position_id" && formEmployee.position_id && (
+                                            <FormControl fullWidth size="small" sx={{ marginTop: "10px" }}>
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker label="Pozisyona Başlama Tarihi"
+                                                        format="DD/MM/YYYY"
+                                                        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                                        onChange={(e: any) => {
+                                                            setFormEmployee({
+                                                                ...formEmployee,
+                                                                position_start_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                                            })
+                                                        }} />
+                                                </LocalizationProvider>
+                                            </FormControl>
+
+                                        )}
+                                    </div>
+                                )
                                 }
                                 <FormControl fullWidth size="small">
                                     <InputLabel>Amir</InputLabel>
@@ -394,6 +429,24 @@ const AddEmployeeView = (
                                             )
                                         })}
                                     </Select>
+                                </FormControl>
+                                <FormControl fullWidth size="small">
+                                    <TextField
+                                        name='phone'
+                                        size='small'
+                                        label='Telefon Numarası'
+                                        value={formEmployee.phone}
+                                        onChange={(e) => {
+                                            let enteredValue = e.target.value;
+                                            if (!enteredValue.startsWith("+")) {
+                                                enteredValue = "+" + enteredValue
+                                            }
+                                            if (/^\+?\d{0,15}$/.test(enteredValue)) {
+                                                setFormEmployee({ ...formEmployee, [e.target.name]: enteredValue });
+                                            }
+                                        }
+                                        }
+                                    />
                                 </FormControl>
                             </div> :
                             page === "addEmployeeVQ" &&

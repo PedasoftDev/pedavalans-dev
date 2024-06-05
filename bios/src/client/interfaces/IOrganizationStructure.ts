@@ -16,6 +16,9 @@ export namespace IOrganizationStructure {
             job_start_date: string;
             birth_date: string;
             gender: string;
+            department_start_date: string;
+            position_start_date: string;
+            phone?: string;
             tenant_id: string;
             realm_id: string;
         }
@@ -32,6 +35,9 @@ export namespace IOrganizationStructure {
             job_start_date: string;
             birth_date: string;
             gender: string;
+            department_start_date: string;
+            position_start_date: string;
+            phone: string;
             is_active: boolean;
             is_deleted: boolean;
             tenant_id: string;

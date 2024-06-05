@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Tooltip } from '@mui/material'
 import { GridColDef, trTR } from '@mui/x-data-grid'
-import React, { Fragment, useRef } from 'react'
+import React, { useRef } from 'react'
 import { MdDisplaySettings } from 'react-icons/md'
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
 import StyledDataGrid from '../../../../components/StyledDataGrid'
@@ -25,12 +25,19 @@ interface IEmployeeImportFromExcel {
     soyadi: string;
     departman_kodu: string;
     departman_adi: string;
+    departmana_baslama_tarihi: string;
     unvan_kodu: string;
     unvan_tanimi: string;
     pozisyon_kodu: string;
     pozisyon_tanimi: string;
+    pozisyona_baslama_tarihi: string;
     hat_kodu: string | null;
     hat_adi: string | null;
+}
+
+const excelDateToJSDate = (excelDate: number) => {
+    const jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000);
+    return jsDate.toISOString().split('T')[0];
 }
 
 const EmployeeListView = (
@@ -96,8 +103,12 @@ const EmployeeListView = (
                 let excelData = []
                 data?.map((row, index) => {
                     let appendRow: any = {}
-                    row.forEach((cell: string, cellIndex: number) => {
-                        appendRow[columns[cellIndex].toLowerCase()] = String(cell);
+                    row.forEach((cell: string | number, cellIndex: number) => {
+                        if (typeof cell === 'number' && columns[cellIndex].toLowerCase().includes('tarih')) {
+                            appendRow[columns[cellIndex].toLowerCase()] = excelDateToJSDate(cell);
+                        } else {
+                            appendRow[columns[cellIndex].toLowerCase()] = String(cell);
+                        }
                     });
                     if (appendRow.sicil_no) {
                         excelData.push({ id: index, ...appendRow });
@@ -367,6 +378,8 @@ const EmployeeListView = (
                                 manager_id: null,
                                 birth_date: "",
                                 gender: "",
+                                department_start_date: employee.departmana_baslama_tarihi,
+                                position_start_date: employee.pozisyona_baslama_tarihi,
                                 realm_id: props.me?.prefs?.organization,
                                 tenant_id: props.me?.prefs?.organization
                             }
@@ -417,6 +430,8 @@ const EmployeeListView = (
                             job_start_date: "",
                             birth_date: "",
                             gender: "",
+                            department_start_date: employee.departmana_baslama_tarihi,
+                            position_start_date: employee.pozisyona_baslama_tarihi,
                             manager_id: null,
                             realm_id: props.me?.prefs?.organization,
                             tenant_id: props.me?.prefs?.organization
