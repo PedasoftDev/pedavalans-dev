@@ -311,6 +311,7 @@ export class AssignedEducationListController extends UIFormController {
                                                 }}>
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assign")}>Yeni Eğitim Ata</Button>
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/plans")}>Eğitim Planları</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>

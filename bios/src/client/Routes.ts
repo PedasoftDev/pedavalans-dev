@@ -74,6 +74,9 @@ import { GlobalCompetencyDashboard } from './pages/CompetencyDashboard/Controlle
 import { CompetencyDashboard } from './pages/CompetencyDashboard/Controllers/CompetencyDashboard';
 import { UpdateEducationController } from './pages/Education/Controllers/UpdateEducationController';
 import { UpdateAssignedEducationController } from './pages/Education/Controllers/UpdateAssignedEducationController';
+import { EducationPlansListController } from './pages/Education/Controllers/EducationPlansListController';
+import { CreateEducationPlanController } from './pages/Education/Controllers/CreateEducationPlanController';
+import { UpdateEducationPlanController } from './pages/Education/Controllers/UpdateEducationPlanController';
 
 
 export const Routes = () => {
@@ -172,9 +175,11 @@ export const Routes = () => {
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
                     UIRoute('assigned', AssignedEducationListController),
-                    UIRoute('assigned/:id', UpdateAssignedEducationController),
                     UIRoute('assign', AssignEducationController),
-                    UIRoute('edit/:id', UpdateEducationController)
+                    UIRoute('plans', EducationPlansListController),
+                    UIRoute('planed', CreateEducationPlanController),
+                    UIRoute('plan-edit/:id', UpdateEducationPlanController),
+                    UIRoute('edit/:id', UpdateEducationController),
                 ),
 
                 UIRoute('organization', OrganizationViewController),

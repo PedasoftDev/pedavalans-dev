@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 10,
+    "version": 11,
     "collections": [
         {
             "id": "competency",
@@ -1875,6 +1875,59 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "type",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "education_plan",
+            "name": "Education Plan",
+            "description": {
+                en: "Education plan is a collection of educations.",
+                tr: "Eğitim Planlarının koleksiyonudur."
+            },
+            "version": 11,
+            "attributes": [
+                {
+                    "key": "education_plan_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "education_plan_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "plan_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "plan_end_date",
                     "type": "string",
                     "size": 256,
                     "version": 1

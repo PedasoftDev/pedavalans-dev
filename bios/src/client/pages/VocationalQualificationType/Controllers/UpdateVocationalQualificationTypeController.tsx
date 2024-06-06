@@ -44,7 +44,7 @@ const formReset: IVocationalQualificationType.IBase = {
   document_type_name: '',
   document_type_code: '',
   document_is_validity_period: "YOK",
-  is_active: false,
+  is_active: true,
   is_deleted: false,
 }
 

@@ -48,7 +48,7 @@ const formReset: IVocationalQualification.IBase = {
   document_validity_period: "",
   document_type_id: "",
   document_type_name: "",
-  is_active: false,
+  is_active: true,
   is_deleted: false,
 }
 
@@ -77,6 +77,12 @@ export class UpdateVocationalQualificationController extends UIController {
           setForm(removeDollarProperties(documentList))
 
           setIsActive(documentList.is_active)
+
+          if (documentList.document_validity_period === "Süresiz") {
+            setShowValidityPeriod(false);
+          } else {
+            setShowValidityPeriod(true);
+          }
         }, [])
 
         const handleChangeText = (e: any) => {

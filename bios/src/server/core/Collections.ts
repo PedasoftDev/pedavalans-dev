@@ -12,6 +12,7 @@ namespace Collections {
     export const Parameter: string = "pedavalans_parameter";
     export const CompetencyGradeLevel: string = "competency_grade_level";
     export const Education: string = "education";
+    export const EducationPlan: string = "education_plan";
     export const EducationCompetencyRelation: string = "education_competency_relation";
     export const Machine: string = "machine";
     export const OrganizationStructureDepartment: string = "organization_department";

@@ -608,7 +608,7 @@ const EditEmployeeView = (
                 onSubmit={onSubmit}
                 formContent={
                     page === "addEmployee" ?
-                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%", height: "60vh", overflowY: "auto", padding: "10px 8px 10px 0" }}>
                             <TextField
                                 name='id'
                                 size='small'
