@@ -20,6 +20,7 @@ import OrganizationStructureDepartment from '../../../../server/hooks/organizati
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import IParameters from '../../../interfaces/IParameters';
 import IStringParameter from '../../../interfaces/IStringParameter';
+import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker';
 
 
 export class DashboardController extends UIController {

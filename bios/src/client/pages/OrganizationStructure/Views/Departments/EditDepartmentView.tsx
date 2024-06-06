@@ -7,6 +7,8 @@ import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStru
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
 import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
 import AppInfo from '../../../../../AppInfo';
+import { PedavalansServiceBroker } from '../../../../../server/brokers/PedavalansServiceBroker';
+import { useDeleteCache } from '@realmocean/sdk';
 
 interface IFormDepartment {
     id: string;
@@ -36,6 +38,7 @@ const EditDepartmentView = (
 
     const [formDepartment, setFormDepartment] = useState(props.selectedDepartment);
     const [isActive, setIsActive] = useState(props.selectedDepartment.is_active);
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -47,17 +50,29 @@ const EditDepartmentView = (
             })
             return;
         }
+        let isNameChanged = props.selectedDepartment.name != formDepartment.name;
         updateDocument({
             databaseId: AppInfo.Database,
             collectionId: "organization_department",
             documentId: formDepartment.id,
             data: formDepartment
         }, () => {
-            Toast.fire({
-                icon: "success",
-                title: "Departman başarıyla güncellendi!",
-            })
-            onReset();
+            if (isNameChanged) {
+                PedavalansServiceBroker.Default.updateCompetencyDepartmentNames(formDepartment.id, formDepartment.name).then(() => {
+                    Toast.fire({
+                        icon: "success",
+                        title: "Departman başarıyla güncellendi!",
+                    })
+                    deleteCache()
+                    onReset();
+                })
+            } else {
+                Toast.fire({
+                    icon: "success",
+                    title: "Departman başarıyla güncellendi!",
+                })
+                onReset();
+            }
         })
         if (!isLoading && isError) {
             Toast.fire({
