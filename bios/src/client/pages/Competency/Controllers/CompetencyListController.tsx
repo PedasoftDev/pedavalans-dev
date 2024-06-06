@@ -18,7 +18,6 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import ICompetencyGroup from "../../../interfaces/ICompetencyGroup";
 import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
-import ICompetencyGrade from "../../../interfaces/ICompetencyGrade";
 import { Umay } from "@tuval/core";
 import { Toast } from "../../../components/Toast";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
@@ -32,9 +31,6 @@ interface ICompetencyImportFromExcel {
 }
 
 export class CompetencyListController extends UIController {
-
-    @State()
-    private percentage: number;
 
     public LoadView(): UIView {
 
@@ -128,21 +124,12 @@ export class CompetencyListController extends UIController {
                             const departments: IOrganizationStructure.IDepartments.IDepartment[] = await Services.Databases.listDocuments(
                                 AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment,
                                 [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true), Query.limit(10000)]).then((data) => data.documents as any);
-                            const grades: ICompetencyGrade.ICompetencyGrade[] = await Services.Databases.listDocuments(
-                                AppInfo.Name, AppInfo.Database, Collections.CompetencyGrade,
-                                [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_grade", true), Query.equal("is_deleted_grade", false), Query.limit(10000)]).then((data) => data.documents as any);
-
-                            const gradeLevels: ICompetencyGrade.ICompetencyGradeLevel[] = await Services.Databases.listDocuments(
-                                AppInfo.Name, AppInfo.Database, Collections.CompetencyGradeLevel,
-                                [Query.equal("is_active_level", true), Query.equal("is_deleted_level", false), Query.limit(10000)]).then((data) => data.documents as any);
 
                             const task = new Umay();
                             const failedCompetencies: ICompetencyImportFromExcel[] = [];
                             excelData.forEach((competencyItem, index) => {
                                 const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
                                 const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
-                                const grade = grades.find(item => item.$id === competencyGroup.competency_grade_id);
-                                const competencyGradeLevels = gradeLevels.filter(item => item.grade_id === grade.$id);
                                 const createCompetency: ICompetency.ICreateCompetency = {
                                     competency_id: nanoid(),
                                     competency_name: competencyItem.yetkinlik_adi,
@@ -171,22 +158,6 @@ export class CompetencyListController extends UIController {
                                                 } catch {
                                                     console.log(departmentName);
                                                 }
-                                            }
-                                        })
-
-                                        competencyGradeLevels.forEach(async (gradeLevel) => {
-                                            const comp_grade_level_id = nanoid();
-                                            try {
-                                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyGradeValue, comp_grade_level_id, {
-                                                    competency_grade_value_id: comp_grade_level_id,
-                                                    grade_level_id: gradeLevel.grade_level_id,
-                                                    grade_level_name: gradeLevel.grade_level_name,
-                                                    grade_level_number: gradeLevel.grade_level_number,
-                                                    competency_id: createCompetency.competency_id,
-                                                    tenant_id: me?.prefs?.organization
-                                                });
-                                            } catch {
-                                                console.log(gradeLevel);
                                             }
                                         })
 
@@ -205,8 +176,6 @@ export class CompetencyListController extends UIController {
                             failedCompetencies.forEach((competencyItem, index) => {
                                 const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
                                 const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
-                                const competencyGradeLevels = gradeLevels.filter(item => item.grade_id === competencyGroup?.competency_grade_id);
-                                console.log(competencyGradeLevels);
                                 const createCompetency: ICompetency.ICreateCompetency = {
                                     competency_id: nanoid(),
                                     competency_name: competencyItem.yetkinlik_adi,
@@ -238,24 +207,6 @@ export class CompetencyListController extends UIController {
                                             }
                                         })
 
-                                        competencyGradeLevels.forEach(async (gradeLevel) => {
-                                            const comp_grade_level_id = nanoid();
-                                            try {
-                                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyGradeLevel, comp_grade_level_id, {
-                                                    competency_grade_level_id: comp_grade_level_id,
-                                                    grade_id: competencyGroup?.competency_grade_id,
-                                                    grade_level_id: gradeLevel.grade_level_id,
-                                                    grade_level_name: gradeLevel.grade_level_name,
-                                                    grade_level_number: gradeLevel.grade_level_number,
-                                                    is_active_level: gradeLevel.is_active_level,
-                                                    is_deleted_level: gradeLevel.is_deleted_level,
-                                                    tenant_id: me?.prefs?.organization,
-                                                    realm_id: me?.prefs?.organization
-                                                });
-                                            } catch {
-                                                console.log(gradeLevel);
-                                            }
-                                        })
                                     } catch {
                                         console.log(competencyItem);
                                     }
@@ -405,7 +356,7 @@ export class CompetencyListController extends UIController {
                                                                 accept='.xlsx, .xls'
                                                                 onChange={handleFileChange}
                                                                 ref={fileInputRef}
-                                                                style={{ display: 'none' }} // Görünmez dosya girişi
+                                                                style={{ display: 'none' }}
                                                             />
                                                         </Button>
                                                     </Tooltip>

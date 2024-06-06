@@ -191,12 +191,17 @@ export class AssignedEducationListController extends UIFormController {
                             {
                                 field: "$id",
                                 headerName: "İşlemler",
-                                width: 100,
+                                width: (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") ? 200 : 100,
                                 renderCell: (params) => {
                                     return (
-                                        <Button onClick={() => handleOpenDialog(params.value)} size="small" fullWidth variant="text">
-                                            İncele
-                                        </Button>
+                                        <div style={{ display: "flex", gap: "5px" }}>
+                                            <Button onClick={() => handleOpenDialog(params.value)} size="small" fullWidth variant="text">
+                                                İncele
+                                            </Button>
+                                            {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
+                                                <Button onClick={() => navigate(`/app/education/assigned/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
+                                            }
+                                        </div>
                                     )
                                 }
                             }
@@ -214,11 +219,11 @@ export class AssignedEducationListController extends UIFormController {
 
                             if (accountRelations[0].is_admin) {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true), Query.limit(10000)]).then((res) => res.documents as any[]);
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
                             } else {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_active", true), Query.limit(10000)]).then((res) => res.documents as any[]);
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_deleted", false), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
                             }
                         };

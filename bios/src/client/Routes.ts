@@ -73,6 +73,7 @@ import { CompetencyDashboardController } from './pages/CompetencyDashboard/Contr
 import { GlobalCompetencyDashboard } from './pages/CompetencyDashboard/Controllers/GlobalCompetencyDashboard';
 import { CompetencyDashboard } from './pages/CompetencyDashboard/Controllers/CompetencyDashboard';
 import { UpdateEducationController } from './pages/Education/Controllers/UpdateEducationController';
+import { UpdateAssignedEducationController } from './pages/Education/Controllers/UpdateAssignedEducationController';
 
 
 export const Routes = () => {
@@ -171,6 +172,7 @@ export const Routes = () => {
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
                     UIRoute('assigned', AssignedEducationListController),
+                    UIRoute('assigned/:id', UpdateAssignedEducationController),
                     UIRoute('assign', AssignEducationController),
                     UIRoute('edit/:id', UpdateEducationController)
                 ),
