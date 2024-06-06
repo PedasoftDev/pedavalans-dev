@@ -35,7 +35,7 @@ namespace VocationalQualification {
       AppInfo.Name,
       AppInfo.Database,
       Collections.VocationalQualification,
-      [Query.equal('tenant_id', tenant_id)]
+      [Query.equal('tenant_id', tenant_id), Query.equal('is_deleted', false)]
     )
     return { documentGetList: documents as any, isLoading }
   }

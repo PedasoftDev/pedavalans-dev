@@ -30,14 +30,10 @@ import {
 } from '@mui/material'
 import Form from '../Views/Form'
 import React from 'react'
-import StyledDataGrid from '../../../components/StyledDataGrid'
-import { useGetMe } from '@realmocean/sdk'
+import { useDeleteCache, useGetMe } from '@realmocean/sdk'
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties'
 import AppInfo from '../../../../AppInfo'
-import Parameters from '../../../../server/hooks/parameters/main'
-import { Resources } from '../../../assets/Resources'
 import IVocationalQualification from '../../../interfaces/IVocationalQualification'
-import IVocationalQualificationType from '../../../interfaces/IVocationalQualificationType'
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 
@@ -62,6 +58,7 @@ export class UpdateVocationalQualificationController extends UIController {
     const { documentList, isLoadingDocument } = VocationalQualification.Get(id)
     const { documentGetList } = VocationalQualification.GetList(me?.prefs?.organization)
     const { updateVQ } = VocationalQualification.Update()
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
 
 
     const { documentTypeGetList } = VocationalQualificationType.GetList(me?.prefs?.organization)
@@ -171,6 +168,7 @@ export class UpdateVocationalQualificationController extends UIController {
                     icon: 'success',
                     title: 'Mesleki Yeterlilik başarıyla silindi.',
                   })
+                  deleteCache();
                   navigate('/app/vocational-qualification/list')
                 }
               )
