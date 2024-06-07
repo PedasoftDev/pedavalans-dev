@@ -26,3 +26,10 @@
 --- Yetkinlik hedef, gerçekleşme giriş ve rapor ekranlarında yetkinlik grubuna göre filtreleme yapıldı.
 --- Yetkinlik seviye düzeyi düzenlenmeme hatası giderildi.
 --- Yetkinlik tablosunda sorgu limiti düzenlendi.
+
+### Versiyon 1.2 
+
+** Genel Dashboard
+** Kişi Bazında Dashboard
+** Pozisyon Bazında Dashboard
+** Yetkinlik Bazlı Dashboard
