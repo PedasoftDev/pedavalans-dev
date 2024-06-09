@@ -175,6 +175,7 @@ export const Routes = () => {
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
                     UIRoute('assigned', AssignedEducationListController),
+                    UIRoute('assigned/:id', UpdateAssignedEducationController),
                     UIRoute('assign', AssignEducationController),
                     UIRoute('plans', EducationPlansListController),
                     UIRoute('planed', CreateEducationPlanController),
