@@ -504,42 +504,47 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     <Container>
                                         <LeftContainer>
                                             <LeftContainerHeader>
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Polivalans Tablosu</InputLabel>
-                                                    <Select
-                                                        name="polyvalence_table_id"
-                                                        value={selectedTable?.polyvalence_table_id}
-                                                        label="Polivalans Tablosu"
-                                                        onChange={(e) => onChangeTable(e.target.value)}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {this.polyvalenceUnitList.map((unit) => (
-                                                            <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Değerlendirme Dönemi</InputLabel>
-                                                    <Select
-                                                        name="evaluation_period"
-                                                        value={selectedPeriod}
-                                                        label="Değerlendirme Dönemi"
-                                                        onChange={(e) => {
-                                                            setSelectedPeriod(e.target.value);
-                                                            setSelectedEmployeeId("")
-                                                            setSelectedGroupId("")
-                                                            setSelectedCompetencyList([])
-                                                            setEmployeeCompetencyValue([])
-                                                        }}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {dataYear.map((period, i) => (
-                                                            <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
+                                                <Autocomplete
+                                                    options={this.polyvalenceUnitList}
+                                                    value={selectedTable}
+                                                    onChange={(event, newValue) => {
+                                                        onChangeTable(newValue.polyvalence_table_id);
+                                                    }}
+                                                    getOptionLabel={(option) => option.polyvalence_table_name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Polivalans Tablosu"
+                                                            name="polyvalence_table_id"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                    fullWidth
+                                                    disableClearable
+                                                />
+                                                <Autocomplete
+                                                    options={dataYear}
+                                                    value={dataYear.find((year) => year.name === selectedPeriod)}
+                                                    onChange={(event, newValue) => {
+                                                        setSelectedPeriod(newValue?.name || "");
+                                                        setSelectedEmployeeId("");
+                                                        setSelectedGroupId("");
+                                                        setSelectedCompetencyList([]);
+                                                        setEmployeeCompetencyValue([]);
+                                                    }}
+                                                    getOptionLabel={(option) => option.name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Değerlendirme Dönemi"
+                                                            name="evaluation_period"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                    fullWidth
+                                                />
                                             </LeftContainerHeader>
                                             {
                                                 selectedTable && selectedPeriod &&
@@ -562,22 +567,24 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                             selectedTable && selectedPeriod && selectedEmployeeId &&
                                             <RightContainer>
                                                 <RightContainerHeader>
-                                                    <FormControl fullWidth size="small">
-                                                        <InputLabel>Yetkinlik Grubu</InputLabel>
-                                                        <Select
-                                                            name="group"
-                                                            value={selectedGroupId}
-                                                            label="Yetkinlik Grubu"
-                                                            onChange={(e) => setSelectedGroupId(e.target.value)}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            <MenuItem value="" key="all">Tümü</MenuItem>
-                                                            {groups.map((group, i) => (
-                                                                <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
+                                                    <Autocomplete
+                                                        options={groups}
+                                                        value={groups.find(group => group.competency_group_id === selectedGroupId) || null}
+                                                        onChange={(event, newValue) => {
+                                                            setSelectedGroupId(newValue?.competency_group_id || "");
+                                                        }}
+                                                        getOptionLabel={(option) => option.competency_group_name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Yetkinlik Grubu"
+                                                                name="group"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                    />
                                                 </RightContainerHeader>
                                                 <div style={{
                                                     height: "calc(100vh - 160px)",
@@ -630,29 +637,28 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                     }}
                                                     onSubmit={handleSubmitEducationDialog}
                                                 >
-                                                    <FormControl fullWidth size="small" required>
-                                                        <InputLabel>Eğitim</InputLabel>
-                                                        <Select
-                                                            name="education_id"
-                                                            value={form.education_id}
-                                                            label="Eğitim"
-                                                            onChange={(e) => {
-                                                                const selectedEducation = educationList.find((item) => item.$id === e.target.value);
-                                                                setForm({ ...form, education_id: e.target.value, education_name: selectedEducation?.name, education_code: selectedEducation?.code });
-                                                            }}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            {educationList.map((education: IEducation.IBase) => (
-                                                                <MenuItem
-                                                                    value={education.$id}
-                                                                    key={education.$id}
-                                                                >
-                                                                    {education.name}
-                                                                </MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
+                                                    <Autocomplete
+                                                        options={educationList}
+                                                        value={educationList.find((education) => education.$id === form.education_id) || null}
+                                                        onChange={(event, newValue) => {
+                                                            setForm({
+                                                                ...form,
+                                                                education_id: newValue?.$id || "",
+                                                                education_name: newValue?.name || "",
+                                                                education_code: newValue?.code || ""
+                                                            });
+                                                        }}
+                                                        getOptionLabel={(option) => option.name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Eğitim"
+                                                                name="education_id"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                    />
                                                     <Autocomplete
                                                         multiple
                                                         disableCloseOnSelect
@@ -672,29 +678,27 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             setSelectedEmployees(newValue);
                                                         }}
                                                     />
-                                                    <FormControl fullWidth size="small" required>
-                                                        <InputLabel>Eğitimci</InputLabel>
-                                                        <Select
-                                                            name="educator_id"
-                                                            value={form.educator_id}
-                                                            label="Eğitimci"
-                                                            onChange={(e) => {
-                                                                const selectedEducator = accounts.find((item) => item.$id === e.target.value);
-                                                                setForm({ ...form, educator_id: e.target.value, educator_name: selectedEducator?.name });
-                                                            }}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            {accounts.map((account) => (
-                                                                <MenuItem
-                                                                    value={account.$id}
-                                                                    key={account.$id}
-                                                                >
-                                                                    {account.name}
-                                                                </MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
+                                                    <Autocomplete
+                                                        options={accounts}
+                                                        value={accounts.find((account) => account.$id === form.educator_id) || null}
+                                                        onChange={(event, newValue) => {
+                                                            setForm({
+                                                                ...form,
+                                                                educator_id: newValue?.$id || "",
+                                                                educator_name: newValue?.name || ""
+                                                            });
+                                                        }}
+                                                        getOptionLabel={(option) => option.name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Eğitimci"
+                                                                name="educator_id"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                    />
                                                     <div style={{
                                                         display: "flex",
                                                         gap: "10px",

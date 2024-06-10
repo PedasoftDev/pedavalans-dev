@@ -5,7 +5,7 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -446,42 +446,45 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                     <Container>
                                         <LeftContainer>
                                             <LeftContainerHeader>
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Polivalans Tablosu</InputLabel>
-                                                    <Select
-                                                        name="polyvalence_table_id"
-                                                        value={selectedTable?.polyvalence_table_id}
-                                                        label="Polivalans Tablosu"
-                                                        onChange={(e) => onChangeTable(e.target.value)}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {this.polyvalenceUnitList.map((unit) => (
-                                                            <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Değerlendirme Dönemi</InputLabel>
-                                                    <Select
-                                                        name="evaluation_period"
-                                                        value={selectedPeriod}
-                                                        label="Değerlendirme Dönemi"
-                                                        onChange={(e) => {
-                                                            setSelectedPeriod(e.target.value);
-                                                            setSelectedEmployeeId("")
-                                                            setSelectedGroupId("")
-                                                            setSelectedCompetencyList([])
-                                                            setEmployeeCompetencyValue([])
-                                                        }}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {dataYear.map((period, i) => (
-                                                            <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
+                                                <Autocomplete
+                                                    options={this.polyvalenceUnitList}
+                                                    value={this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === selectedTable?.polyvalence_table_id) || null}
+                                                    onChange={(event, newValue) => onChangeTable(newValue?.polyvalence_table_id || "")}
+                                                    getOptionLabel={(option) => option.polyvalence_table_name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Polivalans Tablosu"
+                                                            name="polyvalence_table_id"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                    disableClearable
+                                                    fullWidth
+                                                />
+                                                <Autocomplete
+                                                    options={dataYear}
+                                                    value={dataYear.find((period) => period.name === selectedPeriod) || null}
+                                                    onChange={(event, newValue) => {
+                                                        setSelectedPeriod(newValue?.name || "");
+                                                        setSelectedEmployeeId("");
+                                                        setSelectedGroupId("");
+                                                        setSelectedCompetencyList([]);
+                                                        setEmployeeCompetencyValue([]);
+                                                    }}
+                                                    getOptionLabel={(option) => option.name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Değerlendirme Dönemi"
+                                                            name="evaluation_period"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                    fullWidth
+                                                />
                                             </LeftContainerHeader>
                                             {
                                                 selectedTable && selectedPeriod &&
@@ -504,22 +507,22 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                             selectedTable && selectedPeriod && selectedEmployeeId &&
                                             <RightContainer>
                                                 <RightContainerHeader>
-                                                    <FormControl fullWidth size="small">
-                                                        <InputLabel>Yetkinlik Grubu</InputLabel>
-                                                        <Select
-                                                            name="group"
-                                                            value={selectedGroupId}
-                                                            label="Yetkinlik Grubu"
-                                                            onChange={(e) => setSelectedGroupId(e.target.value)}
-                                                            size="small"
-                                                            required
-                                                        >
-                                                            <MenuItem value="" key="all">Tümü</MenuItem>
-                                                            {groups.map((group, i) => (
-                                                                <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
+                                                    <Autocomplete
+                                                        options={groups}
+                                                        value={groups.find((group) => group.competency_group_id === selectedGroupId) || null}
+                                                        onChange={(event, newValue) => setSelectedGroupId(newValue?.competency_group_id || "")}
+                                                        getOptionLabel={(option) => option.competency_group_name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Yetkinlik Grubu"
+                                                                name="group"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                    />
                                                 </RightContainerHeader>
                                                 <div style={{
                                                     height: "calc(100vh - 160px)",

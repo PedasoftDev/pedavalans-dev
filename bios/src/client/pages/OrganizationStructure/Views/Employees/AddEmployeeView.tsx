@@ -1,5 +1,5 @@
 import React, { Fragment, MouseEventHandler, useState } from 'react';
-import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import Form from '../ViewForm/Form';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Toast } from '../../../../components/Toast';
@@ -189,26 +189,27 @@ const AddEmployeeView = (
         props.setActive(true);
     }
 
-    const handleSelectType = (e: SelectChangeEvent<string>) => {
-        const selectedValue = e.target.value;
+    const handleSelectType = (event, newValue) => {
+        const selectedValue = newValue.document_type_id;
         const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
 
         if (selectedDocumentType.document_validity_period === "Süresiz") {
             setShowValidityPeriod(false);
             setFormDocument({
                 ...formDocument,
-                [e.target.name]: selectedValue,
+                document_type_id: selectedValue,
                 document_type_name: selectedDocumentType.document_type_name
             });
         } else {
             setShowValidityPeriod(true);
             setFormDocument({
                 ...formDocument,
-                [e.target.name]: selectedValue,
+                document_type_id: selectedValue,
                 document_type_name: selectedDocumentType.document_type_name
             });
         }
     };
+
     const handleSelectDocumentName = (e: SelectChangeEvent<string>) => {
         const selectedValue = e.target.value;
         const selectedDocument = documentGetList.find((doc) => doc.document_id === selectedValue);
@@ -268,6 +269,8 @@ const AddEmployeeView = (
             }
         },
     ]
+
+
 
 
     return (
@@ -353,27 +356,26 @@ const AddEmployeeView = (
                                 </FormControl>
                                 {selectFormStates.map((selectFormState) =>
                                     <div key={selectFormState.id}>
-                                        <FormControl fullWidth size="small">
-                                            <InputLabel>{selectFormState.label}</InputLabel>
-                                            <Select
-                                                name={selectFormState.id}
-                                                value={formEmployee[selectFormState.id]}
-                                                label={selectFormState.label}
-                                                onChange={(e: SelectChangeEvent) => {
-                                                    setFormEmployee({
-                                                        ...formEmployee,
-                                                        [selectFormState.id]: e.target.value as string
-                                                    })
-                                                }}
-                                                size="small"
-                                            >
-                                                {selectFormState.options.map((option) => {
-                                                    return (
-                                                        <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>
-                                                    )
-                                                })}
-                                            </Select>
-                                        </FormControl>
+                                        <Autocomplete
+                                            options={selectFormState.options}
+                                            value={selectFormState.options.find(option => option.id === formEmployee[selectFormState.id]) || null}
+                                            onChange={(event, newValue) => {
+                                                setFormEmployee({
+                                                    ...formEmployee,
+                                                    [selectFormState.id]: newValue ? newValue.id : ''
+                                                });
+                                            }}
+                                            getOptionLabel={(option) => option.name}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label={selectFormState.label}
+                                                    name={selectFormState.id}
+                                                    size="small"
+                                                    required
+                                                />
+                                            )}
+                                        />
                                         {selectFormState.id === "department_id" && formEmployee.department_id && (
                                             <FormControl fullWidth size="small" sx={{ marginTop: "10px" }}>
                                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -409,27 +411,26 @@ const AddEmployeeView = (
                                     </div>
                                 )
                                 }
-                                <FormControl fullWidth size="small">
-                                    <InputLabel>Amir</InputLabel>
-                                    <Select
-                                        name="manager_id"
-                                        value={formEmployee.manager_id}
-                                        label="Amir"
-                                        onChange={(e: SelectChangeEvent) => {
-                                            setFormEmployee({
-                                                ...formEmployee,
-                                                manager_id: e.target.value as string
-                                            })
-                                        }}
-                                        size="small"
-                                    >
-                                        {props.employees.map((option) => {
-                                            return (
-                                                <MenuItem key={option.id} value={option.id}>{option.first_name + " " + option.last_name}</MenuItem>
-                                            )
-                                        })}
-                                    </Select>
-                                </FormControl>
+                                <Autocomplete
+                                    options={props.employees}
+                                    value={props.employees.find(option => option.id === formEmployee.manager_id) || null}
+                                    onChange={(event, newValue) => {
+                                        setFormEmployee({
+                                            ...formEmployee,
+                                            manager_id: newValue ? newValue.id : ''
+                                        });
+                                    }}
+                                    getOptionLabel={(option) => option.first_name + " " + option.last_name}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Amir"
+                                            name="manager_id"
+                                            size="small"
+                                            required
+                                        />
+                                    )}
+                                />
                                 <FormControl fullWidth size="small">
                                     <TextField
                                         name='phone'
@@ -451,45 +452,44 @@ const AddEmployeeView = (
                             </div> :
                             page === "addEmployeeVQ" &&
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
-                                <FormControl fullWidth size="small">
-                                    <InputLabel>Belge Türü</InputLabel>
-                                    <Select
-                                        name="document_type_id"
-                                        value={formDocument.document_type_id}
-                                        label="Belge Türü"
-                                        onChange={handleSelectType}
-                                        size="small"
-                                    >
-                                        {documentTypeGetList.map((document_type) => (
-                                            <MenuItem
-                                                value={document_type.document_type_id}
-                                                key={document_type.document_type_id}
-                                            >
-                                                {document_type.document_type_name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                                {formDocument.document_type_id &&
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Belge Adı</InputLabel>
-                                        <Select
-                                            name="document_id"
-                                            value={formDocument.document_id}
+                                <Autocomplete
+                                    options={documentTypeGetList}
+                                    getOptionLabel={(option) => option.document_type_name}
+                                    value={documentTypeGetList.find(option => option.document_type_id === formDocument.document_type_id) || null}
+                                    onChange={(event, newValue) => handleSelectType(event, newValue)}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
                                             label="Belge Türü"
-                                            onChange={handleSelectDocumentName}
+                                            name="document_type_id"
                                             size="small"
-                                        >
-                                            {documentGetList.filter((d) => d.document_type_id === formDocument.document_type_id).map((document) => (
-                                                <MenuItem
-                                                    value={document.document_id}
-                                                    key={document.document_id}
-                                                >
-                                                    {document.document_name}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
+                                            required
+                                        />
+                                    )}
+                                />
+                                {formDocument.document_type_id &&
+                                    <Autocomplete
+                                        options={documentGetList.filter((d) => d.document_type_id === formDocument.document_type_id)}
+                                        getOptionLabel={(option) => option.document_name}
+                                        value={documentGetList.find((doc) => doc.document_id === formDocument.document_id) || null}
+                                        onChange={(event, newValue) => {
+                                            if (newValue) {
+                                                setFormDocument({
+                                                    ...formDocument,
+                                                    document_id: newValue.document_id,
+                                                    document_name: newValue.document_name
+                                                });
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Belge Adı"
+                                                size="small"
+                                            />
+                                        )}
+                                        fullWidth
+                                    />
                                 }
                                 {showValidityPeriod && (
                                     <div style={{ display: "flex", gap: "10px", }}>

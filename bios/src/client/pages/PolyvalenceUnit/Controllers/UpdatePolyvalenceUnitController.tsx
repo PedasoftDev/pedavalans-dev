@@ -12,7 +12,7 @@ import {
     VStack,
 } from '@tuval/forms';
 import Form from '../Views/Form';
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField, Typography } from '@mui/material';
 import { trTR } from '@mui/x-data-grid';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
@@ -263,42 +263,42 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                 required
                                             />
                                             <FormControl fullWidth size="small">
-                                                <InputLabel>Bağlı Departman</InputLabel>
-                                                <Select
-                                                    name="polyvalence_department_id"
-                                                    value={form.polyvalence_department_id}
-                                                    label="Bağlı Departman"
-                                                    onChange={(e) => {
+                                                <Autocomplete
+                                                    options={departments}
+                                                    getOptionLabel={(option) => option.name}
+                                                    value={departments.find((department) => department.id == form.polyvalence_department_id)}
+                                                    onChange={(e, value) => {
                                                         setForm({
                                                             ...form,
-                                                            [e.target.name]: e.target.value,
-                                                            polyvalence_department_name: departments.find((department) => department.id == e.target.value).name
+                                                            polyvalence_department_id: value.id,
+                                                            polyvalence_department_name: value.name
                                                         })
                                                     }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {departments.map((department) => (
-                                                        <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
-                                                    ))}
-                                                </Select>
+                                                    renderInput={(params) => <TextField
+                                                        {...params}
+                                                        label="Bağlı Departman"
+                                                        size="small"
+                                                        required
+                                                    />}
+                                                />
                                             </FormControl>
                                             {
                                                 lineBased[0]?.is_active &&
                                                 <FormControl fullWidth size="small">
-                                                    <InputLabel>Bağlı Hat</InputLabel>
-                                                    <Select
-                                                        name="line"
-                                                        value={selectedLine}
-                                                        label="Bağlı Hat"
-                                                        onChange={(e) => setSelectedLine(e.target.value)}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {lines.filter(x => x.department_id == form.polyvalence_department_id).map((lines) => (
-                                                            <MenuItem value={lines.id} key={lines.id}>{lines.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
+                                                    <Autocomplete
+                                                        options={lines.filter(x => x.department_id == form.polyvalence_department_id)}
+                                                        getOptionLabel={(option) => option.name}
+                                                        value={lines.find((line) => line.id == selectedLine)}
+                                                        onChange={(e, value) => {
+                                                            setSelectedLine(value.id)
+                                                        }}
+                                                        renderInput={(params) => <TextField
+                                                            {...params}
+                                                            label="Bağlı Hat"
+                                                            size="small"
+                                                            required
+                                                        />}
+                                                    />
                                                 </FormControl>
                                             }
                                             <div style={{

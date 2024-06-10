@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { UIFormController, UIView, cTop, VStack, ReactView, useState, useEffect, useNavigate, Spinner, useParams, UIViewBuilder, nanoid, } from "@tuval/forms";
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import Form from "../../Competency/Views/Form";
@@ -236,24 +236,29 @@ export class UpdateMachineController extends UIFormController {
                                                         maxLength: 3
                                                     }}
                                                 />
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Departman</InputLabel>
-                                                    <Select
-                                                        name="department_id"
-                                                        value={form.department_id}
-                                                        label="Departman"
-                                                        onChange={(e: any) => {
-                                                            setForm({ ...form, department_id: e.target.value });
-                                                            getCompetencies(e.target.value);
-                                                        }}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {departments.map((department) => (
-                                                            <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
+                                                <Autocomplete
+                                                    options={departments}
+                                                    value={departments.find((department) => department.id === form.department_id) || null}
+                                                    onChange={(event, newValue) => {
+                                                        if (newValue) {
+                                                            setForm({ ...form, department_id: newValue.id });
+                                                            getCompetencies(newValue.id);
+                                                        } else {
+                                                            setForm({ ...form, department_id: '' });
+                                                            getCompetencies('');
+                                                        }
+                                                    }}
+                                                    getOptionLabel={(option) => option.name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Departman"
+                                                            name="department_id"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                />
                                                 <div style={{
                                                     height: "280px",
                                                     width: "100%",

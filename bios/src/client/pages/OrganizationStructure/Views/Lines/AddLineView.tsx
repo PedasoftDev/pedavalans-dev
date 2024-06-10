@@ -1,6 +1,6 @@
 import React, { useState, Fragment } from 'react'
 import Form from '../ViewForm/Form';
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import { Autocomplete, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Resources } from '../../../../assets/Resources';
 import { Toast } from '../../../../components/Toast';
@@ -210,29 +210,29 @@ const AddLineView = (
                                             onChange={onChange}
                                         />
                                         <FormControl fullWidth size="small">
-                                            <InputLabel>Bağlı Olduğu Departman</InputLabel>
-                                            <Select
-                                                name="department_id"
-                                                value={formLine.department_id}
-                                                label="Bağlı Olduğu Departman"
-                                                onChange={(e: SelectChangeEvent) => {
-                                                    setFormLine({
-                                                        ...formLine,
-                                                        department_id: e.target.value as string,
-                                                        department_name: props.departments.find((department) => department.id == e.target.value)?.name || ""
-                                                    });
-                                                    setSelectedCompetencyValues([]);
-                                                    setSelectedCompetencies([]);
+                                            <Autocomplete
+                                                options={props.departments}
+                                                getOptionLabel={(option) => option.name}
+                                                value={props.departments.find((department) => department.id == formLine.department_id) || null}
+                                                onChange={(event, newValue) => {
+                                                    if (newValue) {
+                                                        setFormLine({
+                                                            ...formLine,
+                                                            department_id: newValue.id,
+                                                            department_name: newValue.name
+                                                        });
+                                                        setSelectedCompetencyValues([]);
+                                                        setSelectedCompetencies([]);
+                                                    }
                                                 }}
-                                                required
-                                                size="small"
-                                            >
-                                                {props.departments.map((department) => {
-                                                    return (
-                                                        <MenuItem key={department.id} value={department.id}>{department.name}</MenuItem>
-                                                    )
-                                                })}
-                                            </Select>
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Bağlı Olduğu Departman"
+                                                        size="small"
+                                                    />
+                                                )}
+                                            />
                                         </FormControl>
                                         {
                                             lineBased[0]?.is_active &&

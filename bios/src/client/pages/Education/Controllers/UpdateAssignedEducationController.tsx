@@ -173,6 +173,11 @@ export class UpdateAssignedEducationController extends UIController {
               })
             }
 
+            const statusOptions = [
+              { value: 'open', label: 'Açık' },
+              { value: 'completed', label: 'Tamamlandı' }
+            ];
+
             return (
               VStack({ alignment: cTop })(
                 ReactView(
@@ -188,29 +193,28 @@ export class UpdateAssignedEducationController extends UIController {
                         }}
                         onSubmit={handleSubmit}
                       >
-                        <FormControl fullWidth size="small" required>
-                          <InputLabel>Eğitim</InputLabel>
-                          <Select
-                            name="education_id"
-                            value={form.education_id}
-                            label="Eğitim"
-                            onChange={(e) => {
-                              const selectedEducation = educationList.find((item) => item.$id === e.target.value);
-                              setForm({ ...form, education_id: e.target.value, education_name: selectedEducation?.name, education_code: selectedEducation?.code });
-                            }}
-                            size="small"
-                            required
-                          >
-                            {educationList.map((education: IEducation.IBase) => (
-                              <MenuItem
-                                value={education.$id}
-                                key={education.$id}
-                              >
-                                {education.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                        <Autocomplete
+                          options={educationList}
+                          value={educationList.find((education) => education.$id === form.education_id) || null}
+                          onChange={(event, newValue) => {
+                            setForm({
+                              ...form,
+                              education_id: newValue?.$id || "",
+                              education_name: newValue?.name || "",
+                              education_code: newValue?.code || ""
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Eğitim"
+                              name="education_id"
+                              size="small"
+                              required
+                            />
+                          )}
+                        />
                         <TextField
                           name="employee_name"
                           label="Çalışan"
@@ -219,29 +223,27 @@ export class UpdateAssignedEducationController extends UIController {
                           required
                           fullWidth
                         />
-                        <FormControl fullWidth size="small" required>
-                          <InputLabel>Eğitimci</InputLabel>
-                          <Select
-                            name="educator_id"
-                            value={form.educator_id}
-                            label="Eğitimci"
-                            onChange={(e) => {
-                              const selectedEducator = accounts.find((item) => item.$id === e.target.value);
-                              setForm({ ...form, educator_id: e.target.value, educator_name: selectedEducator?.name });
-                            }}
-                            size="small"
-                            required
-                          >
-                            {accounts.map((account) => (
-                              <MenuItem
-                                value={account.$id}
-                                key={account.$id}
-                              >
-                                {account.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                        <Autocomplete
+                          options={accounts}
+                          value={accounts.find((account) => account.$id === form.educator_id) || null}
+                          onChange={(event, newValue) => {
+                            setForm({
+                              ...form,
+                              educator_id: newValue?.$id || "",
+                              educator_name: newValue?.name || ""
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Eğitimci"
+                              name="educator_id"
+                              size="small"
+                              required
+                            />
+                          )}
+                        />
                         <div style={{
                           display: "flex",
                           gap: "10px",
@@ -327,22 +329,23 @@ export class UpdateAssignedEducationController extends UIController {
                           value={educationResult.educator_comment}
                           onChange={(e) => setEducationResult({ ...educationResult, educator_comment: e.target.value })}
                         />}
-                        <FormControl fullWidth size="small" required>
-                          <InputLabel>Durum</InputLabel>
-                          <Select
-                            name="status"
-                            value={form.status}
-                            label="Durum"
-                            onChange={(e) => {
-                              setForm({ ...form, status: e.target.value });
-                            }}
-                            size="small"
-                            required
-                          >
-                            <MenuItem value="open">Açık</MenuItem>
-                            <MenuItem value="completed">Tamamlandı</MenuItem>
-                          </Select>
-                        </FormControl>
+                        <Autocomplete
+                          options={statusOptions}
+                          value={statusOptions.find((option) => option.value === form.status) || null}
+                          onChange={(event, newValue) => {
+                            setForm({ ...form, status: newValue?.value || '' });
+                          }}
+                          getOptionLabel={(option) => option.label}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Durum"
+                              name="status"
+                              size="small"
+                              required
+                            />
+                          )}
+                        />
                         <FormControlLabel
                           sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
                           onChange={(e: any) => setForm({ ...form, is_active: e.target.checked })}

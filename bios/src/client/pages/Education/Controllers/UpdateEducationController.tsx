@@ -9,6 +9,7 @@ import {
   FormControl,
   InputLabel,
   Typography,
+  Autocomplete,
 } from "@mui/material";
 import { useDeleteCache, useGetMe } from "@realmocean/sdk";
 import Competency from "../../../../server/hooks/competency/main";
@@ -197,26 +198,23 @@ export class UpdateEducationController extends UIFormController {
                           columnHeaderHeight={30}
                         />
                       </div>
-                      <FormControl fullWidth size="small" required>
-                        <InputLabel>Eğitim Türü</InputLabel>
-                        <Select
-                          name="type"
-                          value={form.type}
-                          label="Eğitim Türü"
-                          onChange={handleChangeSelect}
-                          size="small"
-                          required
-                        >
-                          {Resources.EducationTypes.map((education_type) => (
-                            <MenuItem
-                              value={education_type.id}
-                              key={education_type.id}
-                            >
-                              {education_type.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <Autocomplete
+                        options={Resources.EducationTypes}
+                        value={Resources.EducationTypes.find((education_type) => education_type.id === form.type) || null}
+                        onChange={(event, newValue) => {
+                          setForm({ ...form, type: newValue?.id || "" });
+                        }}
+                        getOptionLabel={(option) => option.name}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Eğitim Türü"
+                            name="type"
+                            size="small"
+                            required
+                          />
+                        )}
+                      />
                       <div
                         style={{
                           display: "flex",

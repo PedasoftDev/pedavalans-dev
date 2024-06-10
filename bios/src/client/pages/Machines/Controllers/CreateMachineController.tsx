@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { ReactView, Spinner, UIFormController, UIView, VStack, cTop, useNavigate, useState, UIViewBuilder, nanoid } from "@tuval/forms";
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Autocomplete, Button, TextField, Typography } from "@mui/material";
 import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import Form from "../../Competency/Views/Form";
@@ -229,24 +229,25 @@ export class CreateMachineController extends UIFormController {
                                                     maxLength: 3
                                                 }}
                                             />
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Departman</InputLabel>
-                                                <Select
-                                                    name="department_id"
-                                                    value={form.department_id}
-                                                    label="Departman"
-                                                    onChange={(e: any) => {
-                                                        setForm({ ...form, department_id: e.target.value });
-                                                        getCompetencies(e.target.value);
-                                                    }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {departments.map((department) => (
-                                                        <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <Autocomplete
+                                                options={departments}
+                                                value={departments.find((department) => department.id === form.department_id) || null}
+                                                onChange={(event, newValue) => {
+                                                    setForm({ ...form, department_id: newValue.id });
+                                                    getCompetencies(newValue.id);
+
+                                                }}
+                                                getOptionLabel={(option) => option.name}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Departman"
+                                                        name="department_id"
+                                                        size="small"
+                                                        required
+                                                    />
+                                                )}
+                                            />
                                             <div style={{
                                                 height: "280px",
                                                 width: "100%",

@@ -14,19 +14,15 @@ import {
 } from '@tuval/forms'
 import Swal from 'sweetalert2'
 import { Toast } from '../../../components/Toast'
-import { GridColDef, trTR } from '@mui/x-data-grid'
 
 import {
+  Autocomplete,
   Button,
   FormControl,
   FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
   SelectChangeEvent,
   Switch,
-  TextField,
-  Typography,
+  TextField
 } from '@mui/material'
 import Form from '../Views/Form'
 import React from 'react'
@@ -202,24 +198,31 @@ export class UpdateVocationalQualificationController extends UIController {
                     required
                   />
                   <FormControl fullWidth size="small" required>
-                    <InputLabel>Belge Türü</InputLabel>
-                    <Select
-                      name='document_type_id'
-                      label="Belge Türü"
-                      onChange={handleSelectType}
-                      size="small"
-                      value={form.document_type_id}
-                      required
-                    >
-                      {documentTypeGetList.map((document_type) => (
-                        <MenuItem
-                          value={document_type.document_type_id}
-                          key={document_type.document_type_id}
-                        >
-                          {document_type.document_type_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    <Autocomplete
+                      options={documentTypeGetList}
+                      getOptionLabel={(document_type) => document_type.document_type_name}
+                      value={documentTypeGetList.find((document_type) => document_type.document_type_id === form.document_type_id) || null}
+                      onChange={(event, newValue) => {
+                        if (newValue) {
+                          const showValidityPeriod = newValue.document_is_validity_period === "VAR";
+                          setShowValidityPeriod(showValidityPeriod);
+                          setForm({
+                            ...form,
+                            document_type_id: newValue.document_type_id,
+                            document_type_name: newValue.document_type_name,
+                            document_validity_period: showValidityPeriod ? "" : "Süresiz"
+                          });
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Belge Türü"
+                          size="small"
+                          required
+                        />
+                      )}
+                    />
                   </FormControl>
                   <TextField
                     size="small"

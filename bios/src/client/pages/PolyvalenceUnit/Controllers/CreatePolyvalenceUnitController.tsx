@@ -11,7 +11,7 @@ import {
 } from '@tuval/forms';
 import React, { useState, useCallback } from 'react';
 import Form from '../Views/Form';
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
@@ -188,42 +188,50 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                 required
                                             />
                                             <FormControl fullWidth size="small">
-                                                <InputLabel>Bağlı Departman</InputLabel>
-                                                <Select
-                                                    name="polyvalence_department_id"
-                                                    value={form.polyvalence_department_id}
-                                                    label="Bağlı Departman"
-                                                    onChange={(e) => {
-                                                        setForm({
-                                                            ...form,
-                                                            [e.target.name]: e.target.value,
-                                                            polyvalence_department_name: departments.find((department) => department.id == e.target.value).name
-                                                        })
+                                                <Autocomplete
+                                                    options={departments}
+                                                    getOptionLabel={(department) => department.name}
+                                                    value={departments.find((department) => department.id === form.polyvalence_department_id) || null}
+                                                    onChange={(event, newValue) => {
+                                                        if (newValue) {
+                                                            setForm({
+                                                                ...form,
+                                                                polyvalence_department_id: newValue.id,
+                                                                polyvalence_department_name: newValue.name
+                                                            });
+                                                        }
                                                     }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {departments.map((department) => (
-                                                        <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
-                                                    ))}
-                                                </Select>
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Bağlı Departman"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                />
                                             </FormControl>
                                             {
                                                 lineBased[0]?.is_active &&
                                                 <FormControl fullWidth size="small">
-                                                    <InputLabel>Bağlı Hat</InputLabel>
-                                                    <Select
-                                                        name="line"
-                                                        value={selectedLine}
-                                                        label="Bağlı Hat"
-                                                        onChange={(e) => setSelectedLine(e.target.value)}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {lines.filter(x => x.department_id == form.polyvalence_department_id).map((lines) => (
-                                                            <MenuItem value={lines.id} key={lines.id}>{lines.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
+                                                    <Autocomplete
+                                                        options={lines.filter(x => x.department_id == form.polyvalence_department_id)}
+                                                        getOptionLabel={(line) => line.name}
+                                                        value={lines.find((line) => line.id === selectedLine) || null}
+                                                        onChange={(event, newValue) => {
+                                                            if (newValue) {
+                                                                setSelectedLine(newValue.id);
+                                                            }
+                                                        }}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Hat"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                    />
                                                 </FormControl>
                                             }
                                             {
@@ -279,19 +287,27 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                 </div>
                                             }
                                             <FormControl fullWidth size="small">
-                                                <InputLabel>Değerlendirme Sıklığı</InputLabel>
-                                                <Select
-                                                    name="polyvalence_evaluation_frequency"
-                                                    value={form.polyvalence_evaluation_frequency}
-                                                    label="Değerlendirme Sıklığı"
-                                                    onChange={(e) => setForm({ ...form, [e.target.name]: e.target.value })}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {evaluationFrequency.map((frequency) => (
-                                                        <MenuItem value={frequency.frequency} key={frequency.frequency}>{frequency.frequency}</MenuItem>
-                                                    ))}
-                                                </Select>
+                                                <Autocomplete
+                                                    options={evaluationFrequency}
+                                                    getOptionLabel={(frequency) => frequency.frequency}
+                                                    value={evaluationFrequency.find((frequency) => frequency.frequency === form.polyvalence_evaluation_frequency) || null}
+                                                    onChange={(event, newValue) => {
+                                                        if (newValue) {
+                                                            setForm({
+                                                                ...form,
+                                                                polyvalence_evaluation_frequency: newValue.frequency
+                                                            });
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Değerlendirme Sıklığı"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                />
                                             </FormControl>
                                             <div style={{ display: "flex", gap: "10px", flexDirection: "column", marginTop: "8px" }}>
                                                 <Button type="submit" variant="contained" color="primary" size="small">Kaydet</Button>

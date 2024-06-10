@@ -10,7 +10,7 @@ import {
 } from '@tuval/forms';
 import React, { useState, useEffect } from 'react';
 import Form from '../Views/Form';
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField } from '@mui/material';
+import { Autocomplete, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
 import { Toast } from '../../../components/Toast';
 import ICompetencyEvaluationPeriod from '../../../interfaces/ICompetencyEvaluationPeriod';
@@ -161,21 +161,27 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
                                                 onChange={(e) => setForm({ ...form, evaluation_period_name: e.target.value })}
                                                 required
                                             />
-                                            <FormControl fullWidth size="small" required>
-                                                <InputLabel>Dönem Yılı</InputLabel>
-                                                <Select
-                                                    name="evaluation_period_year"
-                                                    value={form.evaluation_period_year}
-                                                    label="Dönem Yılı"
-                                                    onChange={(e) => setForm({ ...form, evaluation_period_year: e.target.value })}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {years.map((year) => (
-                                                        <MenuItem value={year.year} key={year.year}>{year.year}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <Autocomplete
+                                                value={years.find((year) => year.year === form.evaluation_period_year) || null}
+                                                onChange={(event, newValue) => {
+                                                    setForm({ ...form, evaluation_period_year: newValue ? newValue.year : '' });
+                                                }}
+                                                options={years}
+                                                getOptionLabel={(option) => option.year.toString()}
+                                                isOptionEqualToValue={(option, value) => option.year === value.year}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Dönem Yılı"
+                                                        size="small"
+                                                        required
+                                                        fullWidth
+                                                    />
+                                                )}
+                                                fullWidth
+                                                size="small"
+                                            />
+
                                             <FormControlLabel
                                                 sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
                                                 onChange={(e: any) => setForm({ ...form, is_default_year: e.target.checked ? "true" : "false" })}

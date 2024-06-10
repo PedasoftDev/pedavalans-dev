@@ -217,9 +217,6 @@ export const Routes = () => {
                     UIRoute('edit/:id', UpdateVocationalQualificationTypeController)
                 ),
 
-                UIRoute('position-dashboard', PositionDashboardController).children(
-                    UIRoute('view/:id/:period', PositionDashboard)
-                ),
 
                 // not found
                 UIRoute('*', NotFoundController),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import Form from '../ViewForm/Form';
-import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField, Typography } from '@mui/material';
 import Swal from 'sweetalert2';
 import { GridColDef, trTR } from '@mui/x-data-grid';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
@@ -313,27 +313,29 @@ const EditLineView = (props: {
                                         onChange={onChange}
                                     />
                                     <FormControl fullWidth size="small">
-                                        <InputLabel>Bağlı Olduğu Departman</InputLabel>
-                                        <Select
-                                            name="department_id"
-                                            value={formLine.department_id}
-                                            label="Bağlı Olduğu Departman"
-                                            onChange={(e: SelectChangeEvent) => {
-                                                setFormLine({
-                                                    ...formLine,
-                                                    department_id: e.target.value as string,
-                                                    department_name: props.departments.find((department) => department.id == e.target.value).name
-                                                })
+                                        <Autocomplete
+                                            options={props.departments}
+                                            getOptionLabel={(option) => option.name}
+                                            value={props.departments.find((department) => department.id == formLine.department_id) || null}
+                                            onChange={(event, newValue) => {
+                                                if (newValue) {
+                                                    setFormLine({
+                                                        ...formLine,
+                                                        department_id: newValue.id,
+                                                        department_name: newValue.name
+                                                    });
+                                                    setSelectedCompetencyValues([]);
+                                                    setSelectedCompetencies([]);
+                                                }
                                             }}
-                                            required
-                                            size="small"
-                                        >
-                                            {props.departments.map((department) => {
-                                                return (
-                                                    <MenuItem key={department.id} value={department.id}>{department.name}</MenuItem>
-                                                )
-                                            })}
-                                        </Select>
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="Bağlı Olduğu Departman"
+                                                    size="small"
+                                                />
+                                            )}
+                                        />
                                     </FormControl>
 
                                     {

@@ -18,7 +18,7 @@ export class EmployeeDashboardController extends UIController {
         PortalMenu('Çalışana Özel Dashboard'),
         UIRouteOutlet().width('100%').height('100%')
       )
-        .background(theme ? 'rgba(0,0,0,.85)' : '')
+        .background(theme ? 'rgba(0,0,0,.85)' : 'white')
         .foregroundColor(theme ? 'white' : '')
     )
   }

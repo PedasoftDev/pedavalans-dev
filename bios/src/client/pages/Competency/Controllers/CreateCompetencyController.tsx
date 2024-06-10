@@ -1,6 +1,6 @@
 import { ReactView, Spinner, UIController, UIView, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
-import React, { useState, useEffect } from "react";
-import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import React, { useState} from "react";
+import { Autocomplete, Button, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import ICompetency from "../../../interfaces/ICompetency";
 import { Resources } from "../../../assets/Resources";
@@ -12,8 +12,6 @@ import StyledDataGrid from "../../../components/StyledDataGrid";
 import Form from "../Views/Form";
 import Competency from "../../../../server/hooks/competency/main";
 import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/main";
-import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
-import CompetencyGradeValue from "../../../../server/hooks/competencyGradeValue/main";
 import Parameters from "../../../../server/hooks/parameters/main";
 import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
@@ -191,21 +189,30 @@ export class CreateCompetencyController extends UIController {
                                         width: "60%"
                                     }}>
                                     <TextField name="competency_name" label="Yetkinlik Adı" variant="outlined" fullWidth size="small" value={form.competency_name} onChange={handleChange} required />
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Yetkinlik Grubu</InputLabel>
-                                        <Select
-                                            name="competency_group_id"
-                                            value={form.competency_group_id}
-                                            label="Yetkinlik Grubu"
-                                            onChange={handleChangeGroup}
-                                            size="small"
-                                            required
-                                        >
-                                            {activeGroups.map((groups) => (
-                                                <MenuItem value={groups.competency_group_id} key={groups.competency_group_id}>{groups.competency_group_name}</MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
+                                    <Autocomplete
+                                        value={activeGroups.find((group) => group.competency_group_id === form.competency_group_id) || null}
+                                        onChange={(event, newValue) => {
+                                            setForm({
+                                                ...form,
+                                                competency_group_id: newValue ? newValue.competency_group_id : '',
+                                                competency_group_name: newValue ? newValue.competency_group_name : ''
+                                            });
+                                        }}
+                                        options={activeGroups}
+                                        getOptionLabel={(option) => option.competency_group_name}
+                                        isOptionEqualToValue={(option, value) => option.competency_group_id === value.competency_group_id}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Yetkinlik Grubu"
+                                                size="small"
+                                                required
+                                                fullWidth
+                                            />
+                                        )}
+                                        fullWidth
+                                        size="small"
+                                    />
                                     <TextField
                                         fullWidth
                                         onChange={handleChange}

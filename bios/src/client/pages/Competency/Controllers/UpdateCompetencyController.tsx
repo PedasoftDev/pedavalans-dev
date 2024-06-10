@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { Toast } from "../../../components/Toast";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import ICompetency from "../../../interfaces/ICompetency";
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField, Typography } from "@mui/material";
+import { Autocomplete, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField, Typography } from "@mui/material";
 import Form from "../Views/Form";
 import React from "react";
 import StyledDataGrid from "../../../components/StyledDataGrid";
@@ -267,20 +267,31 @@ export class UpdateCompetencyController extends UIController {
                                                 height: "calc(100vh - 200px)",
                                             }}>
                                             <TextField name="competency_name" label="Yetkinlik Adı" variant="outlined" fullWidth size="small" value={form.competency_name} onChange={handleChange} required />
-                                            <FormControl fullWidth size="small" required>
-                                                <InputLabel>Yetkinlik Grubu</InputLabel>
-                                                <Select
-                                                    name="competency_group_id"
-                                                    value={form.competency_group_id}
-                                                    label="Yetkinlik Grubu"
-                                                    onChange={handleChangeGroup}
-                                                    size="small"
-                                                >
-                                                    {activeGroups.map((group) => (
-                                                        <MenuItem value={group.competency_group_id} key={group.competency_group_id}>{group.competency_group_name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <Autocomplete
+                                                value={activeGroups.find((group) => group.competency_group_id === form.competency_group_id) || null}
+                                                onChange={(event, newValue) => {
+                                                    setForm({
+                                                        ...form,
+                                                        competency_group_id: newValue ? newValue.competency_group_id : '',
+                                                        competency_group_name: newValue ? newValue.competency_group_name : ''
+                                                    });
+                                                }}
+                                                options={activeGroups}
+                                                getOptionLabel={(option) => option.competency_group_name}
+                                                isOptionEqualToValue={(option, value) => option.competency_group_id === value.competency_group_id}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Yetkinlik Grubu"
+                                                        size="small"
+                                                        required
+                                                        fullWidth
+                                                    />
+                                                )}
+                                                fullWidth
+                                                size="small"
+                                            />
+
                                             <TextField
                                                 fullWidth
                                                 onChange={handleChange}

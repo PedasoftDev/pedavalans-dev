@@ -120,27 +120,29 @@ export class AssignEducationController extends UIFormController {
                                             onSubmit={handleSubmit}
                                         >
                                             <FormControl fullWidth size="small" required>
-                                                <InputLabel>Eğitim</InputLabel>
-                                                <Select
-                                                    name="education_id"
-                                                    value={form.education_id}
-                                                    label="Eğitim"
-                                                    onChange={(e) => {
-                                                        const selectedEducation = educationList.find((item) => item.$id === e.target.value);
-                                                        setForm({ ...form, education_id: e.target.value, education_name: selectedEducation?.name, education_code: selectedEducation?.code });
+                                                <Autocomplete
+                                                    options={educationList}
+                                                    getOptionLabel={(education) => education.name}
+                                                    value={educationList.find((education) => education.$id === form.education_id) || null}
+                                                    onChange={(event, newValue) => {
+                                                        if (newValue) {
+                                                            setForm({
+                                                                ...form,
+                                                                education_id: newValue.$id,
+                                                                education_name: newValue.name,
+                                                                education_code: newValue.code
+                                                            });
+                                                        }
                                                     }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {educationList.map((education: IEducation.IBase) => (
-                                                        <MenuItem
-                                                            value={education.$id}
-                                                            key={education.$id}
-                                                        >
-                                                            {education.name}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Eğitim"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                />
                                             </FormControl>
                                             <Autocomplete
                                                 multiple
@@ -162,27 +164,28 @@ export class AssignEducationController extends UIFormController {
                                                 }}
                                             />
                                             <FormControl fullWidth size="small" required>
-                                                <InputLabel>Eğitimci</InputLabel>
-                                                <Select
-                                                    name="educator_id"
-                                                    value={form.educator_id}
-                                                    label="Eğitimci"
-                                                    onChange={(e) => {
-                                                        const selectedEducator = accounts.find((item) => item.$id === e.target.value);
-                                                        setForm({ ...form, educator_id: e.target.value, educator_name: selectedEducator?.name });
+                                                <Autocomplete
+                                                    options={accounts}
+                                                    getOptionLabel={(account) => account.name}
+                                                    value={accounts.find((account) => account.$id === form.educator_id) || null}
+                                                    onChange={(event, newValue) => {
+                                                        if (newValue) {
+                                                            setForm({
+                                                                ...form,
+                                                                educator_id: newValue.$id,
+                                                                educator_name: newValue.name
+                                                            });
+                                                        }
                                                     }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {accounts.map((account) => (
-                                                        <MenuItem
-                                                            value={account.$id}
-                                                            key={account.$id}
-                                                        >
-                                                            {account.name}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Eğitimci"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                />
                                             </FormControl>
                                             <div style={{
                                                 display: "flex",
