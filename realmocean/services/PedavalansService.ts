@@ -199,11 +199,24 @@ class PedavalansService extends RealmoceanService {
       }
     });
 
+    router.get("/com.pedavalans.service.main/competency?page=:page&limit=:limit", async (req, res) => {
+      const { page, limit } = req.params;
+      try {
+        // const result = await this.databaseService.listDocuments(this.appName, this.databaseName, this.Competency, [this.databaseService.Query.limit(Number(limit), Number(page))]).then((res) => res.documents);
+        // return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    });
+
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
       await this.updateDashboardChartData();
     })
   }
+
+
 
   async updateCompetencyDepartmentNames(departmentId: string, departmentName: string): Promise<any> {
     const competencyDepartments: ICompetencyDepartment[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.CompetencyDepartment, [this.databaseService.Query.equal("competency_department_id", departmentId)]).then((res) => res.documents);

@@ -7,7 +7,7 @@ import { Toast } from '../../../../components/Toast';
 import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
 import AppInfo from '../../../../../AppInfo';
 import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
-import { Services, useGetMe } from '@realmocean/sdk';
+import { Services, useDeleteCache, useGetMe } from '@realmocean/sdk';
 import Collections from '../../../../../server/core/Collections';
 import { nanoid, useNavigate, useParams } from '@tuval/forms';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -67,6 +67,8 @@ const EditEmployeeView = (
         }
 ): JSX.Element => {
     const { updateEmployee, updateError, updateIsError, updateIsLoading, updateIsSuccess } = OrganizationStructureEmployee.Update();
+
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     const [formEmployee, setFormEmployee] = useState(props.selectedEmployee);
     const [isActive, setIsActive] = useState(props.selectedEmployee.is_active);
@@ -392,13 +394,12 @@ const EditEmployeeView = (
                         is_deleted: true,
                     },
                 })
-
             Toast.fire({
                 icon: 'success',
                 title: 'Belge başarıyla silindi.',
             })
-
             setOrganizationEmployeeDocuments(prevList => prevList.filter(doc => doc.$id !== id))
+            deleteCache()
 
             handleClose()
 

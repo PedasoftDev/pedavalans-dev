@@ -41,9 +41,7 @@ export class EducationPlansListController extends UIFormController {
                                 flex: 1,
                                 align: "center",
                                 valueGetter: (params: any) => {
-
                                     return Resources.Functions.formatDate(params.value);
-
                                 }
                             },
                             {
@@ -52,9 +50,7 @@ export class EducationPlansListController extends UIFormController {
                                 flex: 1,
                                 align: "center",
                                 valueGetter: (params: any) => {
-
                                     return Resources.Functions.formatDate(params.value);
-
                                 }
                             },
                             {

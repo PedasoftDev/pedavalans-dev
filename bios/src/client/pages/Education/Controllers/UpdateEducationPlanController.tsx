@@ -113,7 +113,9 @@ export class UpdateEducationPlanController extends UIFormController {
                                                 icon: 'success',
                                                 title: 'Eğitim Planı başarıyla silindi.',
                                             })
+                                            deleteCache();
                                             navigateToList()
+
                                         }
                                     )
                                 }
