@@ -5,7 +5,7 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Tooltip } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -273,7 +273,13 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                         }
 
                         const columns: GridColDef[] = [
-                            { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
+                            {
+                                field: "competency_name", headerName: "Yetkinlik Adı", flex: 1,
+                                renderCell: (params) =>
+                                    <Tooltip title={params.row.competency_description}>
+                                        {params.value}
+                                    </Tooltip>
+                            },
                             {
                                 field: "competency_target_value", headerName: "Hedef Değer", width: 100, minWidth: 100,
                                 renderCell: (params) => (

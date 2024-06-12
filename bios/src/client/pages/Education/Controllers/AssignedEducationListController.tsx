@@ -263,6 +263,7 @@ export class AssignedEducationListController extends UIFormController {
                                                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
                                                         <DialogLabel><strong>Eğitim Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name}</DialogLabel>
                                                         <DialogLabel><strong>Çalışan Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name}</DialogLabel>
+                                                        <DialogLabel><strong>Eğitim Yeri: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.location}</DialogLabel>
                                                         <TextField label="Eğitimcinin Yorumu" size="small" fullWidth multiline rows={4} value={dialogForm.educator_comment} onChange={(e) => setDialogForm({ ...dialogForm, educator_comment: e.target.value })} />
                                                         <FormControlLabel
                                                             sx={{ width: "100%", alignContent: "end" }}

@@ -3,15 +3,11 @@ import React, { useState } from "react";
 import {
     Button,
     TextField,
-    Select,
-    MenuItem,
     FormControl,
-    InputLabel,
     Autocomplete,
 } from "@mui/material";
 import { EmailBroker, useGetMe, useListAccounts } from "@realmocean/sdk";
 import Form from "../../Competency/Views/Form";
-import IEducation from "../../../interfaces/IEducation";
 import Education from "../../../../server/hooks/education/main";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
@@ -34,6 +30,7 @@ const resetForm: IAssignedEducation.ICreate = {
     hour: "0:00",
     educator_name: "",
     employee_name: "",
+    location: "",
     status: "open",
 };
 
@@ -73,6 +70,7 @@ export class AssignEducationController extends UIFormController {
                                     hour: form.hour,
                                     employee_name: `${employee.first_name} ${employee.last_name}`,
                                     start_date: form.start_date,
+                                    location: form.location,
                                     end_date: form.end_date,
                                     status: form.status,
                                     tenant_id: me?.prefs?.organization
@@ -150,7 +148,6 @@ export class AssignEducationController extends UIFormController {
                                                 options={employees}
                                                 getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
                                                 filterSelectedOptions
-                                                // defaultValue={}
                                                 size="small"
                                                 renderInput={(params) => (
                                                     <TextField
@@ -214,6 +211,15 @@ export class AssignEducationController extends UIFormController {
                                                         }} />
                                                 </LocalizationProvider>
                                             </div>
+                                            <TextField
+                                                label="Eğitim Yeri"
+                                                name="location"
+                                                value={form.location}
+                                                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                                size="small"
+                                                required
+                                                fullWidth
+                                            />
                                             <div style={{
                                                 display: "flex",
                                                 gap: "10px",

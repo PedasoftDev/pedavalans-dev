@@ -295,10 +295,18 @@ class PedavalansService extends RealmoceanService {
             }
           });
 
+          const resultData = []
+          performData.forEach((data) => {
+            if (data.value > 0) {
+              resultData.push(data)
+            }
+          })
+
           if (isAlreadyDataPieForChart[0]) {
             console.log("update")
+            await this.databaseService.updateDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { value: JSON.stringify(resultData) });
           } else {
-            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { key: "dashboard_pie", value: JSON.stringify(performData) });
+            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { key: "dashboard_pie", value: JSON.stringify(resultData) });
             console.log("create")
           }
         }

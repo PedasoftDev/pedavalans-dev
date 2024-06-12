@@ -30,6 +30,7 @@ const resetForm: IAssignedEducation.IBase = {
   education_id: "",
   education_name: "",
   hour: "0:00",
+  location: "",
   educator_name: "",
   employee_name: "",
   status: "open",
@@ -271,6 +272,15 @@ export class UpdateAssignedEducationController extends UIController {
                               }} />
                           </LocalizationProvider>
                         </div>
+                        <TextField
+                          label="Eğitim Yeri"
+                          name="location"
+                          value={form.location}
+                          onChange={(e) => setForm({ ...form, location: e.target.value })}
+                          size="small"
+                          required
+                          fullWidth
+                        />
                         <div style={{
                           display: "flex",
                           gap: "10px",

@@ -5,7 +5,7 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Tooltip } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -62,6 +62,7 @@ const resetForm: IAssignedEducation.ICreate = {
     tenant_id: "",
     education_id: "",
     education_name: "",
+    location: "",
     hour: "0:00",
     educator_name: "",
     employee_name: "",
@@ -191,6 +192,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     hour: form.hour,
                                     start_date: form.start_date,
                                     end_date: form.end_date,
+                                    location: form.location,
                                     status: "open",
                                     tenant_id: me?.prefs?.organization
                                 }
@@ -314,7 +316,13 @@ export class CompetencyRealDataEntryViewController extends UIController {
                         }
 
                         const columns: GridColDef[] = [
-                            { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
+                            {
+                                field: "competency_name", headerName: "Yetkinlik Adı", flex: 1,
+                                renderCell: (params) =>
+                                    <Tooltip title={params.row.competency_description}>
+                                        {params.value}
+                                    </Tooltip>
+                            },
                             {
                                 field: "competency_target_value", headerName: "Hedef Değer", align: "center", width: 100, minWidth: 100,
                                 valueGetter: (params) => {
@@ -726,6 +734,15 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                                 }} />
                                                         </LocalizationProvider>
                                                     </div>
+                                                    <TextField
+                                                        label="Eğitim Yeri"
+                                                        name="location"
+                                                        value={form.location}
+                                                        onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                                        size="small"
+                                                        required
+                                                        fullWidth
+                                                    />
                                                     <div style={{
                                                         display: "flex",
                                                         gap: "10px",

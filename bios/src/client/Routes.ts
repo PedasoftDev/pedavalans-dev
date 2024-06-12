@@ -74,9 +74,9 @@ import { GlobalCompetencyDashboard } from './pages/CompetencyDashboard/Controlle
 import { CompetencyDashboard } from './pages/CompetencyDashboard/Controllers/CompetencyDashboard';
 import { UpdateEducationController } from './pages/Education/Controllers/UpdateEducationController';
 import { UpdateAssignedEducationController } from './pages/Education/Controllers/UpdateAssignedEducationController';
-import { EducationPlansListController } from './pages/Education/Controllers/EducationPlansListController';
-import { CreateEducationPlanController } from './pages/Education/Controllers/CreateEducationPlanController';
-import { UpdateEducationPlanController } from './pages/Education/Controllers/UpdateEducationPlanController';
+import { UpdateEducationPlanController } from './pages/EducationPlan/Controllers/UpdateEducationPlanController';
+import { EducationPlansListController } from './pages/EducationPlan/Controllers/EducationPlansListController';
+import { CreateEducationPlanController } from './pages/EducationPlan/Controllers/CreateEducationPlanController';
 
 
 export const Routes = () => {
