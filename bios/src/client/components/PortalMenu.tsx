@@ -178,7 +178,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: 'Organizasyon Yapısı',
-                    link: '/app/organization-structure/view',
+                    link: '/app/organization-structure/employee/list',
                     icon: <VscOrganization size={25} />,
                     isVisible: tableAuth ? isAdmin : true,
                 },

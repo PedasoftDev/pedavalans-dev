@@ -19,8 +19,6 @@ import { CreateCompetencyEvaluationPeriodController } from './pages/CompetencyEv
 import { CompetencyEvaluationListController } from './pages/CompetencyEvaluationPeriod/Controllers/CompetencyEvaluationPeriodListController';
 import { UpdateCompetenyEvaluationPeriodController } from './pages/CompetencyEvaluationPeriod/Controllers/UpdateCompetencyEvaluationPeriodController';
 import { ParametersController } from './pages/Parameters/Controllers/ParametersController';
-import { OrganizationStructureController } from './pages/OrganizationStructure/Controllers/OrganizationStructureController';
-import { OrganizationStructureViewController } from './pages/OrganizationStructure/Controllers/OrganizationStructureViewController';
 import { CreateCompetencyController } from './pages/Competency/Controllers/CreateCompetencyController';
 import { CompetencyController } from './pages/Competency/Controllers/CompetencyController';
 import { CompetencyListController } from './pages/Competency/Controllers/CompetencyListController';
@@ -45,7 +43,6 @@ import { ReportPolyvalenceUnitList } from './pages/PolyvalenceUnit/Controllers/R
 import { UpdatePasswordController } from './controllers/UpdatePasswordController';
 import { AuthorizationProfileController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileController';
 import { AuthorizationProfileViewController } from './pages/AuthorizationProfile/Controllers/AuthorizationProfileViewController';
-import { OrganizationViewController } from './pages/Organization/Controllers/OrganizationViewController';
 import { EducationController } from './pages/Education/Controllers/EducationController';
 import { EducationListController } from './pages/Education/Controllers/EducationListController';
 import { CreateEducationController } from './pages/Education/Controllers/CreateEducationController';
@@ -77,6 +74,11 @@ import { UpdateAssignedEducationController } from './pages/Education/Controllers
 import { UpdateEducationPlanController } from './pages/EducationPlan/Controllers/UpdateEducationPlanController';
 import { EducationPlansListController } from './pages/EducationPlan/Controllers/EducationPlansListController';
 import { CreateEducationPlanController } from './pages/EducationPlan/Controllers/CreateEducationPlanController';
+import { OrganizationStructureController } from './pages/Organization/Controllers/OrganizationStructureController';
+import { EmployeeListController } from './pages/Organization/Controllers/Employee/EmployeeListController';
+import { CreateEmployeeController } from './pages/Organization/Controllers/Employee/CreateEmployeeController';
+import { TitleListController } from './pages/Organization/Controllers/Title/TitleListController';
+import { UpdateEmployeeController } from './pages/Organization/Controllers/Employee/UpdateEmployeeController';
 
 
 export const Routes = () => {
@@ -116,7 +118,13 @@ export const Routes = () => {
 
                 // organization structure
                 UIRoute('organization-structure', OrganizationStructureController).children(
-                    UIRoute('view', OrganizationStructureViewController)
+                    // employee
+                    UIRoute('employee/list', EmployeeListController),
+                    UIRoute('employee/:id', UpdateEmployeeController),
+                    UIRoute('employee/create', CreateEmployeeController),
+
+                    // title
+                    UIRoute('title/list', TitleListController),
                 ),
 
                 // competency
@@ -182,8 +190,6 @@ export const Routes = () => {
                     UIRoute('plan-edit/:id', UpdateEducationPlanController),
                     UIRoute('edit/:id', UpdateEducationController),
                 ),
-
-                UIRoute('organization', OrganizationViewController),
 
                 UIRoute('pending-task', PendindTasksController).children(
                     UIRoute('list', PendingTaskListController)

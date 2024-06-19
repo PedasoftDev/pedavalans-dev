@@ -45,6 +45,7 @@ const formEmployeeState: IOrganizationStructure.IEmployees.IEmployee = {
 const resetFormDocument: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
     employee_id: "",
     document_id: "",
+    id: "",
     document_name: "",
     document_type_id: "",
     document_type_name: "",

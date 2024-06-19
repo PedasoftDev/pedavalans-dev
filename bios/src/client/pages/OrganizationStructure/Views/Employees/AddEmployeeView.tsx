@@ -42,7 +42,7 @@ const resetFormDocument: IOrganizationStructure.IEmployeeVocationalQualification
     employee_id: "",
     document_id: "",
     document_name: "",
-    document_type_id: "",
+    document_type_id: "", id: "",
     document_type_name: "",
     end_date: "",
     tenant_id: ""

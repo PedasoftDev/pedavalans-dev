@@ -181,6 +181,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                                 required
                                                             />
                                                         )}
+                                                        fullWidth
                                                     />
                                                     <Autocomplete
                                                         options={evaluationPeriod}
@@ -198,6 +199,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                                 required
                                                             />
                                                         )}
+                                                        fullWidth
                                                     />
                                                     {/* <TextField
                                                         name="percentage"
