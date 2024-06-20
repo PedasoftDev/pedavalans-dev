@@ -11,6 +11,7 @@ import { ToastError, ToastSuccess } from "../../../../components/Toast";
 import { IOrganizationStructure } from "../../../../interfaces/IOrganizationStructure";
 import AppInfo from "../../../../../AppInfo";
 import removeDollarProperties from "../../../../assets/Functions/removeDollarProperties";
+import Swal from "sweetalert2";
 
 const resetFormTitle: IOrganizationStructure.ITitles.ITitle = {
   record_id: "",
@@ -72,18 +73,29 @@ export class UpdateTitleController extends UIController {
           }
 
           const onDelete = () => {
-            update({
-              databaseId: AppInfo.Database,
-              collectionId: "organization_title",
-              documentId: id,
-              data: {
-                ...removeDollarProperties(formTitle),
-                is_deleted: true,
-                is_active: false
+            Swal.fire({
+              title: 'Emin misiniz?',
+              text: "Bu işlem geri alınamaz!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Evet, sil!',
+              cancelButtonText: 'İptal',
+            }).then((result) => {
+              if (result.isConfirmed) {
+                update({
+                  databaseId: AppInfo.Database,
+                  collectionId: "organization_title",
+                  documentId: id,
+                  data: {
+                    ...removeDollarProperties(formTitle),
+                    is_deleted: true,
+                    is_active: false
+                  }
+                }, () => {
+                  ToastSuccess("Başarılı!", "Ünvan başarıyla silindi!")
+                  onReset()
+                })
               }
-            }, () => {
-              ToastSuccess("Başarılı!", "Ünvan başarıyla silindi!")
-              onReset()
             })
 
           }

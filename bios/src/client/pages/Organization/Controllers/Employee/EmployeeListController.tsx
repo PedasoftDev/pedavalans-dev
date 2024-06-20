@@ -624,7 +624,7 @@ export class EmployeeListController extends UIController {
                             {!isTransfer && <Button onClick={handleClose} color='error' variant='contained'>İptal</Button>}
                             {!isTransfer && <Button variant='contained' color='primary' onClick={() => { }}>Aktarımı Başlat</Button>}
                           </DialogActions>
-                        </Dialog >
+                        </Dialog>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                           <div style={{ width: "60%" }}>
                             <TextField size='small' label='Personel Arayın' variant='outlined' fullWidth onChange={(e) => setFilterKey(e.target.value)} />
@@ -640,7 +640,7 @@ export class EmployeeListController extends UIController {
                             <Button variant='contained' fullWidth size='small' onClick={() => {
                               navigate(Resources.OrganizationStructureTabValues.find(x => x.value === 0)?.link + "/create");
                             }}>Yeni Personel</Button>
-                            {accountRelation.is_admin && <Tooltip title={`Çalışan Aktarım Şablonunu İndir`}>
+                            {(accountRelation.is_admin || accountRelation.authorization_profile === "admin") && <Tooltip title={`Çalışan Aktarım Şablonunu İndir`}>
                               <Button
                                 variant='contained'
                                 onClick={() => employeeTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
@@ -648,7 +648,7 @@ export class EmployeeListController extends UIController {
                               </Button>
                             </Tooltip>
                             }
-                            {accountRelation.is_admin && <Tooltip title={`Çalışan Aktarım Şablonunu Yükle`}>
+                            {(accountRelation.is_admin || accountRelation.authorization_profile === "admin") && <Tooltip title={`Çalışan Aktarım Şablonunu Yükle`}>
                               <Button
                                 variant='outlined'
                                 onClick={handleButtonClick}
