@@ -33,6 +33,14 @@ namespace OrganizationStructureTitle {
             totalTitles: total
         }
     }
+
+    export const Get = (id: string): { title: IOrganizationStructure.ITitles.ITitle, isLoadingTitle: boolean } => {
+        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: "organization_title", documentId: id })
+        return {
+            title: document as any,
+            isLoadingTitle: isLoading
+        }
+    }
 }
 
 export default OrganizationStructureTitle;

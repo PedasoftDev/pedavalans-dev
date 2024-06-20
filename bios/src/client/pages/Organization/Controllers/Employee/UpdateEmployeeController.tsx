@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { DialogContainer, HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate, useParams } from '@tuval/forms';
-import { useGetMe } from '@realmocean/sdk'
+import { useDeleteCache, useGetMe } from '@realmocean/sdk'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
@@ -80,6 +80,8 @@ export class UpdateEmployeeController extends UIController {
     const { updateEmployee } = OrganizationStructureEmployee.Update()
     const { createLog } = OrganizationStructureEmployeeLog.Create()
 
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
+
     const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
 
     return (
@@ -102,6 +104,7 @@ export class UpdateEmployeeController extends UIController {
             })
 
             const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
+            const [showEditValidityPeriod, setShowEditValidityPeriod] = useState<boolean>(false)
 
             const [formIsEmployee, setFormIsEmployee] = useState(true)
 
@@ -151,8 +154,8 @@ export class UpdateEmployeeController extends UIController {
                     <Button variant='text' onClick={() => {
                       const appendForm = params.row as IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate;
                       setEditFormDocument(appendForm)
+                      setShowEditValidityPeriod(!(appendForm.document_type_name === "Süresiz"))
                       handleClickOpen()
-                      setDocuments(documents.filter((document) => document.id !== appendForm.id))
                     }}>
                       Düzenle
                     </Button>
@@ -192,7 +195,7 @@ export class UpdateEmployeeController extends UIController {
                 databaseId: AppInfo.Database,
                 collectionId: Collections.OrganizationStructureEmployee,
                 documentId: formEmployee.$id,
-                data: formEmployee
+                data: removeDollarProperties(formEmployee)
               }, (result) => {
                 createLog({
                   documentId: nanoid(),
@@ -217,53 +220,55 @@ export class UpdateEmployeeController extends UIController {
                     job_start_date: formEmployee.job_start_date
                   }
                 }, () => {
-                  // const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
-                  // if (docsEmployee.length > 0) {
-                  //   docsEmployee.forEach((doc, i) => {
-                  //     updateEmployee({
-                  //       databaseId: AppInfo.Database,
-                  //       collectionId: Collections.OrganizationEmployeeDocument,
-                  //       documentId: doc.$id,
-                  //       data: {
-                  //         is_active: false,
-                  //         is_deleted: true
-                  //       }
-                  //     }, () => {
-                  //       if (i === docsEmployee.length - 1) {
-                  //         if (documents.length > 0) {
-                  //           documents.forEach((doc, _i) => {
-                  //             const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
-                  //               document_id: doc.document_id,
-                  //               document_name: doc.document_name,
-                  //               document_type_id: doc.document_type_id,
-                  //               document_type_name: doc.document_type_name,
-                  //               employee_id: id,
-                  //               end_date: doc.end_date,
-                  //               id: "",
-                  //               tenant_id: me?.prefs?.organization
-                  //             }
-                  //             delete document.id;
-                  //             createOrganizationEmployeeDocument({
-                  //               documentId: nanoid(),
-                  //               data: {
-                  //                 ...document,
-                  //                 employee_id: id
-                  //               }
-                  //             }, () => {
-                  //               if (_i === documents.length - 1) {
-                  //                 ToastSuccess("Personel başarıyla güncellendi", "")
-                  //                 navigate(link + "/list")
-                  //               }
-                  //             })
-                  //           })
-                  //         } else {
-                  //           ToastSuccess("Personel başarıyla güncellendi", "")
-                  //           navigate(link + "/list")
-                  //         }
-                  //       }
-                  //     })
-                  //   })
-                  // }
+                  const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
+                  if (docsEmployee.length > 0) {
+                    docsEmployee.forEach((doc, i) => {
+                      updateEmployee({
+                        databaseId: AppInfo.Database,
+                        collectionId: Collections.OrganizationEmployeeDocument,
+                        documentId: doc.$id,
+                        data: {
+                          is_active: false,
+                          is_deleted: true
+                        }
+                      }, () => {
+                        if (i === docsEmployee.length - 1) {
+                          if (documents.length > 0) {
+                            documents.forEach((doc, _i) => {
+                              const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
+                                document_id: doc.document_id,
+                                document_name: doc.document_name,
+                                document_type_id: doc.document_type_id,
+                                document_type_name: doc.document_type_name,
+                                employee_id: id,
+                                end_date: doc.end_date,
+                                id: "",
+                                tenant_id: me?.prefs?.organization
+                              }
+                              delete document.id;
+                              createOrganizationEmployeeDocument({
+                                documentId: nanoid(),
+                                data: {
+                                  ...document,
+                                  employee_id: id
+                                }
+                              }, () => {
+                                if (_i === documents.length - 1) {
+                                  ToastSuccess("Personel başarıyla güncellendi", "")
+                                  navigate(link + "/list")
+                                  deleteCache()
+                                }
+                              })
+                            })
+                          } else {
+                            ToastSuccess("Personel başarıyla güncellendi", "")
+                            navigate(link + "/list")
+                            deleteCache()
+                          }
+                        }
+                      })
+                    })
+                  }
                 })
               })
 
@@ -297,7 +302,7 @@ export class UpdateEmployeeController extends UIController {
               if (id) {
                 const employee = employees.find((employee) => employee.$id === id)
                 if (employee) {
-                  setFormEmployee(removeDollarProperties(employee))
+                  setFormEmployee(employee)
                   setIsActive(employee.is_active)
                   const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
                   const docsCreateCopies: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[] = docsEmployee.map((doc) => {
@@ -560,89 +565,96 @@ export class UpdateEmployeeController extends UIController {
                                 </IconButton>
                               </div>
                               <div style={{
-                                height: "calc(100vh - 280px)"
+                                height: "calc(100vh - 310px)",
+                                width: "100%"
                               }}>
                                 <StyledDataGrid columns={documentColumns}
                                   rows={documents}
                                 />
-                                {/* Edit Document Dialog */}
-                                <Dialog
-                                  open={isOpenDialog}
-                                >
-                                  <DialogTitle>Belge Düzenle</DialogTitle>
-                                  <DialogContent>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
-                                      <Autocomplete
-                                        options={documentTypeGetList}
-                                        value={editFormDocument.document_type_id ? documentTypeGetList.find(option => option.$id === editFormDocument.document_type_id) : null}
-                                        onChange={handleSelectType}
-                                        getOptionLabel={(option) => option.document_type_name}
-                                        renderInput={(params) =>
-                                          <TextField
-                                            {...params}
-                                            label="Belge Türü"
-                                            size="small"
-                                          />
-                                        }
-                                        fullWidth
-                                      />
-                                      <Autocomplete
-                                        options={documentGetList.filter((d) => d.document_type_id === editFormDocument.document_type_id)}
-                                        value={editFormDocument.document_id ? documentGetList.find(option => option.$id === editFormDocument.document_id) : null}
-                                        onChange={(event, newValue) => {
-                                          setFormDocument({
-                                            ...editFormDocument,
-                                            document_id: newValue.document_id,
-                                            document_name: newValue.document_name
-                                          });
-                                        }}
-                                        getOptionLabel={(option) => option.document_name}
-                                        renderInput={(params) =>
-                                          <TextField
-                                            {...params}
-                                            label="Belge Adı"
-                                            size="small"
-
-                                          />
-                                        }
-                                        fullWidth
-                                      />
-                                      {showValidityPeriod &&
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                          <DatePicker label="Bitiş Tarihi"
-                                            format="DD/MM/YYYY"
-                                            value={dayjs(editFormDocument.end_date)}
-                                            slotProps={{ textField: { size: 'small', fullWidth: true } }}
-                                            onChange={(e: any) => {
-                                              setFormDocument({
-                                                ...editFormDocument,
-                                                end_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
-                                              })
-                                            }}
-                                          />
-                                        </LocalizationProvider>}
-                                      <IconButton
-                                        size='small'
-                                        onClick={() => {
-                                          if (editFormDocument.document_id === "" || editFormDocument.document_type_id === "") {
-                                            ToastError("Belge türü ve belge adı seçiniz", "")
-                                          } else if (showValidityPeriod && editFormDocument.end_date === "") {
-                                            ToastError("Bitiş tarihi seçiniz", "")
-                                          } else {
-                                            setDocuments([...documents, { ...editFormDocument, id: nanoid() }])
-                                            setFormDocument({ ...resetDocumentForm, tenant_id: me?.prefs?.organization })
-                                          }
-                                        }}>
-                                        <BiPlusCircle size={25} />
-                                      </IconButton>
-                                    </div>
-                                  </DialogContent>
-                                  <DialogActions>
-                                    <Button onClick={handleClose}>İptal</Button>
-                                    <Button>Subscribe</Button>
-                                  </DialogActions>
-                                </Dialog>
                               </div>
+                              {/* Edit Document Dialog */}
+                              <Dialog
+                                open={isOpenDialog}
+                              >
+                                <DialogTitle>Belge Düzenle</DialogTitle>
+                                <DialogContent>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
+                                    <Autocomplete
+                                      options={documentTypeGetList}
+                                      value={editFormDocument.document_type_id ? documentTypeGetList.find(option => option.$id === editFormDocument.document_type_id) : null}
+                                      onChange={(event, newValue) => {
+                                        const selectedValue = newValue.document_type_id;
+                                        const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
+                                        setShowEditValidityPeriod(!(selectedDocumentType.document_validity_period === "Süresiz"));
+                                        setEditFormDocument({
+                                          ...editFormDocument,
+                                          document_type_id: selectedValue,
+                                          document_type_name: selectedDocumentType.document_type_name,
+                                          ...(selectedDocumentType.document_validity_period === "Süresiz" && { end_date: "" })
+                                        });
+                                      }}
+                                      getOptionLabel={(option) => option.document_type_name}
+                                      renderInput={(params) =>
+                                        <TextField
+                                          {...params}
+                                          label="Belge Türü"
+                                          size="small"
+                                        />
+                                      }
+                                      fullWidth
+                                    />
+                                    <Autocomplete
+                                      options={documentGetList.filter((d) => d.document_type_id === editFormDocument.document_type_id)}
+                                      value={editFormDocument.document_id ? documentGetList.find(option => option.$id === editFormDocument.document_id) : null}
+                                      onChange={(event, newValue) => {
+                                        setEditFormDocument({
+                                          ...editFormDocument,
+                                          document_id: newValue.document_id,
+                                          document_name: newValue.document_name
+                                        });
+                                      }}
+                                      getOptionLabel={(option) => option.document_name}
+                                      renderInput={(params) =>
+                                        <TextField
+                                          {...params}
+                                          label="Belge Adı"
+                                          size="small"
+
+                                        />
+                                      }
+                                      fullWidth
+                                    />
+                                    {showEditValidityPeriod &&
+                                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker label="Bitiş Tarihi"
+                                          format="DD/MM/YYYY"
+                                          value={dayjs(editFormDocument.end_date)}
+                                          slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                          onChange={(e: any) => {
+                                            setEditFormDocument({
+                                              ...editFormDocument,
+                                              end_date: e.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)"
+                                            })
+                                          }}
+                                        />
+                                      </LocalizationProvider>}
+                                  </div>
+                                </DialogContent>
+                                <DialogActions>
+                                  <Button onClick={handleClose}>İptal</Button>
+                                  <Button onClick={(e) => {
+                                    e.preventDefault();
+                                    const updatedDocuments = documents.map((doc) => {
+                                      if (doc.id === editFormDocument.id) {
+                                        return editFormDocument
+                                      }
+                                      return doc
+                                    })
+                                    setDocuments(updatedDocuments)
+                                    handleClose()
+                                  }}>Güncelle</Button>
+                                </DialogActions>
+                              </Dialog>
                             </div>
                         }
                         buttons={formIsEmployee ? [
@@ -668,6 +680,11 @@ export class UpdateEmployeeController extends UIController {
                         ]
                           :
                           [
+                            {
+                              text: "Kaydet",
+                              color: "primary",
+                              type: "submit"
+                            },
                             {
                               text: "Personel Bilgileri",
                               color: "info",

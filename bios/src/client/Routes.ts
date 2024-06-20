@@ -79,6 +79,8 @@ import { EmployeeListController } from './pages/Organization/Controllers/Employe
 import { CreateEmployeeController } from './pages/Organization/Controllers/Employee/CreateEmployeeController';
 import { TitleListController } from './pages/Organization/Controllers/Title/TitleListController';
 import { UpdateEmployeeController } from './pages/Organization/Controllers/Employee/UpdateEmployeeController';
+import { CreateTitleController } from './pages/Organization/Controllers/Title/CreateTitleController';
+import { UpdateTitleController } from './pages/Organization/Controllers/Title/UpdateTitleController';
 
 
 export const Routes = () => {
@@ -125,6 +127,8 @@ export const Routes = () => {
 
                     // title
                     UIRoute('title/list', TitleListController),
+                    UIRoute('title/create', CreateTitleController),
+                    UIRoute('title/:id', UpdateTitleController),
                 ),
 
                 // competency
