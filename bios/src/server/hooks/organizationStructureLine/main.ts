@@ -21,6 +21,11 @@ namespace OrganizationStructureLine {
         const { updateDocument, isLoading, isSuccess, isError, error } = useUpdateDocument(AppInfo.Name)
         return { updateLine: updateDocument, isLoading, isSuccess, isError, error }
     }
+
+    export const Get = (id: string) => {
+        const { document, isLoading } = useGetDocument({ databaseId: AppInfo.Database, projectId: AppInfo.Name, collectionId: "organization_line", documentId: id })
+        return { line: document as any, isLoadingLine: isLoading }
+    }
 }
 
 export default OrganizationStructureLine

@@ -84,6 +84,12 @@ import { UpdateTitleController } from './pages/Organization/Controllers/Title/Up
 import { PositionListController } from './pages/Organization/Controllers/Position/PositionListController';
 import { CreatePositionController } from './pages/Organization/Controllers/Position/CreatePositionController';
 import { UpdatePositionController } from './pages/Organization/Controllers/Position/UpdatePositionController';
+import { LineListController } from './pages/Organization/Controllers/Line/LineListController';
+import { CreateLineController } from './pages/Organization/Controllers/Line/CreateLineController';
+import { UpdateLineController } from './pages/Organization/Controllers/Line/UpdateLineController';
+import { DepartmentListController } from './pages/Organization/Controllers/Department/DepartmentListController';
+import { CreateDepartmentController } from './pages/Organization/Controllers/Department/CreateDepartmentController';
+import { UpdateDepartmentController } from './pages/Organization/Controllers/Department/UpdateDepartmentController';
 
 
 export const Routes = () => {
@@ -137,6 +143,16 @@ export const Routes = () => {
                     UIRoute('position/list', PositionListController),
                     UIRoute('position/create', CreatePositionController),
                     UIRoute('position/:id', UpdatePositionController),
+
+                    // line
+                    UIRoute('line/list', LineListController),
+                    UIRoute('line/create', CreateLineController),
+                    UIRoute('line/:id', UpdateLineController),
+
+                    // department
+                    UIRoute('department/list', DepartmentListController),
+                    UIRoute('department/create', CreateDepartmentController),
+                    UIRoute('department/:id', UpdateDepartmentController),
                 ),
 
                 // competency

@@ -29,7 +29,6 @@ export class TitleListController extends UIController {
         UIViewBuilder(() => {
           const accountRelation = accountRelations[0]
           const value = 1;
-          const navigate = useNavigate();
 
           const [filterKey, setFilterKey] = useState("");
           const [active, setActive] = useState(true);
