@@ -1,4 +1,4 @@
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material'
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { DialogContainer, HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate, useParams } from '@tuval/forms';
 import { useDeleteCache, useGetMe } from '@realmocean/sdk'
@@ -495,6 +495,13 @@ export class UpdateEmployeeController extends UIController {
                                   }
                                 />
                               </FormControl>
+                              <FormControlLabel
+                                sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
+                                onChange={(e: any) => setFormEmployee({ ...formEmployee, is_active: e.target.checked })}
+                                control={<Switch color="primary" checked={formEmployee.is_active} />}
+                                label="Aktif mi?"
+                                labelPlacement="start"
+                              />
                             </div>
                             :
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>

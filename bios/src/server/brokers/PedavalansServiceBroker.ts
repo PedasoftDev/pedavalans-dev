@@ -31,5 +31,20 @@ export class PedavalansServiceBroker extends ServiceBroker<any> {
     }, payload);
   }
 
+  async importEmployeeTable(excelData: any, tenant_id: string, user_id: string): Promise<any> {
+
+
+    let path = '/importEmployeeTable';
+    let payload: Payload = {};
+    payload['excelData'] = excelData;
+    payload['tenantId'] = tenant_id;
+    payload['userId'] = user_id;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+  }
+
 
 }

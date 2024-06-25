@@ -1,4 +1,4 @@
-docker buildx build --platform linux/amd64,linux/arm64 -t pedasoft/pedavalans:1.0.123 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t pedasoft/pedavalans:1.0.124 --push .
 #docker buildx create --use
 #docker stop $(docker ps -a -q)
 #docker rm $(docker ps -a -q)
