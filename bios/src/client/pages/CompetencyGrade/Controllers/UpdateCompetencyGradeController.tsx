@@ -6,6 +6,7 @@ import { Toast } from "../../../components/Toast";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import AppInfo from "../../../../AppInfo";
 import Swal from "sweetalert2";
+import { useDeleteCache } from "@realmocean/sdk";
 
 export class UpdateCompetencyGradeController extends UIFormController {
 
@@ -16,6 +17,8 @@ export class UpdateCompetencyGradeController extends UIFormController {
         const navigate = useNavigate();
 
         const { grade, isLoading } = CompetencyGrade.GetCompetencyGrade(id);
+
+        const { deleteCache } = useDeleteCache(AppInfo.Name);
 
         return (
             isLoading ? VStack(Spinner()) :
@@ -39,7 +42,6 @@ export class UpdateCompetencyGradeController extends UIFormController {
                                     collectionId: "competency_grade",
                                     documentId: id,
                                     data: {
-                                        ...grade,
                                         is_deleted_grade: true
                                     }
                                 }, () => {
@@ -47,6 +49,7 @@ export class UpdateCompetencyGradeController extends UIFormController {
                                         title: "Yetkinlik Düzeyi Silindi",
                                         icon: "info"
                                     })
+                                    deleteCache()
                                     navigate("/app/competency-grade/list")
                                 })
                             }

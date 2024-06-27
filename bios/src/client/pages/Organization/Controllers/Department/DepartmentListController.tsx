@@ -89,7 +89,7 @@ export class DepartmentListController extends UIController {
                       }>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                           <div style={{ width: "60%" }}>
-                            <TextField size='small' label='Hat Arayın' variant='outlined' fullWidth onChange={(e) => setFilterKey(e.target.value)} />
+                            <TextField size='small' label='Departman Arayın' variant='outlined' fullWidth onChange={(e) => setFilterKey(e.target.value)} />
                           </div>
                           <div style={{ width: "10%" }}>
                             {
@@ -101,7 +101,7 @@ export class DepartmentListController extends UIController {
                           <div style={{ width: "30%", display: "flex", gap: "5px" }}>
                             <Button variant='contained' fullWidth size='small' onClick={() => {
                               navigate(Resources.OrganizationStructureTabValues.find(x => x.value === value)?.link + "/create");
-                            }}>Yeni Hat</Button>
+                            }}>Yeni Departman</Button>
                           </div>
                         </div>
                         <GridContainer>

@@ -70,44 +70,23 @@ export class CreateVocationalQualificationController extends UIFormController {
             setForm({ ...form, [e.target.name]: e.target.value })
           }
 
-          const handleSelectType = (e: SelectChangeEvent<string>) => {
-            const selectedValue = e.target.value;
-            const selectedDocumentType = documentTypeGetList.find((type) => type.document_type_id === selectedValue);
-
-            if (selectedDocumentType.document_is_validity_period === "VAR") {
-              setShowValidityPeriod(true);
-              setForm({
-                ...form,
-                [e.target.name]: selectedValue,
-                document_type_name: selectedDocumentType.document_type_name, document_validity_period: ""
-              });
-            } else {
-              setShowValidityPeriod(false);
-              setForm({
-                ...form, [e.target.name]: selectedValue, document_type_name: selectedDocumentType.document_type_name,
-                document_validity_period: "Süresiz"
-              });
-            }
-          };
-
           const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault()
-            Toast.fire({
-              icon: "info",
-              title: "Mesleki Yeterlilik Belgesi Oluşturuluyor..."
-            })
 
-            if (
-              documentGetList.some(
-                (document) => document.document_code === form.document_code
-              )
-            ) {
+            if (documentGetList.filter((document) => document.document_code === form.document_code).length > 0) {
               Toast.fire({
                 icon: 'error',
                 title: 'Bu yeterlilik belge kodu zaten mevcut!',
               })
               return
             }
+            
+
+            Toast.fire({
+              icon: "info",
+              title: "Mesleki Yeterlilik Belgesi Oluşturuluyor..."
+            })
+
 
             const createDocumentId: string = nanoid()
             form.document_id = createDocumentId;

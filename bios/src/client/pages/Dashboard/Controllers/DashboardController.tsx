@@ -21,6 +21,7 @@ import OrganizationStructurePosition from '../../../../server/hooks/organization
 import IParameters from '../../../interfaces/IParameters';
 import IStringParameter from '../../../interfaces/IStringParameter';
 import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker';
+import StringParameter from '../../../../server/hooks/stringParameter/main';
 
 
 export class DashboardController extends UIController {
@@ -40,6 +41,7 @@ export class DashboardController extends UIController {
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management)
         const { parameters: lineBased, isLoading: isLoadingLineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
+        const { stringParameters: positionBased, isLoading: isLoadingPositionBased } = StringParameter.GetParameterByName("position_based_polyvalence_management")
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
         const { accountRelations: accountRelationList, isLoadingResult: isLoadingAccountResult } = AccountRelation.GetList(me?.prefs?.organization)
         const { accounts, isLoading: isLoadingUsers } = useListAccounts()
@@ -48,7 +50,7 @@ export class DashboardController extends UIController {
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingPositionBased || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         accountRelations[0].is_active == false ? UINavigate("/logout") :
@@ -442,6 +444,7 @@ export class DashboardController extends UIController {
                                         }
                                         localStorage.setItem(Resources.ParameterLocalStr.machine_based_polyvalence_management, machineBased[0]?.is_active ? "true" : "false")
                                         localStorage.setItem(Resources.ParameterLocalStr.line_based_competency_relationship, lineBased[0]?.is_active ? "true" : "false")
+                                        localStorage.setItem("position_based_polyvalence_management", positionBased[0]?.value)
 
                                         const collection_version = collections.find(collection => collection.$id === "collection_version")
                                         if (!collection_version) {

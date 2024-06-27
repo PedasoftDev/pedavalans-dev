@@ -83,7 +83,7 @@ export class PolyvalenceUnitListController extends UIController {
                         VStack({ alignment: cTopLeading })(
                             VStack({ alignment: cTopLeading })(
                                 HStack({ alignment: cLeading })(
-                                    Views.Title("Birim Polivalans Tabloları")
+                                    Views.Title("Polivalans Tabloları")
                                 ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                                 HStack({ spacing: 10 })(
                                     VStack(

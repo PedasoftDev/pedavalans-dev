@@ -232,6 +232,7 @@ class PedavalansService extends RealmoceanService {
   async init() {
     console.log('PedavalansService running...');
     await this.updateDashboardChartData();
+    await this.checkPositionBasedPolyvalenceManagement();
     this.scheduleService.addJob('0 0 7 * * *', async () => {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
@@ -256,16 +257,6 @@ class PedavalansService extends RealmoceanService {
       }
     });
 
-    router.post("/com.pedavalans.service.main/importEmployeeTable", async (req, res) => {
-      const { excelData, tenantId, userId } = req.body;
-      try {
-        const result = await this.importEmployeeTable(excelData, tenantId, userId);
-        return res.json({ result });
-
-      } catch (e) {
-        return res.status(500).json({ message: e.message });
-      }
-    });
 
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
@@ -273,193 +264,6 @@ class PedavalansService extends RealmoceanService {
     })
   }
 
-  // import employee table
-  async importEmployeeTable(excelData: any[], tenantId: string, userId: string) {
-    const createdDepartments: IOrganizationStructureDepartment[] = []
-    const createdTitles: IOrganizationStructureTitle[] = []
-    const createdPositions: IOrganizationStructurePosition[] = []
-    const createdLines: IOrganizationStructureLine[] = []
-    const createdEmployees: IOrganizationStructureEmployee[] = []
-
-    let departments: { code: string, name: string }[] = [];
-    let titles: { code: string, name: string }[] = [];
-    let positions: { code: string, name: string }[] = [];
-    let lines: { code: string, name: string, department_code: string }[] = [];
-    let employees: {
-      id: string;
-      first_name: string;
-      last_name: string;
-      title_id: string;
-      position_id: string;
-      manager_id: string;
-      line_id: string;
-      department_id: string;
-      job_start_date: string;
-      birth_date: string;
-      gender: string;
-      department_start_date: string;
-      position_start_date: string;
-      phone: string;
-      tenant_id: string;
-      realm_id: string;
-    }[] = [];
-
-
-
-    excelData.map((row: {
-      sicil_no: string,
-      adi: string,
-      soyadi: string,
-      dogum_tarihi: string,
-      telefon_no: string,
-      cinsiyet: string,
-      ise_baslama_tarihi: string,
-      unvan_kodu: string,
-      unvan_tanimi: string,
-      departman_kodu: string,
-      departman_adi: string,
-      departmana_baslama_tarihi: string,
-      pozisyon_kodu: string,
-      pozisyon_tanimi: string,
-      pozisyona_baslama_tarihi: string,
-      hat_adi: string,
-      hat_kodu: string
-    }, index) => {
-      if (departments.findIndex((x) => x.code === row.departman_kodu) === -1) {
-        departments.push({ code: row.departman_kodu, name: row.departman_adi })
-      }
-      if (titles.findIndex((x) => x.code === row.unvan_kodu) === -1) {
-        titles.push({ code: row.unvan_kodu, name: row.unvan_tanimi })
-      }
-      if (positions.findIndex((x) => x.code === row.pozisyon_kodu) === -1) {
-        positions.push({ code: row.pozisyon_kodu, name: row.pozisyon_tanimi })
-      }
-      if (lines.findIndex((x) => x.code === row.hat_kodu) === -1) {
-        lines.push({ code: row.hat_kodu, name: row.hat_adi, department_code: row.departman_kodu })
-      }
-
-      employees.push({
-        id: row.sicil_no,
-        first_name: row.adi,
-        last_name: row.soyadi,
-        title_id: titles.find((x) => x.code === row.unvan_kodu).code,
-        position_id: positions.find((x) => x.code === row.pozisyon_kodu).code,
-        manager_id: "",
-        line_id: lines.find((x) => x.code === row.hat_kodu).code,
-        department_id: departments.find((x) => x.code === row.departman_kodu).code,
-        job_start_date: row.ise_baslama_tarihi,
-        birth_date: row.dogum_tarihi,
-        department_start_date: row.departmana_baslama_tarihi,
-        position_start_date: row.pozisyona_baslama_tarihi,
-        phone: row.telefon_no,
-        gender: (row.cinsiyet === "E" || row.cinsiyet === "e") ? "male" : "female",
-        tenant_id: tenantId,
-        realm_id: tenantId
-      })
-
-    })
-
-    departments.forEach(async (department) => {
-      try {
-        const data: IOrganizationStructureDepartment = {
-          id: nanoid(),
-          name: department.name,
-          is_active: true,
-          is_deleted: false,
-          tenant_id: tenantId,
-          realm_id: tenantId,
-          record_id: department.code
-        }
-        await this.databaseService.createDocument(this.appName, this.databaseName, this.OrganizationStructureDepartment, data.id, data)
-        createdDepartments.push(data)
-      } catch (error) {
-        console.log(error)
-      }
-    })
-
-    titles.forEach(async (title) => {
-      try {
-        const data: IOrganizationStructureTitle = {
-          id: nanoid(),
-          name: title.name,
-          is_active: true,
-          is_deleted: false,
-          tenant_id: tenantId,
-          realm_id: tenantId,
-          record_id: title.code
-        }
-        await this.databaseService.createDocument(this.appName, this.databaseName, this.OrganizationStructureTitle, data.id, data)
-        createdTitles.push(data)
-      } catch (error) {
-        console.log(error)
-      }
-    })
-
-    positions.forEach(async (position) => {
-      try {
-        const data: IOrganizationStructurePosition = {
-          id: nanoid(),
-          name: position.name,
-          is_active: true,
-          is_deleted: false,
-          tenant_id: tenantId,
-          realm_id: tenantId,
-          record_id: position.code
-        }
-        await this.databaseService.createDocument(this.appName, this.databaseName, this.OrganizationStructurePosition, data.id, data)
-        createdPositions.push(data)
-      } catch (error) {
-        console.log(error)
-      }
-    })
-
-    lines.forEach(async (line) => {
-      try {
-        const data: IOrganizationStructureLine = {
-          id: nanoid(),
-          name: line.name,
-          is_active: true,
-          is_deleted: false,
-          tenant_id: tenantId,
-          realm_id: tenantId,
-          record_id: line.code,
-          department_id: createdDepartments.find((x) => x.record_id === line.department_code)?.id,
-          department_name: departments.find((x) => x.code === line.department_code).name
-        }
-        await this.databaseService.createDocument(this.appName, this.databaseName, this.OrganizationStructureLine, data.id, data)
-        createdLines.push(data)
-      } catch (error) {
-        console.log(error)
-      }
-    })
-
-    
-
-    // employees.forEach(async (employee) => {
-
-
-    //   try {
-    //     const data: IOrganizationStructureEmployee = {
-    //       ...employee,
-    //       line_id: createdLines.find((x) => x.record_id === lines.find((y) => y.code === employee?.line_id)?.code)?.id,
-    //       department_id: createdDepartments.find((x) => x.record_id === departments.find((y) => y.code === employee?.department_id)?.code)?.id,
-    //       position_id: createdPositions.find((x) => x.record_id === positions.find((y) => y.code === employee?.position_id)?.code)?.id,
-    //       title_id: createdTitles.find((x) => x.record_id === titles.find((y) => y.code === employee?.title_id)?.code)?.id,
-    //       is_active: true,
-    //       is_deleted: false
-    //     }
-    //     await this.databaseService.createDocument(this.appName, this.databaseName, this.OrganizationStructureEmployee, nanoid(), data)
-    //     createdEmployees.push(data)
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-
-    // })
-
-
-
-
-  }
 
 
   async updateCompetencyDepartmentNames(departmentId: string, departmentName: string): Promise<any> {
@@ -1309,6 +1113,19 @@ class PedavalansService extends RealmoceanService {
       await this.emailService.sendEmail(key, "notification@pedabilisim.com", to_email, subject, html, values)
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  // posizyon bazlı polivalans yönetimi parametresi kontrolü
+  async checkPositionBasedPolyvalenceManagement() {
+    const parameter = await this.databaseService.listDocuments(this.appName, this.databaseName, this.StringParameter, [this.databaseService.Query.equal('name', 'position_based_polyvalence_management')]).then(x => x.documents);
+    if (!parameter[0]) {
+      await this.databaseService.createDocument(this.appName, this.databaseName, this.StringParameter, nanoid(), {
+        name: "position_based_polyvalence_management",
+        value: "false"
+      });
+    } else {
+      console.log('position_based_polyvalence_management Parameter already exists');
     }
   }
 
