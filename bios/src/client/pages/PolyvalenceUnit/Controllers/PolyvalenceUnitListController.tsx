@@ -69,7 +69,6 @@ export class PolyvalenceUnitListController extends UIController {
                                             positionNames.push(position.name)
                                         }
                                     })
-                                    console.log(positionNames)
                                     return {
                                         ...x,
                                         is_responsible: true,
@@ -78,7 +77,48 @@ export class PolyvalenceUnitListController extends UIController {
                                         positions: positionNames
                                     }
                                 }))
+                                setIsLoadingFirst(false)
+                            } else {
+                                const dataResponsibleTableIds = dataResponsible.map(x => x.polyvalence_table_id)
+                                const viewerTableIds = dataViewer.map(x => x.polyvalence_table_id)
+                                const filteredUnitTables = polyvalenceUnitList.filter(x => dataResponsibleTableIds.includes(x.polyvalence_table_id) || viewerTableIds.includes(x.polyvalence_table_id))
+                                setFilteredPolyvalenceUnitList(filteredUnitTables.map(x => {
+                                    const positionIds = polyvalenceUnitPositionRelations.filter(y => y.polyvalence_unit_id === x.polyvalence_table_id)
+                                    const positionNames = []
+                                    positionIds.forEach(z => {
+                                        const position = positions.find(y => y.$id === z.position_id)
+                                        if (position) {
+                                            positionNames.push(position.name)
+                                        }
+                                    })
+                                    return {
+                                        ...x,
+                                        is_responsible: dataResponsibleTableIds.includes(x.polyvalence_table_id),
+                                        is_viewer: viewerTableIds.includes(x.polyvalence_table_id),
+                                        is_admin: false,
+                                        positions: positionNames
+                                    }
+                                }))
+                                setIsLoadingFirst(false)
                             }
+                        } else {
+                            setFilteredPolyvalenceUnitList(polyvalenceUnitList.map(x => {
+                                const positionIds = polyvalenceUnitPositionRelations.filter(y => y.polyvalence_unit_id === x.polyvalence_table_id)
+                                const positionNames = []
+                                positionIds.forEach(z => {
+                                    const position = positions.find(y => y.$id === z.position_id)
+                                    if (position) {
+                                        positionNames.push(position.name)
+                                    }
+                                })
+                                return {
+                                    ...x,
+                                    is_responsible: true,
+                                    is_viewer: true,
+                                    is_admin: true,
+                                    positions: positionNames
+                                }
+                            }))
                             setIsLoadingFirst(false)
                         }
                     }, [])

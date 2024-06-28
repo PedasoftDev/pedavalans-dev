@@ -167,15 +167,16 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             }
 
                             if (positionBased) {
-                                const positionRelations = polyvalenceUnitPositionRelations;
-
-                                positionRelations.forEach((positionRelation) => {
+                                const positionRelationIds = []
+                                polyvalenceUnitPositionRelations.map(x => positionRelationIds.push(x.$id))
+                                positionRelationIds.forEach((positionRelation) => {
                                     // Herhangi bir update fonksiyonu yeterli olacaktır.
                                     updatePolyvalenceUnit({
                                         databaseId: AppInfo.Database,
                                         collectionId: Collections.PolyvalenceUnitPositionRelation,
-                                        documentId: positionRelation.$id,
+                                        documentId: positionRelation,
                                         data: {
+                                            is_active: false,
                                             is_deleted: true
                                         }
                                     })
@@ -186,8 +187,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                         documentId: nanoid(),
                                         data: {
                                             polyvalence_unit_id: id,
-                                            position_id: position.$id,
-                                            tenant_id: me?.prefs?.organization
+                                            position_id: position.$id
                                         }
                                     })
                                 })
