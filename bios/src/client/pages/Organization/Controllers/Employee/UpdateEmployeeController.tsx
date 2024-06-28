@@ -221,6 +221,7 @@ export class UpdateEmployeeController extends UIController {
                   }
                 }, () => {
                   const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
+                  // sıkıntı var
                   if (docsEmployee.length > 0) {
                     docsEmployee.forEach((doc, i) => {
                       updateEmployee({
@@ -268,6 +269,8 @@ export class UpdateEmployeeController extends UIController {
                         }
                       })
                     })
+                  } else {
+
                   }
                 })
               })

@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 12,
+    "version": 13,
     "collections": [
         {
             "id": "competency",
@@ -2566,6 +2566,76 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "value",
+                    "type": "string",
+                    "size": 1024,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "polyvalence_unit_position_relation",
+            "name": "Polyvalence Unit Position Relation",
+            "description": {
+                "en": "Polyvalence Unit Position Relation is a collection of polyvalence unit position relations.",
+                "tr": "Çoklu birim pozisyon ilişkilerinin koleksiyonudur."
+            },
+            "version": 13,
+            "attributes": [
+                {
+                    "key": "position_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "polyvalence_unit_id",
+                    "type": "string",
+                    "size": 1024,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "competency_position_relation",
+            "name": "Competency Position Relation",
+            "description": {
+                "en": "Competency Position Relation is a collection of competency position relations.",
+                "tr": "Yetkinlik pozisyon ilişkilerinin koleksiyonudur."
+            },
+            "version": 13,
+            "attributes": [
+                {
+                    "key": "position_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "competency_id",
                     "type": "string",
                     "size": 1024,
                     "version": 1

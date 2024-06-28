@@ -34,6 +34,8 @@ namespace Collections {
     export const PositionVocationalQualificationRelation: string = "position_vocational_qualification";
     export const StringParameter = "string_parameter";
     export const CompetencyLineRelation = "competency_line_relation";
+    export const PolyvalenceUnitPositionRelation = "polyvalence_unit_position_relation";
+    export const CompetencyPositionRelation = "competency_position_relation";
 }
 
 export default Collections;

@@ -28,6 +28,7 @@ import IPolyvalenceUnitTableDataViewer from '../../../interfaces/IPolyvalenceUni
 import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalenceUnitTableDataViewer/main';
 import PolyvalenceUnitTableDataResponsible from '../../../../server/hooks/polyvalenceUnitTableDataResponsible/main';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
+import PolyvalenceUnitPositionRelation from '../../../../server/hooks/polyvalenceUnitPositionRelation/main';
 
 // Değerlendirme Sıklığı için
 const evaluationFrequency = [
@@ -68,6 +69,8 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { createPolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Create();
         const { createPolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Create();
 
+        const { createPolyvalenceUnitPositionRelation } = PolyvalenceUnitPositionRelation.Create();
+
         return (
             isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingPositions || isLoadingLines || isLoadingTableAuth ? VStack(Spinner()) :
                 UIViewBuilder(() => {
@@ -104,6 +107,13 @@ export class CreatePolyvalenceUnitController extends UIController {
                     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                         e.preventDefault();
                         const id: string = nanoid();
+                        if (positionBased && selectedPositions.length === 0) {
+                            Toast.fire({
+                                icon: "error",
+                                title: "En az bir pozisyon seçmelisiniz"
+                            })
+                            return;
+                        }
                         createPolyvalenceUnit({
                             documentId: id,
                             data: {
@@ -143,6 +153,18 @@ export class CreatePolyvalenceUnitController extends UIController {
                                         data: viewerData
                                     })
                                 }
+                            }
+
+                            if (positionBased) {
+                                selectedPositions.forEach((position) => {
+                                    createPolyvalenceUnitPositionRelation({
+                                        documentId: nanoid(),
+                                        data: {
+                                            polyvalence_unit_id: id,
+                                            position_id: position.$id,
+                                        }
+                                    })
+                                })
                             }
 
                             if (lineBased[0]?.is_active) {
@@ -232,7 +254,6 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                                 {...params}
                                                                 label="Bağlı Pozisyonlar"
                                                                 size="small"
-                                                                required
                                                             />
                                                         )}
                                                         onChange={(event, newValue) => {
