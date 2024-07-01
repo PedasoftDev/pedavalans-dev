@@ -22,6 +22,10 @@ import { Umay } from "@tuval/core";
 import { Toast } from "../../../components/Toast";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import { GridContainer } from "../Views/View";
+import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
+import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
+
+const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
 interface ICompetencyImportFromExcel {
     yetkinlik_adi: string;
@@ -42,8 +46,12 @@ export class CompetencyListController extends UIController {
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
         const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
 
+        // positions
+        const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
+        const { competencyPositionRelationList, isLoading } = CompetencyPositionRelation.GetList();
+
         return (
-            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyDepartmentList || isLoadingResult ? VStack(Spinner()) :
+            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyDepartmentList || isLoadingResult || isLoading || isLoadingPositions ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [filterKey, setFilterKey] = useState("");
@@ -267,18 +275,32 @@ export class CompetencyListController extends UIController {
                             disableColumnMenu: true,
                             flex: 1
                         },
-                        {
-                            field: "competency_departments",
-                            headerName: "Departmanlar",
-                            minWidth: 200,
-                            editable: false,
-                            disableColumnMenu: true,
-                            flex: 1,
-                            valueGetter: (params) => {
-                                return competencyDepartmentList.filter((item) => item.competency_id === params.row.$id)
-                                    .map((item) => item.competency_department_name).join(", ");
+                        positionBased ?
+                            {
+                                field: "competency_positions",
+                                headerName: "Pozisyonlar",
+                                minWidth: 200,
+                                editable: false,
+                                disableColumnMenu: true,
+                                flex: 1,
+                                valueGetter: (params) => {
+                                    return competencyPositionRelationList.filter((item) => item.competency_id === params.row.$id)
+                                        .map((item) => positions.find((position) => position.id === item.position_id)?.name).join(", ");
+                                }
                             }
-                        },
+                            :
+                            {
+                                field: "competency_departments",
+                                headerName: "Departmanlar",
+                                minWidth: 200,
+                                editable: false,
+                                disableColumnMenu: true,
+                                flex: 1,
+                                valueGetter: (params) => {
+                                    return competencyDepartmentList.filter((item) => item.competency_id === params.row.$id)
+                                        .map((item) => item.competency_department_name).join(", ");
+                                }
+                            },
                         {
                             field: "competency_id",
                             headerName: "İşlemler",

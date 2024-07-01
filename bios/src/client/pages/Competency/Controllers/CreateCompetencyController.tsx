@@ -1,6 +1,6 @@
 import { ReactView, Spinner, UIController, UIView, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
-import React, { useState} from "react";
-import { Autocomplete, Button, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Autocomplete, Button, FormControl, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import ICompetency from "../../../interfaces/ICompetency";
 import { Resources } from "../../../assets/Resources";
@@ -15,6 +15,10 @@ import CompetencyDepartment from "../../../../server/hooks/competencyDepartment/
 import Parameters from "../../../../server/hooks/parameters/main";
 import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
+import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
+import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
+
+const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
 
 const formReset: ICompetency.ICreateCompetency = {
@@ -53,6 +57,12 @@ export class CreateCompetencyController extends UIController {
         // lines
         const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
         const [selectedLines, setSelectedLines] = useState<string[]>([]);
+
+        // positions
+        const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
+        const [selectedPositions, setSelectedPositions] = useState<typeof positions>([]);
+
+        const { createCompetencyPositionRelation } = CompetencyPositionRelation.Create();
 
 
         const departmentColumns: GridColDef[] = [
@@ -128,20 +138,17 @@ export class CreateCompetencyController extends UIController {
                     })
                 }
 
-                // for (let i = 0; i < levels.length; i++) {
-                //     const comp_grade_level_id = nanoid();
-                //     createCompetencyGradeValue({
-                //         documentId: comp_grade_level_id,
-                //         data: {
-                //             competency_grade_value_id: comp_grade_level_id,
-                //             grade_level_id: levels[i].grade_level_id,
-                //             grade_level_name: levels[i].grade_level_name,
-                //             grade_level_number: levels[i].grade_level_number,
-                //             competency_id: competency_id,
-                //             tenant_id: me?.prefs?.organization
-                //         }
-                //     })
-                // }
+                if (positionBased) {
+                    for (let i = 0; i < selectedPositions.length; i++) {
+                        createCompetencyPositionRelation({
+                            documentId: nanoid(),
+                            data: {
+                                position_id: selectedPositions[i].$id,
+                                competency_id: competency_id,
+                            }
+                        })
+                    }
+                }
 
                 if (lineBased[0]?.is_active) {
                     for (let i = 0; i < selectedLines.length; i++) {
@@ -175,7 +182,7 @@ export class CreateCompetencyController extends UIController {
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingDepartments || isLoadingActiveGroups || isLoadingParameter || isLoadingLines ? VStack(Spinner()) :
+                isLoading || isLoadingDepartments || isLoadingActiveGroups || isLoadingParameter || isLoadingLines || isLoadingPositions ? VStack(Spinner()) :
                     ReactView(
                         <Form
                             title="Yeni Yetkinlik Ekleyin"
@@ -223,32 +230,54 @@ export class CreateCompetencyController extends UIController {
                                         rows={4}
                                         label="Yetkinlik Açıklaması"
                                     />
-                                    <div style={{
-                                        height: "280px",
-                                        width: "100%",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        gap: "5px",
-                                    }}>
-                                        <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
-                                        <StyledDataGrid
-                                            rows={departments}
-                                            columns={departmentColumns}
-                                            getRowId={(row) => row.$id}
-                                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                            isCellEditable={() => false}
-                                            disableRowSelectionOnClick
-                                            checkboxSelection
-                                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                setSelectedDepartments(newRowSelectionModel)
-                                            }}
-                                            rowHeight={30}
-                                            columnHeaderHeight={30}
+                                    {positionBased ?
+                                        <FormControl fullWidth size="small">
+                                            <Autocomplete
+                                                multiple
+                                                disableCloseOnSelect
+                                                options={positions.filter(x => x.is_active === true)}
+                                                getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                filterSelectedOptions
+                                                size="small"
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Bağlı Pozisyonlar"
+                                                        size="small"
+                                                    />
+                                                )}
+                                                onChange={(event, newValue) => {
+                                                    setSelectedPositions(newValue);
+                                                }}
+                                            />
+                                        </FormControl>
+                                        :
+                                        <div style={{
+                                            height: "280px",
+                                            width: "100%",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            gap: "5px",
+                                        }}>
+                                            <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
+                                            <StyledDataGrid
+                                                rows={departments}
+                                                columns={departmentColumns}
+                                                getRowId={(row) => row.$id}
+                                                localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                isCellEditable={() => false}
+                                                disableRowSelectionOnClick
+                                                checkboxSelection
+                                                onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                    setSelectedDepartments(newRowSelectionModel)
+                                                }}
+                                                rowHeight={30}
+                                                columnHeaderHeight={30}
 
-                                        />
-                                    </div>
+                                            />
+                                        </div>}
                                     {
-                                        lineBased[0]?.is_active &&
+                                        !positionBased && lineBased[0]?.is_active &&
 
                                         <div style={{
                                             height: "280px",
