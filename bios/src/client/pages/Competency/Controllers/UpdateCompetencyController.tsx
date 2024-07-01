@@ -235,7 +235,6 @@ export class UpdateCompetencyController extends UIController {
                                         data: {
                                             competency_id: id,
                                             position_id: selectedPositions[i].$id,
-                                            tenant_id: me?.prefs?.organization
                                         }
                                     }, () => {
                                         if (i === selectedPositions.length - 1) {
