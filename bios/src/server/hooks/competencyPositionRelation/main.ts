@@ -9,7 +9,7 @@ namespace CompetencyPositionRelation {
   }
 
   export const GetList = () => {
-    const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyPositionRelation, [Query.limit(10000)])
+    const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyPositionRelation, [Query.limit(10000), Query.equal('is_active', true), Query.equal('is_deleted', false)])
     return { competencyPositionRelationList: documents as any, isLoading }
   }
 
@@ -24,7 +24,7 @@ namespace CompetencyPositionRelation {
   }
 
   export const GetByCompetencyId = (competencyId: string) => {
-    const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyPositionRelation, [Query.equal('competencyId', competencyId)])
+    const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyPositionRelation, [Query.equal('competency_id', competencyId), Query.limit(1000), , Query.equal('is_active', true), Query.equal('is_deleted', false)])
     return { competencyPositionRelationList: documents as any, isLoading }
   }
 }

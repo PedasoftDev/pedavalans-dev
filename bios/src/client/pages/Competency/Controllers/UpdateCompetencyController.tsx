@@ -73,6 +73,7 @@ export class UpdateCompetencyController extends UIController {
         // positions
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const { competencyPositionRelationList, isLoading: isLoadingCompetencyPositionRelationList } = CompetencyPositionRelation.GetByCompetencyId(id);
+        const { createCompetencyPositionRelation } = CompetencyPositionRelation.Create();
 
 
 
@@ -139,95 +140,7 @@ export class UpdateCompetencyController extends UIController {
                             title: "Yetkinlik düzenleniyor...",
                             timer: 5000,
                         })
-                        competencyDepartments.map((department) => {
-                            if (!selectedDepartments.includes(department.competency_department_id)) {
-                                updateCompetencyDepartment({
-                                    databaseId: AppInfo.Database,
-                                    collectionId: "competency_department",
-                                    documentId: department.$id,
-                                    data: {
-                                        ...removeDollarProperties(department),
-                                        is_deleted: true
-                                    }
-                                })
-                            }
-                        })
 
-                        if (lineBased[0]?.is_active) {
-                            competencyLineRelation.map((line) => {
-                                if (!selectedLines.includes(line.line_id)) {
-                                    updateCompetencyLineRelation({
-                                        databaseId: AppInfo.Database,
-                                        collectionId: "competency_line_relation",
-                                        documentId: line.$id,
-                                        data: {
-                                            ...removeDollarProperties(line),
-                                            is_deleted: true
-                                        }
-                                    })
-                                }
-                            })
-                        }
-
-                        selectedDepartments.map((department) => {
-                            if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
-                                const createDepId = nanoid();
-                                createCompetencyDepartment({
-                                    documentId: createDepId,
-                                    data: {
-                                        competency_department_table_id: createDepId,
-                                        competency_department_id: department,
-                                        competency_department_name: departments.find((dep) => dep.id === department).name,
-                                        competency_id: id,
-                                        tenant_id: me?.prefs?.organization
-                                    }
-                                })
-                            }
-                        })
-
-                        if (lineBased[0]?.is_active) {
-                            selectedLines.map((line) => {
-                                if (!competencyLineRelation.map((line) => line.line_id).includes(line)) {
-                                    const createLineId = nanoid();
-                                    createCompetencyLineRelation({
-                                        documentId: createLineId,
-                                        data: {
-                                            id: createLineId,
-                                            competency_id: id,
-                                            competency_target_value: "",
-                                            line_id: line,
-                                            tenant_id: me?.prefs?.organization
-                                        }
-                                    })
-                                }
-                            })
-                        }
-
-                        if (positionBased) {
-                            const relationIds = competencyPositionRelationList.map(relation => relation.$id);
-                            for (let i = 0; i < competencyPositionRelationList.length; i++) {
-                                updateCompetencyLineRelation({
-                                    databaseId: AppInfo.Database,
-                                    collectionId: Collections.CompetencyPositionRelation,
-                                    documentId: relationIds[i],
-                                    data: {
-                                        is_deleted: true,
-                                        is_active: false
-                                    }
-                                })
-                            }
-
-                            for (let i = 0; i < selectedPositions.length; i++) {
-                                createCompetencyLineRelation({
-                                    documentId: nanoid(),
-                                    data: {
-                                        competency_id: id,
-                                        position_id: selectedPositions[i].$id,
-                                        tenant_id: me?.prefs?.organization
-                                    }
-                                })
-                            }
-                        }
 
                         updateCompetency({
                             databaseId: AppInfo.Database,
@@ -235,11 +148,107 @@ export class UpdateCompetencyController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
-                            Toast.fire({
-                                icon: "success",
-                                title: "Yetkinlik başarıyla düzenlendi."
-                            });
-                            navigate("/app/competency/list");
+                            if (!positionBased) {
+                                if (lineBased[0]?.is_active) {
+                                    competencyLineRelation.map((line) => {
+                                        if (!selectedLines.includes(line.line_id)) {
+                                            updateCompetencyLineRelation({
+                                                databaseId: AppInfo.Database,
+                                                collectionId: "competency_line_relation",
+                                                documentId: line.$id,
+                                                data: {
+                                                    ...removeDollarProperties(line),
+                                                    is_deleted: true
+                                                }
+                                            })
+                                        }
+                                    })
+                                    selectedLines.map((line) => {
+                                        if (!competencyLineRelation.map((line) => line.line_id).includes(line)) {
+                                            const createLineId = nanoid();
+                                            createCompetencyLineRelation({
+                                                documentId: createLineId,
+                                                data: {
+                                                    id: createLineId,
+                                                    competency_id: id,
+                                                    competency_target_value: "",
+                                                    line_id: line,
+                                                    tenant_id: me?.prefs?.organization
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                                competencyDepartments.map((department) => {
+                                    if (!selectedDepartments.includes(department.competency_department_id)) {
+                                        updateCompetencyDepartment({
+                                            databaseId: AppInfo.Database,
+                                            collectionId: "competency_department",
+                                            documentId: department.$id,
+                                            data: {
+                                                ...removeDollarProperties(department),
+                                                is_deleted: true
+                                            }
+                                        })
+                                    }
+                                })
+                                selectedDepartments.map((department, i) => {
+                                    if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
+                                        const createDepId = nanoid();
+                                        createCompetencyDepartment({
+                                            documentId: createDepId,
+                                            data: {
+                                                competency_department_table_id: createDepId,
+                                                competency_department_id: department,
+                                                competency_department_name: departments.find((dep) => dep.id === department).name,
+                                                competency_id: id,
+                                                tenant_id: me?.prefs?.organization
+                                            }
+                                        }, () => {
+                                            if (i === selectedDepartments.length - 1) {
+                                                Toast.fire({
+                                                    icon: "success",
+                                                    title: "Yetkinlik başarıyla düzenlendi."
+                                                });
+                                                navigate("/app/competency/list");
+                                            }
+                                        })
+                                    }
+                                })
+                            } else {
+                                const relationIds = competencyPositionRelationList.map(relation => relation.$id);
+                                for (let i = 0; i < competencyPositionRelationList.length; i++) {
+                                    updateCompetencyLineRelation({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.CompetencyPositionRelation,
+                                        documentId: relationIds[i],
+                                        data: {
+                                            is_deleted: true,
+                                            is_active: false
+                                        }
+                                    })
+                                }
+
+                                for (let i = 0; i < selectedPositions.length; i++) {
+                                    createCompetencyPositionRelation({
+                                        documentId: nanoid(),
+                                        data: {
+                                            competency_id: id,
+                                            position_id: selectedPositions[i].$id,
+                                            tenant_id: me?.prefs?.organization
+                                        }
+                                    }, () => {
+                                        if (i === selectedPositions.length - 1) {
+                                            Toast.fire({
+                                                icon: "success",
+                                                title: "Yetkinlik başarıyla düzenlendi."
+                                            });
+                                            navigate("/app/competency/list");
+                                        }
+
+                                    })
+                                }
+                            }
                         })
                     }
 
