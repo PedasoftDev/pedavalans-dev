@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { DialogContainer, HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate, useParams } from '@tuval/forms';
-import { useDeleteCache, useGetMe } from '@realmocean/sdk'
+import { Services, useDeleteCache, useGetMe } from '@realmocean/sdk'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
@@ -25,6 +25,7 @@ import { Resources } from '../../../../assets/Resources';
 import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import Swal from 'sweetalert2';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -191,6 +192,12 @@ export class UpdateEmployeeController extends UIController {
                 return;
               }
 
+              const successFunc = () => {
+                ToastSuccess("Personel başarıyla güncellendi", "")
+                navigate(link + "/list")
+                deleteCache()
+              }
+
               updateEmployee({
                 databaseId: AppInfo.Database,
                 collectionId: Collections.OrganizationStructureEmployee,
@@ -220,10 +227,13 @@ export class UpdateEmployeeController extends UIController {
                     job_start_date: formEmployee.job_start_date
                   }
                 }, () => {
+
                   const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
-                  // sıkıntı var
+
                   if (docsEmployee.length > 0) {
                     docsEmployee.forEach((doc, i) => {
+                      // update Document Kısmı
+                      // Halihazırda var olan belgeleri silme işlemi
                       updateEmployee({
                         databaseId: AppInfo.Database,
                         collectionId: Collections.OrganizationEmployeeDocument,
@@ -232,45 +242,68 @@ export class UpdateEmployeeController extends UIController {
                           is_active: false,
                           is_deleted: true
                         }
+                      })
+                    })
+
+                    // Yeni belgeleri ekleme işlemi
+                    if (documents.length === 0) {
+                      successFunc()
+                      return;
+                    }
+                    documents.forEach((doc, _i) => {
+                      const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
+                        document_id: doc.document_id,
+                        document_name: doc.document_name,
+                        document_type_id: doc.document_type_id,
+                        document_type_name: doc.document_type_name,
+                        employee_id: id,
+                        end_date: doc.end_date,
+                        id: "",
+                        tenant_id: me?.prefs?.organization
+                      }
+                      delete document.id;
+                      createOrganizationEmployeeDocument({
+                        documentId: nanoid(),
+                        data: {
+                          ...document,
+                          employee_id: id
+                        }
                       }, () => {
-                        if (i === docsEmployee.length - 1) {
-                          if (documents.length > 0) {
-                            documents.forEach((doc, _i) => {
-                              const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
-                                document_id: doc.document_id,
-                                document_name: doc.document_name,
-                                document_type_id: doc.document_type_id,
-                                document_type_name: doc.document_type_name,
-                                employee_id: id,
-                                end_date: doc.end_date,
-                                id: "",
-                                tenant_id: me?.prefs?.organization
-                              }
-                              delete document.id;
-                              createOrganizationEmployeeDocument({
-                                documentId: nanoid(),
-                                data: {
-                                  ...document,
-                                  employee_id: id
-                                }
-                              }, () => {
-                                if (_i === documents.length - 1) {
-                                  ToastSuccess("Personel başarıyla güncellendi", "")
-                                  navigate(link + "/list")
-                                  deleteCache()
-                                }
-                              })
-                            })
-                          } else {
-                            ToastSuccess("Personel başarıyla güncellendi", "")
-                            navigate(link + "/list")
-                            deleteCache()
-                          }
+                        if (_i === documents.length - 1) {
+                          successFunc()
                         }
                       })
                     })
                   } else {
-
+                    // Yeni belgeleri ekleme işlemi
+                    if (documents.length === 0) {
+                      successFunc()
+                      return;
+                    }
+                    documents.forEach((doc, _i) => {
+                      const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
+                        document_id: doc.document_id,
+                        document_name: doc.document_name,
+                        document_type_id: doc.document_type_id,
+                        document_type_name: doc.document_type_name,
+                        employee_id: id,
+                        end_date: doc.end_date,
+                        id: "",
+                        tenant_id: me?.prefs?.organization
+                      }
+                      delete document.id;
+                      createOrganizationEmployeeDocument({
+                        documentId: nanoid(),
+                        data: {
+                          ...document,
+                          employee_id: id
+                        }
+                      }, () => {
+                        if (_i === documents.length - 1) {
+                          successFunc()
+                        }
+                      })
+                    })
                   }
                 })
               })
@@ -325,6 +358,59 @@ export class UpdateEmployeeController extends UIController {
               }
             }, [])
 
+            const onDelete = () => {
+              Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu işlem geri alınamaz!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: "Hayır"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  updateEmployee({
+                    databaseId: AppInfo.Database,
+                    collectionId: "organization_employee",
+                    documentId: formEmployee.$id,
+                    data: {
+                      ...removeDollarProperties(formEmployee),
+                      is_deleted: true
+                    },
+                  }, () => {
+                    Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
+                      employee_id: formEmployee.$id,
+                      employee_name: formEmployee.first_name + " " + formEmployee.last_name,
+                      log_date: new Date().toISOString(),
+                      log_type: "delete",
+                      department_id: formEmployee.department_id,
+                      department_name: departments.find((department) => department.id === formEmployee.department_id)?.name,
+                      title_id: formEmployee.title_id,
+                      title_name: titles.find((title) => title.id === formEmployee.title_id)?.name,
+                      position_id: formEmployee.position_id,
+                      position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
+                      line_id: formEmployee.line_id,
+                      line_name: lines.find((line) => line.id === formEmployee.line_id)?.name,
+                      manager_id: formEmployee.manager_id,
+                      manager_name: formEmployee.manager_id ?
+                        employees.find((employee) => employee.id === formEmployee.manager_id)?.first_name + " "
+                        + employees.find((employee) => employee.id === formEmployee.manager_id)?.last_name : "",
+                      tenant_id: formEmployee.tenant_id,
+                      job_start_date: formEmployee.job_start_date
+                    }).then(() => {
+                      Toast.fire({
+                        icon: "success",
+                        title: "Personel başarıyla silindi"
+                      })
+                      deleteCache()
+                      onReset()
+                    })
+                  })
+                }
+              })
+            }
+
             return (
               VStack({ alignment: cTop })(
                 HStack({ alignment: cLeading })(
@@ -334,7 +420,7 @@ export class UpdateEmployeeController extends UIController {
                   ReactView(
                     <div style={{ width: "100%", height: "100%" }}>
                       <Form
-                        title={formIsEmployee ? 'Personel Bilgilerini Güncelleyin' : 'Personelin Belgelerini Güncelleyin'}
+                        title={formIsEmployee ? 'Personel Bilgilerini Güncelleyin' : formEmployee.first_name + ' ' + formEmployee.last_name + ' - ' + 'Personelin Belgelerini Güncelleyin'}
                         onSubmit={onSubmit}
                         formContent={
                           formIsEmployee ?
@@ -367,7 +453,7 @@ export class UpdateEmployeeController extends UIController {
                               <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker label="İşe Başlama Tarihi"
                                   format="DD/MM/YYYY"
-                                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                  slotProps={{ textField: { size: 'small', fullWidth: true, error: false } }}
                                   value={dayjs(formEmployee.job_start_date)}
                                   onChange={(e: any) => {
                                     setFormEmployee({
@@ -379,7 +465,7 @@ export class UpdateEmployeeController extends UIController {
                               <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker label="Doğum Tarihi"
                                   format="DD/MM/YYYY"
-                                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                  slotProps={{ textField: { size: 'small', fullWidth: true, error: false } }}
                                   value={dayjs(formEmployee.birth_date)}
                                   onChange={(e: any) => {
                                     setFormEmployee({
@@ -433,7 +519,7 @@ export class UpdateEmployeeController extends UIController {
                                         <DatePicker label="Departmana Başlama Tarihi"
                                           format="DD/MM/YYYY"
                                           value={dayjs(formEmployee.department_start_date)}
-                                          slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                          slotProps={{ textField: { size: 'small', fullWidth: true, error: false } }}
                                           onChange={(e: any) => {
                                             setFormEmployee({
                                               ...formEmployee,
@@ -449,7 +535,7 @@ export class UpdateEmployeeController extends UIController {
                                         <DatePicker label="Pozisyona Başlama Tarihi"
                                           format="DD/MM/YYYY"
                                           value={dayjs(formEmployee.position_start_date)}
-                                          slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                          slotProps={{ textField: { size: 'small', fullWidth: true, error: false } }}
                                           onChange={(e: any) => {
                                             setFormEmployee({
                                               ...formEmployee,
@@ -550,7 +636,7 @@ export class UpdateEmployeeController extends UIController {
                                     <DatePicker label="Bitiş Tarihi"
                                       format="DD/MM/YYYY"
                                       value={dayjs(formDocument.end_date)}
-                                      slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                      slotProps={{ textField: { size: 'small', fullWidth: true, error: false } }}
                                       onChange={(e: any) => {
                                         setFormDocument({
                                           ...formDocument,
@@ -639,7 +725,7 @@ export class UpdateEmployeeController extends UIController {
                                         <DatePicker label="Bitiş Tarihi"
                                           format="DD/MM/YYYY"
                                           value={dayjs(editFormDocument.end_date)}
-                                          slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                                          slotProps={{ textField: { size: 'small', fullWidth: true, error: false } }}
                                           onChange={(e: any) => {
                                             setEditFormDocument({
                                               ...editFormDocument,
@@ -667,27 +753,57 @@ export class UpdateEmployeeController extends UIController {
                               </Dialog>
                             </div>
                         }
-                        buttons={formIsEmployee ? [
-                          {
-                            text: "Kaydet",
-                            color: "primary",
-                            type: "submit"
-                          },
-                          {
-                            text: "Belgeler",
-                            color: "info",
-                            type: "button",
-                            onClick: () => {
-                              setFormIsEmployee(false)
-                            }
-                          },
-                          {
-                            text: "İptal",
-                            color: "error",
-                            type: "button",
-                            onClick: onReset
-                          }
-                        ]
+                        buttons={formIsEmployee ?
+                          isActive ?
+                            [
+                              {
+                                text: "Kaydet",
+                                color: "primary",
+                                type: "submit"
+                              },
+                              {
+                                text: "Belgeler",
+                                color: "info",
+                                type: "button",
+                                onClick: () => {
+                                  setFormIsEmployee(false)
+                                }
+                              },
+                              {
+                                text: "İptal",
+                                color: "error",
+                                type: "button",
+                                onClick: onReset
+                              }
+                            ]
+                            :
+                            [
+                              {
+                                text: "Kaydet",
+                                color: "primary",
+                                type: "submit"
+                              },
+                              {
+                                text: "Belgeler",
+                                color: "info",
+                                type: "button",
+                                onClick: () => {
+                                  setFormIsEmployee(false)
+                                }
+                              },
+                              {
+                                text: "İptal",
+                                color: "error",
+                                type: "button",
+                                onClick: onReset
+                              },
+                              {
+                                text: "Sil",
+                                color: "error",
+                                type: "button",
+                                onClick: onDelete
+                              }
+                            ]
                           :
                           [
                             {

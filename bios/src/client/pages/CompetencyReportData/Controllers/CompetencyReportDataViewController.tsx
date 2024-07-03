@@ -351,6 +351,7 @@ export class CompetencyReportDataViewController extends UIController {
                                                 {
                                                     employees
                                                         .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
+                                                        .filter((employee) => employee.is_active)
                                                         .sort((a, b) => a.first_name.localeCompare(b.first_name))
                                                         .map((employee, i) =>
                                                             <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>

@@ -548,7 +548,41 @@ export class DashboardController extends UIController {
                                                                     })
                                                                     accountRelationTasks.Run()
                                                                 } else {
+
                                                                     console.log("Mailler eşit")
+                                                                    const attributeTasks = new Umay()
+
+                                                                    Database.collections.forEach((collection) => {
+                                                                        Services.Databases.listAttributes(AppInfo.Name, AppInfo.Database, collection.id, [Query.limit(1000)]).then((attr) => {
+                                                                            const attributes = attr.attributes;
+                                                                            const collectionAttributes = collection.attributes
+                                                                            if (attributes.length < collectionAttributes.length) {
+                                                                                attributeTasks.Task(async () => {
+                                                                                    setIsUpdate(true)
+                                                                                })
+                                                                                collectionAttributes.forEach((attr) => {
+                                                                                    const attribute = attributes.find((a) => a === attr.key)
+                                                                                    if (!attribute) {
+                                                                                        attributeTasks.Task(async () => {
+                                                                                            if (attr.type === "string") {
+                                                                                                await Services.Databases.createStringAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, attr.size, false)
+                                                                                            } else if (attr.type === "number") {
+                                                                                                await Services.Databases.createIntegerAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, false)
+                                                                                            } else if (attr.type === "boolean") {
+                                                                                                await Services.Databases.createBooleanAttribute(AppInfo.Name, AppInfo.Database, collection.id, attr.key, false, attr.default)
+                                                                                            }
+                                                                                        })
+                                                                                        attributeTasks.Wait(1)
+                                                                                    }
+                                                                                })
+                                                                                attributeTasks.Task(async () => {
+                                                                                    window.location.reload()
+                                                                                })
+                                                                            }
+                                                                        })
+                                                                    })
+
+                                                                    attributeTasks.Run()
 
                                                                     const employeesByTitleData = []
                                                                     const employeesByDepartmentData = []
