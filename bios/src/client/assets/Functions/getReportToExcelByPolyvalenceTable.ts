@@ -234,7 +234,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         let responsibleCompetencyCount = 0;
         competencies.forEach((competencyWithValue, index) => {
             const employeeCompetencyValue = employeeCompetencyValues.find(x => x.competency_id === competencyWithValue.competency_id && x.employee_id === employee.id);
-            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value !== "no-target") {
+            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value !== "no-target" && employeeCompetencyValue.competency_real_value) {
                 responsibleCompetencyCount++;
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
                 totalRealValue += parseInt(employeeCompetencyValue.competency_real_value);
@@ -247,7 +247,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         // geliştirilmesi gereken yetkinlik sayısı
         competencies.forEach((competencyWithValue, index) => {
             const employeeCompetencyValue = employeeCompetencyValues.find(x => x.competency_id === competencyWithValue.competency_id && x.employee_id === employee.id);
-            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value !== "no-target") {
+            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value !== "no-target" && employeeCompetencyValue.competency_real_value) {
                 if (parseInt(employeeCompetencyValue.competency_real_value) < parseInt(employeeCompetencyValue.competency_target_value)) {
                     competencyToBeImprovedCount++;
                 }
@@ -336,6 +336,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
     const numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne: any[] = []
     const numberOfEmployeesExpectedCompetencyLevelRow: any[] = []
     const numberOfEmployeesExpectedCompetencyLevelRowPlusOne: any[] = []
+
     numberOfEmployeesDontExpectedCompetencyLevelRow[0] = { v: 'Beklentiyi Karşılamayan Personel Sayısı', t: 's', s: { ...headerStyle, border: { top: { style: "thick", color: "000000" }, left: { style: "thick", color: "000000" } } }, align: alignCenter }
     numberOfEmployeesDontExpectedCompetencyLevelRow[1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
     numberOfEmployeesDontExpectedCompetencyLevelRow[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
@@ -382,9 +383,9 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         numberOfEmployeesExpectedCompetencyLevelRow[4 + index] = { v: employeeCountExpected, t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
         numberOfEmployeesExpectedCompetencyLevelRowPlusOne[4 + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
 
-        merge.push({ s: { r: employees.length * 2 + 5, c: 4 + index }, e: { r: employees.length * 2 + 5 + 1, c: 4 + index } })
+        merge.push({ s: { r: employees.length * 2 + 5, c: 4 + index }, e: { r: employees.length * 2 + 6, c: 4 + index } })
 
-        merge.push({ s: { r: employees.length * 2 + 8, c: 4 + index }, e: { r: employees.length * 2 + 8 + 1, c: 4 + index } })
+        merge.push({ s: { r: employees.length * 2 + 8, c: 4 + index }, e: { r: employees.length * 2 + 9, c: 4 + index } })
     })
 
 
