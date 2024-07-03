@@ -108,7 +108,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
 
     competencies.forEach((competencyWithValue, index) => {
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
-            if (employeeCompetencyValue.competency_id === competencyWithValue.competency_id && employeeCompetencyValue.competency_target_value !== "no-target") {
+            if (employeeCompetencyValue.competency_id === competencyWithValue.competency_id && employeeCompetencyValue.competency_target_value !== "no-target" && employeeCompetencyValue.competency_real_value !== "") {
                 totalCompetencyCount++;
                 totalRealValue += parseInt(employeeCompetencyValue.competency_real_value);
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
@@ -367,7 +367,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         // beklentiyi karşılayan personel sayısı
         let employeeCountExpected = 0;
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
-            if (employeeCompetencyValue.competency_id === competency.competency_id && employeeCompetencyValue.competency_target_value !== "no-target") {
+            if (employeeCompetencyValue.competency_id === competency.competency_id && employeeCompetencyValue.competency_target_value !== "no-target" && employeeCompetencyValue.competency_real_value !== "") {
                 if (parseInt(employeeCompetencyValue.competency_real_value) < parseInt(employeeCompetencyValue.competency_target_value)) {
                     employeeCount++;
                 }
