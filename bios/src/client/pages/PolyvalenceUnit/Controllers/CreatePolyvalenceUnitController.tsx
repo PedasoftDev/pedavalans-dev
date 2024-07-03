@@ -11,7 +11,7 @@ import {
 } from '@tuval/forms';
 import React, { useState, useCallback } from 'react';
 import Form from '../Views/Form';
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { GridColDef, trTR } from '@mui/x-data-grid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
@@ -27,6 +27,8 @@ import IPolyvalenceUnitTableDataResponsible from '../../../interfaces/IPolyvalen
 import IPolyvalenceUnitTableDataViewer from '../../../interfaces/IPolyvalenceUnitTableDataViewer';
 import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalenceUnitTableDataViewer/main';
 import PolyvalenceUnitTableDataResponsible from '../../../../server/hooks/polyvalenceUnitTableDataResponsible/main';
+import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
+import PolyvalenceUnitPositionRelation from '../../../../server/hooks/polyvalenceUnitPositionRelation/main';
 
 // Değerlendirme Sıklığı için
 const evaluationFrequency = [
@@ -44,6 +46,8 @@ const evaluationFrequency = [
     }
 ];
 
+const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
+
 export class CreatePolyvalenceUnitController extends UIController {
 
     public LoadView(): UIView {
@@ -52,6 +56,7 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+        const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const { createPolyvalenceUnit } = PolyvalenceUnit.Create();
         const { createPolyvalenceUnitLineRelation } = PolyvalenceUnitTableLineRelation.Create();
 
@@ -64,8 +69,10 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { createPolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Create();
         const { createPolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Create();
 
+        const { createPolyvalenceUnitPositionRelation } = PolyvalenceUnitPositionRelation.Create();
+
         return (
-            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingLines || isLoadingTableAuth ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingPositions || isLoadingLines || isLoadingTableAuth ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<IPolyvalenceUnit.ICreatePolyvalenceUnit>({
@@ -78,6 +85,8 @@ export class CreatePolyvalenceUnitController extends UIController {
                         tenant_id: ""
                     })
 
+                    const [selectedPositions, setSelectedPositions] = useState<typeof positions>([])
+
                     const [selectedResponsibleAccounts, setSelectedResponsibleAccounts] = useState<string[]>([])
                     const [selectedViewerAccounts, setSelectedViewerAccounts] = useState<string[]>([])
 
@@ -86,7 +95,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                     const responseFunc = useCallback(() => {
                         Toast.fire({
                             icon: "success",
-                            title: "Birim Polivalans Tablosu Başarıyla Oluşturuldu"
+                            title: "Polivalans Tablosu Başarıyla Oluşturuldu"
                         })
                         onCancel();
                     }, [])
@@ -98,6 +107,13 @@ export class CreatePolyvalenceUnitController extends UIController {
                     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                         e.preventDefault();
                         const id: string = nanoid();
+                        if (positionBased && selectedPositions.length === 0) {
+                            Toast.fire({
+                                icon: "error",
+                                title: "En az bir pozisyon seçmelisiniz"
+                            })
+                            return;
+                        }
                         createPolyvalenceUnit({
                             documentId: id,
                             data: {
@@ -139,6 +155,18 @@ export class CreatePolyvalenceUnitController extends UIController {
                                 }
                             }
 
+                            if (positionBased) {
+                                selectedPositions.forEach((position) => {
+                                    createPolyvalenceUnitPositionRelation({
+                                        documentId: nanoid(),
+                                        data: {
+                                            polyvalence_unit_id: id,
+                                            position_id: position.$id,
+                                        }
+                                    })
+                                })
+                            }
+
                             if (lineBased[0]?.is_active) {
                                 createPolyvalenceUnitLineRelation({
                                     documentId: id,
@@ -169,7 +197,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                         VStack({ alignment: cTop })(
                             ReactView(
                                 <Form
-                                    title="Yeni Birim Polivalans Tablosu Tanımlayın"
+                                    title="Yeni Polivalans Tablosu Tanımlayın"
                                     form={
                                         <form
                                             onSubmit={onSubmit}
@@ -180,50 +208,81 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                 width: "60%",
                                             }}>
                                             <TextField
-                                                label="Birim Polivalans Tablosu Adı"
+                                                label="Polivalans Tablosu Adı"
                                                 size="small"
                                                 name="polyvalence_table_name"
                                                 value={form.polyvalence_table_name}
                                                 onChange={(e) => setForm({ ...form, [e.target.name]: e.target.value })}
                                                 required
                                             />
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Bağlı Departman</InputLabel>
-                                                <Select
-                                                    name="polyvalence_department_id"
-                                                    value={form.polyvalence_department_id}
-                                                    label="Bağlı Departman"
-                                                    onChange={(e) => {
-                                                        setForm({
-                                                            ...form,
-                                                            [e.target.name]: e.target.value,
-                                                            polyvalence_department_name: departments.find((department) => department.id == e.target.value).name
-                                                        })
-                                                    }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {departments.map((department) => (
-                                                        <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            {
-                                                lineBased[0]?.is_active &&
+                                            {!positionBased ?
                                                 <FormControl fullWidth size="small">
-                                                    <InputLabel>Bağlı Hat</InputLabel>
-                                                    <Select
-                                                        name="line"
-                                                        value={selectedLine}
-                                                        label="Bağlı Hat"
-                                                        onChange={(e) => setSelectedLine(e.target.value)}
+                                                    <Autocomplete
+                                                        options={departments}
+                                                        getOptionLabel={(department) => department.name}
+                                                        value={departments.find((department) => department.id === form.polyvalence_department_id) || null}
+                                                        onChange={(event, newValue) => {
+                                                            if (newValue) {
+                                                                setForm({
+                                                                    ...form,
+                                                                    polyvalence_department_id: newValue.id,
+                                                                    polyvalence_department_name: newValue.name
+                                                                });
+                                                            }
+                                                        }}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Departman"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                    />
+                                                </FormControl>
+                                                :
+                                                <FormControl fullWidth size="small">
+                                                    <Autocomplete
+                                                        multiple
+                                                        disableCloseOnSelect
+                                                        options={positions.filter(x => x.is_active === true)}
+                                                        getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                        filterSelectedOptions
                                                         size="small"
-                                                        required
-                                                    >
-                                                        {lines.filter(x => x.department_id == form.polyvalence_department_id).map((lines) => (
-                                                            <MenuItem value={lines.id} key={lines.id}>{lines.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Pozisyonlar"
+                                                                size="small"
+                                                            />
+                                                        )}
+                                                        onChange={(event, newValue) => {
+                                                            setSelectedPositions(newValue);
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                            }
+                                            {
+                                                (lineBased[0]?.is_active && !positionBased) &&
+                                                <FormControl fullWidth size="small">
+                                                    <Autocomplete
+                                                        options={lines.filter(x => x.department_id == form.polyvalence_department_id)}
+                                                        getOptionLabel={(line) => line.name}
+                                                        value={lines.find((line) => line.id === selectedLine) || null}
+                                                        onChange={(event, newValue) => {
+                                                            if (newValue) {
+                                                                setSelectedLine(newValue.id);
+                                                            }
+                                                        }}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Hat"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                    />
                                                 </FormControl>
                                             }
                                             {
@@ -279,19 +338,27 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                 </div>
                                             }
                                             <FormControl fullWidth size="small">
-                                                <InputLabel>Değerlendirme Sıklığı</InputLabel>
-                                                <Select
-                                                    name="polyvalence_evaluation_frequency"
-                                                    value={form.polyvalence_evaluation_frequency}
-                                                    label="Değerlendirme Sıklığı"
-                                                    onChange={(e) => setForm({ ...form, [e.target.name]: e.target.value })}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {evaluationFrequency.map((frequency) => (
-                                                        <MenuItem value={frequency.frequency} key={frequency.frequency}>{frequency.frequency}</MenuItem>
-                                                    ))}
-                                                </Select>
+                                                <Autocomplete
+                                                    options={evaluationFrequency}
+                                                    getOptionLabel={(frequency) => frequency.frequency}
+                                                    value={evaluationFrequency.find((frequency) => frequency.frequency === form.polyvalence_evaluation_frequency) || null}
+                                                    onChange={(event, newValue) => {
+                                                        if (newValue) {
+                                                            setForm({
+                                                                ...form,
+                                                                polyvalence_evaluation_frequency: newValue.frequency
+                                                            });
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Değerlendirme Sıklığı"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                />
                                             </FormControl>
                                             <div style={{ display: "flex", gap: "10px", flexDirection: "column", marginTop: "8px" }}>
                                                 <Button type="submit" variant="contained" color="primary" size="small">Kaydet</Button>

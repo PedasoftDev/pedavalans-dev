@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Views } from "../../../components/Views";
-import { FormControl, IconButton, MenuItem, Select, } from "@mui/material";
+import { Autocomplete, IconButton, TextField } from "@mui/material";
 import { FaAngleLeft } from "react-icons/fa";
 import { Models, Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
@@ -74,22 +74,19 @@ export class AuthorizationProfileViewController extends UIController {
                                 headerName: 'Yetki Profili',
                                 flex: 1,
                                 renderCell(params) {
+                                    const value = accountRelations.find((x) => x.account_id === params.row.$id)?.authorization_profile || "";
+
                                     return (
-                                        <FormControl fullWidth size="small">
-                                            <Select
-                                                value={accountRelations.find((x) => x.account_id === params.row.$id)?.authorization_profile || ""}
-                                                onChange={(e) => handleChangeAuthorizationProfile(params.row.$id, e.target.value)}
-                                                size="small"
-                                                required
-                                            >
-                                                {Resources.AuthorizationProfile.map((item) => (
-                                                    <MenuItem key={item.localStr} value={item.localStr}>
-                                                        {item.name}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    )
+                                        <Autocomplete
+                                            value={value}
+                                            onChange={(event, newValue) => handleChangeAuthorizationProfile(params.row.$id, newValue)}
+                                            options={Resources.AuthorizationProfile.map((item) => item.localStr)}
+                                            getOptionLabel={(option) => Resources.AuthorizationProfile.find((item) => item.localStr === option)?.name || ""}
+                                            renderInput={(params) => <TextField {...params} size="small" required />}
+                                            fullWidth
+                                            size="small"
+                                        />
+                                    );
                                 },
                             }
                         ];
@@ -114,7 +111,7 @@ export class AuthorizationProfileViewController extends UIController {
                                             gap: "10px",
                                             width: "100%",
                                         }}>
-                                          <GridContainer>
+                                            <GridContainer>
                                                 <StyledDataGrid
                                                     rows={accounts}
                                                     columns={columns}

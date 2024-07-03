@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { Toast } from "../../../components/Toast";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import ICompetency from "../../../interfaces/ICompetency";
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField, Typography } from "@mui/material";
+import { Autocomplete, Button, FormControl, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
 import Form from "../Views/Form";
 import React from "react";
 import StyledDataGrid from "../../../components/StyledDataGrid";
@@ -18,6 +18,11 @@ import Parameters from "../../../../server/hooks/parameters/main";
 import { Resources } from "../../../assets/Resources";
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
+import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
+import Collections from "../../../../server/core/Collections";
+import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
+
+const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
 const formReset: ICompetency.ICompetency = {
     competency_id: "",
@@ -65,10 +70,15 @@ export class UpdateCompetencyController extends UIController {
         const { updateCompetencyDepartment } = CompetencyDepartment.Update();
         const { createCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
 
+        // positions
+        const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
+        const { competencyPositionRelationList, isLoading: isLoadingCompetencyPositionRelationList } = CompetencyPositionRelation.GetByCompetencyId(id);
+        const { createCompetencyPositionRelation } = CompetencyPositionRelation.Create();
+
 
 
         return (
-            isLoading || isLoadingCompetency || isLoadingDepartments ||
+            isLoading || isLoadingCompetency || isLoadingDepartments || isLoadingPositions || isLoadingCompetencyPositionRelationList ||
                 isLoadingGroups || isLoadingCompetencyDepartments || isLoadingCompetencyLineRelation ||
                 isLoadingLines || isLoadingParameter ? VStack(Spinner()) :
                 UIViewBuilder(() => {
@@ -78,6 +88,8 @@ export class UpdateCompetencyController extends UIController {
                     const [isActive, setIsActive] = useState<boolean>(true);
 
                     const [selectedLines, setSelectedLines] = useState<string[]>([]);
+
+                    const [selectedPositions, setSelectedPositions] = useState<any[]>([]);
 
                     const lineColumns: GridColDef[] = [
                         {
@@ -107,17 +119,12 @@ export class UpdateCompetencyController extends UIController {
                         if (lineBased[0]?.is_active) {
                             setSelectedLines(competencyLineRelation.map((line) => line.line_id))
                         }
+                        if (positionBased) {
+                            const positionIds = competencyPositionRelationList.map(relation => relation.position_id);
+                            setSelectedPositions(positions.filter((position) => positionIds.includes(position.$id)))
+                        }
                         setIsActive(competency.is_active_competency)
                     }, [])
-
-                    const handleChangeGroup = (e: SelectChangeEvent<string>) => {
-                        const group = activeGroups.find((group) => group.competency_group_id === e.target.value)
-                        setForm({
-                            ...form,
-                            [e.target.name as string]: e.target.value,
-                            competency_group_name: group?.competency_group_name
-                        })
-                    }
 
                     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         setForm({
@@ -133,69 +140,7 @@ export class UpdateCompetencyController extends UIController {
                             title: "Yetkinlik düzenleniyor...",
                             timer: 5000,
                         })
-                        competencyDepartments.map((department) => {
-                            if (!selectedDepartments.includes(department.competency_department_id)) {
-                                updateCompetencyDepartment({
-                                    databaseId: AppInfo.Database,
-                                    collectionId: "competency_department",
-                                    documentId: department.$id,
-                                    data: {
-                                        ...removeDollarProperties(department),
-                                        is_deleted: true
-                                    }
-                                })
-                            }
-                        })
 
-                        if (lineBased[0]?.is_active) {
-                            competencyLineRelation.map((line) => {
-                                if (!selectedLines.includes(line.line_id)) {
-                                    updateCompetencyLineRelation({
-                                        databaseId: AppInfo.Database,
-                                        collectionId: "competency_line_relation",
-                                        documentId: line.$id,
-                                        data: {
-                                            ...removeDollarProperties(line),
-                                            is_deleted: true
-                                        }
-                                    })
-                                }
-                            })
-                        }
-
-                        selectedDepartments.map((department) => {
-                            if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
-                                const createDepId = nanoid();
-                                createCompetencyDepartment({
-                                    documentId: createDepId,
-                                    data: {
-                                        competency_department_table_id: createDepId,
-                                        competency_department_id: department,
-                                        competency_department_name: departments.find((dep) => dep.id === department).name,
-                                        competency_id: id,
-                                        tenant_id: me?.prefs?.organization
-                                    }
-                                })
-                            }
-                        })
-
-                        if (lineBased[0]?.is_active) {
-                            selectedLines.map((line) => {
-                                if (!competencyLineRelation.map((line) => line.line_id).includes(line)) {
-                                    const createLineId = nanoid();
-                                    createCompetencyLineRelation({
-                                        documentId: createLineId,
-                                        data: {
-                                            id: createLineId,
-                                            competency_id: id,
-                                            competency_target_value: "",
-                                            line_id: line,
-                                            tenant_id: me?.prefs?.organization
-                                        }
-                                    })
-                                }
-                            })
-                        }
 
                         updateCompetency({
                             databaseId: AppInfo.Database,
@@ -203,11 +148,106 @@ export class UpdateCompetencyController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
-                            Toast.fire({
-                                icon: "success",
-                                title: "Yetkinlik başarıyla düzenlendi."
-                            });
-                            navigate("/app/competency/list");
+                            if (!positionBased) {
+                                if (lineBased[0]?.is_active) {
+                                    competencyLineRelation.map((line) => {
+                                        if (!selectedLines.includes(line.line_id)) {
+                                            updateCompetencyLineRelation({
+                                                databaseId: AppInfo.Database,
+                                                collectionId: "competency_line_relation",
+                                                documentId: line.$id,
+                                                data: {
+                                                    ...removeDollarProperties(line),
+                                                    is_deleted: true
+                                                }
+                                            })
+                                        }
+                                    })
+                                    selectedLines.map((line) => {
+                                        if (!competencyLineRelation.map((line) => line.line_id).includes(line)) {
+                                            const createLineId = nanoid();
+                                            createCompetencyLineRelation({
+                                                documentId: createLineId,
+                                                data: {
+                                                    id: createLineId,
+                                                    competency_id: id,
+                                                    competency_target_value: "",
+                                                    line_id: line,
+                                                    tenant_id: me?.prefs?.organization
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                                competencyDepartments.map((department) => {
+                                    if (!selectedDepartments.includes(department.competency_department_id)) {
+                                        updateCompetencyDepartment({
+                                            databaseId: AppInfo.Database,
+                                            collectionId: "competency_department",
+                                            documentId: department.$id,
+                                            data: {
+                                                ...removeDollarProperties(department),
+                                                is_deleted: true
+                                            }
+                                        })
+                                    }
+                                })
+                                selectedDepartments.map((department, i) => {
+                                    if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
+                                        const createDepId = nanoid();
+                                        createCompetencyDepartment({
+                                            documentId: createDepId,
+                                            data: {
+                                                competency_department_table_id: createDepId,
+                                                competency_department_id: department,
+                                                competency_department_name: departments.find((dep) => dep.id === department).name,
+                                                competency_id: id,
+                                                tenant_id: me?.prefs?.organization
+                                            }
+                                        }, () => {
+                                            if (i === selectedDepartments.length - 1) {
+                                                Toast.fire({
+                                                    icon: "success",
+                                                    title: "Yetkinlik başarıyla düzenlendi."
+                                                });
+                                                navigate("/app/competency/list");
+                                            }
+                                        })
+                                    }
+                                })
+                            } else {
+                                const relationIds = competencyPositionRelationList.map(relation => relation.$id);
+                                for (let i = 0; i < competencyPositionRelationList.length; i++) {
+                                    updateCompetencyLineRelation({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.CompetencyPositionRelation,
+                                        documentId: relationIds[i],
+                                        data: {
+                                            is_deleted: true,
+                                            is_active: false
+                                        }
+                                    })
+                                }
+
+                                for (let i = 0; i < selectedPositions.length; i++) {
+                                    createCompetencyPositionRelation({
+                                        documentId: nanoid(),
+                                        data: {
+                                            competency_id: id,
+                                            position_id: selectedPositions[i].$id,
+                                        }
+                                    }, () => {
+                                        if (i === selectedPositions.length - 1) {
+                                            Toast.fire({
+                                                icon: "success",
+                                                title: "Yetkinlik başarıyla düzenlendi."
+                                            });
+                                            navigate("/app/competency/list");
+                                        }
+
+                                    })
+                                }
+                            }
                         })
                     }
 
@@ -267,20 +307,31 @@ export class UpdateCompetencyController extends UIController {
                                                 height: "calc(100vh - 200px)",
                                             }}>
                                             <TextField name="competency_name" label="Yetkinlik Adı" variant="outlined" fullWidth size="small" value={form.competency_name} onChange={handleChange} required />
-                                            <FormControl fullWidth size="small" required>
-                                                <InputLabel>Yetkinlik Grubu</InputLabel>
-                                                <Select
-                                                    name="competency_group_id"
-                                                    value={form.competency_group_id}
-                                                    label="Yetkinlik Grubu"
-                                                    onChange={handleChangeGroup}
-                                                    size="small"
-                                                >
-                                                    {activeGroups.map((group) => (
-                                                        <MenuItem value={group.competency_group_id} key={group.competency_group_id}>{group.competency_group_name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <Autocomplete
+                                                value={activeGroups.find((group) => group.competency_group_id === form.competency_group_id) || null}
+                                                onChange={(event, newValue) => {
+                                                    setForm({
+                                                        ...form,
+                                                        competency_group_id: newValue ? newValue.competency_group_id : '',
+                                                        competency_group_name: newValue ? newValue.competency_group_name : ''
+                                                    });
+                                                }}
+                                                options={activeGroups}
+                                                getOptionLabel={(option) => option.competency_group_name}
+                                                isOptionEqualToValue={(option, value) => option.competency_group_id === value.competency_group_id}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Yetkinlik Grubu"
+                                                        size="small"
+                                                        required
+                                                        fullWidth
+                                                    />
+                                                )}
+                                                fullWidth
+                                                size="small"
+                                            />
+
                                             <TextField
                                                 fullWidth
                                                 onChange={handleChange}
@@ -291,31 +342,56 @@ export class UpdateCompetencyController extends UIController {
                                                 rows={4}
                                                 label="Yetkinlik Açıklaması"
                                             />
-                                            <div style={{
-                                                height: "280px",
-                                                width: "100%",
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                gap: "5px",
-                                            }}>
-                                                <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
-                                                <StyledDataGrid
-                                                    rows={departments}
-                                                    columns={departmentColumns}
-                                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                    isCellEditable={() => false}
-                                                    disableRowSelectionOnClick
-                                                    checkboxSelection
-                                                    rowSelectionModel={selectedDepartments}
-                                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                        setSelectedDepartments(newRowSelectionModel)
-                                                    }}
-                                                    rowHeight={30}
-                                                    columnHeaderHeight={30}
-                                                />
-                                            </div>
+                                            {positionBased ?
+                                                <FormControl fullWidth size="small">
+                                                    <Autocomplete
+                                                        multiple
+                                                        disableCloseOnSelect
+                                                        options={positions.filter(x => x.is_active === true)}
+                                                        getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                        filterSelectedOptions
+                                                        size="small"
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Pozisyonlar"
+                                                                size="small"
+                                                            />
+                                                        )}
+                                                        onChange={(event, newValue) => {
+                                                            setSelectedPositions(newValue);
+                                                            console.log(newValue)
+                                                        }}
+                                                        value={selectedPositions}
+                                                    />
+                                                </FormControl>
+                                                :
+                                                <div style={{
+                                                    height: "280px",
+                                                    width: "100%",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "5px",
+                                                }}>
+                                                    <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
+                                                    <StyledDataGrid
+                                                        rows={departments}
+                                                        columns={departmentColumns}
+                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                        isCellEditable={() => false}
+                                                        disableRowSelectionOnClick
+                                                        checkboxSelection
+                                                        rowSelectionModel={selectedDepartments}
+                                                        onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                            setSelectedDepartments(newRowSelectionModel)
+                                                        }}
+                                                        rowHeight={30}
+                                                        columnHeaderHeight={30}
+                                                    />
+                                                </div>
+                                            }
                                             {
-                                                lineBased[0]?.is_active &&
+                                                !positionBased && lineBased[0]?.is_active &&
                                                 <div style={{
                                                     height: "280px",
                                                     width: "100%",

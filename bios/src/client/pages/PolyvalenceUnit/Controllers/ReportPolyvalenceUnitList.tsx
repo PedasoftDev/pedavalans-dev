@@ -142,15 +142,39 @@ export class ReportPolyvalenceUnitList extends UIController {
                         }
 
                         const exportPolyvalenceUnitToXlsx = () => {
+                            const zeroCountGroup: { id: string, count: number }[] = [];
+                            excelData.forEach(competencyValue => {
+                                const competency = competencyList.find(x => x.$id === competencyValue.competency_id);
+                                const group = groups.find(x => x.$id === competency.competency_group_id);
+                                if (group) {
+                                    if (!zeroCountGroup.some(x => x.id === group.$id)) {
+                                        zeroCountGroup.push({ id: group.$id, count: 1 })
+                                    } else {
+                                        const index = zeroCountGroup.findIndex(x => x.id === group.$id);
+                                        zeroCountGroup[index].count = zeroCountGroup[index].count + 1;
+                                    }
+                                }
+                            })
+
+                            const filteredGroups = zeroCountGroup.filter(x => x.count > 0).map(x => x.id);
+                            const filteredGroupsObj = [];
+                            filteredGroups.forEach(group => {
+                                const groupObj = groups.find(x => x.$id === group);
+                                if (groupObj) {
+                                    filteredGroupsObj.push(groupObj)
+                                }
+                            })
                             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", Resources.ParameterLocalStr.machine_based_polyvalence_management), Query.equal("tenant_id", me?.prefs?.organization)]).then(res => {
                                 if (res.documents && res.documents[0] && res.documents[0].is_active) {
                                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Machine, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true)]).then(machineRes => {
                                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyMachineAssociation, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false)]).then(competencyMachineRes => {
-                                            getReportToExcelByMachinePolyvalenceTable(machineRes.documents as any, competencyMachineRes.documents as any, competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name)
+
+
+                                            getReportToExcelByMachinePolyvalenceTable(machineRes.documents as any, competencyMachineRes.documents as any, competencyList, filteredGroupsObj, excelData, polyvalenceUnit.polyvalence_table_name)
                                         })
                                     })
                                 } else {
-                                    getReportToExcelByPolyvalenceTable(competencyList, groups, excelData, polyvalenceUnit.polyvalence_table_name, employees, positions)
+                                    getReportToExcelByPolyvalenceTable(competencyList, filteredGroupsObj, excelData, polyvalenceUnit.polyvalence_table_name, employees, positions)
                                 }
                             })
                         }

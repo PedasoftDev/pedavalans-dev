@@ -35,9 +35,9 @@ namespace OrganizationStructurePosition {
         }
     }
 
-    export const Get = (id: string): { positions: IOrganizationStructure.IPositions.IPosition, isLoading: boolean } => {
+    export const Get = (id: string): { position: IOrganizationStructure.IPositions.IPosition, isLoadingPosition: boolean } => {
         const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: Collections.OrganizationStructurePosition, documentId: id })
-        return { positions: document as any, isLoading }
+        return { position: document as any, isLoadingPosition: isLoading }
     }
 }
 

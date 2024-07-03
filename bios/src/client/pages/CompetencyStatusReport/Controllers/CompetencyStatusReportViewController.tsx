@@ -4,7 +4,7 @@ import { Query, Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { Views as ViewsMain } from "../../../components/Views";
 import { Views } from "../Views/Views";
-import { CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Tooltip } from "@mui/material";
+import { CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Autocomplete, TextField, Tooltip } from "@mui/material";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
@@ -41,7 +41,7 @@ export class CompetencyStatusReportViewController extends UIController {
         const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetListByAccountId(me?.$id);
         const { dataViewer, isLoadingDataViewer } = PolyvalenceUnitTableDataViewer.GetListByAccountId(me?.$id);
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
-        const {employees,isLoadingEmployees} = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
+        const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { periods, isLoading: isLoadingPeriod } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
         const navigate = useNavigate();
@@ -144,42 +144,63 @@ export class CompetencyStatusReportViewController extends UIController {
                                         <Views.Container>
                                             <form onSubmit={getReport}>
                                                 <Views.SelectItems>
-                                                    <FormControl fullWidth size="small">
-                                                        <InputLabel>Polivalans Tablosu</InputLabel>
-                                                        <Select
-                                                            name="polyvalence_table_id"
-                                                            label="Polivalans Tablosu"
-                                                            size="small"
-                                                            required
-                                                            value={formFilters.polyvalence_table_id}
-                                                            onChange={handleChangePolyvalenceTable}
-                                                        >
-                                                            {filteredPolyTable.map((item) => (
-                                                                <MenuItem key={item.$id} value={item.$id}>
-                                                                    {item.polyvalence_table_name}
-                                                                </MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
-                                                    <FormControl fullWidth size="small">
-                                                        <InputLabel>Değerlendirme Dönemi</InputLabel>
-                                                        <Select
-                                                            name="evaluation_period"
-                                                            label="Değerlendirme Dönemi"
-                                                            size="small"
-                                                            required
-                                                            value={formFilters.evaluation_period}
-                                                            onChange={(e: SelectChangeEvent) => {
-                                                                setFormFilters({ ...formFilters, evaluation_period: e.target.value });
-                                                            }}
-                                                        >
-                                                            {evaluationPeriod.map((item) => (
-                                                                <MenuItem key={item.name} value={item.name}>
-                                                                    {item.name}
-                                                                </MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </FormControl>
+                                                    <Autocomplete
+                                                        options={polyvalenceUnitList}
+                                                        value={polyvalenceUnitList.find((item) => item.$id === formFilters.polyvalence_table_id) || null}
+                                                        onChange={(event, newValue) => {
+                                                            const selectedEvaluationFrequency = newValue?.polyvalence_evaluation_frequency;
+                                                            const periodYear = Number(periods[0].evaluation_period_year);
+                                                            let evaluationPeriod = [];
+                                                            switch (selectedEvaluationFrequency) {
+                                                                case "Yıl":
+                                                                    evaluationPeriod = getYearPeriods(periodYear);
+                                                                    break;
+                                                                case "Yarıyıl":
+                                                                    evaluationPeriod = getHalfYearPeriods(periodYear);
+                                                                    break;
+                                                                case "Çeyrekyıl":
+                                                                    evaluationPeriod = getQuarterYearPeriods(periodYear);
+                                                                    break;
+                                                                case "Ay":
+                                                                    evaluationPeriod = getMonthPeriods(periodYear);
+                                                                    break;
+                                                                default:
+                                                                    evaluationPeriod = [];
+                                                                    break;
+                                                            }
+                                                            setEvaluationPeriod(evaluationPeriod);
+                                                            setFormFilters({ ...formFilters, polyvalence_table_id: newValue?.$id || "" });
+                                                        }}
+                                                        getOptionLabel={(option) => option.polyvalence_table_name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Polivalans Tablosu"
+                                                                name="polyvalence_table_id"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                    />
+                                                    <Autocomplete
+                                                        options={evaluationPeriod}
+                                                        value={evaluationPeriod.find((item) => item.name === formFilters.evaluation_period) || null}
+                                                        onChange={(event, newValue) => {
+                                                            setFormFilters({ ...formFilters, evaluation_period: newValue?.name || "" });
+                                                        }}
+                                                        getOptionLabel={(option) => option.name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Değerlendirme Dönemi"
+                                                                name="evaluation_period"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                    />
                                                     {/* <TextField
                                                         name="percentage"
                                                         label="Yüzdelik"
@@ -219,11 +240,12 @@ export class CompetencyStatusReportViewController extends UIController {
                                                                         <RiExternalLinkFill size={25} cursor={"pointer"} onClick={(e) => {
                                                                             setEmployeeDashboardToHook({
                                                                                 ...employees.find((employee) => employee.$id === item.employee_id),
-                                                                                competency_evaluation_period:formFilters.evaluation_period,
-                                                                                polyvalence_table_id:formFilters.polyvalence_table_id,
-                                                                                frequency:polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
-                                                                                })
-                                                                            navigate('/app/employee-dashboard/view' )}} />
+                                                                                competency_evaluation_period: formFilters.evaluation_period,
+                                                                                polyvalence_table_id: formFilters.polyvalence_table_id,
+                                                                                frequency: polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
+                                                                            })
+                                                                            navigate('/app/employee-dashboard/view')
+                                                                        }} />
                                                                     </Views.ListEmployeeLinkIcon>
                                                                 </Views.ListEmployeeLink>
                                                             </Views.ListItem>

@@ -191,12 +191,17 @@ export class AssignedEducationListController extends UIFormController {
                             {
                                 field: "$id",
                                 headerName: "İşlemler",
-                                width: 100,
+                                width: (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") ? 200 : 100,
                                 renderCell: (params) => {
                                     return (
-                                        <Button onClick={() => handleOpenDialog(params.value)} size="small" fullWidth variant="text">
-                                            İncele
-                                        </Button>
+                                        <div style={{ display: "flex", gap: "5px" }}>
+                                            <Button onClick={() => handleOpenDialog(params.value)} size="small" fullWidth variant="text">
+                                                İncele
+                                            </Button>
+                                            {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
+                                                <Button onClick={() => navigate(`/app/education/assigned/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
+                                            }
+                                        </div>
                                     )
                                 }
                             }
@@ -214,11 +219,11 @@ export class AssignedEducationListController extends UIFormController {
 
                             if (accountRelations[0].is_admin) {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active", true), Query.limit(10000)]).then((res) => res.documents as any[]);
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
                             } else {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_active", true), Query.limit(10000)]).then((res) => res.documents as any[]);
+                                    [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("educator_id", me?.$id), Query.equal("is_deleted", false), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
                             }
                         };
@@ -258,6 +263,7 @@ export class AssignedEducationListController extends UIFormController {
                                                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
                                                         <DialogLabel><strong>Eğitim Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name}</DialogLabel>
                                                         <DialogLabel><strong>Çalışan Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name}</DialogLabel>
+                                                        <DialogLabel><strong>Eğitim Yeri: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.location}</DialogLabel>
                                                         <TextField label="Eğitimcinin Yorumu" size="small" fullWidth multiline rows={4} value={dialogForm.educator_comment} onChange={(e) => setDialogForm({ ...dialogForm, educator_comment: e.target.value })} />
                                                         <FormControlLabel
                                                             sx={{ width: "100%", alignContent: "end" }}
@@ -306,6 +312,7 @@ export class AssignedEducationListController extends UIFormController {
                                                 }}>
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assign")}>Yeni Eğitim Ata</Button>
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/plans")}>Eğitim Planları</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>

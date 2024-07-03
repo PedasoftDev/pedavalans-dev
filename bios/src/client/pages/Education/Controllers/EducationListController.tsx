@@ -116,6 +116,7 @@ export class EducationListController extends UIFormController {
                                                 }}>
                                                     {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>}
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/plans")}>Eğitim Planları</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>

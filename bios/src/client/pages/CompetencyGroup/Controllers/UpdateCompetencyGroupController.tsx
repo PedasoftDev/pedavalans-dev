@@ -12,7 +12,7 @@ import {
 
 import React, { useState, useEffect } from 'react';
 import Form from '../Views/Form';
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
+import { Autocomplete, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
 import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
@@ -156,21 +156,30 @@ export class UpdateCompetencyGroupController extends UIFormController {
                                                     onChange={handleChange}
                                                     required
                                                 />
-                                                <FormControl fullWidth size="small" required>
-                                                    <InputLabel>Yetkinlik Düzeyi</InputLabel>
-                                                    <Select
-                                                        name="competency_grade_id"
-                                                        value={groupForm.competency_grade_id}
-                                                        label="Yetkinlik Düzeyi"
-                                                        onChange={handleSelectGrade}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        {grades.map((grade) => (
-                                                            <MenuItem value={grade.competency_grade_id} key={grade.competency_grade_id}>{grade.competency_grade_name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
+                                                <Autocomplete
+                                                    value={grades.find((grade) => grade.competency_grade_id === groupForm.competency_grade_id) || null}
+                                                    onChange={(event, newValue) => {
+                                                        setGroupForm({
+                                                            ...groupForm,
+                                                            competency_grade_id: newValue ? newValue.competency_grade_id : '',
+                                                            competency_grade_name: newValue ? newValue.competency_grade_name : ''
+                                                        });
+                                                    }}
+                                                    options={grades}
+                                                    getOptionLabel={(option) => option.competency_grade_name}
+                                                    isOptionEqualToValue={(option, value) => option.competency_grade_id === value.competency_grade_id}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Yetkinlik Düzeyi"
+                                                            size="small"
+                                                            required
+                                                            fullWidth
+                                                        />
+                                                    )}
+                                                    fullWidth
+                                                    size="small"
+                                                />
 
                                                 <FormControlLabel
                                                     sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}

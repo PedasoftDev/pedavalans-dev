@@ -44,6 +44,9 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
                 birth_date: "",
                 gender: "",
                 realm_id: "",
+                department_start_date: "",
+                phone: "",
+                position_start_date: "",
                 is_active: true,
                 is_deleted: false,
                 tenant_id: "",
@@ -127,9 +130,11 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
                 if (selectedMachine) {
                     difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
                 }
-                totalCompetencyCount++;
-                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
-                totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
+                if (employeeCompetencyValue && employeeCompetencyValue.competency_real_value !== "" && employeeCompetencyValue.competency_target_value !== "no-target") {
+                    totalCompetencyCount++;
+                    totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
+                    totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
+                }
             }
         });
     });
@@ -292,7 +297,7 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
             if (selectedMachine) {
                 difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
             }
-            if (employeeCompetencyValue && employeeCompetencyValue.competency_target_value != "no-target") {
+            if (employeeCompetencyValue && employeeCompetencyValue.competency_real_value !== "" && employeeCompetencyValue.competency_target_value != "no-target") {
                 totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
                 totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
             }
@@ -444,8 +449,10 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
                 if (selectedMachine) {
                     difficultyCoefficient = parseFloat(selectedMachine.difficulty_coefficient);
                 }
-                totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
-                totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
+                if (employeeCompetencyValue && employeeCompetencyValue.competency_real_value !== "" && employeeCompetencyValue.competency_target_value !== "no-target") {
+                    totalTargetValue += parseInt(employeeCompetencyValue.competency_target_value);
+                    totalRealValue += parseInt(employeeCompetencyValue.competency_real_value) * difficultyCoefficient;
+                }
             }
         })
 

@@ -4,6 +4,7 @@ export function competencyTransferTemplateByExcel(line_is_active: boolean) {
     const wb = XLSX.utils.book_new();
     const headers = [
         "YETKINLIK_ADI",
+        "YETKINLIK_ACIKLAMASI",
         "YETKINLIK_GRUBU_ADI",
         "DEPARTMAN_ADLARI",
     ];

@@ -12,6 +12,7 @@ namespace Collections {
     export const Parameter: string = "pedavalans_parameter";
     export const CompetencyGradeLevel: string = "competency_grade_level";
     export const Education: string = "education";
+    export const EducationPlan: string = "education_plan";
     export const EducationCompetencyRelation: string = "education_competency_relation";
     export const Machine: string = "machine";
     export const OrganizationStructureDepartment: string = "organization_department";
@@ -32,6 +33,9 @@ namespace Collections {
     export const OrganizationEmployeeDocument: string = 'organization_employee_document'
     export const PositionVocationalQualificationRelation: string = "position_vocational_qualification";
     export const StringParameter = "string_parameter";
+    export const CompetencyLineRelation = "competency_line_relation";
+    export const PolyvalenceUnitPositionRelation = "polyvalence_unit_position_relation";
+    export const CompetencyPositionRelation = "competency_position_relation";
 }
 
 export default Collections;

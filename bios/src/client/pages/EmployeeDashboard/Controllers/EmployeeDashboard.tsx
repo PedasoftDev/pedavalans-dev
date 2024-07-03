@@ -75,37 +75,26 @@ export class EmployeeDashboard extends UIController {
     const selector = useAppSelector;
     const setEmployeeDashboardNull = () => dispatch(setEmployeeDashboardToNull());
 
-     /* GLOBAL STATE ASSIGN EDUCATION */
-     const employeeDashboardState: IEmployeeDashboard.IBase = selector(selectEmployeeDashboard);
+    /* GLOBAL STATE ASSIGN EDUCATION */
+    const employeeDashboardState: IEmployeeDashboard.IBase = selector(selectEmployeeDashboard);
 
+
+
+    const { document: department, isLoading: isLoadingDepartment } = OrganizationStructureDepartment.Get(employeeDashboardState.department_id)
     
+    const { position, isLoadingPosition } = OrganizationStructurePosition.Get(employeeDashboardState.position_id)
+    
+    const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
 
-    const { document:department,isLoading: isLoadingDepartment } =
-      OrganizationStructureDepartment.Get(employeeDashboardState.department_id)
+    const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
+    
+    const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue, } = EmployeeCompetencyValue.ListByEmployeeAndTableId(employeeDashboardState.$id, employeeDashboardState.polyvalence_table_id)
+    const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetByEmployeeId(employeeDashboardState.$id)
 
-    const { positions:position, isLoading:isLoadingPosition } =
-      OrganizationStructurePosition.Get(employeeDashboardState.position_id)
-
-    const { competencyDepartmentList, isLoadingCompetencyDepartmentList } =
-      CompetencyDepartment.GetList(me?.prefs?.organization)
-
-    const {competencyList,isLoadingCompetencyList} = Competency.GetList(me?.prefs?.organization)
-    const {
-      listEmployeeCompetencyValue,
-      isLoadingListEmployeeCompetencyValue,
-    } = EmployeeCompetencyValue.ListByEmployeeAndTableId(employeeDashboardState.$id, employeeDashboardState.polyvalence_table_id)
-
-    const { assignedEducationList, isLoadingAssignedEducationList } =
-      AssignEducation.GetByEmployeeId(employeeDashboardState.$id)
-
-
-    const {employeeLog,isLoadingEmployeeLog} = OrganizationStructureEmployeeLog.ListByEmployeeId(employeeDashboardState.$id)
-
-    const {organizationEmployeeDocumentList,isLoading: employeeDocumentLoading} = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
-
-    const {polyvalenceUnit,isLoadingPolyvalenceUnit} = PolyvalenceUnit.Get(employeeDashboardState.polyvalence_table_id)
-
-    const {activeGroups,isLoading:activeGroupsLoading} = CompetencyGroup.GetActiveCompetencyGroups()
+    const { employeeLog, isLoadingEmployeeLog } = OrganizationStructureEmployeeLog.ListByEmployeeId(employeeDashboardState.$id)
+    const { organizationEmployeeDocumentList, isLoading: employeeDocumentLoading } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
+    const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(employeeDashboardState.polyvalence_table_id)
+    const { activeGroups, isLoading: activeGroupsLoading } = CompetencyGroup.GetActiveCompetencyGroups()
 
 
 
@@ -122,7 +111,7 @@ export class EmployeeDashboard extends UIController {
       educationName: '',
     }
 
-    
+
     //Gauge için ayarlar
 
     const getColor = (value) => {
@@ -149,19 +138,19 @@ export class EmployeeDashboard extends UIController {
 
     const [employeeGroups, setEmployeeGroups] = useState([])
 
-    const [selectedCompetencyId, setSelectedCompetencyId ] = useState('')
+    const [selectedCompetencyId, setSelectedCompetencyId] = useState('')
 
     const [switchState, setSwitchState] = useState(true)
-    
+
 
     // tabs settings
-    
+
     const [value, setValue] = useState(0);
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
       setValue(newValue);
     };
 
-    
+
 
     // treeview settings
 
@@ -177,24 +166,24 @@ export class EmployeeDashboard extends UIController {
 
     const [selectedCompetency, setSelectedCompetency] = useState(SelectedCompetencyInfo)
 
-    const [selectedEvaluationPeriod , setSelectedEvaluationPeriod] = useState([])
+    const [selectedEvaluationPeriod, setSelectedEvaluationPeriod] = useState([])
     const [selectedRealValue, setSelectedRealValue] = useState([])
     const [selectedTargetValue, setSelectedTargetValue] = useState([])
 
     const [info, setInfo] = useState([])
-    
+
 
 
 
 
     return isLoading ||
-    isLoadingDepartment ||
-    isLoadingPosition ||
+      isLoadingDepartment ||
+      isLoadingPosition ||
       isLoadingCompetencyDepartmentList ||
       isLoadingListEmployeeCompetencyValue ||
       isLoadingAssignedEducationList ||
-     isLoadingEmployeeLog || isLoadingCompetencyList|| employeeDocumentLoading || isLoadingPolyvalenceUnit || activeGroupsLoading
-      
+      isLoadingEmployeeLog || isLoadingCompetencyList || employeeDocumentLoading || isLoadingPolyvalenceUnit || activeGroupsLoading
+
       ? VStack(Spinner())
       : UIViewBuilder(() => {
         const employeeChartInfos = {
@@ -203,177 +192,177 @@ export class EmployeeDashboard extends UIController {
           polyvalence_table_id: employeeDashboardState.polyvalence_table_id,
           competency_group: []
         }
-        
-          useEffect(() => {
-            Services.Databases.getDocument(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.OrganizationStructureEmployee,
-              employeeDashboardState.$id
-            )
-              .then((res) => {
-                setEmployee({
-                  name:
-                    res.first_name +
-                    ' ' +
-                    res.last_name,
-                  avatar: null,
-                  position: res.position_id,
-                  department: res.department_id,
-                  experience: null,
-                  skills: null,
-                  startDate: null,
+
+        useEffect(() => {
+          Services.Databases.getDocument(
+            AppInfo.Name,
+            AppInfo.Database,
+            Collections.OrganizationStructureEmployee,
+            employeeDashboardState.$id
+          )
+            .then((res) => {
+              setEmployee({
+                name:
+                  res.first_name +
+                  ' ' +
+                  res.last_name,
+                avatar: null,
+                position: res.position_id,
+                department: res.department_id,
+                experience: null,
+                skills: null,
+                startDate: null,
+              })
+            })
+            .then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.EmployeeCompetencyValue,
+                //değiştirilecek
+                [Query.limit(100), Query.equal('employee_id', employeeDashboardState.$id), Query.equal('competency_evaluation_period', employeeDashboardState.competency_evaluation_period), Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")]
+              ).then((res) => {
+                let totalValue = 0
+                let totalTargetValue = 0
+                res.documents.forEach((element) => {
+                  totalValue += Number(element.competency_real_value)
+                  totalTargetValue += Number(element.competency_target_value)
+                })
+                const averagePercentage =
+                  (100 * totalValue) / totalTargetValue || 0
+                setEmployeeGaugeValue(averagePercentage)
+
+                let totalBarValue = 0
+                let totalPiece = 0
+                res.documents.forEach((element) => {
+                  totalBarValue += Number(element.competency_real_value)
+                  totalPiece = res.documents.length
+                })
+                const averageBarValue = totalBarValue / totalPiece || 0
+                setEmployeeBarValue(averageBarValue)
+                setBarMaxValue(Math.max(...res.documents.map((x) => x.competency_target_value)))
+              })
+            })
+            .then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.AssignedEducation,
+                [
+                  Query.limit(10000),
+                  Query.equal('employee_id', employeeDashboardState.$id),
+                  Query.equal('status', 'completed'),
+                ]
+              ).then((res) => {
+                setEducation({
+                  educationName: res.documents[0]?.education_name,
                 })
               })
-              .then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.EmployeeCompetencyValue,
-                  //değiştirilecek
-                  [Query.limit(100), Query.equal('employee_id', employeeDashboardState.$id), Query.equal('competency_evaluation_period', employeeDashboardState.competency_evaluation_period),Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")]
-                ).then((res) => {
-                  let totalValue = 0
-                  let totalTargetValue = 0
-                  res.documents.forEach((element) => {
-                    totalValue += Number(element.competency_real_value)
-                    totalTargetValue += Number(element.competency_target_value)
-                  })
-                  const averagePercentage =
-                    (100 * totalValue) / totalTargetValue || 0
-                  setEmployeeGaugeValue(averagePercentage)
-
-                  let totalBarValue = 0
-                  let totalPiece = 0
-                  res.documents.forEach((element) => {
-                    totalBarValue += Number(element.competency_real_value)
-                    totalPiece = res.documents.length
-                  })
-                  const averageBarValue = totalBarValue / totalPiece || 0
-                  setEmployeeBarValue(averageBarValue)
-                  setBarMaxValue(Math.max(...res.documents.map((x) => x.competency_target_value)))
-                })
-              })
-              .then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.AssignedEducation,
-                  [
-                    Query.limit(10000),
-                    Query.equal('employee_id', employeeDashboardState.$id),
-                    Query.equal('status', 'completed'),
-                  ]
-                ).then((res) => {
-                  setEducation({
-                    educationName: res.documents[0]?.education_name,
-                  })
-                })
-              })
-              
-
-              listEmployeeCompetencyValue.filter(x => x.employee_id === employeeDashboardState.$id).forEach((element,i) => {
-                const competencyWithGroup = competencyList.find(x => x.competency_id === element.competency_id);
-                if (competencyWithGroup) {
-                    const groupId = competencyWithGroup.competency_group_id;
-                    const groupName = competencyWithGroup.competency_group_name;
-                    const competencyId = competencyWithGroup.competency_id;
-                    
-                    if (!employeeChartInfos.competency_group.find(x => x.group_id === groupId)) {
-                      employeeChartInfos.competency_group.push({
-                        group_id: groupId,
-                        group_name: groupName,
-                        competencies: []
-                      });
-                    }
-                    
-                    // Check if the competency already exists in the group's competencies array
-                    const group = employeeChartInfos.competency_group.find(x => x.group_id === groupId);
-                    const existingCompetency = group.competencies.find(c => c.competency_id === competencyId);
-                    
-                    if (existingCompetency) {
-                        // Merge or update the existing competency data as needed
-                        existingCompetency.details.push(element); // Adjust this line based on how you want to merge the details
-                    } else {
-                        group.competencies.push({
-                            ...element,
-                            group_name: groupName,
-                            group_id: groupId,
-                            details: [element] // Store original details in a sub-array
-                        });
-                    }
-                }
-                if (i === listEmployeeCompetencyValue.length - 1) {
-                  employeeChartInfos.competency_group.forEach((group) => {
-                    group.competencies.forEach(element => {
-                      sortEvaluations(element.details, employeeDashboardState.frequency)
-                    });
-                  });
-                }
-              })
-              console.log(employeeChartInfos)
-              setEmployeeGroups(employeeChartInfos.competency_group)
-              setSelectedCompetencyId(employeeChartInfos.competency_group[0].competencies[0].competency_id)
-              setSelectedCompetency(employeeChartInfos.competency_group[0].competencies[0])
-              setSelectedEvaluationPeriod(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_evaluation_period))
-              setSelectedRealValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_real_value))
-              setSelectedTargetValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_target_value))
-              
+            })
 
 
-          }, [])
-              
+          listEmployeeCompetencyValue.filter(x => x.employee_id === employeeDashboardState.$id).forEach((element, i) => {
+            const competencyWithGroup = competencyList.find(x => x.competency_id === element.competency_id);
+            if (competencyWithGroup) {
+              const groupId = competencyWithGroup.competency_group_id;
+              const groupName = competencyWithGroup.competency_group_name;
+              const competencyId = competencyWithGroup.competency_id;
 
-          //Çalışanın birimdeki toplam kidem süresini hesaplar
-          const date = new Date(employeeDashboardState.job_start_date);
-          const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+              if (!employeeChartInfos.competency_group.find(x => x.group_id === groupId)) {
+                employeeChartInfos.competency_group.push({
+                  group_id: groupId,
+                  group_name: groupName,
+                  competencies: []
+                });
+              }
 
-          const today = new Date();
-          const differenceMilliSecond = today.getTime() - date.getTime();
-          const differenceYear = Math.floor(differenceMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
-          const differenceMonth = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
-          const differenceDay = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+              // Check if the competency already exists in the group's competencies array
+              const group = employeeChartInfos.competency_group.find(x => x.group_id === groupId);
+              const existingCompetency = group.competencies.find(c => c.competency_id === competencyId);
 
-          //Çalışanın birimdeki toplam kidem süresini hesaplar
+              if (existingCompetency) {
+                // Merge or update the existing competency data as needed
+                existingCompetency.details.push(element); // Adjust this line based on how you want to merge the details
+              } else {
+                group.competencies.push({
+                  ...element,
+                  group_name: groupName,
+                  group_id: groupId,
+                  details: [element] // Store original details in a sub-array
+                });
+              }
+            }
+            if (i === listEmployeeCompetencyValue.length - 1) {
+              employeeChartInfos.competency_group.forEach((group) => {
+                group.competencies.forEach(element => {
+                  sortEvaluations(element.details, employeeDashboardState.frequency)
+                });
+              });
+            }
+          })
+          console.log(employeeChartInfos)
+          setEmployeeGroups(employeeChartInfos.competency_group)
+          setSelectedCompetencyId(employeeChartInfos.competency_group[0].competencies[0].competency_id)
+          setSelectedCompetency(employeeChartInfos.competency_group[0].competencies[0])
+          setSelectedEvaluationPeriod(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_evaluation_period))
+          setSelectedRealValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_real_value))
+          setSelectedTargetValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_target_value))
 
-          //Çalışanın birimdeki çalısma süresini hesaplar
-          // const employeePozitionWorkDate = employeeLog.filter((x) => x.employee_id === id).filter((x) => x.position_name === positions.find((x) => x.id === employee.position)?.name).log_date
-          // const employeeDate = new Date(employeePozitionWorkDate).toLocaleDateString();
-          // const formattedEmployeeDate = `${employeeDate.getDate()}/${employeeDate.getMonth() + 1}/${employeeDate.getFullYear()}`;
-
-          // const todayDay = new Date();
-          // const differenceEmployeeMilliSecond = todayDay.getTime() - employeeDate.getTime();
-          // const differenceEmployeeYear = Math.floor(differenceEmployeeMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
-          // const differenceEmployeeMonth = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
-          // const differenceEmployeeDay = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
-
-          //Çalışanın toplam kıdem süresini hesaplar
 
 
-          return VStack({ alignment: cTopLeading })(
-            HStack({ alignment: cLeading })(
-              Views.Title('Kişi Bilgileri').paddingTop('10px')
-            )
-              .height(70)
-              .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
-            HStack({ alignment: cTop })(
-              ReactView(
-                <div
-                  style={{
-                    width: `100%`,
-                    height: '100vh',
-                    overflow: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '20px',
-                    padding: '10px',
-                  }}
-                >
-                  <AntTabs value={value} onChange={handleChange}>
-                      <AntTab label="Özet Bilgiler" {...a11yProps(0)} />
-                      <AntTab label="Çalışanın Yetkinlik Gelişimi" {...a11yProps(1)} />
-                  </AntTabs>
-                  <TabPanel value={value} index={0}>
+        }, [])
+
+
+        //Çalışanın birimdeki toplam kidem süresini hesaplar
+        const date = new Date(employeeDashboardState.job_start_date);
+        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+        const today = new Date();
+        const differenceMilliSecond = today.getTime() - date.getTime();
+        const differenceYear = Math.floor(differenceMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
+        const differenceMonth = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
+        const differenceDay = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+
+        //Çalışanın birimdeki toplam kidem süresini hesaplar
+
+        //Çalışanın birimdeki çalısma süresini hesaplar
+        // const employeePozitionWorkDate = employeeLog.filter((x) => x.employee_id === id).filter((x) => x.position_name === positions.find((x) => x.id === employee.position)?.name).log_date
+        // const employeeDate = new Date(employeePozitionWorkDate).toLocaleDateString();
+        // const formattedEmployeeDate = `${employeeDate.getDate()}/${employeeDate.getMonth() + 1}/${employeeDate.getFullYear()}`;
+
+        // const todayDay = new Date();
+        // const differenceEmployeeMilliSecond = todayDay.getTime() - employeeDate.getTime();
+        // const differenceEmployeeYear = Math.floor(differenceEmployeeMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
+        // const differenceEmployeeMonth = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
+        // const differenceEmployeeDay = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+
+        //Çalışanın toplam kıdem süresini hesaplar
+
+
+        return VStack({ alignment: cTopLeading })(
+          HStack({ alignment: cLeading })(
+            Views.Title('Kişi Bilgileri').paddingTop('10px')
+          )
+            .height(70)
+            .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
+          HStack({ alignment: cTop })(
+            ReactView(
+              <div
+                style={{
+                  width: `100%`,
+                  height: '100vh',
+                  overflow: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '20px',
+                  padding: '10px',
+                }}
+              >
+                <AntTabs value={value} onChange={handleChange}>
+                  <AntTab label="Özet Bilgiler" {...a11yProps(0)} />
+                  <AntTab label="Çalışanın Yetkinlik Gelişimi" {...a11yProps(1)} />
+                </AntTabs>
+                <TabPanel value={value} index={0}>
                   <div
                     style={{
                       marginTop: '15px',
@@ -400,7 +389,7 @@ export class EmployeeDashboard extends UIController {
                         position ? position?.name : "Pozisyon Bulunamadı"
                       }
                       department={
-                       department ? department?.name : "Birim Bulunamadı"
+                        department ? department?.name : "Birim Bulunamadı"
                       }
                       skills={
                         competencyDepartmentList.filter(
@@ -408,17 +397,17 @@ export class EmployeeDashboard extends UIController {
                             x.competency_department_id === employee.department
                         ).length
                       }
-                      yearOfSeniority={!employeeDashboardState.job_start_date ? "" :`${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
+                      yearOfSeniority={!employeeDashboardState.job_start_date ? "" : `${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
                       period={employeeDashboardState.competency_evaluation_period}
                       positionId={employee.position}
                     />
                     <EmployeeCertificateCard rows={
                       organizationEmployeeDocumentList
-                      .filter((x) => x.employee_id === employeeDashboardState.$id)
-                      .map((x) => ({
-                        certificateName: x.document_name,
-                        certificateExpirationDate: x.end_date ?  new Date(x.end_date).toLocaleDateString() : "Süresiz"
-                      }))
+                        .filter((x) => x.employee_id === employeeDashboardState.$id)
+                        .map((x) => ({
+                          certificateName: x.document_name,
+                          certificateExpirationDate: x.end_date ? new Date(x.end_date).toLocaleDateString() : "Süresiz"
+                        }))
                     } />
                   </div>
 
@@ -432,7 +421,7 @@ export class EmployeeDashboard extends UIController {
                   >
                     <Card
                       sx={{
-                        width: `50%` ,
+                        width: `50%`,
                         border: '0px',
                         boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
                         borderRadius: '8px',
@@ -480,7 +469,7 @@ export class EmployeeDashboard extends UIController {
                                   color: 'rgba(128, 128, 128,1)',
                                 }}
                               >
-                                <a style={{cursor: 'pointer', color:'rgba(57, 90, 192,1)',}} onClick={() => navigate("/app/competency-dashboard/view/" + competencyValue.competency_id + "/" + employeeDashboardState.competency_evaluation_period)}>{competencyValue.competency_name}</a>
+                                <a style={{ cursor: 'pointer', color: 'rgba(57, 90, 192,1)', }} onClick={() => navigate("/app/competency-dashboard/view/" + competencyValue.competency_id + "/" + employeeDashboardState.competency_evaluation_period)}>{competencyValue.competency_name}</a>
                               </span>
                               :
                               <LinearProgressWithLabel
@@ -501,7 +490,7 @@ export class EmployeeDashboard extends UIController {
 
                     <Card
                       sx={{
-                        width:`50%` ,
+                        width: `50%`,
                         border: '0px',
                         boxShadow: `-1px 0px 6px 0px rgba(0,0,0,0.2)`,
                         borderRadius: '8px',
@@ -550,22 +539,22 @@ export class EmployeeDashboard extends UIController {
                             data: [employeeBarValue],
                             layout: "vertical",
                             color: "#1D5291"
-                        }]}
+                          }]}
                           xAxis={[
                             {
-                                data: ["Ortalama"],
-                                scaleType: "band",
-                                tickLabelStyle: { margin: "0", padding: "0" },
+                              data: ["Ortalama"],
+                              scaleType: "band",
+                              tickLabelStyle: { margin: "0", padding: "0" },
                             },
-                        ]}
-                        yAxis={[
-                          //min ve max number değeri min 0 max 5 olacak şekilde ayarla
-                          {
+                          ]}
+                          yAxis={[
+                            //min ve max number değeri min 0 max 5 olacak şekilde ayarla
+                            {
                               min: 0,
                               max: barMaxValue,
                               tickLabelStyle: { margin: "0", padding: "0" },
-                          },
-                        ]}
+                            },
+                          ]}
                           width={300}
                           height={300}
                         />
@@ -732,211 +721,211 @@ export class EmployeeDashboard extends UIController {
                       </CardContent>
                     </Card>
                   </div>
-                  </TabPanel>
-                  <TabPanel value={value} index={1}>
-                  <div
-                  style={{
-                    width: '100%',
-                    height: '100vh',
-                    display: 'flex',
-                    gap: '20px',
-                  }}
-                  >
+                </TabPanel>
+                <TabPanel value={value} index={1}>
                   <div
                     style={{
-                      borderRight: '1px solid rgba(128, 128, 128, 0.2)',
-                      width: '30%',
-                     
+                      width: '100%',
+                      height: '100vh',
+                      display: 'flex',
+                      gap: '20px',
                     }}
                   >
-                    <SimpleTreeView
-                      defaultExpandedItems={
-                        [
-                          employeeGroups.map((group) => group.group_id)[0]
-                        ]
-                      }
-                      defaultSelectedItems={
-                        [
-                          selectedCompetencyId
+                    <div
+                      style={{
+                        borderRight: '1px solid rgba(128, 128, 128, 0.2)',
+                        width: '30%',
 
-                        ]
-                      }
+                      }}
                     >
-                      {
-                        employeeGroups.map((group) => (
-                          <TreeItem itemId={group.group_id} label={group.group_name}>
-                            {
-                              group.competencies.map((competency) => (
-                                <TreeItem itemId={competency.competency_id} label={competency.competency_name} onClick={() => {
-                                  setSelectedCompetency(competency);
-                                  setSelectedCompetencyId(competency.competency_id);
-                                  setSelectedEvaluationPeriod(competency.details.map((x) => x.competency_evaluation_period));
-                                  setSelectedRealValue(competency.details.map((x) => x.competency_real_value));
-                                  setSelectedTargetValue(competency.details.map((x) => x.competency_target_value));
-                                }} />
-                              ))
-                            }
-                          </TreeItem>
-                        ))
-                      }
-                    </SimpleTreeView>
-                    
-                    
-                  </div>
-                  <div
-                    style={{
-                      width: '70%',
-                    }}
-                  >
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "50px"
-                    }}>
-                      <h1 style={{
-                        fontSize: "16px",
-                        borderBottom: "1px solid rgba(128, 128, 128, 0.2)",
-                        width: "100%",
-                        textAlign: "center",
-                        padding: "10px",
+                      <SimpleTreeView
+                        defaultExpandedItems={
+                          [
+                            employeeGroups.map((group) => group.group_id)[0]
+                          ]
+                        }
+                        defaultSelectedItems={
+                          [
+                            selectedCompetencyId
+
+                          ]
+                        }
+                      >
+                        {
+                          employeeGroups.map((group) => (
+                            <TreeItem itemId={group.group_id} label={group.group_name}>
+                              {
+                                group.competencies.map((competency) => (
+                                  <TreeItem itemId={competency.competency_id} label={competency.competency_name} onClick={() => {
+                                    setSelectedCompetency(competency);
+                                    setSelectedCompetencyId(competency.competency_id);
+                                    setSelectedEvaluationPeriod(competency.details.map((x) => x.competency_evaluation_period));
+                                    setSelectedRealValue(competency.details.map((x) => x.competency_real_value));
+                                    setSelectedTargetValue(competency.details.map((x) => x.competency_target_value));
+                                  }} />
+                                ))
+                              }
+                            </TreeItem>
+                          ))
+                        }
+                      </SimpleTreeView>
+
+
+                    </div>
+                    <div
+                      style={{
+                        width: '70%',
+                      }}
+                    >
+                      <div style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "50px"
                       }}>
-                        {selectedCompetency.competency_name}
-                      </h1>
-                      <FormControlLabel
-                        value="start"
-                        control={<Switch color="primary" />}
-                        label="Sütun Grafiği"
-                        labelPlacement="start"
-                        onChange={() => setSwitchState(!switchState)}
-                        style={{
+                        <h1 style={{
+                          fontSize: "16px",
+                          borderBottom: "1px solid rgba(128, 128, 128, 0.2)",
                           width: "100%",
-                        }}
-                      />
-                      {
-                        switchState ? (
-                          <EChartsReact
-                          option={{
-                            xAxis: {
-                              type: 'category',
-                              data: selectedEvaluationPeriod,
-                            },
-                            yAxis: {
-                              type: 'value',
-                            },
-                            series: [
-                              {
-                                name: 'Gerçek Değer',
-                                data: selectedRealValue,
-                                type: 'line',
-                                color: '#1D5291',
-                                stack: 'Total',
-                                label: {
-                                  show: true,
-                                  position: 'top',
-                                },
-
-                              },
-                              {
-                                name: 'Hedef Değer',
-                                data: selectedTargetValue,
-                                type: 'line',
-                                color: '#03fc73',
-                                label: {
-                                  show: true,
-                                  position: 'top',
-                                },
-                              },
-                            ],
-                            legend:{
-                              data: ['Gerçek Değer', 'Hedef Değer'],
-                              textStyle: {
-                                color: 'rgba(128, 128, 128, 1)',
-                              }
-                            },
-                            tooltip: {
-                              trigger: 'axis',
-                              axisPointer: {
-                                type: 'cross',
-                                label: {
-                                  backgroundColor: '#6a7985',
-                            },
-                            }
-                          }
-                          }}
+                          textAlign: "center",
+                          padding: "10px",
+                        }}>
+                          {selectedCompetency.competency_name}
+                        </h1>
+                        <FormControlLabel
+                          value="start"
+                          control={<Switch color="primary" />}
+                          label="Sütun Grafiği"
+                          labelPlacement="start"
+                          onChange={() => setSwitchState(!switchState)}
                           style={{
                             width: "100%",
-                            height: "400px",
                           }}
                         />
-                        )
-                        : (
-                          <EChartsReact
-                          option={{
-                            xAxis: {
-                              type: 'category',
-                              data: selectedEvaluationPeriod,
-                            },
-                            yAxis: {
-                              type: 'value',
-                            },
-                            series: [
-                              {
-                                name: 'Gerçek Değer',
-                                data: selectedRealValue,
-                                type: 'bar',
-                                color: '#1D5291',
-                                stack: 'Total',
-                                label: {
-                                  show: true,
-                                  position: 'top',
+                        {
+                          switchState ? (
+                            <EChartsReact
+                              option={{
+                                xAxis: {
+                                  type: 'category',
+                                  data: selectedEvaluationPeriod,
                                 },
+                                yAxis: {
+                                  type: 'value',
+                                },
+                                series: [
+                                  {
+                                    name: 'Gerçek Değer',
+                                    data: selectedRealValue,
+                                    type: 'line',
+                                    color: '#1D5291',
+                                    stack: 'Total',
+                                    label: {
+                                      show: true,
+                                      position: 'top',
+                                    },
 
-                              },
-                              {
-                                name: 'Hedef Değer',
-                                data: selectedTargetValue,
-                                type: 'bar',
-                                color: '#03fc73',
-                                label: {
-                                  show: true,
-                                  position: 'top',
+                                  },
+                                  {
+                                    name: 'Hedef Değer',
+                                    data: selectedTargetValue,
+                                    type: 'line',
+                                    color: '#03fc73',
+                                    label: {
+                                      show: true,
+                                      position: 'top',
+                                    },
+                                  },
+                                ],
+                                legend: {
+                                  data: ['Gerçek Değer', 'Hedef Değer'],
+                                  textStyle: {
+                                    color: 'rgba(128, 128, 128, 1)',
+                                  }
                                 },
-                              },
-                            ],
-                            legend:{
-                              data: ['Gerçek Değer', 'Hedef Değer'],
-                              textStyle: {
-                                color: 'rgba(128, 128, 128, 1)',
-                              }
-                            },
-                            tooltip: {
-                              trigger: 'axis'
-                            }
-                          }
-                          }
-                          style={{
-                            width: "100%",
-                            height: "400px",
-                          }}
-                        />
-                        )
-                      }
-                        
+                                tooltip: {
+                                  trigger: 'axis',
+                                  axisPointer: {
+                                    type: 'cross',
+                                    label: {
+                                      backgroundColor: '#6a7985',
+                                    },
+                                  }
+                                }
+                              }}
+                              style={{
+                                width: "100%",
+                                height: "400px",
+                              }}
+                            />
+                          )
+                            : (
+                              <EChartsReact
+                                option={{
+                                  xAxis: {
+                                    type: 'category',
+                                    data: selectedEvaluationPeriod,
+                                  },
+                                  yAxis: {
+                                    type: 'value',
+                                  },
+                                  series: [
+                                    {
+                                      name: 'Gerçek Değer',
+                                      data: selectedRealValue,
+                                      type: 'bar',
+                                      color: '#1D5291',
+                                      stack: 'Total',
+                                      label: {
+                                        show: true,
+                                        position: 'top',
+                                      },
+
+                                    },
+                                    {
+                                      name: 'Hedef Değer',
+                                      data: selectedTargetValue,
+                                      type: 'bar',
+                                      color: '#03fc73',
+                                      label: {
+                                        show: true,
+                                        position: 'top',
+                                      },
+                                    },
+                                  ],
+                                  legend: {
+                                    data: ['Gerçek Değer', 'Hedef Değer'],
+                                    textStyle: {
+                                      color: 'rgba(128, 128, 128, 1)',
+                                    }
+                                  },
+                                  tooltip: {
+                                    trigger: 'axis'
+                                  }
+                                }
+                                }
+                                style={{
+                                  width: "100%",
+                                  height: "400px",
+                                }}
+                              />
+                            )
+                        }
+
+                      </div>
                     </div>
                   </div>
-                  </div>
-                    
-                  </TabPanel>
 
-                </div>
-                
-               
-              )
+                </TabPanel>
+
+              </div>
+
+
             )
-          ).padding('0 20px')
-        })
+          )
+        ).padding('0 20px')
+      })
   }
 }
 

@@ -12,7 +12,7 @@ import {
     VStack,
 } from '@tuval/forms';
 import Form from '../Views/Form';
-import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField, Typography } from '@mui/material';
+import { Autocomplete, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField, Typography } from '@mui/material';
 import { trTR } from '@mui/x-data-grid';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
@@ -32,6 +32,8 @@ import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalence
 import IPolyvalenceUnitTableDataViewer from '../../../interfaces/IPolyvalenceUnitTableDataViewer';
 import Collections from '../../../../server/core/Collections';
 import IPolyvalenceUnitTableDataResponsible from '../../../interfaces/IPolyvalenceUnitTableDataResponsible';
+import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
+import PolyvalenceUnitPositionRelation from '../../../../server/hooks/polyvalenceUnitPositionRelation/main';
 
 const formReset = {
     polyvalence_table_id: "",
@@ -45,6 +47,7 @@ const formReset = {
     tenant_id: ""
 }
 
+const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
 export class UpdatePolyvalenceUnitController extends UIController {
     public LoadView(): UIView {
@@ -54,6 +57,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+        const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(id);
         const { updatePolyvalenceUnit } = PolyvalenceUnit.Update();
 
@@ -75,8 +79,12 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { updatePolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Update();
         const { updatePolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Update();
 
+
+        const { polyvalenceUnitPositionRelations, isLoading: isLoadingPolyvalenceUnitPositionRelations } = PolyvalenceUnitPositionRelation.GetByPolyvalenceUnitId(id);
+        const { createPolyvalenceUnitPositionRelation } = PolyvalenceUnitPositionRelation.Create();
+
         return (
-            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingPolyvalenceUnit || isLoadingTableAuth || isLoadingDataResponsible || isLoadingDataViewer
+            isLoading || isLoadingAccounts || isLoadingPositions || isLoadingPolyvalenceUnitPositionRelations || isLoadingDepartments || isLoadingPolyvalenceUnit || isLoadingTableAuth || isLoadingDataResponsible || isLoadingDataViewer
                 || isLoadingParameter || isLoadingLines || isLoadingLineRelation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
@@ -88,6 +96,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
                     const [selectedViewerAccounts, setSelectedViewerAccounts] = useState<string[]>([]);
 
                     const [selectedLine, setSelectedLine] = useState<string>("");
+
+                    const [selectedPositions, setSelectedPositions] = useState<typeof positions>([])
 
 
                     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -155,6 +165,34 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                     })
                                 })
                             }
+
+                            if (positionBased) {
+                                const positionRelationIds = []
+                                polyvalenceUnitPositionRelations.map(x => positionRelationIds.push(x.$id))
+                                positionRelationIds.forEach((positionRelation) => {
+                                    // Herhangi bir update fonksiyonu yeterli olacaktır.
+                                    updatePolyvalenceUnit({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.PolyvalenceUnitPositionRelation,
+                                        documentId: positionRelation,
+                                        data: {
+                                            is_active: false,
+                                            is_deleted: true
+                                        }
+                                    })
+                                })
+
+                                selectedPositions.forEach((position) => {
+                                    createPolyvalenceUnitPositionRelation({
+                                        documentId: nanoid(),
+                                        data: {
+                                            polyvalence_unit_id: id,
+                                            position_id: position.$id
+                                        }
+                                    })
+                                })
+                            }
+
                             if (lineBased[0]?.is_active) {
                                 if (lineRelation.length == 0) {
                                     const documentId = nanoid();
@@ -237,6 +275,9 @@ export class UpdatePolyvalenceUnitController extends UIController {
                         if (lineBased[0]?.is_active) {
                             setSelectedLine(lineRelation[0]?.line_id)
                         }
+                        setSelectedPositions(polyvalenceUnitPositionRelations.map((positionRelation) => {
+                            return positions.find((position) => position.$id === positionRelation.position_id)
+                        }))
                         setIsActive(polyvalenceUnit.is_active_table)
                     }, [])
 
@@ -262,43 +303,72 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                 onChange={(e) => setForm({ ...form, [e.target.name]: e.target.value })}
                                                 required
                                             />
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Bağlı Departman</InputLabel>
-                                                <Select
-                                                    name="polyvalence_department_id"
-                                                    value={form.polyvalence_department_id}
-                                                    label="Bağlı Departman"
-                                                    onChange={(e) => {
-                                                        setForm({
-                                                            ...form,
-                                                            [e.target.name]: e.target.value,
-                                                            polyvalence_department_name: departments.find((department) => department.id == e.target.value).name
-                                                        })
-                                                    }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {departments.map((department) => (
-                                                        <MenuItem value={department.id} key={department.id}>{department.name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            {
-                                                lineBased[0]?.is_active &&
+                                            {!positionBased ?
                                                 <FormControl fullWidth size="small">
-                                                    <InputLabel>Bağlı Hat</InputLabel>
-                                                    <Select
-                                                        name="line"
-                                                        value={selectedLine}
-                                                        label="Bağlı Hat"
-                                                        onChange={(e) => setSelectedLine(e.target.value)}
+                                                    <Autocomplete
+                                                        options={departments}
+                                                        getOptionLabel={(department) => department.name}
+                                                        value={departments.find((department) => department.id === form.polyvalence_department_id) || null}
+                                                        onChange={(event, newValue) => {
+                                                            if (newValue) {
+                                                                setForm({
+                                                                    ...form,
+                                                                    polyvalence_department_id: newValue.id,
+                                                                    polyvalence_department_name: newValue.name
+                                                                });
+                                                            }
+                                                        }}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Departman"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                    />
+                                                </FormControl>
+                                                :
+                                                <FormControl fullWidth size="small">
+                                                    <Autocomplete
+                                                        multiple
+                                                        disableCloseOnSelect
+                                                        options={positions.filter(x => x.is_active === true)}
+                                                        getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                        filterSelectedOptions
                                                         size="small"
-                                                        required
-                                                    >
-                                                        {lines.filter(x => x.department_id == form.polyvalence_department_id).map((lines) => (
-                                                            <MenuItem value={lines.id} key={lines.id}>{lines.name}</MenuItem>
-                                                        ))}
-                                                    </Select>
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="Bağlı Pozisyonlar"
+                                                                size="small"
+                                                            />
+                                                        )}
+                                                        onChange={(event, newValue) => {
+                                                            setSelectedPositions(newValue);
+                                                            console.log(newValue)
+                                                        }}
+                                                        value={selectedPositions}
+                                                    />
+                                                </FormControl>
+                                            }
+                                            {
+                                                !positionBased && lineBased[0]?.is_active &&
+                                                <FormControl fullWidth size="small">
+                                                    <Autocomplete
+                                                        options={lines.filter(x => x.department_id == form.polyvalence_department_id)}
+                                                        getOptionLabel={(option) => option.name}
+                                                        value={lines.find((line) => line.id == selectedLine)}
+                                                        onChange={(e, value) => {
+                                                            setSelectedLine(value.id)
+                                                        }}
+                                                        renderInput={(params) => <TextField
+                                                            {...params}
+                                                            label="Bağlı Hat"
+                                                            size="small"
+                                                            required
+                                                        />}
+                                                    />
                                                 </FormControl>
                                             }
                                             <div style={{

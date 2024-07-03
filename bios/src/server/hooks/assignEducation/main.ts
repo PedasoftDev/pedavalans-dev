@@ -1,4 +1,4 @@
-import { Query, useCreateDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
+import { Query, useCreateDocument, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 import AppInfo from '../../../AppInfo'
 import Collections from '../../core/Collections'
 import IAssignedEducation from '../../../client/interfaces/IAssignedEducation'
@@ -8,6 +8,17 @@ namespace AssignEducation {
         const { createDocument } = useCreateDocument(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation)
         return {
             createAssignedEducation: createDocument
+        }
+    }
+
+    export const Get = (id: string): {
+        assignedEducation: IAssignedEducation.IBase,
+        isLoadingAssignedEducation: boolean
+    } => {
+        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: Collections.AssignedEducation, documentId: id })
+        return {
+            assignedEducation: document as any,
+            isLoadingAssignedEducation: isLoading
         }
     }
 
@@ -53,7 +64,7 @@ namespace AssignEducation {
             isLoadingAssignedEducationList: isLoading,
         }
     }
-    
+
 }
 
 export default AssignEducation

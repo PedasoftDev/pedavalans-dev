@@ -9,7 +9,7 @@ import {
   VStack,
 } from '@tuval/forms';
 import React, { useState } from 'react';
-import { Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
@@ -94,21 +94,30 @@ export class CreateCompetencyGroupController extends UIFormController {
                     onChange={handleChange}
                     required
                   />
-                  <FormControl fullWidth size="small" required>
-                    <InputLabel>Yetkinlik Düzeyi</InputLabel>
-                    <Select
-                      name="competency_grade_id"
-                      value={form.competency_grade_id}
-                      label="Yetkinlik Düzeyi"
-                      onChange={handleSelectGrade}
-                      size="small"
-                      required
-                    >
-                      {grades.map((grade) => (
-                        <MenuItem value={grade.competency_grade_id} key={grade.competency_grade_id}>{grade.competency_grade_name}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <Autocomplete
+                    value={grades.find((grade) => grade.competency_grade_id === form.competency_grade_id) || null}
+                    onChange={(event, newValue) => {
+                      setForm({
+                        ...form,
+                        competency_grade_id: newValue ? newValue.competency_grade_id : '',
+                        competency_grade_name: newValue ? newValue.competency_grade_name : ''
+                      });
+                    }}
+                    options={grades}
+                    getOptionLabel={(option) => option.competency_grade_name}
+                    isOptionEqualToValue={(option, value) => option.competency_grade_id === value.competency_grade_id}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Yetkinlik Düzeyi"
+                        size="small"
+                        required
+                        fullWidth
+                      />
+                    )}
+                    fullWidth
+                    size="small"
+                  />
                   <div style={{
                     display: "flex", gap: "10px", flexDirection: "column", marginTop: "10px"
                   }}>

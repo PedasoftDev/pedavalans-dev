@@ -1,3 +1,185 @@
+interface IRoot {
+  $id?: string;
+  $updatedAt?: string;
+  $createdAt?: string;
+  $updatedBy?: string;
+  $createdBy?: string;
+}
+interface IAccountRelation {
+  id: string;
+  tenant_id: string;
+  account_id: string;
+  mail: string;
+  authorization_profile: string;
+  is_admin: boolean;
+  is_active: boolean;
+  is_deleted: boolean;
+}
+interface IPolyvalenceUnitTable extends IRoot {
+  polyvalence_table_id: string;
+  polyvalence_table_name: string;
+  polyvalence_department_id: string;
+  polyvalence_department_name: string;
+  polyvalence_evaluation_frequency: string;
+  is_active_table: boolean;
+  is_deleted_table: boolean;
+  tenant_id: string;
+  realm_id: string;
+}
+interface IPolyvalenceUnitTableDataResponsible extends IRoot {
+  data_responsible_id: string;
+  responsible_employee_id: string;
+  responsible_employee_name: string;
+  polyvalence_table_id: string;
+  tenant_id: string;
+  realm_id: string;
+  is_active: boolean;
+  is_deleted: boolean;
+}
+interface IEmployeeCompetencyValue extends IRoot {
+  employee_competency_value_id: string;
+  employee_id: string;
+  employee_name: string;
+  polyvalence_table_id: string;
+  polyvalence_table_name: string;
+  competency_department_id: string;
+  competency_department_name: string;
+  competency_evaluation_period: string;
+  competency_id: string;
+  competency_name: string;
+  competency_target_value: string;
+  competency_real_value: string;
+  competency_value_desc: string;
+  is_active_competency_value: boolean;
+  is_deleted_competency_value: boolean;
+  tenant_id: string;
+  realm_id: string;
+}
+interface IOrganizationStructureEmployee extends IRoot {
+  id: string;
+  first_name: string;
+  last_name: string;
+  title_id: string;
+  position_id: string;
+  manager_id: string;
+  line_id: string;
+  department_id: string;
+  job_start_date: string;
+  birth_date: string;
+  gender: string;
+  department_start_date: string;
+  position_start_date: string;
+  phone: string;
+  is_active: boolean;
+  is_deleted: boolean;
+  tenant_id: string;
+  realm_id: string;
+}
+
+export interface IOrganizationStructureDepartment extends IRoot {
+  id: string;
+  tenant_id: string;
+  realm_id: string;
+  record_id: string;
+  name: string;
+  is_active: boolean;
+  is_deleted: boolean;
+}
+
+export interface IOrganizationStructureTitle extends IRoot {
+  id: string;
+  tenant_id: string;
+  realm_id: string;
+  record_id: string;
+  name: string;
+  is_active: boolean;
+  is_deleted: boolean;
+}
+export interface IOrganizationStructurePosition extends IRoot {
+  id: string;
+  tenant_id: string;
+  realm_id: string;
+  record_id: string;
+  name: string;
+  is_active: boolean;
+  is_deleted: boolean;
+}
+export interface IOrganizationStructureLine extends IRoot {
+  id: string;
+  tenant_id: string;
+  realm_id: string;
+  record_id: string;
+  name: string;
+  is_active: boolean;
+  is_deleted: boolean;
+  department_id: string;
+  department_name: string;
+}
+
+interface ICompetency extends IRoot {
+  competency_id: string;
+  competency_name: string;
+  competency_group_id: string;
+  competency_group_name: string;
+  competency_target_value: string;
+  competency_real_value: string;
+  competency_value_desc: string;
+  employee_id: string;
+  employee_name: string;
+  polyvalence_table_id: string;
+  polyvalence_table_name: string;
+  competency_evaluation_period: string;
+  is_active_competency: boolean;
+  is_deleted_competency: boolean;
+  tenant_id: string;
+  realm_id: string;
+}
+interface ICompetencyDepartment extends IRoot {
+  competency_department_table_id: string;
+  competency_department_id: string;
+  competency_department_name: string;
+  competency_id: string;
+  tenant_id: string;
+}
+
+interface ICompetencyWithDepartment extends ICompetency {
+  department_id: string;
+  department_name: string;
+}
+
+
+interface IVocationalQualification {
+  document_id: string
+  document_code: string
+  document_name: string
+  document_validity_period: string
+  document_type_id: string
+  document_type_name: string
+  is_active: boolean
+  is_deleted: boolean
+}
+interface IOrganizationEmployeeDocument {
+  employee_id: string
+  document_id: string
+  document_name: string
+  end_date?: string
+  document_type_id: string
+  document_type_name: string
+  tenant_id: string
+  is_active: boolean
+  is_deleted: boolean
+}
+
+function nanoid(size = 21) {
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let id = '';
+  const randomValues = new Uint8Array(size);
+  crypto.getRandomValues(randomValues);
+  for (let i = 0; i < size; i++) {
+    id += alphabet[randomValues[i] % alphabet.length];
+  }
+  return id;
+}
 
 class PedavalansService extends RealmoceanService {
   public get uid(): string {
@@ -50,6 +232,7 @@ class PedavalansService extends RealmoceanService {
   async init() {
     console.log('PedavalansService running...');
     await this.updateDashboardChartData();
+    await this.checkPositionBasedPolyvalenceManagement();
     this.scheduleService.addJob('0 0 7 * * *', async () => {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
@@ -58,12 +241,37 @@ class PedavalansService extends RealmoceanService {
 
     })
 
+    const router = this.webServer.getRouter();
+    // localhost/v1/service/com.pedavalans.service.main/
+
+    router.post("/com.pedavalans.service.main/updateCompetencyDepartmentNames", async (req, res) => {
+      const { departmentId, departmentName } = req.body;
+
+
+      try {
+        const result = await this.updateCompetencyDepartmentNames(departmentId, departmentName);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    });
+
+
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
       await this.updateDashboardChartData();
     })
   }
 
+
+
+  async updateCompetencyDepartmentNames(departmentId: string, departmentName: string): Promise<any> {
+    const competencyDepartments: ICompetencyDepartment[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.CompetencyDepartment, [this.databaseService.Query.equal("competency_department_id", departmentId)]).then((res) => res.documents);
+    competencyDepartments.forEach(async (competencyDepartment) => {
+      await this.databaseService.updateDocument(this.appName, this.databaseName, this.CompetencyDepartment, competencyDepartment.$id, { competency_department_name: departmentName });
+    })
+  }
 
   async updateDashboardChartData() {
     try {
@@ -135,10 +343,18 @@ class PedavalansService extends RealmoceanService {
             }
           });
 
+          const resultData = []
+          performData.forEach((data) => {
+            if (data.value > 0) {
+              resultData.push(data)
+            }
+          })
+
           if (isAlreadyDataPieForChart[0]) {
             console.log("update")
+            await this.databaseService.updateDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { value: JSON.stringify(resultData) });
           } else {
-            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { key: "dashboard_pie", value: JSON.stringify(performData) });
+            await this.databaseService.createDocument(this.appName, this.databaseName, this.ChartValue, "dashboard_pie", { key: "dashboard_pie", value: JSON.stringify(resultData) });
             console.log("create")
           }
         }
@@ -283,108 +499,7 @@ class PedavalansService extends RealmoceanService {
     </body>
     
     </html>`
-    interface IRoot {
-      $id?: string;
-      $updatedAt?: string;
-      $createdAt?: string;
-      $updatedBy?: string;
-      $createdBy?: string;
-    }
-    interface IAccountRelation {
-      id: string;
-      tenant_id: string;
-      account_id: string;
-      mail: string;
-      authorization_profile: string;
-      is_admin: boolean;
-      is_active: boolean;
-      is_deleted: boolean;
-    }
-    interface IPolyvalenceUnitTable extends IRoot {
-      polyvalence_table_id: string;
-      polyvalence_table_name: string;
-      polyvalence_department_id: string;
-      polyvalence_department_name: string;
-      polyvalence_evaluation_frequency: string;
-      is_active_table: boolean;
-      is_deleted_table: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface IPolyvalenceUnitTableDataResponsible extends IRoot {
-      data_responsible_id: string;
-      responsible_employee_id: string;
-      responsible_employee_name: string;
-      polyvalence_table_id: string;
-      tenant_id: string;
-      realm_id: string;
-      is_active: boolean;
-      is_deleted: boolean;
-    }
-    interface IEmployeeCompetencyValue extends IRoot {
-      employee_competency_value_id: string;
-      employee_id: string;
-      employee_name: string;
-      polyvalence_table_id: string;
-      polyvalence_table_name: string;
-      competency_department_id: string;
-      competency_department_name: string;
-      competency_evaluation_period: string;
-      competency_id: string;
-      competency_name: string;
-      competency_target_value: string;
-      competency_real_value: string;
-      competency_value_desc: string;
-      is_active_competency_value: boolean;
-      is_deleted_competency_value: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface IOrganizationStructureEmployee extends IRoot {
-      id: string;
-      first_name: string;
-      last_name: string;
-      title_id: string;
-      position_id: string;
-      manager_id: string;
-      line_id: string;
-      department_id: string;
-      job_start_date: string;
-      is_active: boolean;
-      is_deleted: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface ICompetency extends IRoot {
-      competency_id: string;
-      competency_name: string;
-      competency_group_id: string;
-      competency_group_name: string;
-      competency_target_value: string;
-      competency_real_value: string;
-      competency_value_desc: string;
-      employee_id: string;
-      employee_name: string;
-      polyvalence_table_id: string;
-      polyvalence_table_name: string;
-      competency_evaluation_period: string;
-      is_active_competency: boolean;
-      is_deleted_competency: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface ICompetencyDepartment extends IRoot {
-      competency_department_table_id: string;
-      competency_department_id: string;
-      competency_department_name: string;
-      competency_id: string;
-      tenant_id: string;
-    }
 
-    interface ICompetencyWithDepartment extends ICompetency {
-      department_id: string;
-      department_name: string;
-    }
     const Parameters = [
       {
         name: "Polivalans tablolarında yetkilendirme kullanılsın mı?",
@@ -612,108 +727,7 @@ class PedavalansService extends RealmoceanService {
     </body>
     
     </html>`
-    interface IRoot {
-      $id?: string;
-      $updatedAt?: string;
-      $createdAt?: string;
-      $updatedBy?: string;
-      $createdBy?: string;
-    }
-    interface IAccountRelation {
-      id: string;
-      tenant_id: string;
-      account_id: string;
-      mail: string;
-      authorization_profile: string;
-      is_admin: boolean;
-      is_active: boolean;
-      is_deleted: boolean;
-    }
-    interface IPolyvalenceUnitTable extends IRoot {
-      polyvalence_table_id: string;
-      polyvalence_table_name: string;
-      polyvalence_department_id: string;
-      polyvalence_department_name: string;
-      polyvalence_evaluation_frequency: string;
-      is_active_table: boolean;
-      is_deleted_table: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface IPolyvalenceUnitTableDataResponsible extends IRoot {
-      data_responsible_id: string;
-      responsible_employee_id: string;
-      responsible_employee_name: string;
-      polyvalence_table_id: string;
-      tenant_id: string;
-      realm_id: string;
-      is_active: boolean;
-      is_deleted: boolean;
-    }
-    interface IEmployeeCompetencyValue extends IRoot {
-      employee_competency_value_id: string;
-      employee_id: string;
-      employee_name: string;
-      polyvalence_table_id: string;
-      polyvalence_table_name: string;
-      competency_department_id: string;
-      competency_department_name: string;
-      competency_evaluation_period: string;
-      competency_id: string;
-      competency_name: string;
-      competency_target_value: string;
-      competency_real_value: string;
-      competency_value_desc: string;
-      is_active_competency_value: boolean;
-      is_deleted_competency_value: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface IOrganizationStructureEmployee extends IRoot {
-      id: string;
-      first_name: string;
-      last_name: string;
-      title_id: string;
-      position_id: string;
-      manager_id: string;
-      line_id: string;
-      department_id: string;
-      job_start_date: string;
-      is_active: boolean;
-      is_deleted: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface ICompetency extends IRoot {
-      competency_id: string;
-      competency_name: string;
-      competency_group_id: string;
-      competency_group_name: string;
-      competency_target_value: string;
-      competency_real_value: string;
-      competency_value_desc: string;
-      employee_id: string;
-      employee_name: string;
-      polyvalence_table_id: string;
-      polyvalence_table_name: string;
-      competency_evaluation_period: string;
-      is_active_competency: boolean;
-      is_deleted_competency: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface ICompetencyDepartment extends IRoot {
-      competency_department_table_id: string;
-      competency_department_id: string;
-      competency_department_name: string;
-      competency_id: string;
-      tenant_id: string;
-    }
 
-    interface ICompetencyWithDepartment extends ICompetency {
-      department_id: string;
-      department_name: string;
-    }
     const Parameters = [
       {
         name: "Polivalans tablolarında yetkilendirme kullanılsın mı?",
@@ -955,61 +969,6 @@ class PedavalansService extends RealmoceanService {
 
   // Mesleki Yeterlilik Belgesi/Sertifikası Son Kullanma Tarihi Hatırlatma Mail İşlemi
   async checkVocationQualification() {
-
-    interface IRoot {
-      $id?: string;
-      $updatedAt?: string;
-      $createdAt?: string;
-      $updatedBy?: string;
-      $createdBy?: string;
-    }
-
-    interface IAccountRelation {
-      id: string;
-      tenant_id: string;
-      account_id: string;
-      mail: string;
-      authorization_profile: string;
-      is_admin: boolean;
-      is_active: boolean;
-      is_deleted: boolean;
-    }
-    interface IOrganizationStructureEmployee extends IRoot {
-      id: string;
-      first_name: string;
-      last_name: string;
-      title_id: string;
-      position_id: string;
-      manager_id: string;
-      line_id: string;
-      department_id: string;
-      job_start_date: string;
-      is_active: boolean;
-      is_deleted: boolean;
-      tenant_id: string;
-      realm_id: string;
-    }
-    interface IVocationalQualification {
-      document_id: string
-      document_code: string
-      document_name: string
-      document_validity_period: string
-      document_type_id: string
-      document_type_name: string
-      is_active: boolean
-      is_deleted: boolean
-    }
-    interface IOrganizationEmployeeDocument {
-      employee_id: string
-      document_id: string
-      document_name: string
-      end_date?: string
-      document_type_id: string
-      document_type_name: string
-      tenant_id: string
-      is_active: boolean
-      is_deleted: boolean
-    }
     // Belge hatırlatma html
     const documentRemainderHtml = `<!DOCTYPE html>
     <html>
@@ -1154,6 +1113,19 @@ class PedavalansService extends RealmoceanService {
       await this.emailService.sendEmail(key, "notification@pedabilisim.com", to_email, subject, html, values)
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  // posizyon bazlı polivalans yönetimi parametresi kontrolü
+  async checkPositionBasedPolyvalenceManagement() {
+    const parameter = await this.databaseService.listDocuments(this.appName, this.databaseName, this.StringParameter, [this.databaseService.Query.equal('name', 'position_based_polyvalence_management')]).then(x => x.documents);
+    if (!parameter[0]) {
+      await this.databaseService.createDocument(this.appName, this.databaseName, this.StringParameter, nanoid(), {
+        name: "position_based_polyvalence_management",
+        value: "false"
+      });
+    } else {
+      console.log('position_based_polyvalence_management Parameter already exists');
     }
   }
 

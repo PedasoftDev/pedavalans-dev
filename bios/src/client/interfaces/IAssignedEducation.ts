@@ -13,6 +13,7 @@ namespace IAssignedEducation {
         end_date: string;
         hour: string;
         status: string;
+        location: string;
         is_active: boolean;
         is_deleted: boolean;
     }
@@ -28,6 +29,7 @@ namespace IAssignedEducation {
         end_date: string;
         hour: string;
         status: string;
+        location: string;
         tenant_id: string;
     }
 }

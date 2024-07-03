@@ -14,30 +14,22 @@ import {
 } from '@tuval/forms'
 import Swal from 'sweetalert2'
 import { Toast } from '../../../components/Toast'
-import { GridColDef, trTR } from '@mui/x-data-grid'
 
 import {
+  Autocomplete,
   Button,
   FormControl,
   FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
   SelectChangeEvent,
   Switch,
-  TextField,
-  Typography,
+  TextField
 } from '@mui/material'
 import Form from '../Views/Form'
 import React from 'react'
-import StyledDataGrid from '../../../components/StyledDataGrid'
-import { useGetMe } from '@realmocean/sdk'
+import { useDeleteCache, useGetMe } from '@realmocean/sdk'
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties'
 import AppInfo from '../../../../AppInfo'
-import Parameters from '../../../../server/hooks/parameters/main'
-import { Resources } from '../../../assets/Resources'
 import IVocationalQualification from '../../../interfaces/IVocationalQualification'
-import IVocationalQualificationType from '../../../interfaces/IVocationalQualificationType'
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 
@@ -48,7 +40,7 @@ const formReset: IVocationalQualification.IBase = {
   document_validity_period: "",
   document_type_id: "",
   document_type_name: "",
-  is_active: false,
+  is_active: true,
   is_deleted: false,
 }
 
@@ -62,6 +54,7 @@ export class UpdateVocationalQualificationController extends UIController {
     const { documentList, isLoadingDocument } = VocationalQualification.Get(id)
     const { documentGetList } = VocationalQualification.GetList(me?.prefs?.organization)
     const { updateVQ } = VocationalQualification.Update()
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
 
 
     const { documentTypeGetList } = VocationalQualificationType.GetList(me?.prefs?.organization)
@@ -77,6 +70,12 @@ export class UpdateVocationalQualificationController extends UIController {
           setForm(removeDollarProperties(documentList))
 
           setIsActive(documentList.is_active)
+
+          if (documentList.document_validity_period === "Süresiz") {
+            setShowValidityPeriod(false);
+          } else {
+            setShowValidityPeriod(true);
+          }
         }, [])
 
         const handleChangeText = (e: any) => {
@@ -165,6 +164,7 @@ export class UpdateVocationalQualificationController extends UIController {
                     icon: 'success',
                     title: 'Mesleki Yeterlilik başarıyla silindi.',
                   })
+                  deleteCache();
                   navigate('/app/vocational-qualification/list')
                 }
               )
@@ -198,24 +198,31 @@ export class UpdateVocationalQualificationController extends UIController {
                     required
                   />
                   <FormControl fullWidth size="small" required>
-                    <InputLabel>Belge Türü</InputLabel>
-                    <Select
-                      name='document_type_id'
-                      label="Belge Türü"
-                      onChange={handleSelectType}
-                      size="small"
-                      value={form.document_type_id}
-                      required
-                    >
-                      {documentTypeGetList.map((document_type) => (
-                        <MenuItem
-                          value={document_type.document_type_id}
-                          key={document_type.document_type_id}
-                        >
-                          {document_type.document_type_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    <Autocomplete
+                      options={documentTypeGetList}
+                      getOptionLabel={(document_type) => document_type.document_type_name}
+                      value={documentTypeGetList.find((document_type) => document_type.document_type_id === form.document_type_id) || null}
+                      onChange={(event, newValue) => {
+                        if (newValue) {
+                          const showValidityPeriod = newValue.document_is_validity_period === "VAR";
+                          setShowValidityPeriod(showValidityPeriod);
+                          setForm({
+                            ...form,
+                            document_type_id: newValue.document_type_id,
+                            document_type_name: newValue.document_type_name,
+                            document_validity_period: showValidityPeriod ? "" : "Süresiz"
+                          });
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Belge Türü"
+                          size="small"
+                          required
+                        />
+                      )}
+                    />
                   </FormControl>
                   <TextField
                     size="small"

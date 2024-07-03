@@ -1,11 +1,11 @@
-import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, nanoid, useNavigate } from "@tuval/forms";
+import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../../CompetencyTargetDataEntry/Views/View";
 import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
-import { Button, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Autocomplete, Button, IconButton, SelectChangeEvent, TextField, Tooltip as TooltipMUI } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -159,7 +159,13 @@ export class CompetencyReportDataViewController extends UIController {
                     }
 
                     const columns: GridColDef[] = [
-                        { field: "competency_name", headerName: "Yetkinlik Adı", flex: 1 },
+                        {
+                            field: "competency_name", headerName: "Yetkinlik Adı", flex: 1,
+                            renderCell: (params) =>
+                                <TooltipMUI title={params.row.competency_description}>
+                                    {params.value}
+                                </TooltipMUI>
+                        },
                         {
                             field: "competency_target_value", headerName: "Hedef Değer", align: "center", headerAlign: "center", width: 150, minWidth: 150,
                             valueGetter: (params) => {
@@ -284,41 +290,60 @@ export class CompetencyReportDataViewController extends UIController {
                                 <Container>
                                     <LeftContainer>
                                         <LeftContainerHeader>
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Polivalans Tablosu</InputLabel>
-                                                <Select
-                                                    name="polyvalence_table_id"
-                                                    value={selectedTable?.polyvalence_table_id}
-                                                    label="Polivalans Tablosu"
-                                                    onChange={onChangeTable}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {this.polyvalenceUnitList.map((unit) => (
-                                                        <MenuItem value={unit.polyvalence_table_id} key={unit.polyvalence_table_id}>{unit.polyvalence_table_name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            <FormControl fullWidth size="small">
-                                                <InputLabel>Değerlendirme Dönemi</InputLabel>
-                                                <Select
-                                                    name="evaluation_period"
-                                                    value={selectedPeriod}
-                                                    label="Değerlendirme Dönemi"
-                                                    onChange={(e) => {
-                                                        setSelectedPeriod(e.target.value);
-                                                        setSelectedEmployeeId("")
-                                                        setSelectedGroupId("")
-                                                        setSelectedCompetencyList([])
-                                                    }}
-                                                    size="small"
-                                                    required
-                                                >
-                                                    {dataYear.map((period, i) => (
-                                                        <MenuItem value={period.name} key={i}>{period.name}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <Autocomplete
+                                                options={this.polyvalenceUnitList}
+                                                value={selectedTable}
+                                                onChange={(event, newValue) => {
+                                                    setSelectedTable(newValue);
+                                                    setSelectedPeriod("");
+                                                    setSelectedEmployeeId("");
+                                                    setSelectedGroupId("");
+                                                    setSelectedCompetencyList([]);
+                                                    const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === newValue?.polyvalence_table_id);
+                                                    const periodYear = Number(periods[0].evaluation_period_year);
+                                                    if (table?.polyvalence_evaluation_frequency == "Yıl") {
+                                                        setDataYear(getYearPeriods(periodYear));
+                                                    } else if (table?.polyvalence_evaluation_frequency == "Yarıyıl") {
+                                                        setDataYear(getHalfYearPeriods(periodYear));
+                                                    } else if (table?.polyvalence_evaluation_frequency == "Çeyrekyıl") {
+                                                        setDataYear(getQuarterYearPeriods(periodYear));
+                                                    } else if (table?.polyvalence_evaluation_frequency == "Ay") {
+                                                        setDataYear(getMonthPeriods(periodYear));
+                                                    }
+                                                }}
+                                                getOptionLabel={(option) => option.polyvalence_table_name}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Polivalans Tablosu"
+                                                        name="polyvalence_table_id"
+                                                        size="small"
+                                                        required
+                                                    />
+                                                )}
+                                                fullWidth
+                                            />
+                                            <Autocomplete
+                                                options={dataYear}
+                                                value={dataYear.find((year) => year.name === selectedPeriod) || null}
+                                                onChange={(event, newValue) => {
+                                                    setSelectedPeriod(newValue?.name || "");
+                                                    setSelectedEmployeeId("");
+                                                    setSelectedGroupId("");
+                                                    setSelectedCompetencyList([]);
+                                                }}
+                                                getOptionLabel={(option) => option.name}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Değerlendirme Dönemi"
+                                                        name="evaluation_period"
+                                                        size="small"
+                                                        required
+                                                    />
+                                                )}
+                                                fullWidth
+                                            />
                                         </LeftContainerHeader>
                                         {
                                             selectedTable && selectedPeriod &&
@@ -326,6 +351,7 @@ export class CompetencyReportDataViewController extends UIController {
                                                 {
                                                     employees
                                                         .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
+                                                        .filter((employee) => employee.is_active)
                                                         .sort((a, b) => a.first_name.localeCompare(b.first_name))
                                                         .map((employee, i) =>
                                                             <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>
@@ -341,22 +367,24 @@ export class CompetencyReportDataViewController extends UIController {
                                         selectedTable && selectedPeriod && selectedEmployeeId &&
                                         <RightContainer>
                                             <RightContainerHeader>
-                                                <FormControl fullWidth size="small">
-                                                    <InputLabel>Yetkinlik Grubu</InputLabel>
-                                                    <Select
-                                                        name="group"
-                                                        value={selectedGroupId}
-                                                        label="Yetkinlik Grubu"
-                                                        onChange={(e) => setSelectedGroupId(e.target.value)}
-                                                        size="small"
-                                                        required
-                                                    >
-                                                        <MenuItem value="" key="all">Tümü</MenuItem>
-                                                        {groups.map((group, i) => (
-                                                            <MenuItem value={group.competency_group_id} key={i}>{group.competency_group_name}</MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
+                                                <Autocomplete
+                                                    options={groups}
+                                                    value={groups.find((group) => group.competency_group_id === selectedGroupId) || null}
+                                                    onChange={(event, newValue) => {
+                                                        setSelectedGroupId(newValue?.competency_group_id || "");
+                                                    }}
+                                                    getOptionLabel={(option) => option.competency_group_name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Yetkinlik Grubu"
+                                                            name="group"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                    fullWidth
+                                                />
                                                 <Button variant="outlined" onClick={() => setIsRadar(!isRadar)}>
                                                     {isRadar ? "Tablo" : "Grafik"}
                                                 </Button>

@@ -27,10 +27,8 @@ export class VocationalQualificationListController extends UIFormController {
   public LoadView(): UIView {
     const navigate = useNavigate()
     const { me, isLoading } = useGetMe('console')
-    const { documentGetList, isLoading: isLoadingDocument } =
-      VocationalQualification.GetList(me?.prefs?.organization)
-    const { documentTypeGetList, isLoading: isLoadingDocumentType } =
-      VocationalQualificationType.GetList(me?.prefs?.organization)
+    const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
+    const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
 
     const [rowsActive, setRowsActive] = useState(true)
     const [filterKey, setFilterKey] = useState('')

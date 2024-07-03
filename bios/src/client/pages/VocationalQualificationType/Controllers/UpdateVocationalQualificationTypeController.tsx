@@ -31,7 +31,7 @@ import {
 import Form from '../Views/Form'
 import React from 'react'
 import StyledDataGrid from '../../../components/StyledDataGrid'
-import { useGetMe } from '@realmocean/sdk'
+import { useDeleteCache, useGetMe } from '@realmocean/sdk'
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties'
 import AppInfo from '../../../../AppInfo'
 import Parameters from '../../../../server/hooks/parameters/main'
@@ -44,7 +44,7 @@ const formReset: IVocationalQualificationType.IBase = {
   document_type_name: '',
   document_type_code: '',
   document_is_validity_period: "YOK",
-  is_active: false,
+  is_active: true,
   is_deleted: false,
 }
 
@@ -54,9 +54,9 @@ export class UpdateVocationalQualificationTypeController extends UIController {
     const { id } = useParams()
 
     const { me, isLoading } = useGetMe('console')
-    const { documentTypeList, isLoadingDocumentType } =
-      VocationalQualificationType.Get(id)
+    const { documentTypeList, isLoadingDocumentType } = VocationalQualificationType.Get(id)
     const { updateVQType } = VocationalQualificationType.Update()
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     return isLoading || isLoadingDocumentType
       ? VStack(Spinner())
@@ -139,6 +139,7 @@ export class UpdateVocationalQualificationTypeController extends UIController {
                     icon: 'success',
                     title: 'Mesleki Yeterlilik Türü başarıyla silindi.',
                   })
+                  deleteCache();
                   navigate('/app/vocational-qualification-type/list')
                 }
               )

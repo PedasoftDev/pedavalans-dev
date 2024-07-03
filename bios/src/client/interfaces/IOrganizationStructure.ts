@@ -16,6 +16,9 @@ export namespace IOrganizationStructure {
             job_start_date: string;
             birth_date: string;
             gender: string;
+            department_start_date: string;
+            position_start_date: string;
+            phone: string;
             tenant_id: string;
             realm_id: string;
         }
@@ -32,6 +35,9 @@ export namespace IOrganizationStructure {
             job_start_date: string;
             birth_date: string;
             gender: string;
+            department_start_date: string;
+            position_start_date: string;
+            phone: string;
             is_active: boolean;
             is_deleted: boolean;
             tenant_id: string;
@@ -42,24 +48,25 @@ export namespace IOrganizationStructure {
 
     export namespace IEmployeeVocationalQualificationRelation {
         export interface IBase extends IRoot {
-            employee_id: string
-            document_id: string
-            document_name: string
-            end_date?: string
-            document_type_id: string
-            document_type_name: string
-            tenant_id: string
-            is_active: boolean
-            is_deleted: boolean
+            employee_id: string;
+            document_id: string;
+            document_name: string;
+            end_date?: string;
+            document_type_id: string;
+            document_type_name: string;
+            tenant_id: string;
+            is_active: boolean;
+            is_deleted: boolean;
         }
         export interface ICreate {
-            employee_id: string
-            document_id: string
-            document_name: string
-            end_date?: string
-            document_type_id: string
-            document_type_name: string
-            tenant_id: string
+            id: string;
+            employee_id: string;
+            document_id: string;
+            document_name: string;
+            end_date: string;
+            document_type_id: string;
+            document_type_name: string;
+            tenant_id: string;
         }
     }
 

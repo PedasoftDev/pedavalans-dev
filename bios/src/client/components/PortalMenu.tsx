@@ -90,7 +90,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             isVisible: tableAuth ? isAdmin : true,
         },
         {
-            title: 'Birim Polivalans',
+            title: 'Polivalans Tabloları',
             link: '/app/polyvalence-unit/list',
             icon: <RxTable size={25} />,
             isVisible: true,
@@ -178,7 +178,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                 },
                 {
                     title: 'Organizasyon Yapısı',
-                    link: '/app/organization-structure/view',
+                    link: '/app/organization-structure/employee/list',
                     icon: <VscOrganization size={25} />,
                     isVisible: tableAuth ? isAdmin : true,
                 },

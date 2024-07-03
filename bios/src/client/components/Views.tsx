@@ -126,6 +126,43 @@ export namespace Views {
         )
     }
 
+    export const PolyvalenceUnitCardPosition = (table_name: string, positions: string, period_name: string, item: { title: string, action: Function } | null, report: Function) => {
+        return (
+            VStack({ alignment: cTop, spacing: 10 })(
+                HStack(
+                    VStack({ alignment: cLeading })(
+                        PedaText("Polivalans Tablosu").fontSize("10px").foregroundColor("gray"),
+                        PedaText(table_name)
+                    ),
+                    Spacer(),
+                    ReactView(
+                        <HiOutlineDocumentReport cursor={"pointer"} size={"18px"} onClick={() => report()} style={{ marginRight: "10px" }} />
+                    ).tooltip("Yetkinlik Matrisi"),
+                    item != null ?
+                        ReactView(
+                            <HiOutlinePencilAlt cursor={"pointer"} size={"18px"} onClick={() => item.action()} />
+                        ).tooltip("Düzenle") : null,
+                ).height(),
+                HStack({ alignment: cLeading })(
+                    VStack({ alignment: cLeading })(
+                        PedaText("Pozisyonlar").fontSize("10px").foregroundColor("gray"),
+                        HStack(PedaText(positions.length > 20 ? positions.substring(0, 30) + "..." : positions)).width().height().tooltip(positions)
+                    )
+                ).height(),
+                HStack({ alignment: cLeading })(
+                    VStack({ alignment: cLeading })(
+                        PedaText("Değerlendirme Sıklığı").fontSize("10px").foregroundColor("gray"),
+                        PedaText(period_name)
+                    )
+                ).height()
+            ).width(350)
+                .height(150)
+                .padding(12)
+                .shadow("rgba(0, 0, 0, 0.35) 0px 5px 15px")
+                .cornerRadius(10)
+        )
+    }
+
     export const NewPolyvalenceUnitCard = (link: string) =>
         VStack(
             UIRouteLink(
