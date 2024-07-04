@@ -179,21 +179,25 @@ export class UpdateCompetencyController extends UIController {
                                         }
                                     })
                                 }
-                                competencyDepartments.map((department) => {
-                                    if (!selectedDepartments.includes(department.competency_department_id)) {
-                                        updateCompetencyDepartment({
-                                            databaseId: AppInfo.Database,
-                                            collectionId: "competency_department",
-                                            documentId: department.$id,
-                                            data: {
-                                                ...removeDollarProperties(department),
-                                                is_deleted: true
-                                            }
-                                        })
-                                    }
+                                const relationIds = competencyDepartments.map(department => department.$id);
+                                relationIds.map((department) => {
+                                    updateCompetencyDepartment({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: "competency_department",
+                                        documentId: department,
+                                        data: {
+                                            is_deleted: true
+                                        }
+                                    })
                                 })
-                                selectedDepartments.map((department, i) => {
-                                    if (!competencyDepartments.map((department) => department.competency_department_id).includes(department)) {
+                                if (selectedDepartments.length === 0) {
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Yetkinlik başarıyla düzenlendi."
+                                    });
+                                    navigate("/app/competency/list");
+                                } else {
+                                    selectedDepartments.map((department, i) => {
                                         const createDepId = nanoid();
                                         createCompetencyDepartment({
                                             documentId: createDepId,
@@ -213,8 +217,9 @@ export class UpdateCompetencyController extends UIController {
                                                 navigate("/app/competency/list");
                                             }
                                         })
-                                    }
-                                })
+                                    })
+                                }
+
                             } else {
                                 const relationIds = competencyPositionRelationList.map(relation => relation.$id);
                                 for (let i = 0; i < competencyPositionRelationList.length; i++) {
