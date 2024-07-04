@@ -472,7 +472,8 @@ export class DashboardController extends UIController {
                                                                     try {
                                                                         await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Parameter, paramId, {
                                                                             id: paramId,
-                                                                            name: param.localStr
+                                                                            name: param.localStr,
+                                                                            is_active: false
                                                                         })
                                                                     } catch (error) {
                                                                         console.log(error)

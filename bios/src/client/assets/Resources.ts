@@ -42,6 +42,7 @@ export namespace Resources {
         line_based_competency_relationship: "line_based_competency_relationship",
         polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
         reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables",
+        competency_education: "competency_education",
     }
 
     export const Parameters = [
@@ -68,6 +69,11 @@ export namespace Resources {
         {
             name: "Veri girişi yapılmayan tablolar için hatırlatma maili gönderilsin mi?",
             localStr: "reminder_mail_for_unfilled_tables",
+            type: "boolean",
+        },
+        {
+            name: "Yetkinlik Eğitim",
+            localStr: "competency_education",
             type: "boolean",
         }
     ];
