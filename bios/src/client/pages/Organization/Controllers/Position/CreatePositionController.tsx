@@ -55,6 +55,8 @@ export class CreatePositionController extends UIController {
               documentId: id,
               data: {
                 ...formPosition,
+                tenant_id: me?.prefs?.organization,
+                realm_id: me?.prefs?.organization,
                 id
               }
             }, () => {

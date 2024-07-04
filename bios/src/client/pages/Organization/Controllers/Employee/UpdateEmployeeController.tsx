@@ -81,8 +81,6 @@ export class UpdateEmployeeController extends UIController {
 
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
-    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
-
     return (
       isLoading || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
@@ -535,7 +533,7 @@ export class UpdateEmployeeController extends UIController {
                                 </div>
                               )}
                               <Autocomplete
-                                options={employees}
+                                options={employees.filter((employee) => employee.id !== formEmployee.id && employee.is_active === true)}
                                 value={employees.find(option => option.$id === formEmployee.manager_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({

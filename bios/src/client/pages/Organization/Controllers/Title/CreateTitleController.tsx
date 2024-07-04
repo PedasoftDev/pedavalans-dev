@@ -49,6 +49,8 @@ export class CreateTitleController extends UIController {
               documentId: id,
               data: {
                 ...formTitle,
+                tenant_id: me?.prefs?.organization,
+                realm_id: me?.prefs?.organization,
                 id
               }
             }, () => {

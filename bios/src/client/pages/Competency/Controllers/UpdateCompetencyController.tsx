@@ -8,7 +8,7 @@ import Form from "../Views/Form";
 import React from "react";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
-import { useGetMe } from "@realmocean/sdk";
+import { useDeleteCache, useGetMe } from "@realmocean/sdk";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import Competency from "../../../../server/hooks/competency/main";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
@@ -75,6 +75,8 @@ export class UpdateCompetencyController extends UIController {
         const { competencyPositionRelationList, isLoading: isLoadingCompetencyPositionRelationList } = CompetencyPositionRelation.GetByCompetencyId(id);
         const { createCompetencyPositionRelation } = CompetencyPositionRelation.Create();
 
+
+        const { deleteCache } = useDeleteCache(AppInfo.Name);
 
 
         return (
@@ -195,6 +197,7 @@ export class UpdateCompetencyController extends UIController {
                                         icon: "success",
                                         title: "Yetkinlik başarıyla düzenlendi."
                                     });
+                                    deleteCache();
                                     navigate("/app/competency/list");
                                 } else {
                                     selectedDepartments.map((department, i) => {
@@ -214,6 +217,7 @@ export class UpdateCompetencyController extends UIController {
                                                     icon: "success",
                                                     title: "Yetkinlik başarıyla düzenlendi."
                                                 });
+                                                deleteCache();
                                                 navigate("/app/competency/list");
                                             }
                                         })
@@ -247,6 +251,7 @@ export class UpdateCompetencyController extends UIController {
                                                 icon: "success",
                                                 title: "Yetkinlik başarıyla düzenlendi."
                                             });
+                                            deleteCache();
                                             navigate("/app/competency/list");
                                         }
 
