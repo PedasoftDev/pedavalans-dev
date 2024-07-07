@@ -8,15 +8,11 @@ import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
 import AppInfo from '../../../../AppInfo';
 import Collections from '../../../../server/core/Collections';
 import { Resources } from '../../../assets/Resources';
-import IAccountRelation from '../../../interfaces/IAccountRelation';
-import { Toast } from '../../../components/Toast';
-import { IOrganizationStructure } from '../../../interfaces/IOrganizationStructure';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import PolyvalenceUnitPositionRelation from '../../../../server/hooks/polyvalenceUnitPositionRelation/main';
 import Parameters from '../../../../server/hooks/parameters/main';
 import PolyvalenceUnitTableDataResponsible from '../../../../server/hooks/polyvalenceUnitTableDataResponsible/main';
 import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalenceUnitTableDataViewer/main';
-import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
 import AccountRelation from '../../../../server/hooks/accountRelation/main';
 
 interface IPolyvalenceUnitWithResponsible extends IPolyvalenceUnit.IPolyvalenceUnit {
