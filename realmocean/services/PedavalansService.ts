@@ -257,6 +257,18 @@ class PedavalansService extends RealmoceanService {
       }
     });
 
+    router.post("/com.pedavalans.service.main/updateVocationQualificationTypeNames", async (req, res) => {
+      const { documentTypeId, documentTypeName } = req.body;
+
+      try {
+        const result = await this.updateVocationQualificationTypeNames(documentTypeId, documentTypeName);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    });
+
 
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
@@ -264,6 +276,26 @@ class PedavalansService extends RealmoceanService {
     })
   }
 
+  async updateVocationQualificationTypeNames(documentTypeId: string, documentTypeName: string): Promise<any> {
+    const vocationalQualifications: IVocationalQualification[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.VocationalQualification, [this.databaseService.Query.equal("document_type_id", documentTypeId)]).then((res) => res.documents);
+    const employeeVocationalQualificationDocuments: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument, [this.databaseService.Query.equal("document_type_id", documentTypeId)]).then((res) => res.documents);
+
+    vocationalQualifications.forEach(async (vocationalQualification) => {
+      try {
+        await this.databaseService.updateDocument(this.appName, this.databaseName, this.VocationalQualification, vocationalQualification.$id, { document_type_name: documentTypeName });
+      } catch (error) {
+        console.log(error);
+      }
+    })
+
+    employeeVocationalQualificationDocuments.forEach(async (employeeVocationalQualificationDocument) => {
+      try {
+        await this.databaseService.updateDocument(this.appName, this.databaseName, this.OrganizationEmployeeDocument, employeeVocationalQualificationDocument.$id, { document_type_name: documentTypeName });
+      } catch (error) {
+        console.log(error);
+      }
+    })
+  }
 
 
   async updateCompetencyDepartmentNames(departmentId: string, departmentName: string): Promise<any> {

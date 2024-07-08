@@ -358,7 +358,7 @@ export class CompetencyListController extends UIController {
                                             }}>
                                                 <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency/create")}>Yeni Yetkinlik</Button>
                                                 {
-                                                    accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin" &&
+                                                    (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
                                                     <Tooltip title={`Yetkinlik Aktarım Şablonunu İndir`}>
                                                         <Button
                                                             variant='contained'
@@ -368,7 +368,7 @@ export class CompetencyListController extends UIController {
                                                     </Tooltip>
                                                 }
                                                 {
-                                                    accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin" &&
+                                                    (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
                                                     <Tooltip title={`Yetkinlik Aktarım Şablonunu Yükle`}>
                                                         <Button
                                                             variant='outlined'

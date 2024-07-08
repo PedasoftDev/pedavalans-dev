@@ -6,7 +6,6 @@ import {
   UIViewBuilder,
   VStack,
   cTop,
-  nanoid,
   useEffect,
   useNavigate,
   useParams,
@@ -14,30 +13,20 @@ import {
 } from '@tuval/forms'
 import Swal from 'sweetalert2'
 import { Toast } from '../../../components/Toast'
-import { GridColDef, trTR } from '@mui/x-data-grid'
-
 import {
   Button,
-  FormControl,
   FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
   Switch,
   TextField,
-  Typography,
 } from '@mui/material'
 import Form from '../Views/Form'
 import React from 'react'
-import StyledDataGrid from '../../../components/StyledDataGrid'
 import { useDeleteCache, useGetMe } from '@realmocean/sdk'
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties'
 import AppInfo from '../../../../AppInfo'
-import Parameters from '../../../../server/hooks/parameters/main'
-import { Resources } from '../../../assets/Resources'
 import IVocationalQualificationType from '../../../interfaces/IVocationalQualificationType'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
+import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker'
 
 const formReset: IVocationalQualificationType.IBase = {
   document_type_id: '',
@@ -54,21 +43,20 @@ export class UpdateVocationalQualificationTypeController extends UIController {
     const { id } = useParams()
 
     const { me, isLoading } = useGetMe('console')
-    const { documentTypeList, isLoadingDocumentType } = VocationalQualificationType.Get(id)
+    const { documentType, isLoadingDocumentType } = VocationalQualificationType.Get(id)
+    const { documentTypeGetList, isLoading: isLoadingDocumentTypeGetList } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { updateVQType } = VocationalQualificationType.Update()
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
-    return isLoading || isLoadingDocumentType
-      ? VStack(Spinner())
-      : UIViewBuilder(() => {
-        const [form, setForm] =
-          useState<IVocationalQualificationType.IBase>(formReset)
+    return isLoading || isLoadingDocumentType || isLoadingDocumentTypeGetList ? VStack(Spinner()) :
+      UIViewBuilder(() => {
+        const [form, setForm] = useState<IVocationalQualificationType.IBase>(formReset)
         const [isActive, setIsActive] = useState<boolean>(true)
 
         useEffect(() => {
-          setForm(removeDollarProperties(documentTypeList))
+          setForm(removeDollarProperties(documentType))
 
-          setIsActive(documentTypeList.is_active)
+          setIsActive(documentType.is_active)
         }, [])
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +74,22 @@ export class UpdateVocationalQualificationTypeController extends UIController {
             timer: 5000,
           })
 
+          if (documentTypeGetList.find((x) => x.document_type_code === form.document_type_code && x.document_type_id !== form.document_type_id)) {
+            Toast.fire({
+              icon: 'error',
+              title: 'Belge Türü Kodu zaten mevcut.',
+            })
+            return
+          }
+
+          const success = () => {
+            Toast.fire({
+              icon: 'success',
+              title: 'Mesleki Yeterlilik Türü başarıyla düzenlendi.',
+            })
+            navigate('/app/vocational-qualification-type/list')
+          }
+
           updateVQType(
             {
               databaseId: AppInfo.Database,
@@ -94,11 +98,14 @@ export class UpdateVocationalQualificationTypeController extends UIController {
               data: form,
             },
             () => {
-              Toast.fire({
-                icon: 'success',
-                title: 'Mesleki Yeterlilik Türü başarıyla düzenlendi.',
-              })
-              navigate('/app/vocational-qualification-type/list')
+              if (documentType.document_type_name !== form.document_type_name) {
+                PedavalansServiceBroker.Default.updateVocationQualificationTypeNames(id, form.document_type_name).then(() => {
+                  success()
+                  deleteCache();
+                })
+              } else {
+                success()
+              }
             }
           )
         }
@@ -179,6 +186,7 @@ export class UpdateVocationalQualificationTypeController extends UIController {
                     name="document_type_name"
                     label="Belge Türü Adı"
                     required
+                    size='small'
                   />
                   <FormControlLabel
                     sx={{
