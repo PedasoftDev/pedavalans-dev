@@ -17,7 +17,7 @@ const employeeListExport = (lineBased: boolean, employees: IOrganizationStructur
     "SOYADI",
     "DOĞUM TARİHİ",
     "TELEFON NUMARASI",
-    "CNSİYET",
+    "CİNSİYET",
     "İŞE BAŞLAMA TARİHİ",
     "ÜNVAN KODU",
     "ÜNVAN TANIMI",
@@ -44,17 +44,17 @@ const employeeListExport = (lineBased: boolean, employees: IOrganizationStructur
       { v: employee.first_name, t: 's', s: { alignment: alignCenter } },
       { v: employee.last_name, t: 's', s: { alignment: alignCenter } },
       { v: employee.birth_date ? Resources.Functions.formatDate(employee.birth_date) : "", t: 's', s: { alignment: alignCenter } },
-      { v: employee.phone, t: 's', s: { alignment: alignCenter } },
+      { v: employee.phone ? employee.phone : "", t: 's', s: { alignment: alignCenter } },
       { v: employee.gender === "male" ? "Erkek" : "Kadın", t: 's', s: { alignment: alignCenter } },
       { v: employee.job_start_date ? Resources.Functions.formatDate(employee.job_start_date) : "", t: 's', s: { alignment: alignCenter } }, // burada
       { v: titles.find(title => title.id === employee.title_id)?.record_id, t: 's', s: { alignment: alignCenter } },
       { v: titles.find(title => title.id === employee.title_id)?.name, t: 's', s: { alignment: alignCenter } },
       { v: departments.find(department => department.id === employee.department_id)?.record_id, t: 's', s: { alignment: alignCenter } },
       { v: departments.find(department => department.id === employee.department_id)?.name, t: 's', s: { alignment: alignCenter } },
-      { v: Resources.Functions.formatDate(employee.department_start_date || ""), t: 's', s: { alignment: alignCenter } },
+      { v: employee.department_start_date ? Resources.Functions.formatDate(employee.department_start_date) : "", t: 's', s: { alignment: alignCenter } },
       { v: positions.find(position => position.id === employee.position_id)?.record_id, t: 's', s: { alignment: alignCenter } },
       { v: positions.find(position => position.id === employee.position_id)?.name, t: 's', s: { alignment: alignCenter } },
-      { v: Resources.Functions.formatDate(employee.position_start_date || ""), t: 's', s: { alignment: alignCenter } }
+      { v: employee.position_start_date ? Resources.Functions.formatDate(employee.position_start_date) : "", t: 's', s: { alignment: alignCenter } }
     ]
 
     if (lineBased) {
