@@ -407,9 +407,28 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
 
     merge.push({ s: { r: employees.length * 2 + 6, c: 0 }, e: { r: employees.length * 2 + 7, c: 3 } })
 
+
+    const numberOfEmployeesExpectedCompetencyLevelRow: any[] = []
+    const numberOfEmployeesExpectedCompetencyLevelRowPlusOne: any[] = []
+
+    numberOfEmployeesExpectedCompetencyLevelRow[0] = { v: 'Beklentiyi Karşılayan Personel Sayısı', t: 's', s: { ...headerStyle, border: { top: { style: "thick", color: "000000" }, left: { style: "thick", color: "000000" } } }, align: alignCenter }
+    numberOfEmployeesExpectedCompetencyLevelRow[1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRow[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRow[3] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[0] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomLeft } }
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[1] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[2] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottom } }
+    numberOfEmployeesExpectedCompetencyLevelRowPlusOne[3] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+
+
+    merge.push({ s: { r: employees.length * 2 + 9, c: 0 }, e: { r: employees.length * 2 + 10, c: 3 } })
+
     writingCompetencies.forEach((competency, index) => {
         // beklentiyi karşılamayan personel sayısı
         let employeeCount = 0;
+        // beklentiyi karşılayan personel sayısı
+        let employeeCountExpected = 0;
         employeeCompetencyValues.forEach(employeeCompetencyValue => {
             if (employeeCompetencyValue.competency_id === competency.competency_id) {
                 const selectedMachine = machines.find(x => x.$id === competencies.find(x => x.competency_id === competency.competency_id)?.id);
@@ -421,6 +440,9 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
                 if (employeeCompetencyValue.competency_target_value != "no-target" && (realValue * difficultyCoefficient) < parseInt(employeeCompetencyValue.competency_target_value)) {
                     employeeCount++;
                 }
+                else {
+                    employeeCountExpected++;
+                }
             }
         });
 
@@ -428,11 +450,20 @@ export function getReportToExcelByMachinePolyvalenceTable(machines: IMachine.IBa
         numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne[4 + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
 
         merge.push({ s: { r: employees.length * 2 + 6, c: 4 + index }, e: { r: employees.length * 2 + 6 + 1, c: 4 + index } })
+
+
+        numberOfEmployeesExpectedCompetencyLevelRow[4 + index] = { v: employeeCountExpected, t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
+        numberOfEmployeesExpectedCompetencyLevelRowPlusOne[4 + index] = { v: '', t: 's', s: { ...headerStyle, border: borderStyles.header.fragment } }
+
+        merge.push({ s: { r: employees.length * 2 + 9, c: 4 + index }, e: { r: employees.length * 2 + 10, c: 4 + index } })
     })
 
 
     appendData[employees.length * 2 + 6] = numberOfEmployeesDontExpectedCompetencyLevelRow;
     appendData[employees.length * 2 + 7] = numberOfEmployeesDontExpectedCompetencyLevelRowPlusOne;
+
+    appendData[employees.length * 2 + 9] = numberOfEmployeesExpectedCompetencyLevelRow;
+    appendData[employees.length * 2 + 10] = numberOfEmployeesExpectedCompetencyLevelRowPlusOne;
 
     //  yetkinlik grubu başarı oranı
 

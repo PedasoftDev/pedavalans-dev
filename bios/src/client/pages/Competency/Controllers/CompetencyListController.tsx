@@ -136,7 +136,7 @@ export class CompetencyListController extends UIController {
                             const task = new Umay();
                             const failedCompetencies: ICompetencyImportFromExcel[] = [];
                             excelData.forEach((competencyItem, index) => {
-                                const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
+                                const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim()).filter((value, index, self) => self.indexOf(value) === index);
                                 const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
                                 const createCompetency: ICompetency.ICreateCompetency = {
                                     competency_id: nanoid(),
@@ -150,7 +150,6 @@ export class CompetencyListController extends UIController {
                                 task.Task(async () => {
                                     try {
                                         await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Competency, createCompetency.competency_id, createCompetency)
-
                                         competencyDepartments.forEach(async (departmentName) => {
                                             const department = departments.find((item) => item.name === departmentName);
                                             if (department) {
@@ -358,7 +357,7 @@ export class CompetencyListController extends UIController {
                                             }}>
                                                 <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/competency/create")}>Yeni Yetkinlik</Button>
                                                 {
-                                                    accountRelations[0].is_admin &&
+                                                    (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
                                                     <Tooltip title={`Yetkinlik Aktarım Şablonunu İndir`}>
                                                         <Button
                                                             variant='contained'
@@ -368,7 +367,7 @@ export class CompetencyListController extends UIController {
                                                     </Tooltip>
                                                 }
                                                 {
-                                                    accountRelations[0].is_admin &&
+                                                    (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
                                                     <Tooltip title={`Yetkinlik Aktarım Şablonunu Yükle`}>
                                                         <Button
                                                             variant='outlined'

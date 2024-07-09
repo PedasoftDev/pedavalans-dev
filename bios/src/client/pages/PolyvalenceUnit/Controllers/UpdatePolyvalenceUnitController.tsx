@@ -17,7 +17,7 @@ import { trTR } from '@mui/x-data-grid';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
-import { useGetMe, useListAccounts } from '@realmocean/sdk';
+import { Services, useDeleteCache, useGetMe, useListAccounts } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
@@ -79,6 +79,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { updatePolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Update();
         const { updatePolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Update();
 
+        const { deleteCache } = useDeleteCache(AppInfo.Name)
 
         const { polyvalenceUnitPositionRelations, isLoading: isLoadingPolyvalenceUnitPositionRelations } = PolyvalenceUnitPositionRelation.GetByPolyvalenceUnitId(id);
         const { createPolyvalenceUnitPositionRelation } = PolyvalenceUnitPositionRelation.Create();
@@ -249,20 +250,13 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             cancelButtonText: 'Hayır'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                updatePolyvalenceUnit({
-                                    databaseId: AppInfo.Database,
-                                    collectionId: "polyvalence_unit_table",
-                                    documentId: id,
-                                    data: {
-                                        ...form,
-                                        is_deleted_table: true
-                                    }
-                                }, () => {
+                                Services.Databases.updateDocument(AppInfo.Name, AppInfo.Database, "polyvalence_unit_table", id, { is_deleted_table: true }).then(() => {
                                     Toast.fire({
                                         icon: 'success',
                                         title: 'Polivalans tablosu silindi!'
                                     })
                                     navigate("/app/polyvalence-unit/list")
+                                    deleteCache()
                                 })
                             }
                         })

@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, TextField } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { DialogContainer, HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate, useParams } from '@tuval/forms';
-import { Services, useDeleteCache, useGetMe } from '@realmocean/sdk'
+import { Query, Services, useDeleteCache, useGetMe } from '@realmocean/sdk'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
@@ -68,7 +68,6 @@ export class UpdateEmployeeController extends UIController {
     const { id } = useParams();
 
     const { me, isLoading } = useGetMe("console");
-    const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
     const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
@@ -76,25 +75,22 @@ export class UpdateEmployeeController extends UIController {
     const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
-    const { organizationEmployeeDocumentList, isLoading: isLoadingDocuments } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
 
     const { updateEmployee } = OrganizationStructureEmployee.Update()
     const { createLog } = OrganizationStructureEmployeeLog.Create()
 
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
-    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
-
     return (
-      isLoading || isLoadingResult || isLoadingDepartments || isLoadingDocuments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
-            const accountRelation = accountRelations[0]
             const navigate = useNavigate();
 
             const [formEmployee, setFormEmployee] = useState<IOrganizationStructure.IEmployees.IEmployee>(resetForm)
             const [isActive, setIsActive] = useState<boolean>(true)
             const [documents, setDocuments] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[]>([])
+            const [documentsCopy, setDocumentsCopy] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[]>([])
             const [formDocument, setFormDocument] = useState<IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate>({
               ...resetDocumentForm,
               tenant_id: me?.prefs?.organization
@@ -194,8 +190,8 @@ export class UpdateEmployeeController extends UIController {
 
               const successFunc = () => {
                 ToastSuccess("Personel başarıyla güncellendi", "")
-                navigate(link + "/list")
                 deleteCache()
+                navigate(link + "/list")
               }
 
               updateEmployee({
@@ -228,86 +224,65 @@ export class UpdateEmployeeController extends UIController {
                   }
                 }, () => {
 
-                  const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
-
-                  if (docsEmployee.length > 0) {
-                    docsEmployee.forEach((doc, i) => {
-                      // update Document Kısmı
-                      // Halihazırda var olan belgeleri silme işlemi
-                      updateEmployee({
-                        databaseId: AppInfo.Database,
-                        collectionId: Collections.OrganizationEmployeeDocument,
-                        documentId: doc.$id,
-                        data: {
-                          is_active: false,
-                          is_deleted: true
-                        }
-                      })
-                    })
-
-                    // Yeni belgeleri ekleme işlemi
-                    if (documents.length === 0) {
-                      successFunc()
-                      return;
+                  const createNewDocument = (doc: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate, id: string, callback: () => void) => {
+                    const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
+                      document_id: doc.document_id,
+                      document_name: doc.document_name,
+                      document_type_id: doc.document_type_id,
+                      document_type_name: doc.document_type_name,
+                      employee_id: id,
+                      end_date: doc.end_date,
+                      id: "",
+                      tenant_id: me?.prefs?.organization
                     }
-                    documents.forEach((doc, _i) => {
-                      const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
-                        document_id: doc.document_id,
-                        document_name: doc.document_name,
-                        document_type_id: doc.document_type_id,
-                        document_type_name: doc.document_type_name,
-                        employee_id: id,
-                        end_date: doc.end_date,
-                        id: "",
-                        tenant_id: me?.prefs?.organization
-                      }
-                      delete document.id;
-                      createOrganizationEmployeeDocument({
-                        documentId: nanoid(),
-                        data: {
-                          ...document,
-                          employee_id: id
-                        }
-                      }, () => {
-                        if (_i === documents.length - 1) {
-                          successFunc()
+                    delete document.id;
+                    Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument, nanoid(), document).then(() => {
+                      callback()
+                    })
+                  }
+
+                  const deactiveDocument = (doc: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate, callback: () => void) => {
+                    Services.Databases.updateDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument, doc.id, {
+                      is_active: false,
+                      is_deleted: true
+                    }).then(() => {
+                      callback()
+                    })
+                  }
+
+                  if (documentsCopy.length > 0) {
+                    documentsCopy.forEach((doc, i) => {
+                      deactiveDocument(doc, () => {
+                        if (i === documentsCopy.length - 1) {
+                          if (documents.length === 0) {
+                            successFunc()
+                          } else {
+                            documents.forEach((doc, _i) => {
+                              createNewDocument(doc, formEmployee.$id, () => {
+                                if (_i === documents.length - 1) {
+                                  successFunc()
+                                }
+                              })
+                            })
+                          }
                         }
                       })
                     })
                   } else {
-                    // Yeni belgeleri ekleme işlemi
                     if (documents.length === 0) {
                       successFunc()
-                      return;
-                    }
-                    documents.forEach((doc, _i) => {
-                      const document: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate = {
-                        document_id: doc.document_id,
-                        document_name: doc.document_name,
-                        document_type_id: doc.document_type_id,
-                        document_type_name: doc.document_type_name,
-                        employee_id: id,
-                        end_date: doc.end_date,
-                        id: "",
-                        tenant_id: me?.prefs?.organization
-                      }
-                      delete document.id;
-                      createOrganizationEmployeeDocument({
-                        documentId: nanoid(),
-                        data: {
-                          ...document,
-                          employee_id: id
-                        }
-                      }, () => {
-                        if (_i === documents.length - 1) {
-                          successFunc()
-                        }
+                    } else {
+                      documents.forEach((doc, i) => {
+                        createNewDocument(doc, formEmployee.$id, () => {
+                          if (i === documents.length - 1) {
+                            successFunc()
+                          }
+                        })
                       })
-                    })
+                    }
                   }
                 })
               })
-
             }
 
             const handleSelectType = (event, newValue) => {
@@ -340,20 +315,25 @@ export class UpdateEmployeeController extends UIController {
                 if (employee) {
                   setFormEmployee(employee)
                   setIsActive(employee.is_active)
-                  const docsEmployee = organizationEmployeeDocumentList.filter((doc) => doc.employee_id === id)
-                  const docsCreateCopies: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[] = docsEmployee.map((doc) => {
-                    return {
-                      document_id: doc.document_id,
-                      document_name: doc.document_name,
-                      document_type_id: doc.document_type_id,
-                      document_type_name: doc.document_type_name,
-                      end_date: doc.end_date,
-                      employee_id: doc.employee_id,
-                      id: doc.$id,
-                      tenant_id: doc.tenant_id
-                    }
-                  })
-                  setDocuments(docsCreateCopies)
+                  Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument,
+                    [Query.equal("employee_id", id), Query.equal("is_deleted", false), Query.equal("is_active", true)
+                    ]).then((result) => {
+                      const docsCreateCopies: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[] = result.documents.map((doc) => {
+                        return {
+                          document_id: doc.document_id,
+                          document_name: doc.document_name,
+                          document_type_id: doc.document_type_id,
+                          document_type_name: doc.document_type_name,
+                          end_date: doc.end_date,
+                          employee_id: doc.employee_id,
+                          id: doc.$id,
+                          tenant_id: doc.tenant_id
+                        }
+                      })
+                      setDocumentsCopy(docsCreateCopies)
+                      setDocuments(docsCreateCopies)
+                    })
+
                 }
               }
             }, [])
@@ -548,7 +528,7 @@ export class UpdateEmployeeController extends UIController {
                                 </div>
                               )}
                               <Autocomplete
-                                options={employees}
+                                options={employees.filter((employee) => employee.id !== formEmployee.id && employee.is_active === true)}
                                 value={employees.find(option => option.$id === formEmployee.manager_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({

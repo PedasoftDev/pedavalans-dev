@@ -167,7 +167,7 @@ export class ParametersController extends UIFormController {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {stringParameters.map((stringParameter, i) =>
+                                                {stringParameters.filter(x => x.name != "position_based_polyvalence_management").map((stringParameter, i) =>
                                                     stringParameter.name === "reminder_mail_for_unfilled_tables_day" ?
                                                         parameters.find(x => x.name === "reminder_mail_for_unfilled_tables" && x.is_active) ?
                                                             <StringParameter stringParameter={stringParameter} index={i} />

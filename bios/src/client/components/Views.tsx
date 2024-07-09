@@ -95,7 +95,7 @@ export namespace Views {
                 HStack(
                     VStack({ alignment: cLeading })(
                         PedaText("Polivalans Tablosu").fontSize("10px").foregroundColor("gray"),
-                        PedaText(table_name)
+                        HStack(PedaText(table_name.length > 30 ? table_name.substring(0, 30) + "..." : table_name)).width().height().tooltip(table_name)
                     ),
                     Spacer(),
                     ReactView(
@@ -132,7 +132,7 @@ export namespace Views {
                 HStack(
                     VStack({ alignment: cLeading })(
                         PedaText("Polivalans Tablosu").fontSize("10px").foregroundColor("gray"),
-                        PedaText(table_name)
+                        HStack(PedaText(table_name.length > 30 ? table_name.substring(0, 30) + "..." : table_name)).width().height().tooltip(table_name)
                     ),
                     Spacer(),
                     ReactView(
@@ -146,7 +146,7 @@ export namespace Views {
                 HStack({ alignment: cLeading })(
                     VStack({ alignment: cLeading })(
                         PedaText("Pozisyonlar").fontSize("10px").foregroundColor("gray"),
-                        HStack(PedaText(positions.length > 20 ? positions.substring(0, 30) + "..." : positions)).width().height().tooltip(positions)
+                        HStack(PedaText(positions.length > 30 ? positions.substring(0, 30) + "..." : positions)).width().height().tooltip(positions)
                     )
                 ).height(),
                 HStack({ alignment: cLeading })(

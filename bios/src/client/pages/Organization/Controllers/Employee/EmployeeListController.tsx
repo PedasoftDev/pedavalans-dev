@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Tooltip } from '@mui/material'
-import { GridColDef, trTR } from '@mui/x-data-grid'
+import { GridColDef, GridToolbarContainer, GridToolbarExport, trTR } from '@mui/x-data-grid'
 import React, { useRef, useState } from 'react'
 import { MdDisplaySettings } from 'react-icons/md'
 import StyledDataGrid from '../../../../components/StyledDataGrid'
@@ -25,6 +25,9 @@ import AppInfo from '../../../../../AppInfo'
 import Collections from '../../../../../server/core/Collections'
 import { Toast } from '../../../../components/Toast'
 import Swal from 'sweetalert2'
+import employeeListExport from '../../../../assets/Functions/employeeListExport'
+import Parameters from '../../../../../server/hooks/parameters/main'
+
 
 
 interface IEmployeeImportFromExcel {
@@ -48,6 +51,17 @@ const excelDateToJSDate = (excelDate: number) => {
   return jsDate.toISOString().split('T')[0];
 }
 
+// function CustomToolbar() {
+//   return (
+//     <GridToolbarContainer>
+//       <GridToolbarExport />
+//       <Button variant='contained' color='primary' size='small' onClick={() => {
+//         console.log("Export")
+//       }}>Export</Button>
+//     </GridToolbarContainer>
+//   );
+// }
+
 export class EmployeeListController extends UIController {
 
 
@@ -60,6 +74,7 @@ export class EmployeeListController extends UIController {
     const { positions: propPositions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
     const { lines: propLines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization)
     const { titles: propTitles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
+    const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
 
     return (
       isLoading || isLoadingResult || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines ? VStack(Spinner()) :
@@ -587,6 +602,10 @@ export class EmployeeListController extends UIController {
             navigate(Resources.OrganizationStructureTabValues.find(x => x.value === value)?.link + "/list");
           }
 
+          const employeeExport = () => {
+            employeeListExport(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false, filteredEmployees.filter(x => x.is_active === active), propDepartments, propTitles, propPositions, propLines)
+          }
+
           return (
             VStack({ alignment: cTop })(
               HStack({ alignment: cLeading })(
@@ -648,6 +667,14 @@ export class EmployeeListController extends UIController {
                             <Button variant='contained' fullWidth size='small' onClick={() => {
                               navigate(Resources.OrganizationStructureTabValues.find(x => x.value === 0)?.link + "/create");
                             }}>Yeni Personel</Button>
+                            <Tooltip title={`Çalışan Listesini İndir`}>
+                              <Button
+                                variant='contained'
+                                color='success'
+                                onClick={employeeExport}
+                                size='small'><SiMicrosoftexcel size={20} />
+                              </Button>
+                            </Tooltip>
                             {(accountRelation.is_admin || accountRelation.authorization_profile === "admin") && <Tooltip title={`Çalışan Aktarım Şablonunu İndir`}>
                               <Button
                                 variant='contained'
@@ -673,7 +700,9 @@ export class EmployeeListController extends UIController {
                           </div>
                         </div>
                         <GridContainer>
-                          <StyledDataGrid rows={filteredEmployees.filter(x => x.is_active === active)} columns={columns} />
+                          <StyledDataGrid rows={filteredEmployees.filter(x => x.is_active === active)} columns={columns}
+                          // slots={{ toolbar: CustomToolbar }}
+                          />
                         </GridContainer>
                       </div>
                     </TabPanel>

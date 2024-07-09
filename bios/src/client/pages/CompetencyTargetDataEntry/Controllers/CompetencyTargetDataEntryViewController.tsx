@@ -46,6 +46,8 @@ const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     tenant_id: ""
 }
 
+const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true";
+
 export class CompetencyTargetDataEntryViewController extends UIController {
 
     @State()
