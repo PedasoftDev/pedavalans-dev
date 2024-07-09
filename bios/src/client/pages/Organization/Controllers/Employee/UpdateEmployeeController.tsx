@@ -251,9 +251,7 @@ export class UpdateEmployeeController extends UIController {
                   }
 
                   if (documentsCopy.length > 0) {
-                    console.log("documentsCopy > 0")
                     documentsCopy.forEach((doc, i) => {
-                      console.log("doc deactiveDocument")
                       deactiveDocument(doc, () => {
                         if (i === documentsCopy.length - 1) {
                           if (documents.length === 0) {
@@ -271,12 +269,9 @@ export class UpdateEmployeeController extends UIController {
                       })
                     })
                   } else {
-                    console.log("documentsCopy = 0")
                     if (documents.length === 0) {
-                      console.log("documents = 0")
                       successFunc()
                     } else {
-                      console.log("documents > 0")
                       documents.forEach((doc, i) => {
                         createNewDocument(doc, formEmployee.$id, () => {
                           if (i === documents.length - 1) {
