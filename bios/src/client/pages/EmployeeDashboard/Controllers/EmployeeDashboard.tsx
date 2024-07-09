@@ -30,6 +30,7 @@ import {
   CardContent,
   CardHeader,
   FormControlLabel,
+  IconButton,
   Paper,
   Switch,
   Tab,
@@ -61,7 +62,7 @@ import IEmployeeDashboard from '../../../interfaces/IEmployeeDashboard'
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main'
 import { sortEvaluations } from '../../../assets/Functions/sortEmployeeCompetencyValueByPeriod'
 import EChartsReact from 'echarts-for-react'
-
+import { FaAngleLeft } from "react-icons/fa";
 
 
 export class EmployeeDashboard extends UIController {
@@ -81,13 +82,13 @@ export class EmployeeDashboard extends UIController {
 
 
     const { document: department, isLoading: isLoadingDepartment } = OrganizationStructureDepartment.Get(employeeDashboardState.department_id)
-    
+
     const { position, isLoadingPosition } = OrganizationStructurePosition.Get(employeeDashboardState.position_id)
-    
+
     const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
 
     const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
-    
+
     const { listEmployeeCompetencyValue, isLoadingListEmployeeCompetencyValue, } = EmployeeCompetencyValue.ListByEmployeeAndTableId(employeeDashboardState.$id, employeeDashboardState.polyvalence_table_id)
     const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetByEmployeeId(employeeDashboardState.$id)
 
@@ -341,10 +342,15 @@ export class EmployeeDashboard extends UIController {
 
         return VStack({ alignment: cTopLeading })(
           HStack({ alignment: cLeading })(
+            VStack(
+              ReactView(
+                <IconButton onClick={() => navigate(-1)}>
+                  <FaAngleLeft size={18} />
+                </IconButton>
+              )
+            ).height().width().paddingTop("10px"),
             Views.Title('Kişi Bilgileri').paddingTop('10px')
-          )
-            .height(70)
-            .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
+          ).height(70).shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
           HStack({ alignment: cTop })(
             ReactView(
               <div
@@ -385,18 +391,9 @@ export class EmployeeDashboard extends UIController {
                           }}
                         />
                       }
-                      position={
-                        position ? position?.name : "Pozisyon Bulunamadı"
-                      }
-                      department={
-                        department ? department?.name : "Birim Bulunamadı"
-                      }
-                      skills={
-                        competencyDepartmentList.filter(
-                          (x) =>
-                            x.competency_department_id === employee.department
-                        ).length
-                      }
+                      position={position ? position?.name : "Pozisyon Bulunamadı"}
+                      department={department ? department?.name : "Birim Bulunamadı"}
+                      skills={competencyDepartmentList.filter((x) => x.competency_department_id === employee.department).length}
                       yearOfSeniority={!employeeDashboardState.job_start_date ? "" : `${differenceYear} Yıl, ${differenceMonth} Ay, ${differenceDay} Gün`}
                       period={employeeDashboardState.competency_evaluation_period}
                       positionId={employee.position}

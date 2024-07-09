@@ -90,6 +90,10 @@ import { UpdateLineController } from './pages/Organization/Controllers/Line/Upda
 import { DepartmentListController } from './pages/Organization/Controllers/Department/DepartmentListController';
 import { CreateDepartmentController } from './pages/Organization/Controllers/Department/CreateDepartmentController';
 import { UpdateDepartmentController } from './pages/Organization/Controllers/Department/UpdateDepartmentController';
+import { TrainersController } from './pages/Trainers/Controllers/TrainersController';
+import { TrainersList } from './pages/Trainers/Controllers/TrainersList';
+import { CreateTrainers } from './pages/Trainers/Controllers/CreateTrainers';
+import { EditTrainers } from './pages/Trainers/Controllers/EditTrainers';
 
 
 export const Routes = () => {
@@ -212,11 +216,14 @@ export const Routes = () => {
                     UIRoute('create', CreateEducationController),
                     UIRoute('assigned', AssignedEducationListController),
                     UIRoute('assigned/:id', UpdateAssignedEducationController),
+                    UIRoute('assigned/:id/:id', UpdateAssignedEducationController),
                     UIRoute('assign', AssignEducationController),
+                    UIRoute('assign/:id', AssignEducationController),
                     UIRoute('plans', EducationPlansListController),
                     UIRoute('planed', CreateEducationPlanController),
                     UIRoute('plan-edit/:id', UpdateEducationPlanController),
                     UIRoute('edit/:id', UpdateEducationController),
+                    UIRoute('planed/:id', AssignedEducationListController),
                 ),
 
                 UIRoute('pending-task', PendindTasksController).children(
@@ -234,6 +241,13 @@ export const Routes = () => {
                 UIRoute('competency-dashboard', CompetencyDashboardController).children(
                     UIRoute('view/:id/:period', CompetencyDashboard),
                     UIRoute('view/:id', GlobalCompetencyDashboard)
+                ),
+
+                // trainers 
+                UIRoute('trainer', TrainersController).children(
+                    UIRoute('list', TrainersList),
+                    UIRoute('create', CreateTrainers),
+                    UIRoute('edit/:id', EditTrainers),
                 ),
 
                 UIRoute(

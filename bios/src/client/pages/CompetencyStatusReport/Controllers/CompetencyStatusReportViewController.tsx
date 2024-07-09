@@ -4,7 +4,7 @@ import { Query, Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { Views as ViewsMain } from "../../../components/Views";
 import { Views } from "../Views/Views";
-import { CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Autocomplete, TextField, Tooltip } from "@mui/material";
+import { CircularProgress, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, Autocomplete, TextField, Tooltip } from "@mui/material";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import getYearPeriods from "../../../assets/Functions/getYearPeriods";
@@ -22,10 +22,11 @@ import PolyvalenceUnitTableDataViewer from "../../../../server/hooks/polyvalence
 import Parameters from "../../../../server/hooks/parameters/main";
 import { Resources } from "../../../assets/Resources";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
-import { useAppDispatch } from "../../../hooks";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import IEmployeeDashboard from "../../../interfaces/IEmployeeDashboard";
 import { setEmployeeDashboard } from "../../../features/employeeDashboard";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { selectCompetencyStatusReport, setCompetencyStatusReport, setCompetencyStatusReportToNull } from "../../../features/competencyStatusReport";
 
 const resetForm = {
     polyvalence_table_id: "",
@@ -47,8 +48,13 @@ export class CompetencyStatusReportViewController extends UIController {
         const navigate = useNavigate();
 
         const dispatch = useAppDispatch();
+        const selector = useAppSelector;
         const setEmployeeDashboardToHook = (value: IEmployeeDashboard.IBase) => dispatch(setEmployeeDashboard(value));
 
+        const setCompetencyStatusReportToHook = (value: any) => dispatch(setCompetencyStatusReport(value));
+        const setCompetencyStatusReportNull = () => dispatch(setCompetencyStatusReportToNull());
+
+        const competencyStatusReport: any = selector(selectCompetencyStatusReport);
 
         return (
 
@@ -80,6 +86,47 @@ export class CompetencyStatusReportViewController extends UIController {
                             } else {
                                 setFilteredPolyTable(polyvalenceUnitList)
                             }
+                            if (competencyStatusReport !== null) {
+                                handleChangePolyvalenceTable({ target: { value: competencyStatusReport.polyvalence_table_id } } as any)
+                                setFormFilters({
+                                    ...formFilters,
+                                    polyvalence_table_id: competencyStatusReport.polyvalence_table_id,
+                                    evaluation_period: competencyStatusReport.evaluation_period
+                                })
+                                setEmployeePercentages([])
+
+                                setIsLoading(true);
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, [Query.limit(10000), Query.equal("polyvalence_table_id", competencyStatusReport.polyvalence_table_id), Query.equal("competency_evaluation_period", competencyStatusReport.evaluation_period),
+                                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")]).then((res) => {
+                                    const employeeCompetencyValues: IEmployeeCompetencyValue.IEmployeeCompetencyValue[] = res.documents as any[]
+                                    const employees: { employee_id: string, employee_name: string, targetTotal: number, realTotal: number }[] = []
+                                    employeeCompetencyValues.forEach((item) => {
+                                        const employee = employees.find((employee) => employee.employee_id === item.employee_id);
+                                        if (employee) {
+                                            employee.targetTotal += Number(item.competency_target_value)
+                                            employee.realTotal += Number(item.competency_real_value)
+                                        } else {
+                                            employees.push({
+                                                employee_id: item.employee_id,
+                                                employee_name: item.employee_name,
+                                                targetTotal: Number(item.competency_target_value),
+                                                realTotal: Number(item.competency_real_value)
+                                            })
+                                        }
+                                    })
+                                    const employeePercentageData = []
+                                    employees.forEach((employee) => {
+                                        employeePercentageData.push({
+                                            employee_id: employee.employee_id,
+                                            employee_name: employee.employee_name,
+                                            percentage: (employee.realTotal / employee.targetTotal) * 100
+                                        })
+                                    })
+                                    setEmployeePercentages(employeePercentageData.sort((a, b) => b.percentage - a.percentage))
+                                    setIsLoading(false);
+                                    setCompetencyStatusReportNull()
+                                })
+                            }
                         }, [])
 
                         const handleChangePolyvalenceTable = (e) => {
@@ -104,6 +151,12 @@ export class CompetencyStatusReportViewController extends UIController {
                         const getReport = async (e) => {
                             setEmployeePercentages([])
                             e.preventDefault();
+                            setCompetencyStatusReportToHook({
+                                polyvalence_table_id: formFilters.polyvalence_table_id,
+                                polycalence_table_name: polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_table_name,
+                                evaluation_period: formFilters.evaluation_period,
+                                frequency: polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
+                            })
                             setIsLoading(true);
                             const employeeCompetencyValues: IEmployeeCompetencyValue.IEmployeeCompetencyValue[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, [Query.limit(10000), Query.equal("polyvalence_table_id", formFilters.polyvalence_table_id), Query.equal("competency_evaluation_period", formFilters.evaluation_period),
                             Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")]).then((res) => res.documents as any[])
@@ -201,17 +254,6 @@ export class CompetencyStatusReportViewController extends UIController {
                                                         )}
                                                         fullWidth
                                                     />
-                                                    {/* <TextField
-                                                        name="percentage"
-                                                        label="Yüzdelik"
-                                                        size="small"
-                                                        required
-                                                        type="number"
-                                                        value={formFilters.percentage}
-                                                        onChange={(e) => {
-                                                            setFormFilters({ ...formFilters, percentage: e.target.value });
-                                                        }}
-                                                    /> */}
                                                     <Tooltip title="Filtrele">
                                                         <IconButton type="submit">
                                                             <FilterAltOutlinedIcon />

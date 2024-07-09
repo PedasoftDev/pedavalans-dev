@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 13,
+    "version": 14,
     "collections": [
         {
             "id": "competency",
@@ -1589,6 +1589,12 @@ const Database: IDatabase = {
                     "version": 9
                 },
                 {
+                    "key": "educational_status",
+                    "type": "string",
+                    "size": 256,
+                    "version": 14
+                },
+                {
                     "key": "department_start_date",
                     "type": "string",
                     "size": 256,
@@ -2050,6 +2056,19 @@ const Database: IDatabase = {
                     "size": 256,
                     "version": 1
                 },
+                {
+                    "key": "education_plan_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 14
+                },
+                {
+                    "key": "education_plan_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 14
+                },
+
                 {
                     "key": "start_date",
                     "type": "string",
@@ -2650,6 +2669,94 @@ const Database: IDatabase = {
                     "key": "competency_id",
                     "type": "string",
                     "size": 1024,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "trainers",
+            "name": "Trainers",
+            "description": {
+                "en": "Trainers is a collection of trainers.",
+                "tr": "Eğiticilerin koleksiyonudur."
+            },
+            "version": 14,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "trainer_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "trainer_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "trainer_educations",
+            "name": "Trainer Educations",
+            "description": {
+                "en": "Trainer Educations is a collection of trainer educations.",
+                "tr": "Eğiticilere bağlı olan eğitimlerin koleksiyonudur."
+            },
+            "version": 14,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "trainer_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "trainer_duty_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "trainer_duty_name",
+                    "type": "string",
+                    "size": 256,
                     "version": 1
                 },
                 {

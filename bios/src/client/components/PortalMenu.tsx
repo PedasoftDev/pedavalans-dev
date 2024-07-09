@@ -1,7 +1,7 @@
 import React, { Fragment, ReactElement, useEffect, useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
-import { GrCertificate } from "react-icons/gr";
+import { GrCertificate, GrUserWorker } from "react-icons/gr";
 import {
     useNavigate,
     ReactView,
@@ -138,6 +138,24 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     title: 'Çalışan Yetkinlik Karnesi',
                     link: '/app/competency-report-data/view',
                     icon: <TbReportAnalytics size={25} />,
+                    isVisible: true,
+                },
+            ],
+            isVisible: true,
+        },
+        {
+            title: 'Eğitim Yönetimi',
+            subMenu: [
+                {
+                    title: 'Eğitimler',
+                    link: '/app/education/list',
+                    icon: <MdOutlineLibraryBooks size={25} />,
+                    isVisible: true,
+                },
+                {
+                    title: 'Eğiticiler',
+                    link: '/app/trainer/list',
+                    icon: <GrUserWorker size={25} />,
                     isVisible: true,
                 },
             ],

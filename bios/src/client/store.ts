@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import assignEducation from './features/assignEducation'
 import pendingEvaluation from './features/pendingEvaluation'
 import employeeDashboard from './features/employeeDashboard'
-
+import competencyStatusReport from './features/competencyStatusReport';
 // ...
 
 const store: any = configureStore({
@@ -10,6 +10,7 @@ const store: any = configureStore({
     assignEducation: assignEducation,
     pendingEvaluation: pendingEvaluation,
     employeeDashboard: employeeDashboard,
+    competencyStatusReport: competencyStatusReport
   },
 })
 

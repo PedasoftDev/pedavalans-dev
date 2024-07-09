@@ -1,4 +1,4 @@
-import { ReactView, Spinner, UIFormController, UIView, UIViewBuilder, VStack, cTop, useNavigate } from "@tuval/forms";
+import { ReactView, Spinner, UIFormController, UIView, UIViewBuilder, VStack, cTop, useNavigate, useParams } from "@tuval/forms";
 import React, { useState } from "react";
 import {
     Button,
@@ -17,6 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import assignedEducationTemplate from "../../../components/email/AssignedEducationTemplate";
 import dayjs from "dayjs";
+import EducationPlan from "../../../../server/hooks/educationPlan/main";
 
 const resetForm: IAssignedEducation.ICreate = {
     education_code: "",
@@ -32,6 +33,7 @@ const resetForm: IAssignedEducation.ICreate = {
     employee_name: "",
     location: "",
     status: "open",
+    education_plan_id: "",
 };
 
 export class AssignEducationController extends UIFormController {
@@ -39,6 +41,7 @@ export class AssignEducationController extends UIFormController {
     public LoadView(): UIView {
 
         const navigate = useNavigate();
+        const { id } = useParams();
 
         const { me, isLoading } = useGetMe("console")
 
@@ -46,10 +49,11 @@ export class AssignEducationController extends UIFormController {
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();
+        const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingEducation || isLoadingEmployees || isLoadingAccounts ? VStack(Spinner()) :
+                isLoading || isLoadingEducation || isLoadingEmployees || isLoadingAccounts || isLoadingEducationPlan ? VStack(Spinner()) :
                     UIViewBuilder(() => {
 
                         const [form, setForm] = useState<IAssignedEducation.ICreate>(resetForm);
@@ -59,54 +63,103 @@ export class AssignEducationController extends UIFormController {
 
                         const handleSubmit = (e: React.FormEvent) => {
                             e.preventDefault();
-                            selectedEmployees.forEach((employee, _i) => {
-                                const createForm: IAssignedEducation.ICreate = {
-                                    education_code: form.education_code,
-                                    employee_id: employee.$id,
-                                    education_id: form.education_id,
-                                    education_name: form.education_name,
-                                    educator_id: form.educator_id,
-                                    educator_name: form.educator_name,
-                                    hour: form.hour,
-                                    employee_name: `${employee.first_name} ${employee.last_name}`,
-                                    start_date: form.start_date,
-                                    location: form.location,
-                                    end_date: form.end_date,
-                                    status: form.status,
-                                    tenant_id: me?.prefs?.organization
-                                }
-                                createAssignedEducation({
-                                    data: createForm
-                                }, async () => {
-                                    if (_i === selectedEmployees.length - 1) {
-                                        const account = accounts.find(x => x.$id === form.educator_id);
-                                        const emailTemplate = assignedEducationTemplate(selectedEmployees.map(x => `${x.first_name} ${x.last_name}`));
-                                        const key = await EmailBroker.Default.createKey({
-                                            smtpServer: "smtp-mail.outlook.com",
-                                            smtpPort: "587",
-                                            password: "V%443989818492ug",
-                                            username: "notification@pedabilisim.com",
-                                            tls: false
-                                        })
-                                        await EmailBroker.Default.setKey(key)
-                                            .sendEmail("notification@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
-                                                educatorName: form.educator_name,
-                                                code: form.education_code,
-                                                name: form.education_name,
-                                                hour: form.hour,
-                                                startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
-                                                endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
-                                            })
-                                        navigateToList();
+                            if (id) {
+                                selectedEmployees.forEach((employee, _i) => {
+                                    const createForm: IAssignedEducation.ICreate = {
+                                        education_code: form.education_code,
+                                        employee_id: employee.$id,
+                                        education_id: form.education_id,
+                                        education_name: form.education_name,
+                                        educator_id: form.educator_id,
+                                        educator_name: form.educator_name,
+                                        education_plan_id: id,
+                                        education_plan_name: educationPlanList.find((item) => item.education_plan_id === id).education_plan_name,
+                                        hour: form.hour,
+                                        employee_name: `${employee.first_name} ${employee.last_name}`,
+                                        start_date: form.start_date,
+                                        location: form.location,
+                                        end_date: form.end_date,
+                                        status: form.status,
+                                        tenant_id: me?.prefs?.organization
                                     }
+                                    createAssignedEducation({
+                                        data: createForm
+                                    }, async () => {
+                                        if (_i === selectedEmployees.length - 1) {
+                                            const account = accounts.find(x => x.$id === form.educator_id);
+                                            const emailTemplate = assignedEducationTemplate(selectedEmployees.map(x => `${x.first_name} ${x.last_name}`));
+                                            const key = await EmailBroker.Default.createKey({
+                                                smtpServer: "smtp-mail.outlook.com",
+                                                smtpPort: "587",
+                                                password: "V%443989818492ug",
+                                                username: "notification@pedabilisim.com",
+                                                tls: false
+                                            })
+                                            await EmailBroker.Default.setKey(key)
+                                                .sendEmail("notification@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
+                                                    educatorName: form.educator_name,
+                                                    code: form.education_code,
+                                                    name: form.education_name,
+                                                    hour: form.hour,
+                                                    startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
+                                                    endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
+                                                })
+                                            navigateToList();
+                                        }
+                                    })
                                 })
-                            })
+                            } else {
+                                selectedEmployees.forEach((employee, _i) => {
+                                    const createForm: IAssignedEducation.ICreate = {
+                                        education_code: form.education_code,
+                                        employee_id: employee.$id,
+                                        education_id: form.education_id,
+                                        education_name: form.education_name,
+                                        educator_id: form.educator_id,
+                                        educator_name: form.educator_name,
+                                        education_plan_id: null,
+                                        education_plan_name: null,
+                                        hour: form.hour,
+                                        employee_name: `${employee.first_name} ${employee.last_name}`,
+                                        start_date: form.start_date,
+                                        location: form.location,
+                                        end_date: form.end_date,
+                                        status: form.status,
+                                        tenant_id: me?.prefs?.organization
+                                    }
+                                    createAssignedEducation({
+                                        data: createForm
+                                    }, async () => {
+                                        if (_i === selectedEmployees.length - 1) {
+                                            const account = accounts.find(x => x.$id === form.educator_id);
+                                            const emailTemplate = assignedEducationTemplate(selectedEmployees.map(x => `${x.first_name} ${x.last_name}`));
+                                            const key = await EmailBroker.Default.createKey({
+                                                smtpServer: "smtp-mail.outlook.com",
+                                                smtpPort: "587",
+                                                password: "V%443989818492ug",
+                                                username: "notification@pedabilisim.com",
+                                                tls: false
+                                            })
+                                            await EmailBroker.Default.setKey(key)
+                                                .sendEmail("notification@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
+                                                    educatorName: form.educator_name,
+                                                    code: form.education_code,
+                                                    name: form.education_name,
+                                                    hour: form.hour,
+                                                    startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
+                                                    endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
+                                                })
+                                            navigateToList();
+                                        }
+                                    })
+                                })
+                            }
                         };
 
                         return (
                             ReactView(
                                 <Form
-                                    title="Yeni Eğitim Atayın"
+                                    title={id ? `${educationPlanList.find((item) => item.education_plan_id === id).education_plan_name} Eğitim Ata` : `Eğitim Ata`}
                                     form={
                                         <form
                                             style={{
