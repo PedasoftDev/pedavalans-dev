@@ -422,12 +422,12 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
     })
 
     // dogsan
-    const formNo = [
-        { v: 'Form No:18.08 rev.no:1', t: 's', s: { font: { bold: true }, alignment: { wrapText: true, ...alignCenter } } }
-    ]
+    // const formNo = [
+    //     { v: 'Form No:18.08 rev.no:1', t: 's', s: { font: { bold: true }, alignment: { wrapText: true, ...alignCenter } } }
+    // ]
 
-    appendData.push([]); // dogsan
-    appendData.push(formNo); // dogsan
+    // appendData.push([]); // dogsan
+    // appendData.push(formNo); // dogsan
 
 
     const ws = XLSX.utils.aoa_to_sheet(appendData);
