@@ -114,12 +114,6 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             isVisible: true,
         },
         {
-            title: 'Eğitimler',
-            link: '/app/education/list',
-            icon: <MdOutlineLibraryBooks size={25} />,
-            isVisible: true,
-        },
-        {
             title: 'Yetkinlik Değerlendirmeleri',
             subMenu: [
                 {
