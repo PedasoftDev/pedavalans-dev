@@ -98,14 +98,10 @@ export class UpdateVocationalQualificationTypeController extends UIController {
               data: form,
             },
             () => {
-              if (documentType.document_type_name !== form.document_type_name) {
-                PedavalansServiceBroker.Default.updateVocationQualificationTypeNames(id, form.document_type_name).then(() => {
-                  success()
-                  deleteCache();
-                })
-              } else {
+              PedavalansServiceBroker.Default.updateVocationQualificationTypeNames(id, form.document_type_name).then(() => {
                 success()
-              }
+                deleteCache();
+              })
             }
           )
         }
