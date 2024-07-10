@@ -36,6 +36,9 @@ import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import 'dayjs/locale/tr';
 import dayjs from "dayjs";
+import Trainers from "../../../../server/hooks/trainers/main";
+import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
+import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 
 
 import { useAppSelector, useAppDispatch } from "../../../hooks";
@@ -136,10 +139,14 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();
 
+
+        const { educationCompetencyRelationList, isLoading: isLoadingCompetencyRelations } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
+        const { trainersList, isLoadingTrainersList } = Trainers.GetList();
+        const { trainerEducationsList, isLoadingTrainerEducationsList } = TrainerEducations.GetList()
+
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods
-                || isLoadingEmployees || isLoadingGroups || isLoadingLevels || isLoadingCompetencyList
-                || isLoadingEducation || isLoadingAccounts
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingCompetencyRelations || isLoadingTrainerEducationsList || isLoadingEmployees
+                || isLoadingGroups || isLoadingLevels || isLoadingCompetencyList || isLoadingTrainersList || isLoadingEducation || isLoadingAccounts
                 ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
@@ -163,6 +170,8 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
                         const [selectedEmployees, setSelectedEmployees] = useState<typeof employees>([]);
                         const [openEducationDialog, setOpenEducationDialog] = useState(false);
+
+                        const [competencyEducationRelationship, setCompetencyEducationRelationship] = useState<boolean>(false);
 
                         const handleCloseEducationDialog = () => {
                             setOpenEducationDialog(false);
@@ -433,6 +442,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                         </IconButton>
                                         <IconButton color="primary" onClick={() => {
                                             handleOpenEducationDialog(params.row.employee_id)
+                                            setSelectedCompetencyId(params.row.competency_id)
                                         }}>
                                             <MdOutlineLibraryBooks title="Eğitim Planla" />
                                         </IconButton>
@@ -451,7 +461,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     Query.equal("tenant_id", me?.prefs?.organization)
                                 ]).then((res) => {
                                     setEmployeeCompetencyValue(res.documents as any[]);
-                                    competencyList.forEach((competency) => {
+                                    competencyList.filter(x => x.is_active_competency).forEach((competency) => {
                                         competencyDepartments.forEach((department) => {
                                             if (competency.competency_id === department.competency_id) {
                                                 const listItem = removeDollarProperties(competency);
@@ -501,6 +511,17 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                 setEmployeeCompetencyValue([])
                                 setAssignEducationNull();
                             }
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "competency_education_relationship"),
+                                    Query.limit(10000),
+                                ]
+                            ).then((res) => {
+                                setCompetencyEducationRelationship(res.documents[0]?.is_active)
+                            })
                         }, [])
 
                         return (
@@ -646,28 +667,62 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                     }}
                                                     onSubmit={handleSubmitEducationDialog}
                                                 >
-                                                    <Autocomplete
-                                                        options={educationList}
-                                                        value={educationList.find((education) => education.$id === form.education_id) || null}
-                                                        onChange={(event, newValue) => {
-                                                            setForm({
-                                                                ...form,
-                                                                education_id: newValue?.$id || "",
-                                                                education_name: newValue?.name || "",
-                                                                education_code: newValue?.code || ""
-                                                            });
-                                                        }}
-                                                        getOptionLabel={(option) => option.name}
-                                                        renderInput={(params) => (
-                                                            <TextField
-                                                                {...params}
-                                                                label="Eğitim"
-                                                                name="education_id"
-                                                                size="small"
-                                                                required
+                                                    {
+                                                        competencyEducationRelationship ? (
+                                                            <Autocomplete
+                                                                options={
+                                                                    educationCompetencyRelationList.filter((item) => item.competency_id === selectedCompetencyId).map((item) => educationList.find((education) => education.$id === item.education_id))
+                                                                }
+                                                                value={
+                                                                    educationList.find((education) => education.$id === form.education_id) || null
+                                                                }
+                                                                onChange={(event, newValue) => {
+                                                                    setForm({
+                                                                        ...form,
+                                                                        education_id: newValue?.$id || "",
+                                                                        education_name: newValue?.name || "",
+                                                                        education_code: newValue?.code || ""
+                                                                    });
+                                                                }}
+                                                                getOptionLabel={(option) => option.name}
+                                                                renderInput={(params) => (
+                                                                    <TextField
+                                                                        {...params}
+                                                                        label="Eğitim"
+                                                                        name="education_id"
+                                                                        size="small"
+                                                                        required
+                                                                    />
+                                                                )}
                                                             />
-                                                        )}
-                                                    />
+                                                        )
+                                                            :
+                                                            (
+                                                                <Autocomplete
+                                                                    options={educationList}
+                                                                    value={educationList.find((education) => education.$id === form.education_id) || null}
+                                                                    onChange={(event, newValue) => {
+                                                                        setForm({
+                                                                            ...form,
+                                                                            education_id: newValue?.$id || "",
+                                                                            education_name: newValue?.name || "",
+                                                                            education_code: newValue?.code || ""
+                                                                        });
+                                                                    }}
+                                                                    getOptionLabel={(option) => option.name}
+                                                                    renderInput={(params) => (
+                                                                        <TextField
+                                                                            {...params}
+                                                                            label="Eğitim"
+                                                                            name="education_id"
+                                                                            size="small"
+                                                                            required
+                                                                        />
+                                                                    )}
+                                                                />
+                                                            )
+                                                    }
+
                                                     <Autocomplete
                                                         multiple
                                                         disableCloseOnSelect
@@ -687,27 +742,62 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             setSelectedEmployees(newValue);
                                                         }}
                                                     />
-                                                    <Autocomplete
-                                                        options={accounts}
-                                                        value={accounts.find((account) => account.$id === form.educator_id) || null}
-                                                        onChange={(event, newValue) => {
-                                                            setForm({
-                                                                ...form,
-                                                                educator_id: newValue?.$id || "",
-                                                                educator_name: newValue?.name || ""
-                                                            });
-                                                        }}
-                                                        getOptionLabel={(option) => option.name}
-                                                        renderInput={(params) => (
-                                                            <TextField
-                                                                {...params}
-                                                                label="Eğitimci"
-                                                                name="educator_id"
-                                                                size="small"
-                                                                required
-                                                            />
-                                                        )}
-                                                    />
+                                                    {
+                                                        competencyEducationRelationship ?
+                                                            (
+                                                                <Autocomplete
+                                                                    options={
+                                                                        trainerEducationsList.filter((item) => item.trainer_duty_id === form.education_id).map((item) => trainersList.find((trainer) => trainer.id === item.trainer_id))
+                                                                    }
+                                                                    value={
+                                                                        trainersList.find((trainer) => trainer.id === form.educator_id) || null
+                                                                    }
+                                                                    onChange={(event, newValue) => {
+                                                                        setForm({
+                                                                            ...form,
+                                                                            educator_id: newValue?.id || "",
+                                                                            educator_name: newValue?.trainer_name || ""
+                                                                        });
+                                                                    }}
+                                                                    getOptionLabel={
+                                                                        (option) => option?.trainer_name
+                                                                    }
+                                                                    renderInput={(params) => (
+                                                                        <TextField
+                                                                            {...params}
+                                                                            label="Eğitimci"
+                                                                            name="educator_id"
+                                                                            size="small"
+                                                                            required
+                                                                        />
+                                                                    )}
+                                                                />
+                                                            ) :
+                                                            (
+
+                                                                <Autocomplete
+                                                                    options={accounts}
+                                                                    value={accounts.find((account) => account.$id === form.educator_id) || null}
+                                                                    onChange={(event, newValue) => {
+                                                                        setForm({
+                                                                            ...form,
+                                                                            educator_id: newValue?.$id || "",
+                                                                            educator_name: newValue?.name || ""
+                                                                        });
+                                                                    }}
+                                                                    getOptionLabel={(option) => option.name}
+                                                                    renderInput={(params) => (
+                                                                        <TextField
+                                                                            {...params}
+                                                                            label="Eğitimci"
+                                                                            name="educator_id"
+                                                                            size="small"
+                                                                            required
+                                                                        />
+                                                                    )}
+                                                                />
+                                                            )
+                                                    }
                                                     <div style={{
                                                         display: "flex",
                                                         gap: "10px",

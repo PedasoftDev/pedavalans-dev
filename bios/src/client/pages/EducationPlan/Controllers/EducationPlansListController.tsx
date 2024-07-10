@@ -56,13 +56,14 @@ export class EducationPlansListController extends UIFormController {
                             {
                                 field: "$id",
                                 headerName: "İşlemler",
-                                width: 200,
+                                width: 230,
                                 align: "center",
                                 renderCell: (params) => {
                                     return (
-                                        <div style={{ display: "flex", gap: "10px" }}>
+                                        <div style={{ display: "flex", gap: "3px" }}>
                                             {(accountRelations[0].is_admin || accountRelations[0].authorization_profile == "admin") &&
-                                                <Button size="small" variant="outlined" onClick={() => navigate(`/app/education/plan-edit/${params.value}`)}>Düzenle</Button>}
+                                                <Button size="small" variant="outlined" onClick={() => navigate(`/app/education/plan-edit/${params.value}`)}>Düzenle</Button>
+                                            }<Button size="small" variant="outlined" onClick={() => navigate(`/app/education/planed/${params.value}`)}>Atanan Eğitimler</Button>
                                         </div>
                                     )
                                 }

@@ -36,6 +36,8 @@ namespace Collections {
     export const CompetencyLineRelation = "competency_line_relation";
     export const PolyvalenceUnitPositionRelation = "polyvalence_unit_position_relation";
     export const CompetencyPositionRelation = "competency_position_relation";
+    export const Trainers = "trainers";
+    export const TrainerEducations = "trainer_educations";
 }
 
 export default Collections;

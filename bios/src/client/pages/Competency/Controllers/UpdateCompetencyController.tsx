@@ -291,6 +291,7 @@ export class UpdateCompetencyController extends UIController {
                                         is_deleted_competency: true
                                     }
                                 }, () => {
+                                    deleteCache();
                                     Toast.fire({
                                         icon: "success",
                                         title: "Yetkinlik başarıyla silindi."

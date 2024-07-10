@@ -1,7 +1,7 @@
 import React, { Fragment, ReactElement, useEffect, useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
-import { GrCertificate } from "react-icons/gr";
+import { GrCertificate, GrUserWorker } from "react-icons/gr";
 import {
     useNavigate,
     ReactView,
@@ -114,12 +114,6 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             isVisible: true,
         },
         {
-            title: 'Eğitimler',
-            link: '/app/education/list',
-            icon: <MdOutlineLibraryBooks size={25} />,
-            isVisible: true,
-        },
-        {
             title: 'Yetkinlik Değerlendirmeleri',
             subMenu: [
                 {
@@ -138,6 +132,24 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     title: 'Çalışan Yetkinlik Karnesi',
                     link: '/app/competency-report-data/view',
                     icon: <TbReportAnalytics size={25} />,
+                    isVisible: true,
+                },
+            ],
+            isVisible: true,
+        },
+        {
+            title: 'Eğitim Yönetimi',
+            subMenu: [
+                {
+                    title: 'Eğitimler',
+                    link: '/app/education/list',
+                    icon: <MdOutlineLibraryBooks size={25} />,
+                    isVisible: true,
+                },
+                {
+                    title: 'Eğiticiler',
+                    link: '/app/trainer/list',
+                    icon: <GrUserWorker size={25} />,
                     isVisible: true,
                 },
             ],
@@ -393,7 +405,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                 </div>
                                 <div style={{ flexGrow: '1' }}></div>
                                 <span style={{ fontFamily: 'Poppins', fontSize: '10px' }}>
-                                    v1.2.0
+                                {Resources.version}
                                 </span>
                             </div>
                         </NavbarDiv>
@@ -659,7 +671,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                             <span
                                                 style={{ fontFamily: 'Poppins', fontSize: '10px' }}
                                             >
-                                                v1.2.0
+                                                {Resources.version}
                                             </span>
                                         </div>
                                     </NavbarDiv>

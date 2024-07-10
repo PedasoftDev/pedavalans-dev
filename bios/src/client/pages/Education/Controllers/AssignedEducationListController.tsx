@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
-import { HStack, ReactView, Spinner, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate } from "@tuval/forms";
+import { HStack, ReactView, Spinner, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useParams } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Views } from "../../../components/Views";
 import StyledDataGrid from "../../../components/StyledDataGrid";
@@ -22,11 +22,27 @@ import getEducationReportToExcel from "../../../assets/Functions/getEducationRep
 import Education from "../../../../server/hooks/education/main";
 import Competency from "../../../../server/hooks/competency/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
+import EducationPlan from "../../../../server/hooks/educationPlan/main";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import styled from "styled-components";
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
 
 export class AssignedEducationListController extends UIFormController {
 
 
     public LoadView(): UIView {
+        const { id } = useParams();
 
         const dispatch = useAppDispatch();
         const selector = useAppSelector;
@@ -42,11 +58,13 @@ export class AssignedEducationListController extends UIFormController {
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { educationCompetencyRelationList, isLoading: isLoadingRelation } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
 
+        const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
+
         const [rowsActive, setRowsActive] = useState(true);
         const [filterKey, setFilterKey] = useState("");
 
         return (
-            isLoading || isLoadingResult || isLoadingAssignedEducationResultList || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
+            isLoading || isLoadingResult || isLoadingAssignedEducationResultList || isLoadingEducationPlan || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
@@ -199,7 +217,8 @@ export class AssignedEducationListController extends UIFormController {
                                                 İncele
                                             </Button>
                                             {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
-                                                <Button onClick={() => navigate(`/app/education/assigned/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
+                                                id ? <Button onClick={() => navigate(`/app/education/assigned/${id}/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
+                                                : <Button onClick={() => navigate(`/app/education/assigned/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
                                             }
                                         </div>
                                     )
@@ -244,7 +263,11 @@ export class AssignedEducationListController extends UIFormController {
                         return (
                             VStack({ spacing: 15, alignment: cTopLeading })(
                                 HStack({ alignment: cLeading })(
-                                    Views.Title("Atanan Eğitimler").paddingTop("10px")
+                                    Views.Title(
+                                        id ?
+                                            `${educationPlanList.find((item) => item.education_plan_id === id).education_plan_name} - Atanan Eğitimler`
+                                            : "Atanan Eğitimler"
+                                    )
                                 ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                                 HStack({ alignment: cTop })(
                                     ReactView(
@@ -281,6 +304,7 @@ export class AssignedEducationListController extends UIFormController {
                                                     </div>
                                                 </DialogContent>
                                                 <DialogActions>
+                                                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
                                                     <Button onClick={handleCloseDialog} color='error' variant='contained'>İptal</Button>
                                                     {!assignedEducationResultList.find((item) => item.assigned_education_id === selectedAssinedEducationId) &&
                                                         <Button variant='contained' color='primary' onClick={handleSubmitDialog}>Kaydet</Button>}
@@ -310,14 +334,22 @@ export class AssignedEducationListController extends UIFormController {
                                                     display: "flex",
                                                     gap: "10px"
                                                 }}>
-                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assign")}>Yeni Eğitim Ata</Button>
+                                                    {
+                                                        id ?
+                                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate(`/app/education/assign/${id}`)}>Yeni Eğitim Ata</Button>
+                                                            :
+                                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assign")}>Yeni Eğitim Ata</Button>
+                                                    }
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/plans")}>Eğitim Planları</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>
                                                 <StyledDataGrid
-                                                    rows={assignedEducationList.filter((item) => item.is_active === rowsActive).filter((item) => item.education_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
+                                                    rows={
+                                                        id ? assignedEducationList.filter((item) => item.education_plan_id === id && item.is_active === rowsActive && (item.education_name.toLowerCase().includes(filterKey.toLowerCase()))) :
+                                                            assignedEducationList.filter((item) => item.is_active === rowsActive && item.education_plan_id === null).filter((item) => item.education_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                                                    }
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}

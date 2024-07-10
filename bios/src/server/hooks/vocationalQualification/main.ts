@@ -43,7 +43,7 @@ namespace VocationalQualification {
   export const Get = (
     id: string
   ): {
-    documentList: IVocationalQualification.IBase
+    document: IVocationalQualification.IBase
     isLoadingDocument: boolean
   } => {
     const { document, isLoading } = useGetDocument({
@@ -53,7 +53,7 @@ namespace VocationalQualification {
       documentId: id,
     })
     return {
-      documentList: document as any,
+      document: document as any,
       isLoadingDocument: isLoading,
     }
   }

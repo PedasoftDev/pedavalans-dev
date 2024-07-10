@@ -252,7 +252,7 @@ export class CompetencyListController extends UIController {
                     const columns: GridColDef[] = [
                         {
                             field: "competency_name",
-                            headerName: "Yetkinlik Adı",
+                            headerName: "Yetkinlik Adı" + (rowsActive ? " (Aktif)" : " (Pasif)"),
                             minWidth: 200,
                             editable: false,
                             disableColumnMenu: true,

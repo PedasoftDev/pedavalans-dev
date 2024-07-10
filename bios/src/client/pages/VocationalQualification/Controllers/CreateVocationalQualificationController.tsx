@@ -13,22 +13,11 @@ import React, { useState } from 'react'
 import {
   Button,
   TextField,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
   FormControl,
-  InputLabel,
-  Typography,
-  Switch,
-  FormControlLabel,
   Autocomplete,
 } from '@mui/material'
 import { useGetMe } from '@realmocean/sdk'
-import Competency from '../../../../server/hooks/competency/main'
-import { Resources } from '../../../assets/Resources'
 import Form from '../../Competency/Views/Form'
-import StyledDataGrid from '../../../components/StyledDataGrid'
-import { GridColDef, trTR } from '@mui/x-data-grid'
 
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
 import { Toast } from '../../../components/Toast'
@@ -73,14 +62,14 @@ export class CreateVocationalQualificationController extends UIFormController {
           const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault()
 
-            if (documentGetList.filter((document) => document.document_code === form.document_code).length > 0) {
+            if (documentGetList.find((document) => document.document_code === form.document_code)) {
               Toast.fire({
                 icon: 'error',
-                title: 'Bu yeterlilik belge kodu zaten mevcut!',
+                title: 'Bu belge kodu zaten mevcut!',
               })
               return
             }
-            
+
 
             Toast.fire({
               icon: "info",

@@ -6,7 +6,6 @@ import {
   UIViewBuilder,
   VStack,
   cTop,
-  nanoid,
   useEffect,
   useNavigate,
   useParams,
@@ -32,6 +31,7 @@ import AppInfo from '../../../../AppInfo'
 import IVocationalQualification from '../../../interfaces/IVocationalQualification'
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
+import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker'
 
 const formReset: IVocationalQualification.IBase = {
   document_id: '',
@@ -51,27 +51,26 @@ export class UpdateVocationalQualificationController extends UIController {
 
     const { me, isLoading } = useGetMe('console')
 
-    const { documentList, isLoadingDocument } = VocationalQualification.Get(id)
-    const { documentGetList } = VocationalQualification.GetList(me?.prefs?.organization)
+    const { document, isLoadingDocument } = VocationalQualification.Get(id)
+    const { documentGetList, isLoading: isLoadingDocuments } = VocationalQualification.GetList(me?.prefs?.organization)
     const { updateVQ } = VocationalQualification.Update()
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
 
     const { documentTypeGetList } = VocationalQualificationType.GetList(me?.prefs?.organization)
 
-    return isLoading || isLoadingDocument
-      ? VStack(Spinner())
+    return isLoading || isLoadingDocument || isLoadingDocuments ? VStack(Spinner())
       : UIViewBuilder(() => {
         const [form, setForm] = useState<IVocationalQualification.IBase>(formReset)
         const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
         const [isActive, setIsActive] = useState<boolean>(true)
 
         useEffect(() => {
-          setForm(removeDollarProperties(documentList))
+          setForm(removeDollarProperties(document))
 
-          setIsActive(documentList.is_active)
+          setIsActive(document.is_active)
 
-          if (documentList.document_validity_period === "Süresiz") {
+          if (document.document_validity_period === "Süresiz") {
             setShowValidityPeriod(false);
           } else {
             setShowValidityPeriod(true);
@@ -82,28 +81,16 @@ export class UpdateVocationalQualificationController extends UIController {
           setForm({ ...form, [e.target.name]: e.target.value })
         }
 
-        const handleSelectType = (e: SelectChangeEvent<string>) => {
-          const selectedValue = e.target.value;
-          const selectedDocumentType = documentTypeGetList.find((type) => type.document_type_id === selectedValue);
-
-          if (selectedDocumentType.document_is_validity_period === "VAR") {
-            setShowValidityPeriod(true);
-            setForm({
-              ...form,
-              [e.target.name]: selectedValue,
-              document_type_name: selectedDocumentType.document_type_name, document_validity_period: ""
-            });
-          } else {
-            setShowValidityPeriod(false);
-            setForm({
-              ...form, [e.target.name]: selectedValue, document_type_name: selectedDocumentType.document_type_name,
-              document_validity_period: "Süresiz"
-            });
-          }
-        };
-
         const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault()
+
+          if (documentGetList.find((document) => document.document_code === form.document_code && document.document_id !== id)) {
+            Toast.fire({
+              icon: 'error',
+              title: 'Belge kodu zaten tanımlı.',
+            })
+            return;
+          }
 
           Toast.fire({
             icon: 'info',
@@ -119,11 +106,21 @@ export class UpdateVocationalQualificationController extends UIController {
               data: form,
             },
             () => {
-              Toast.fire({
-                icon: 'success',
-                title: 'Mesleki Yeterlilik başarıyla düzenlendi.',
-              })
-              navigate('/app/vocational-qualification/list')
+              if (form.document_name !== document.document_name) {
+                PedavalansServiceBroker.Default.updateVocationQualificationNames(id, form.document_name).then((res) => {
+                  Toast.fire({
+                    icon: 'success',
+                    title: 'Mesleki Yeterlilik başarıyla düzenlendi.',
+                  })
+                  navigate('/app/vocational-qualification/list')
+                })
+              } else {
+                Toast.fire({
+                  icon: 'success',
+                  title: 'Mesleki Yeterlilik başarıyla düzenlendi.',
+                })
+                navigate('/app/vocational-qualification/list')
+              }
             }
           )
         }

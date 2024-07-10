@@ -9,6 +9,8 @@ namespace IAssignedEducation {
         employee_name: string;
         educator_id: string;
         educator_name: string;
+        education_plan_id?: string;
+        education_plan_name?: string;
         start_date: string;
         end_date: string;
         hour: string;
@@ -25,6 +27,8 @@ namespace IAssignedEducation {
         employee_name: string;
         educator_id: string;
         educator_name: string;
+        education_plan_id?: string;
+        education_plan_name?: string;
         start_date: string;
         end_date: string;
         hour: string;

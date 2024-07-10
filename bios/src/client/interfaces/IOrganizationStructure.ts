@@ -21,6 +21,7 @@ export namespace IOrganizationStructure {
             phone: string;
             tenant_id: string;
             realm_id: string;
+            educational_status?: string;
         }
 
         export interface IEmployee extends IRoot {
@@ -42,6 +43,7 @@ export namespace IOrganizationStructure {
             is_deleted: boolean;
             tenant_id: string;
             realm_id: string;
+            educational_status?: string;
         }
 
     }

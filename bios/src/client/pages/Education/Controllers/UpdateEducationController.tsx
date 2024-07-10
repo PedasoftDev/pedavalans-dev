@@ -10,6 +10,8 @@ import {
   InputLabel,
   Typography,
   Autocomplete,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import { useDeleteCache, useGetMe } from "@realmocean/sdk";
 import Competency from "../../../../server/hooks/competency/main";
@@ -68,10 +70,6 @@ export class UpdateEducationController extends UIFormController {
               setForm({ ...form, [e.target.name]: e.target.value });
             };
 
-            const handleChangeSelect = (event: SelectChangeEvent<any>) => {
-              setForm({ ...form, [event.target.name]: event.target.value });
-            };
-
             const handleSubmit = (e: React.FormEvent) => {
               e.preventDefault();
 
@@ -122,6 +120,14 @@ export class UpdateEducationController extends UIFormController {
                     }
                   })
                 })
+                if (educationCompetencyRelation.length === 0) {
+                  Toast.fire({
+                    icon: "success",
+                    title: "Eğitim başarıyla güncellendi!"
+                  });
+                  deleteCache();
+                  navigateToList();
+                }
               })
 
 
@@ -183,7 +189,7 @@ export class UpdateEducationController extends UIFormController {
                       }}>
                         <Typography variant="button" sx={{ marginLeft: "10px" }}>İlişkili Yetkinlikler</Typography>
                         <StyledDataGrid
-                          rows={competencyList}
+                          rows={competencyList.filter(x => x.is_active_competency)}
                           columns={columns}
                           getRowId={(row) => row.$id}
                           localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
@@ -214,6 +220,13 @@ export class UpdateEducationController extends UIFormController {
                             required
                           />
                         )}
+                      />
+                      <FormControlLabel
+                        sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}
+                        onChange={(e: any) => setForm({ ...form, is_active: e.target.checked })}
+                        control={<Switch color="primary" checked={form.is_active} />}
+                        label="Aktif mi?"
+                        labelPlacement="start"
                       />
                       <div
                         style={{

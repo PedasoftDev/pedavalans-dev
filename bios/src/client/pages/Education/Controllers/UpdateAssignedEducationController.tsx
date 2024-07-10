@@ -30,6 +30,8 @@ const resetForm: IAssignedEducation.IBase = {
   education_id: "",
   education_name: "",
   hour: "0:00",
+  education_plan_id: "",
+  education_plan_name: "",
   location: "",
   educator_name: "",
   employee_name: "",

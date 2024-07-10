@@ -61,7 +61,6 @@ export class CreateEducationController extends UIFormController {
 
                         const handleSubmit = (e: React.FormEvent) => {
                             e.preventDefault();
-                            if (form.relatedCompetencies.length === 0) return;
 
                             if (educationList.some((education) => education.code === form.code)) {
                                 Toast.fire({
@@ -152,7 +151,7 @@ export class CreateEducationController extends UIFormController {
                                             }}>
                                                 <Typography variant="button" sx={{ marginLeft: "10px" }}>İlişkili Yetkinlikler</Typography>
                                                 <StyledDataGrid
-                                                    rows={competencyList}
+                                                    rows={competencyList.filter(x=> x.is_active_competency)}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}

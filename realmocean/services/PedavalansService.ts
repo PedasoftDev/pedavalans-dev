@@ -148,7 +148,7 @@ interface ICompetencyWithDepartment extends ICompetency {
 }
 
 
-interface IVocationalQualification {
+interface IVocationalQualification extends IRoot {
   document_id: string
   document_code: string
   document_name: string
@@ -158,7 +158,7 @@ interface IVocationalQualification {
   is_active: boolean
   is_deleted: boolean
 }
-interface IOrganizationEmployeeDocument {
+interface IOrganizationEmployeeDocument extends IRoot {
   employee_id: string
   document_id: string
   document_name: string
@@ -269,6 +269,18 @@ class PedavalansService extends RealmoceanService {
       }
     });
 
+    router.post("/com.pedavalans.service.main/updateVocationQualificationNames", async (req, res) => {
+      const { documentId, documentName } = req.body;
+
+      try {
+        const result = await this.updateVocationQualificationNames(documentId, documentName);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    })
+
 
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
@@ -277,20 +289,31 @@ class PedavalansService extends RealmoceanService {
   }
 
   async updateVocationQualificationTypeNames(documentTypeId: string, documentTypeName: string): Promise<any> {
-    const vocationalQualifications: IVocationalQualification[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.VocationalQualification, [this.databaseService.Query.equal("document_type_id", documentTypeId)]).then((res) => res.documents);
-    const employeeVocationalQualificationDocuments: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument, [this.databaseService.Query.equal("document_type_id", documentTypeId)]).then((res) => res.documents);
+    const vocationalQualifications: IVocationalQualification[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.VocationalQualification, [this.databaseService.Query.equal("document_type_id", documentTypeId), this.databaseService.Query.limit(10000)]).then((res) => res.documents);
+    const employeeVocationalQualificationDocuments: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument, [this.databaseService.Query.equal("document_type_id", documentTypeId), this.databaseService.Query.limit(10000)]).then((res) => res.documents);
 
-    vocationalQualifications.forEach(async (vocationalQualification) => {
+    for (const vocationalQualification of vocationalQualifications) {
       try {
         await this.databaseService.updateDocument(this.appName, this.databaseName, this.VocationalQualification, vocationalQualification.$id, { document_type_name: documentTypeName });
       } catch (error) {
         console.log(error);
       }
-    })
+    }
 
-    employeeVocationalQualificationDocuments.forEach(async (employeeVocationalQualificationDocument) => {
+    for (const employeeVocationalQualificationDocument of employeeVocationalQualificationDocuments) {
       try {
         await this.databaseService.updateDocument(this.appName, this.databaseName, this.OrganizationEmployeeDocument, employeeVocationalQualificationDocument.$id, { document_type_name: documentTypeName });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  async updateVocationQualificationNames(documentId: string, documentName: string) {
+    const employeeVocationalQualificationDocuments: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument, [this.databaseService.Query.equal("document_id", documentId), this.databaseService.Query.limit(10000)]).then((res) => res.documents);
+    employeeVocationalQualificationDocuments.forEach(async (employeeVocationalQualificationDocument) => {
+      try {
+        await this.databaseService.updateDocument(this.appName, this.databaseName, this.OrganizationEmployeeDocument, employeeVocationalQualificationDocument.$id, { document_name: documentName });
       } catch (error) {
         console.log(error);
       }

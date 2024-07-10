@@ -6,6 +6,7 @@ import { themeColor as _themeColor } from "./Colors/themeColor";
 import { formatDate as _formatDate } from "./Functions/formatDate";
 
 export namespace Resources {
+    export const version = "v1.2.1.05"
     export namespace Colors {
         export const colorTextField = _colorTextField;
         export const themeColor = _themeColor;
@@ -41,7 +42,8 @@ export namespace Resources {
         machine_based_polyvalence_management: "machine_based_polyvalence_management",
         line_based_competency_relationship: "line_based_competency_relationship",
         polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
-        reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables"
+        reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables",
+        competency_education_relationship: "competency_education_relationship"
     }
 
     export const Parameters = [
@@ -68,6 +70,11 @@ export namespace Resources {
         {
             name: "Veri girişi yapılmayan tablolar için hatırlatma maili gönderilsin mi?",
             localStr: "reminder_mail_for_unfilled_tables",
+            type: "boolean",
+        },
+        {
+            name: "Yetkinlik-Eğitim İlişkisi Kurulacak mı?",
+            localStr: "competency_education_relationship",
             type: "boolean",
         }
     ];

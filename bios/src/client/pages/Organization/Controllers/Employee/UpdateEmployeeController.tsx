@@ -41,6 +41,7 @@ const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   title_id: '',
   manager_id: '',
   phone: '',
+  educational_status: '',
   position_start_date: '',
   realm_id: '',
   tenant_id: '',
@@ -469,6 +470,25 @@ export class UpdateEmployeeController extends UIController {
                                 >
                                   <MenuItem value="male">Erkek</MenuItem>
                                   <MenuItem value="female">Kadın</MenuItem>
+                                </Select>
+                              </FormControl>
+                              <FormControl fullWidth size="small">
+                                <InputLabel>Eğitim Durumu</InputLabel>
+                                <Select
+                                  value={formEmployee.educational_status}
+                                  label={"Eğitim Durumu"}
+                                  onChange={(e: SelectChangeEvent) => {
+                                    setFormEmployee({
+                                      ...formEmployee,
+                                      educational_status: e.target.value as string
+                                    })
+                                  }}
+                                  size="small"
+                                >
+                                  <MenuItem value="elementary school">İlkokul</MenuItem>
+                                  <MenuItem value="secondary school">Ortaokul</MenuItem>
+                                  <MenuItem value="high school">Lise</MenuItem>
+                                  <MenuItem value="university">Üniversite</MenuItem>
                                 </Select>
                               </FormControl>
                               {selectFormStates.map((selectFormState) =>
