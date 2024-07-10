@@ -59,5 +59,18 @@ export class PedavalansServiceBroker extends ServiceBroker<any> {
     }, payload);
   }
 
+  async updateVocationQualificationNames(documentId: string, documentName: string): Promise<any> {
+
+    let path = '/updateVocationQualificationNames';
+    let payload: Payload = {};
+    payload['documentId'] = documentId;
+    payload['documentName'] = documentName;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+  }
+
 
 }

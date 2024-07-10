@@ -36,9 +36,9 @@ import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import 'dayjs/locale/tr';
 import dayjs from "dayjs";
-import Trainers from "../../../../server/hooks/trainers/Main";
+import Trainers from "../../../../server/hooks/trainers/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
-import TrainerEducations from "../../../../server/hooks/trainerEducations/Main";
+import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 
 
 import { useAppSelector, useAppDispatch } from "../../../hooks";
@@ -461,7 +461,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     Query.equal("tenant_id", me?.prefs?.organization)
                                 ]).then((res) => {
                                     setEmployeeCompetencyValue(res.documents as any[]);
-                                    competencyList.forEach((competency) => {
+                                    competencyList.filter(x => x.is_active_competency).forEach((competency) => {
                                         competencyDepartments.forEach((department) => {
                                             if (competency.competency_id === department.competency_id) {
                                                 const listItem = removeDollarProperties(competency);

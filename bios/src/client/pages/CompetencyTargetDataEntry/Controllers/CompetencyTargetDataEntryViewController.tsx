@@ -385,7 +385,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                     Query.equal("tenant_id", me?.prefs?.organization)
                                 ]).then((res) => {
                                     setEmployeeCompetencyValue(res.documents as any[]);
-                                    competencyList.forEach((competency) => {
+                                    competencyList.filter(x => x.is_active_competency).forEach((competency) => {
                                         competencyDepartments.forEach((department) => {
                                             if (competency.competency_id === department.competency_id) {
                                                 const listItem = removeDollarProperties(competency);

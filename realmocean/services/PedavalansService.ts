@@ -148,7 +148,7 @@ interface ICompetencyWithDepartment extends ICompetency {
 }
 
 
-interface IVocationalQualification {
+interface IVocationalQualification extends IRoot {
   document_id: string
   document_code: string
   document_name: string
@@ -158,7 +158,7 @@ interface IVocationalQualification {
   is_active: boolean
   is_deleted: boolean
 }
-interface IOrganizationEmployeeDocument {
+interface IOrganizationEmployeeDocument extends IRoot {
   employee_id: string
   document_id: string
   document_name: string
@@ -269,6 +269,18 @@ class PedavalansService extends RealmoceanService {
       }
     });
 
+    router.post("/com.pedavalans.service.main/updateVocationQualificationNames", async (req, res) => {
+      const { documentId, documentName } = req.body;
+
+      try {
+        const result = await this.updateVocationQualificationNames(documentId, documentName);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    })
+
 
 
     this.scheduleService.addJob('0 0 * * * *', async () => {
@@ -291,6 +303,17 @@ class PedavalansService extends RealmoceanService {
     employeeVocationalQualificationDocuments.forEach(async (employeeVocationalQualificationDocument) => {
       try {
         await this.databaseService.updateDocument(this.appName, this.databaseName, this.OrganizationEmployeeDocument, employeeVocationalQualificationDocument.$id, { document_type_name: documentTypeName });
+      } catch (error) {
+        console.log(error);
+      }
+    })
+  }
+
+  async updateVocationQualificationNames(documentId: string, documentName: string) {
+    const employeeVocationalQualificationDocuments: IOrganizationEmployeeDocument[] = await this.databaseService.listDocuments(this.appName, this.databaseName, this.OrganizationEmployeeDocument, [this.databaseService.Query.equal("document_id", documentId)]).then((res) => res.documents);
+    employeeVocationalQualificationDocuments.forEach(async (employeeVocationalQualificationDocument) => {
+      try {
+        await this.databaseService.updateDocument(this.appName, this.databaseName, this.OrganizationEmployeeDocument, employeeVocationalQualificationDocument.$id, { document_name: documentName });
       } catch (error) {
         console.log(error);
       }

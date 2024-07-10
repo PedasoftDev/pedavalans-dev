@@ -9,7 +9,7 @@ import {
     useNavigate,
     VStack,
 } from '@tuval/forms';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Form from '../Views/Form';
 import { Autocomplete, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { GridColDef, trTR } from '@mui/x-data-grid';
@@ -29,6 +29,7 @@ import PolyvalenceUnitTableDataViewer from '../../../../server/hooks/polyvalence
 import PolyvalenceUnitTableDataResponsible from '../../../../server/hooks/polyvalenceUnitTableDataResponsible/main';
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import PolyvalenceUnitPositionRelation from '../../../../server/hooks/polyvalenceUnitPositionRelation/main';
+import AccountRelation from '../../../../server/hooks/accountRelation/main';
 
 // Değerlendirme Sıklığı için
 const evaluationFrequency = [
@@ -55,6 +56,7 @@ export class CreatePolyvalenceUnitController extends UIController {
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { accountRelations, isLoadingResult: isLoadingAccountRelations } = AccountRelation.GetList(me?.prefs?.organization);
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const { createPolyvalenceUnit } = PolyvalenceUnit.Create();
@@ -72,7 +74,7 @@ export class CreatePolyvalenceUnitController extends UIController {
         const { createPolyvalenceUnitPositionRelation } = PolyvalenceUnitPositionRelation.Create();
 
         return (
-            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingParameter || isLoadingPositions || isLoadingLines || isLoadingTableAuth ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingAccountRelations || isLoadingParameter || isLoadingPositions || isLoadingLines || isLoadingTableAuth ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [form, setForm] = useState<IPolyvalenceUnit.ICreatePolyvalenceUnit>({
@@ -91,6 +93,8 @@ export class CreatePolyvalenceUnitController extends UIController {
                     const [selectedViewerAccounts, setSelectedViewerAccounts] = useState<string[]>([])
 
                     const [selectedLine, setSelectedLine] = useState<string>("")
+
+                    const [accountsData, setAccountsData] = useState<typeof accounts>([])
 
                     const responseFunc = useCallback(() => {
                         Toast.fire({
@@ -192,6 +196,16 @@ export class CreatePolyvalenceUnitController extends UIController {
                             flex: 1
                         },
                     ]
+
+                    useEffect(() => {
+                        const accountsDataCpy = []
+                        accountRelations.forEach((accountRelation) => {
+                            if (accountRelation.is_active) {
+                                accountsDataCpy.push(accounts.find((account) => account.$id === accountRelation.account_id))
+                            }
+                        })
+                        setAccountsData(accountsDataCpy)
+                    }, [])
 
                     return (
                         VStack({ alignment: cTop })(
@@ -296,7 +310,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                 }}>
                                                     <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
                                                     <StyledDataGrid
-                                                        rows={accounts.filter((account) => !selectedViewerAccounts.includes(account.$id))}
+                                                        rows={accountsData.filter((account) => !selectedViewerAccounts.includes(account.$id))}
                                                         columns={accountColumns}
                                                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                         isCellEditable={() => false}
@@ -322,7 +336,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                 }}>
                                                     <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
                                                     <StyledDataGrid
-                                                        rows={accounts.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
+                                                        rows={accountsData.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
                                                         columns={accountColumns}
                                                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                         isCellEditable={() => false}
