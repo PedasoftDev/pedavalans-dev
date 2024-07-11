@@ -252,7 +252,7 @@ export class CompetencyListController extends UIController {
                     const columns: GridColDef[] = [
                         {
                             field: "competency_name",
-                            headerName: "Yetkinlik Adı" + (rowsActive ? " (Aktif)" : " (Pasif)"),
+                            headerName: "Yetkinlik Adı",
                             minWidth: 200,
                             editable: false,
                             disableColumnMenu: true,
@@ -327,7 +327,7 @@ export class CompetencyListController extends UIController {
                     return (
                         VStack({ spacing: 15, alignment: cTopLeading })(
                             HStack({ alignment: cLeading })(
-                                Views.Title("Yetkinlikler").paddingTop("10px")
+                                Views.Title(rowsActive ? "Yetkinlikler" : "Pasif Yetkinlikler").paddingTop("10px")
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             HStack({ alignment: cTop })(
                                 ReactView(

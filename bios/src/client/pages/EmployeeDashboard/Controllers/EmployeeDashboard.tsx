@@ -94,8 +94,7 @@ export class EmployeeDashboard extends UIController {
 
     const { employeeLog, isLoadingEmployeeLog } = OrganizationStructureEmployeeLog.ListByEmployeeId(employeeDashboardState.$id)
     const { organizationEmployeeDocumentList, isLoading: employeeDocumentLoading } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
-    const { polyvalenceUnit, isLoadingPolyvalenceUnit } = PolyvalenceUnit.Get(employeeDashboardState.polyvalence_table_id)
-    const { activeGroups, isLoading: activeGroupsLoading } = CompetencyGroup.GetActiveCompetencyGroups()
+
 
 
 
@@ -108,6 +107,7 @@ export class EmployeeDashboard extends UIController {
       skills: '',
       startDate: '',
     }
+
     const EducationInfos = {
       educationName: '',
     }
@@ -177,16 +177,10 @@ export class EmployeeDashboard extends UIController {
 
 
 
-    return isLoading ||
-      isLoadingDepartment ||
-      isLoadingPosition ||
-      isLoadingCompetencyDepartmentList ||
-      isLoadingListEmployeeCompetencyValue ||
-      isLoadingAssignedEducationList ||
-      isLoadingEmployeeLog || isLoadingCompetencyList || employeeDocumentLoading || isLoadingPolyvalenceUnit || activeGroupsLoading
-
-      ? VStack(Spinner())
-      : UIViewBuilder(() => {
+    return isLoading || isLoadingDepartment || isLoadingPosition || isLoadingCompetencyDepartmentList || isLoadingListEmployeeCompetencyValue
+      || isLoadingAssignedEducationList || isLoadingEmployeeLog || isLoadingCompetencyList || employeeDocumentLoading ? VStack(Spinner())
+      :
+      UIViewBuilder(() => {
         const employeeChartInfos = {
           employee_id: employeeDashboardState.$id,
           employee_name: employeeDashboardState.first_name + ' ' + employeeDashboardState.last_name,
@@ -203,10 +197,7 @@ export class EmployeeDashboard extends UIController {
           )
             .then((res) => {
               setEmployee({
-                name:
-                  res.first_name +
-                  ' ' +
-                  res.last_name,
+                name: res.first_name + ' ' + res.last_name,
                 avatar: null,
                 position: res.position_id,
                 department: res.department_id,
@@ -229,10 +220,8 @@ export class EmployeeDashboard extends UIController {
                   totalValue += Number(element.competency_real_value)
                   totalTargetValue += Number(element.competency_target_value)
                 })
-                const averagePercentage =
-                  (100 * totalValue) / totalTargetValue || 0
+                const averagePercentage = (100 * totalValue) / totalTargetValue || 0
                 setEmployeeGaugeValue(averagePercentage)
-
                 let totalBarValue = 0
                 let totalPiece = 0
                 res.documents.forEach((element) => {
@@ -245,10 +234,7 @@ export class EmployeeDashboard extends UIController {
               })
             })
             .then(() => {
-              Services.Databases.listDocuments(
-                AppInfo.Name,
-                AppInfo.Database,
-                Collections.AssignedEducation,
+              Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
                 [
                   Query.limit(10000),
                   Query.equal('employee_id', employeeDashboardState.$id),
@@ -301,7 +287,6 @@ export class EmployeeDashboard extends UIController {
               });
             }
           })
-          console.log(employeeChartInfos)
           setEmployeeGroups(employeeChartInfos.competency_group)
           setSelectedCompetencyId(employeeChartInfos.competency_group[0].competencies[0].competency_id)
           setSelectedCompetency(employeeChartInfos.competency_group[0].competencies[0])
@@ -309,36 +294,16 @@ export class EmployeeDashboard extends UIController {
           setSelectedRealValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_real_value))
           setSelectedTargetValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_target_value))
 
-
-
         }, [])
-
 
         //Çalışanın birimdeki toplam kidem süresini hesaplar
         const date = new Date(employeeDashboardState.job_start_date);
-        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 
         const today = new Date();
         const differenceMilliSecond = today.getTime() - date.getTime();
         const differenceYear = Math.floor(differenceMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
         const differenceMonth = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
         const differenceDay = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
-
-        //Çalışanın birimdeki toplam kidem süresini hesaplar
-
-        //Çalışanın birimdeki çalısma süresini hesaplar
-        // const employeePozitionWorkDate = employeeLog.filter((x) => x.employee_id === id).filter((x) => x.position_name === positions.find((x) => x.id === employee.position)?.name).log_date
-        // const employeeDate = new Date(employeePozitionWorkDate).toLocaleDateString();
-        // const formattedEmployeeDate = `${employeeDate.getDate()}/${employeeDate.getMonth() + 1}/${employeeDate.getFullYear()}`;
-
-        // const todayDay = new Date();
-        // const differenceEmployeeMilliSecond = todayDay.getTime() - employeeDate.getTime();
-        // const differenceEmployeeYear = Math.floor(differenceEmployeeMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
-        // const differenceEmployeeMonth = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
-        // const differenceEmployeeDay = Math.floor((differenceEmployeeMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
-
-        //Çalışanın toplam kıdem süresini hesaplar
-
 
         return VStack({ alignment: cTopLeading })(
           HStack({ alignment: cLeading })(
@@ -398,14 +363,10 @@ export class EmployeeDashboard extends UIController {
                       period={employeeDashboardState.competency_evaluation_period}
                       positionId={employee.position}
                     />
-                    <EmployeeCertificateCard rows={
-                      organizationEmployeeDocumentList
-                        .filter((x) => x.employee_id === employeeDashboardState.$id)
-                        .map((x) => ({
-                          certificateName: x.document_name,
-                          certificateExpirationDate: x.end_date ? new Date(x.end_date).toLocaleDateString() : "Süresiz"
-                        }))
-                    } />
+                    <EmployeeCertificateCard rows={organizationEmployeeDocumentList.filter((x) => x.employee_id === employeeDashboardState.$id).map((x) => ({
+                      certificateName: x.document_name,
+                      certificateExpirationDate: x.end_date ? new Date(x.end_date).toLocaleDateString() : "Süresiz"
+                    }))} />
                   </div>
 
                   <div
@@ -441,17 +402,12 @@ export class EmployeeDashboard extends UIController {
                           gap: '5px',
                         }}
                       >
-                        {listEmployeeCompetencyValue
-                          .filter((x) => x.competency_evaluation_period === employeeDashboardState.competency_evaluation_period)
+                        {listEmployeeCompetencyValue.filter((x) => x.competency_evaluation_period === employeeDashboardState.competency_evaluation_period)
                           .filter((x) => x.competency_target_value !== "no-target" && x.competency_real_value !== "")
                           .slice()
                           .sort((a, b) => {
-                            const percentageA =
-                              (100 * Number(a.competency_real_value)) /
-                              Number(a.competency_target_value)
-                            const percentageB =
-                              (100 * Number(b.competency_real_value)) /
-                              Number(b.competency_target_value)
+                            const percentageA = (100 * Number(a.competency_real_value)) / Number(a.competency_target_value)
+                            const percentageB = (100 * Number(b.competency_real_value)) / Number(b.competency_target_value)
                             return percentageB - percentageA
                           })
                           .slice(0, 5)
@@ -464,21 +420,14 @@ export class EmployeeDashboard extends UIController {
                               <span
                                 style={{
                                   color: 'rgba(128, 128, 128,1)',
-                                }}
-                              >
-                                <a style={{ cursor: 'pointer', color: 'rgba(57, 90, 192,1)', }} onClick={() => navigate("/app/competency-dashboard/view/" + competencyValue.competency_id + "/" + employeeDashboardState.competency_evaluation_period)}>{competencyValue.competency_name}</a>
+                                }}>
+                                <a style={{ cursor: 'pointer', color: 'rgba(57, 90, 192,1)', }}
+                                  onClick={() => navigate("/app/competency-dashboard/view/" + competencyValue.competency_id + "/" + employeeDashboardState.competency_evaluation_period)}
+                                >{competencyValue.competency_name}</a>
                               </span>
                               :
                               <LinearProgressWithLabel
-                                value={
-                                  (100 *
-                                    Number(
-                                      competencyValue.competency_real_value
-                                    )) /
-                                  Number(
-                                    competencyValue.competency_target_value
-                                  )
-                                }
+                                value={(100 * Number(competencyValue.competency_real_value)) / Number(competencyValue.competency_target_value)}
                               />
                             </Typography>
                           ))}
@@ -497,11 +446,8 @@ export class EmployeeDashboard extends UIController {
                         title={
                           <Typography variant="h6" style={{ fontSize: '1rem' }}>
                             Başarı Düzeyine Göre Tüm Yetkinlik Ortalamaları (%)
-                          </Typography>
-                        }
-                        style={{
-                          borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
-                        }}
+                          </Typography>}
+                        style={{ borderBottom: '1px solid rgba(128, 128, 128, 0.2)' }}
                       />
                       <CardContent
                         style={{
@@ -612,12 +558,11 @@ export class EmployeeDashboard extends UIController {
                                 </TableRow>
                               </TableHead>
                               <TableBody>
-                                {assignedEducationList
-                                  .sort(
-                                    (a, b) =>
-                                      new Date(b.start_date).getTime() -
-                                      new Date(a.start_date).getTime()
-                                  )
+                                {assignedEducationList.sort(
+                                  (a, b) =>
+                                    new Date(b.start_date).getTime() -
+                                    new Date(a.start_date).getTime()
+                                )
                                   .slice(0, 5)
                                   .map((education) => (
                                     <TableRow
@@ -663,9 +608,7 @@ export class EmployeeDashboard extends UIController {
                             Daha Önce Görev Yaptığı Birimler
                           </Typography>
                         }
-                        style={{
-                          borderBottom: '1px solid rgba(128, 128, 128, 0.2)',
-                        }}
+                        style={{ borderBottom: '1px solid rgba(128, 128, 128, 0.2)' }}
                       />
                       <CardContent
                         style={{
@@ -690,28 +633,26 @@ export class EmployeeDashboard extends UIController {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {employeeLog
-                                .filter(
-                                  (x) =>
-                                    x.position_name !==
-                                    position.name
-                                )
-                                .map((log) => (
-                                  <TableRow
-                                    sx={{
-                                      '&:last-child td, &:last-child th': {
-                                        border: 0,
-                                      },
-                                    }}
-                                  >
-                                    <TableCell component="th" scope="row">
-                                      {log.position_name}
-                                    </TableCell>
-                                    <TableCell align="center">
-                                      {log.job_start_date} - ???
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
+                              {employeeLog.filter(
+                                (x) =>
+                                  x.position_name !==
+                                  position.name
+                              ).map((log) => (
+                                <TableRow
+                                  sx={{
+                                    '&:last-child td, &:last-child th': {
+                                      border: 0,
+                                    },
+                                  }}
+                                >
+                                  <TableCell component="th" scope="row">
+                                    {log.department_name}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {log.job_start_date} - ???
+                                  </TableCell>
+                                </TableRow>
+                              ))}
                             </TableBody>
                           </Table>
                         </TableContainer>
@@ -736,16 +677,8 @@ export class EmployeeDashboard extends UIController {
                       }}
                     >
                       <SimpleTreeView
-                        defaultExpandedItems={
-                          [
-                            employeeGroups.map((group) => group.group_id)[0]
-                          ]
-                        }
-                        defaultSelectedItems={
-                          [
-                            selectedCompetencyId
-
-                          ]
+                        defaultExpandedItems={[employeeGroups.map((group) => group.group_id)[0]]}
+                        defaultSelectedItems={[selectedCompetencyId]
                         }
                       >
                         {
@@ -878,7 +811,6 @@ export class EmployeeDashboard extends UIController {
                                         show: true,
                                         position: 'top',
                                       },
-
                                     },
                                     {
                                       name: 'Hedef Değer',
