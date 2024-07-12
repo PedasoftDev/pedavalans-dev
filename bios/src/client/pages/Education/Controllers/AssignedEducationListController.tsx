@@ -266,7 +266,7 @@ export class AssignedEducationListController extends UIFormController {
                                     Views.Title(
                                         id ?
                                             `${educationPlanList.find((item) => item.education_plan_id === id).education_plan_name} - Atanan Eğitimler`
-                                            : "Atanan Eğitimler"
+                                            : rowsActive ? "Atanan Eğitimler" : "Pasif Atanan Eğitimler"
                                     )
                                 ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                                 HStack({ alignment: cTop })(

@@ -105,7 +105,7 @@ export class VocationalQualificationListController extends UIFormController {
           return VStack({ spacing: 15, alignment: cTopLeading })(
             HStack({ alignment: cLeading })(
               Views.Title(
-                'Mesleki Yeterlilik Belge ve Sertifikalar'
+                rowsActive ? 'Mesleki Yeterlilik Belge ve Sertifikalar' : 'Pasif Mesleki Yeterlilik Belge ve Sertifikalar'
               ).paddingTop('10px')
             )
               .height(70)

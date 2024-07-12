@@ -88,7 +88,7 @@ export class TrainersList extends UIController {
           return (
             VStack({ spacing: 15, alignment: cTopLeading })(
               HStack({ alignment: cLeading })(
-                Views.Title("Eğiticiler").paddingTop("10px")
+                Views.Title(rowsActive ? "Eğiticiler" : "Pasif Eğiticiler").paddingTop("10px")
               ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
               HStack({ alignment: cTop })(
                 ReactView(
