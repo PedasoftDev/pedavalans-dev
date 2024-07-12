@@ -29,6 +29,7 @@ const resetForm: IAssignedEducation.ICreate = {
     education_id: "",
     education_name: "",
     hour: "0:00",
+    start_hour: "0:00",
     educator_name: "",
     employee_name: "",
     location: "",
@@ -59,7 +60,13 @@ export class AssignEducationController extends UIFormController {
                         const [form, setForm] = useState<IAssignedEducation.ICreate>(resetForm);
                         const [selectedEmployees, setSelectedEmployees] = useState<typeof employees>([]);
 
-                        const navigateToList = () => navigate("/app/education/assigned");
+                        const navigateToList = () => {
+                            if (id) {
+                                navigate(`/app/education/planed/${id}`)
+                            } else {
+                                navigate("/app/education/assigned")
+                            }
+                        }
 
                         const handleSubmit = (e: React.FormEvent) => {
                             e.preventDefault();
@@ -75,6 +82,7 @@ export class AssignEducationController extends UIFormController {
                                         education_plan_id: id,
                                         education_plan_name: educationPlanList.find((item) => item.education_plan_id === id).education_plan_name,
                                         hour: form.hour,
+                                        start_hour: form.start_hour,
                                         employee_name: `${employee.first_name} ${employee.last_name}`,
                                         start_date: form.start_date,
                                         location: form.location,
@@ -120,6 +128,7 @@ export class AssignEducationController extends UIFormController {
                                         education_plan_id: null,
                                         education_plan_name: null,
                                         hour: form.hour,
+                                        start_hour: form.start_hour,
                                         employee_name: `${employee.first_name} ${employee.last_name}`,
                                         start_date: form.start_date,
                                         location: form.location,
@@ -271,6 +280,20 @@ export class AssignEducationController extends UIFormController {
                                                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                                                 size="small"
                                                 required
+                                                fullWidth
+                                            />
+                                            <TextField
+                                                label="Eğitimin Saati"
+                                                name="start_hour"
+                                                value={form.start_hour}
+                                                onChange={
+                                                    (e) => {
+                                                        setForm({ ...form, start_hour: e.target.value });
+                                                    }
+                                                }
+                                                size="small"
+                                                required
+                                                type="time"
                                                 fullWidth
                                             />
                                             <div style={{

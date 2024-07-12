@@ -325,7 +325,14 @@ export class AssignedEducationListController extends UIFormController {
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title={`Eğitim Raporu`}>
-                                                    <IconButton onClick={() => getEducationReportToExcel(educationList, competencyList, educationCompetencyRelationList, assignedEducationList)}>
+                                                    <IconButton onClick={() => {
+                                                        if (id) {
+                                                            getEducationReportToExcel(educationList, competencyList, educationCompetencyRelationList, assignedEducationList.filter((item) => item.education_plan_id === id && item.is_active === rowsActive))
+                                                        } else {
+                                                            getEducationReportToExcel(educationList, competencyList, educationCompetencyRelationList, assignedEducationList)
+                                                        }
+                                                    }
+                                                    }>
                                                         <SummarizeIcon />
                                                     </IconButton>
                                                 </Tooltip>

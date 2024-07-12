@@ -17,6 +17,7 @@ import Swal from "sweetalert2";
 import { GridContainer } from "../Views/View";
 import ModeIcon from '@mui/icons-material/Mode';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
+import AssignEducation from "../../../../server/hooks/assignEducation/main";
 
 
 const resetMe: IAccount.IBase = {
@@ -62,9 +63,10 @@ export class AccountManagementViewController extends UIController {
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts()
         const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
         const { createAccountRelation } = AccountRelation.Create()
+        const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization)
 
         return (
-            isLoading || isLoadingAccounts || isLoadingResult ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingResult || isLoadingAssignedEducationList ? VStack(Spinner()) :
                 me == null ? VStack(UINavigate("/login")) :
                     UIViewBuilder(() => {
 
@@ -236,6 +238,16 @@ export class AccountManagementViewController extends UIController {
 
                         const updateSelectedAccountRelation = (e) => {
                             e.preventDefault();
+                            if (assignedEducationList.filter((item) => item.status === "open").find((item) => item.educator_id === selectedAccount.$id)) {
+                                Swal.fire({
+                                    title: 'Bu hesaba ait açık bir eğitim bulunmaktadır!',
+                                    text: "Bu hesabı düzenleyemezsiniz!",
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Tamam',
+                                })
+                                return
+                            }
                             updateAccountRelation({
                                 databaseId: AppInfo.Database,
                                 collectionId: "account_relation",

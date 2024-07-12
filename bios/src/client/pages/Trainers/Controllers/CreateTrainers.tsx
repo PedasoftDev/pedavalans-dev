@@ -47,16 +47,11 @@ export class CreateTrainers extends UIController {
 
     const { createTrainers } = Trainers.Create();
     const { createTrainerEducations } = TrainerEducations.Create()
-
-
-
-
+    const { trainersList, isLoadingTrainersList } = Trainers.GetList()
+    const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm({
-        ...form,
-        [e.target.name as string]: e.target.value
-      })
+      setForm({ ...form, [e.target.name as string]: e.target.value })
     }
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       setFilterKey(e.target.value);
@@ -119,7 +114,7 @@ export class CreateTrainers extends UIController {
 
     return (
       VStack({ alignment: cTop })(
-        isLoading || isLoadingAccounts || isLoadingEducation ? VStack(Spinner()) :
+        isLoading || isLoadingAccounts || isLoadingEducation || isLoadingTrainersList || isLoadingResult ? VStack(Spinner()) :
           UIViewBuilder(() => {
             return (
               ReactView(
@@ -136,7 +131,11 @@ export class CreateTrainers extends UIController {
                       }}>
                       <Autocomplete
                         size="small"
-                        options={accounts}
+                        options={
+                          accounts.filter((item) =>
+                            !trainersList.find((trainer) => trainer.trainer_id === item.$id)
+                          ).filter((item) => accountRelations.filter((item) => item.is_active === true).find((relation) => relation.account_id === item.$id))
+                        }
                         getOptionLabel={(option) => option.name}
                         renderInput={(params) => <TextField {...params} label="Eğitici Adı" variant="outlined" />}
                         onChange={(e, value) => {

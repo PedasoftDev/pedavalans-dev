@@ -30,6 +30,7 @@ const resetForm: IAssignedEducation.IBase = {
   education_id: "",
   education_name: "",
   hour: "0:00",
+  start_hour: "00:00",
   education_plan_id: "",
   education_plan_name: "",
   location: "",
@@ -281,6 +282,20 @@ export class UpdateAssignedEducationController extends UIController {
                           onChange={(e) => setForm({ ...form, location: e.target.value })}
                           size="small"
                           required
+                          fullWidth
+                        />
+                        <TextField
+                          label="Eğitimin Saati"
+                          name="start_hour"
+                          value={form.start_hour}
+                          onChange={
+                            (e) => {
+                              setForm({ ...form, start_hour: e.target.value });
+                            }
+                          }
+                          size="small"
+                          required
+                          type="time"
                           fullWidth
                         />
                         <div style={{

@@ -80,6 +80,11 @@ export class TrainersList extends UIController {
             setRowsActive(!rowsActive);
           }
 
+          const filteredTrainers = trainersList.filter(trainer => {
+            const accountRelation = accountRelations.find(ar => ar.account_id === trainer.trainer_id);
+            return accountRelation && accountRelation.is_active === true;
+          });
+
           return (
             VStack({ spacing: 15, alignment: cTopLeading })(
               HStack({ alignment: cLeading })(
@@ -116,7 +121,7 @@ export class TrainersList extends UIController {
                     </div>
                     <GridContainer>
                       <StyledDataGrid
-                        rows={trainersList.filter((item) => item.is_active === rowsActive).filter((item) => item.trainer_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
+                        rows={filteredTrainers.filter((item) => item.is_active === rowsActive).filter(trainer => trainer.trainer_name.toLowerCase().includes(filterKey.toLowerCase()))}
                         columns={columns}
                         getRowId={(row) => row.$id}
                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}

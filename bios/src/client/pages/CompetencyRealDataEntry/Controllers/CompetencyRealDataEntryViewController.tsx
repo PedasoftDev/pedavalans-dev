@@ -67,6 +67,7 @@ const resetForm: IAssignedEducation.ICreate = {
     education_name: "",
     location: "",
     hour: "0:00",
+    start_hour: "0:00",
     educator_name: "",
     employee_name: "",
     status: "open",
@@ -199,6 +200,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     educator_name: form.educator_name,
                                     employee_name: `${employee.first_name} ${employee.last_name}`,
                                     hour: form.hour,
+                                    start_hour: form.start_hour,
                                     start_date: form.start_date,
                                     end_date: form.end_date,
                                     location: form.location,
@@ -423,7 +425,10 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
                                                     .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                                     .map((value) => (
-                                                        <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
+                                                        <Tooltip title={value.grade_level_name} key={value.grade_level_id}>
+                                                            <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
+                                                        </Tooltip>
+
                                                     ))}
                                             </Select>
                                         }
@@ -832,6 +837,20 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                         onChange={(e) => setForm({ ...form, location: e.target.value })}
                                                         size="small"
                                                         required
+                                                        fullWidth
+                                                    />
+                                                    <TextField
+                                                        label="Eğitimin Saati"
+                                                        name="start_hour"
+                                                        value={form.start_hour}
+                                                        onChange={
+                                                            (e) => {
+                                                                setForm({ ...form, start_hour: e.target.value });
+                                                            }
+                                                        }
+                                                        size="small"
+                                                        required
+                                                        type="time"
                                                         fullWidth
                                                     />
                                                     <div style={{

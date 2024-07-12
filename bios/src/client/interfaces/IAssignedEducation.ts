@@ -12,6 +12,7 @@ namespace IAssignedEducation {
         education_plan_id?: string;
         education_plan_name?: string;
         start_date: string;
+        start_hour: string;
         end_date: string;
         hour: string;
         status: string;
@@ -30,6 +31,7 @@ namespace IAssignedEducation {
         education_plan_id?: string;
         education_plan_name?: string;
         start_date: string;
+        start_hour: string;
         end_date: string;
         hour: string;
         status: string;
