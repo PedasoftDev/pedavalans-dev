@@ -17,32 +17,40 @@ import { GridContainer } from "../Views/View";
 export class AuthorizationProfileViewController extends UIController {
 
     public LoadView(): UIView {
+        const { me, isLoading: isLoadingMe } = useGetMe("console");
         const navigate = useNavigate();
-        const [isLoading, setIsLoading] = useState(true);
-        const [accountRelations, setAccountRelations] = useState<IAccountRelation.IBase[]>([]);
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { accountRelations: accountRel, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
         const { updateAccountRelation } = AccountRelation.Update();
 
-        const getAccountRelations = () => {
-            Services.Accounts.get().then((me) => {
-                Promise.all([
-                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("tenant_id", me.prefs.organization), Query.equal("is_deleted", false)]),
-                ]).then(res => {
-                    const [accountRelationsDb] = res;
-                    setAccountRelations(accountRelationsDb.documents as any);
-                    setIsLoading(false);
-                })
-            });
-        }
-
-        useEffect(() => {
-            getAccountRelations();
-        }, [])
-
         return (
-            isLoading || isLoadingAccounts ? VStack(Spinner()) :
-                !accountRelations[0].is_admin ? UINavigate("/dashboard") :
+            isLoadingMe || isLoadingAccounts || isLoadingResult ? VStack(Spinner()) :
+                !accountRel[0].is_admin ? UINavigate("/dashboard") :
                     UIViewBuilder(() => {
+
+                        const [isLoading, setIsLoading] = useState<boolean>(true);
+                        const [accountRelations, setAccountRelations] = useState<IAccountRelation.IBase[]>([]);
+                        const [accountList, setAccuntList] = useState<typeof accounts>([]);
+
+                        const getAccountRelations = () => {
+                            Promise.all([
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("is_active", true)]),
+                            ]).then(res => {
+                                const [accountRelationsDb] = res;
+                                setAccountRelations(accountRelationsDb.documents as any);
+
+                                const copyAcc = [];
+                                accountRelationsDb.documents.forEach((item: any) => {
+                                    const acc = accounts.find((x) => x.$id === item.account_id);
+                                    if (acc) {
+                                        copyAcc.push(acc);
+                                    }
+                                })
+                                setAccuntList(copyAcc);
+                                setIsLoading(false);
+                            })
+
+                        }
 
                         const handleChangeAuthorizationProfile = (id: string, authorization_profile: string) => {
                             const accountRelation = accountRelations.find((x) => x.account_id === id);
@@ -54,6 +62,10 @@ export class AuthorizationProfileViewController extends UIController {
                                     authorization_profile
                                 }
                             }, () => {
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Yetki profili başarıyla güncellendi."
+                                })
                                 getAccountRelations();
                             })
                         };
@@ -91,7 +103,12 @@ export class AuthorizationProfileViewController extends UIController {
                             }
                         ];
 
-                        return (
+
+                        useEffect(() => {
+                            getAccountRelations();
+                        }, []);
+
+                        return (isLoading ? VStack(Spinner()) :
                             VStack({ spacing: 15, alignment: cTopLeading })(
                                 HStack({ alignment: cLeading, spacing: 10 })(
                                     VStack(
@@ -113,7 +130,7 @@ export class AuthorizationProfileViewController extends UIController {
                                         }}>
                                             <GridContainer>
                                                 <StyledDataGrid
-                                                    rows={accounts}
+                                                    rows={accountList}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}

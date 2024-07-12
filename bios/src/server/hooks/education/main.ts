@@ -9,7 +9,7 @@ namespace Education {
         return { createEducation: createDocument, error, isError, isLoading, isSuccess }
     }
     export const GetList = (): { educationList: IEducation.IBase[], isLoading: boolean } => {
-        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.Education, [Query.limit(10000)])
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.Education, [Query.limit(10000), Query.equal("is_deleted", false)])
         return { educationList: documents as any, isLoading }
     }
 

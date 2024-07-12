@@ -10,7 +10,7 @@ namespace OrganizationEmployeeDocument {
     }
     export const GetList = (tenant_id: string): { organizationEmployeeDocumentList: IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase[], isLoading: boolean } => {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument,
-            [Query.equal("tenant_id", tenant_id), Query.equal("is_active", true), Query.equal("is_deleted", false)])
+            [Query.equal("tenant_id", tenant_id), Query.equal("is_active", true), Query.equal("is_deleted", false), Query.limit(10000)])
         return { organizationEmployeeDocumentList: documents as any, isLoading }
     }
 
@@ -23,8 +23,17 @@ namespace OrganizationEmployeeDocument {
         documentList: IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase
         isLoadingDocument: boolean
     } => {
-        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: 'organization_employee_document', documentId: id, })
+        const { document, isLoading } = useGetDocument({ projectId: AppInfo.Name, databaseId: AppInfo.Database, collectionId: Collections.OrganizationEmployeeDocument, documentId: id, })
         return { documentList: document as any, isLoadingDocument: isLoading, }
+    }
+
+    export const ListByEmployeeId = (employee_id: string): {
+        documentList: IOrganizationStructure.IEmployeeVocationalQualificationRelation.IBase[]
+        isLoadingDocument: boolean
+    } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument,
+            [Query.equal("employee_id", employee_id), Query.equal("is_active", true), Query.equal("is_deleted", false), Query.limit(10000)])
+        return { documentList: documents as any, isLoadingDocument: isLoading, }
     }
 }
 

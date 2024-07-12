@@ -86,7 +86,7 @@ export class EducationListController extends UIFormController {
                         return (
                             VStack({ spacing: 15, alignment: cTopLeading })(
                                 HStack({ alignment: cLeading })(
-                                    Views.Title("Eğitimler").paddingTop("10px")
+                                    Views.Title(rowsActive ? "Eğitimler" : "Pasif Eğitimler").paddingTop("10px")
                                 ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                                 HStack({ alignment: cTop })(
                                     ReactView(

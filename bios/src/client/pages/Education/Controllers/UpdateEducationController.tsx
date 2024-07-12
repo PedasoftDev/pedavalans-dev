@@ -27,6 +27,7 @@ import IEducationCompetencyRelation from "../../../interfaces/IEducationCompeten
 import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
+import Swal from "sweetalert2";
 
 const resetForm: IEducation.IBase = {
   code: "",
@@ -63,6 +64,7 @@ export class UpdateEducationController extends UIFormController {
 
             const [form, setForm] = useState<IEducation.IBase>(resetForm);
             const [educationCompetencyRelation, setEducationCompetencyRelation] = useState<string[]>([]);
+            const [isActive, setIsActive] = useState<boolean>(true);
 
             const navigateToList = () => navigate("/app/education/list");
 
@@ -141,9 +143,40 @@ export class UpdateEducationController extends UIFormController {
               }
             ];
 
+            const onDelete = () => {
+              Swal.fire({
+                title: "Eğitimi Sil",
+                text: "Eğitimi silmek istediğinizden emin misiniz?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Evet",
+                cancelButtonText: "Hayır",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  updateEducation({
+                    databaseId: AppInfo.Database,
+                    collectionId: Collections.Education,
+                    documentId: id,
+                    data: {
+                      is_deleted: true,
+                      is_active: false
+                    }
+                  }, () => {
+                    Toast.fire({
+                      icon: "success",
+                      title: "Eğitim başarıyla silindi!"
+                    });
+                    deleteCache();
+                    navigateToList();
+                  })
+                }
+              })
+            }
+
             useEffect(() => {
               setForm(education);
               setEducationCompetencyRelation(educationCompetencyRelationList.map((relation) => relation.competency_id))
+              setIsActive(education.is_active);
             }, [])
 
             return (
@@ -244,6 +277,16 @@ export class UpdateEducationController extends UIFormController {
                         >
                           Kaydet
                         </Button>
+                        {!isActive &&
+                          <Button
+                            variant="contained"
+                            color="error"
+                            size="small"
+                            onClick={onDelete}
+                          >
+                            Sil
+                          </Button>
+                        }
                         <Button
                           variant="contained"
                           color="info"

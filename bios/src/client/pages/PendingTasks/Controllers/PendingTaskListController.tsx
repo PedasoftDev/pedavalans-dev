@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useState } from "@tuval/forms";
 import React, { useEffect } from "react";
 import { Views } from "../../../components/Views";
-import { Box, Grid, Tooltip } from "@mui/material";
+import { Box, Grid, IconButton, Tooltip } from "@mui/material";
 import { CgArrowsExpandLeft } from "react-icons/cg";
 import { BackgroundDiv, ListItem, PendingTasksDiv, TaskList, ToggleDiv, ToggleDivHeader, WelcomeText } from "../Views/Views";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
@@ -22,6 +22,8 @@ import getPeriodFromCurrentDate from "../../../assets/Functions/getPeriodFromCur
 import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
 import ICompetencyDepartment from "../../../interfaces/ICompetencyDepartment";
 import { setPendingEvaluation } from "../../../features/pendingEvaluation";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import { GridColDef } from "@mui/x-data-grid";
 
 
 
@@ -52,6 +54,46 @@ export class PendingTaskListController extends UIController {
                         value: number,
                         list: any[]
                     }[]>([]);
+
+                    const columns: GridColDef[] = [
+                        {
+                            field: 'employee_name',
+                            headerName: 'Çalışan Adı',
+                            flex: 1
+                        },
+                        {
+                            field: 'education_name',
+                            headerName: 'Eğitim Adı',
+                            flex: 1
+                        },
+                        {
+                            field: 'start_date',
+                            headerName: 'Başlangıç Tarihi',
+                            flex: 1,
+                            valueGetter: (params) => new Date(params.row.start_date).toLocaleDateString("tr-TR")
+                        },
+                        {
+                            field: 'end_date',
+                            headerName: 'Bitiş Tarihi',
+                            flex: 1,
+                            valueGetter: (params) => new Date(params.row.end_date).toLocaleDateString("tr-TR")
+                        },
+                        {
+                            field: 'id',
+                            headerName: 'İşlem',
+                            width: 100,
+                            renderCell: (params) => {
+                                return (
+                                    <Tooltip title="Eğitimi Gerçekleştir">
+                                        <IconButton onClick={() => handleClickAssignedEducation(params.row as IAssignedEducation.IBase)}>
+                                            <CgArrowsExpandLeft />
+                                        </IconButton>
+                                    </Tooltip>
+                                )
+                            }
+
+                        }
+                    ]
 
                     const handleClickAssignedEducation = (assignedEducation: IAssignedEducation.IBase) => {
                         navigate("/app/education/assigned");
@@ -101,16 +143,13 @@ export class PendingTaskListController extends UIController {
                                                                 <div>{task.value}</div>
                                                             </ToggleDivHeader>
                                                             {isOpen === i &&
-                                                                <TaskList>
-                                                                    {task.list.map((taskItem: IAssignedEducation.IBase, i) =>
-                                                                        <ListItem onClick={() => handleClickAssignedEducation(taskItem)} key={i}>
-                                                                            <MdOutlineFindInPage size={20} />
-                                                                            <Tooltip title={"Eğitimi Gerçekleştir"} arrow><p>{`${taskItem.education_name} - ${taskItem.employee_name}
-                                                                             | ${new Date(taskItem.start_date).toLocaleDateString("tr-TR")} - ${new Date(taskItem.end_date).toLocaleDateString("tr-TR")}`}</p>
-                                                                            </Tooltip>
-                                                                        </ListItem>
-                                                                    )}
-                                                                </TaskList>}
+                                                                <StyledDataGrid
+                                                                    rows={task.list}
+                                                                    columns={columns}
+                                                                    getRowId={(row) => row.$id}
+                                                                    style={{ width: "100%" }}
+                                                                />
+                                                            }
                                                         </ToggleDiv>
                                                     </PendingTasksDiv>
                                                     :

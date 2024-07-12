@@ -2,7 +2,7 @@ import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBui
 import { Views } from "../../../components/Views";
 import React, { useEffect, useState } from "react";
 import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts, EmailBroker } from "@realmocean/sdk";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Switch, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField } from "@mui/material";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import AppInfo from "../../../../AppInfo";
@@ -15,6 +15,9 @@ import { IoPersonAddOutline } from "react-icons/io5";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import Swal from "sweetalert2";
 import { GridContainer } from "../Views/View";
+import ModeIcon from '@mui/icons-material/Mode';
+import LockPersonIcon from '@mui/icons-material/LockPerson';
+import AssignEducation from "../../../../server/hooks/assignEducation/main";
 
 
 const resetMe: IAccount.IBase = {
@@ -60,15 +63,15 @@ export class AccountManagementViewController extends UIController {
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts()
         const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
         const { createAccountRelation } = AccountRelation.Create()
+        const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization)
 
         return (
-            isLoading || isLoadingAccounts || isLoadingResult ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingResult || isLoadingAssignedEducationList ? VStack(Spinner()) :
                 me == null ? VStack(UINavigate("/login")) :
                     UIViewBuilder(() => {
 
                         const [accountInfo, setAccountInfo] = useState<IAccount.IBase>(resetMe)
                         const [accountRelation, setAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
-                        const [phone, setPhone] = useState<string>("")
 
                         // edit account info
                         const [selectedAccount, setSelectedAccount] = useState<IAccount.IBase>(resetMe)
@@ -77,6 +80,15 @@ export class AccountManagementViewController extends UIController {
 
                         const [passwordChange, setPasswordChange] = useState<IAccount.IPasswordChange>({ password: "", newPassword: "", newPasswordConfirm: "" })
                         const [isRegexError, setIsRegexError] = useState(false)
+
+                        // edit account
+                        const [form, setForm] = useState({
+                            id: "",
+                            label: "",
+                            value: "",
+                            password: ""
+                        })
+                        const [open, setOpen] = useState(false)
 
                         const [createAccountForm, setCreateAccount] = useState({
                             email: "",
@@ -90,36 +102,57 @@ export class AccountManagementViewController extends UIController {
                         useEffect(() => {
                             if (me) {
                                 setAccountInfo(me)
-                                setPhone(accountInfo?.phone)
                                 Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [Query.limit(10000), Query.equal("account_id", me.$id)]).then((data) => {
                                     setAccountRelation(removeDollarProperties(data.documents[0]))
                                 })
                             }
                         }, [])
 
-                        const handleSubmit = async () => {
-                            Swal.fire({
-                                title: 'Emin misiniz?',
-                                text: "Bu işlemi geri alamazsınız!",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#3085d6',
-                                cancelButtonColor: '#d33',
-                                confirmButtonText: 'Evet, kaydet!',
-                                cancelButtonText: 'İptal'
-                            }).then(async (result) => {
-                                if (result.isConfirmed) {
-                                    await Services.Client.setProject("console");
-                                    await Services.Client.setMode(undefined);
-                                    await Services.Accounts.updateName(accountInfo.name);
+                        const handleSubmit = () => {
+                            if (form.value === "" || (form.id != "name" && form.password === "")) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'Boş alan bırakmayınız'
+                                })
+                                return
+                            }
+                            if (form.id === "email") {
+                                setUpProject("console", undefined);
+                                Services.Accounts.updateEmail(form.value, form.password).then(() => {
                                     Toast.fire({
                                         icon: 'success',
-                                        title: 'Değişiklikler kaydedildi'
+                                        title: 'E-posta değiştirildi'
                                     })
-                                }
+                                    window.location.reload()
+                                })
+                            } else if (form.id === "name") {
+                                setUpProject("console", undefined);
+                                Services.Accounts.updateName(form.value).then(() => {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Ad değiştirildi'
+                                    })
+                                    window.location.reload()
+                                })
 
-                            })
+                            } else if (form.id === "phone") {
+                                setUpProject("console", undefined);
+                                Services.Accounts.updatePhone(form.value, form.password).then(() => {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Telefon değiştirildi'
+                                    })
+                                    window.location.reload()
+                                }).catch((e) => {
+                                    alert("Hata: Telefon numarası + ile başlamalıdır ve en az 13 haneli ve en fazla 15 haneli olmalıdır")
+                                })
 
+                            } else {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'Bir hata oluştu'
+                                })
+                            }
                         }
 
                         const handleChangePassword = () => {
@@ -181,23 +214,10 @@ export class AccountManagementViewController extends UIController {
                                         "is_admin": false
                                     }
                                 }, async () => {
-                                    // const key = await EmailBroker.Default.createKey({
-                                    //     smtpServer: "smtp-mail.outlook.com",
-                                    //     smtpPort: "587",
-                                    //     password: "V%443989818492ug",
-                                    //     username: "notification@pedabilisim.com",
-                                    //     tls: false
-                                    // })
-                                    // await EmailBroker.Default
-                                    //     .setKey(key)
-                                    //     .sendEmail("notification@pedabilisim.com", "yusuf.selek@pedabilisim.com", "PEDAVALANS - Yeni Kullanıcı", `<p>Merhaba, {{username}} adlı kullanıcı sisteme eklenmiştir.</p>`, {
-                                    //         username: createAccountForm.username
-                                    //     })
                                     Toast.fire({
                                         icon: 'success',
                                         title: 'Kullanıcı oluşturuldu'
                                     })
-
                                     setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
                                 })
                             })
@@ -210,7 +230,6 @@ export class AccountManagementViewController extends UIController {
                         }
 
                         const setEditAccount = (account: IAccount.IBase) => {
-                            console.log(account)
                             setSelectedAccount(account)
                             setSelectedAccountRelation(accountRelations.find((e) => e.account_id === account.$id))
                             setSelectedAccountRelationIsActive(accountRelations.find((e) => e.account_id === account.$id).is_active)
@@ -219,6 +238,16 @@ export class AccountManagementViewController extends UIController {
 
                         const updateSelectedAccountRelation = (e) => {
                             e.preventDefault();
+                            if (assignedEducationList.filter((item) => item.status === "open").find((item) => item.educator_id === selectedAccount.$id)) {
+                                Swal.fire({
+                                    title: 'Bu hesaba ait açık bir eğitim bulunmaktadır!',
+                                    text: "Bu hesabı düzenleyemezsiniz!",
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Tamam',
+                                })
+                                return
+                            }
                             updateAccountRelation({
                                 databaseId: AppInfo.Database,
                                 collectionId: "account_relation",
@@ -295,34 +324,104 @@ export class AccountManagementViewController extends UIController {
                                                             gap: "10px",
                                                             marginTop: "10px"
                                                         }}>
-                                                            <TextField
-                                                                label="E-posta"
-                                                                value={accountInfo.email}
-                                                                size="small"
-                                                            />
-                                                            <TextField
-                                                                size="small"
-                                                                label="Adı Soyadı"
-                                                                value={accountInfo.name}
-                                                                onChange={(e) => setAccountInfo({ ...accountInfo, name: e.target.value })}
-                                                            />
-                                                            <TextField
-                                                                size="small"
-                                                                label="Telefon"
-                                                                value={phone}
-                                                                onChange={(e) => {
-                                                                    let enteredValue = e.target.value;
-                                                                    // Eğer boşsa, varsayılan olarak + karakterini ekle
-                                                                    if (!enteredValue.startsWith("+")) {
-                                                                        enteredValue = "+" + enteredValue
+                                                            <div style={{ display: "flex", gap: "5px" }}>
+                                                                <TextField
+                                                                    label="E-posta"
+                                                                    value={accountInfo.email}
+                                                                    size="small"
+                                                                    fullWidth
+                                                                />
+                                                                <IconButton color="primary" onClick={() => {
+                                                                    setForm({
+                                                                        id: "email",
+                                                                        label: "E-posta",
+                                                                        value: accountInfo.email,
+                                                                        password: ""
+                                                                    })
+                                                                    setOpen(true)
+                                                                }}>
+                                                                    <ModeIcon />
+                                                                </IconButton>
+                                                            </div>
+                                                            <div style={{ display: "flex", gap: "5px" }}>
+                                                                <TextField
+                                                                    size="small"
+                                                                    label="Adı Soyadı"
+                                                                    value={accountInfo.name}
+                                                                    fullWidth
+                                                                />
+                                                                <IconButton color="primary" onClick={() => {
+                                                                    setForm({
+                                                                        id: "name",
+                                                                        label: "Adı Soyadı",
+                                                                        value: accountInfo.name,
+                                                                        password: ""
+                                                                    })
+                                                                    setOpen(true)
+                                                                }}>
+                                                                    <ModeIcon />
+                                                                </IconButton>
+                                                            </div>
+                                                            <div style={{ display: "flex", gap: "5px" }}>
+                                                                <TextField
+                                                                    size="small"
+                                                                    label="Telefon"
+                                                                    fullWidth
+                                                                    value={accountInfo.phone}
+                                                                />
+                                                                <IconButton color="primary" onClick={() => {
+                                                                    setForm({
+                                                                        id: "phone",
+                                                                        label: "Telefon",
+                                                                        value: accountInfo.phone,
+                                                                        password: ""
+                                                                    })
+                                                                    setOpen(true)
+                                                                }}>
+                                                                    <ModeIcon />
+                                                                </IconButton>
+                                                            </div>
+                                                            <div style={{ display: "flex", gap: "5px" }}>
+                                                                <TextField
+                                                                    size="small"
+                                                                    label="Yetki Profili"
+                                                                    fullWidth
+                                                                    value={(accountRelation?.is_admin || accountRelation?.authorization_profile === "admin") ? "Yönetici" :
+                                                                        accountRelation.authorization_profile === "responsible" ? "Sorumlu" : "Kullanıcı"
                                                                     }
-                                                                    // Max 15 basamaklı olmalı ve + ile başlamalı
-                                                                    if (/^\+?\d{0,15}$/.test(enteredValue)) {
-                                                                        setPhone(enteredValue);
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <Button variant="contained" onClick={handleSubmit}>Kaydet</Button>
+                                                                />
+                                                                <IconButton color="primary" disableRipple>
+                                                                    <LockPersonIcon />
+                                                                </IconButton>
+                                                            </div>
+                                                            <Dialog open={open} onClose={() => setOpen(false)}>
+                                                                <DialogTitle>{form.label} değiştir</DialogTitle>
+                                                                <DialogContent>
+                                                                    <div style={{ width: "300px", padding: "10px", display: "flex", gap: "10px", flexDirection: "column" }}>
+                                                                        <TextField
+                                                                            size="small"
+                                                                            label={form.label}
+                                                                            value={form.value}
+                                                                            onChange={(e) => setForm({ ...form, value: e.target.value })}
+                                                                            fullWidth
+                                                                        />
+                                                                        {(form.id === "email" || form.id === "phone") &&
+                                                                            <TextField
+                                                                                size="small"
+                                                                                label={"Şifre"}
+                                                                                type="password"
+                                                                                value={form.password}
+                                                                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                                                                fullWidth
+                                                                            />
+                                                                        }
+                                                                    </div>
+                                                                </DialogContent>
+                                                                <DialogActions>
+                                                                    <Button onClick={() => setOpen(false)}>İptal</Button>
+                                                                    <Button onClick={handleSubmit}>Onayla</Button>
+                                                                </DialogActions>
+                                                            </Dialog>
                                                         </div>
                                                     </div>
 

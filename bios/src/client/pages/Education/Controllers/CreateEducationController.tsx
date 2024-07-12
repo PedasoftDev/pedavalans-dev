@@ -97,6 +97,14 @@ export class CreateEducationController extends UIFormController {
                                         }
                                     })
                                 })
+                                if (form.relatedCompetencies.length === 0) {
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Eğitim başarıyla eklendi!"
+                                    });
+                                    deleteCache();
+                                    navigateToList();
+                                }
                             })
                         };
 
@@ -151,7 +159,7 @@ export class CreateEducationController extends UIFormController {
                                             }}>
                                                 <Typography variant="button" sx={{ marginLeft: "10px" }}>İlişkili Yetkinlikler</Typography>
                                                 <StyledDataGrid
-                                                    rows={competencyList.filter(x=> x.is_active_competency)}
+                                                    rows={competencyList.filter(x => x.is_active_competency)}
                                                     columns={columns}
                                                     getRowId={(row) => row.$id}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}

@@ -47,21 +47,10 @@ interface IEmployeeImportFromExcel {
 }
 
 const excelDateToJSDate = (excelDate: number) => {
-  const jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000);
+  let jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000);
+  jsDate.setDate(jsDate.getDate() - 1);
   return jsDate.toISOString().split('T')[0];
 }
-
-// function CustomToolbar() {
-//   return (
-//     <GridToolbarContainer>
-//       <GridToolbarExport />
-//       <Button variant='contained' color='primary' size='small' onClick={() => {
-//         console.log("Export")
-//       }}>Export</Button>
-//     </GridToolbarContainer>
-//   );
-// }
-
 export class EmployeeListController extends UIController {
 
 
@@ -410,7 +399,12 @@ export class EmployeeListController extends UIController {
                         manager_id: null,
                         birth_date: employee["dogum_tarihi"],
                         gender: employee["cinsiyet"].toLowerCase() === "e" ? "male" : "female",
-                        phone: employee["telefon_no"],
+                        phone: employee["telefon_no"] ? String(employee["telefon_no"]) : "",
+                        educational_status: employee["egitim_durumu"].toLowerCase() === "lise" ? "high school" :
+                          employee["egitim_durumu"].toLowerCase() === "üniversite" ? "university" :
+                            employee["egitim_durumu"].toLowerCase() === "ilkokul" ? "elementary school" :
+                              employee["egitim_durumu"].toLowerCase() === "ortaokul" ? "secondary school" :
+                                "",
                         department_start_date: employee.departmana_baslama_tarihi,
                         position_start_date: employee.pozisyona_baslama_tarihi,
                         realm_id: me?.prefs?.organization,
@@ -460,10 +454,10 @@ export class EmployeeListController extends UIController {
                       title_id: createdTitles.find(x => x.record_id === employee.unvan_kodu)?.id || null,
                       position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
                       line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
-                      job_start_date: "",
-                      phone: "",
-                      birth_date: "",
-                      gender: "",
+                      job_start_date: employee["ise_baslama_tarihi"],
+                      birth_date: employee["dogum_tarihi"],
+                      gender: employee["cinsiyet"].toLowerCase() === "e" ? "male" : "female",
+                      phone: employee["telefon_no"] ? String(employee["telefon_no"]) : "",
                       department_start_date: employee.departmana_baslama_tarihi,
                       position_start_date: employee.pozisyona_baslama_tarihi,
                       manager_id: null,
