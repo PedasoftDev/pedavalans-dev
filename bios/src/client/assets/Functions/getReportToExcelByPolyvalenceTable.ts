@@ -210,10 +210,10 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
     thirdRow[startCompetencyIndex + competencies.length] = { v: 'Beklentiyi Karşılama Oranı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight, alignment: { wrapText: true, ...alignCenter } } }
     colWidths[startCompetencyIndex + competencies.length] = { wpx: 150 };
 
-    thirdRow[startCompetencyIndex + competencies.length + 1] = { v: 'Geliştirilmesi Gereken Yetkinlik Sayısı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight, alignment: { wrapText: true, ...alignCenter } } }
-    colWidths[startCompetencyIndex + competencies.length + 1] = { wpx: 150 };
+    thirdRow[startCompetencyIndex + competencies.length + 1] = { v: 'Sorumlu Olduğu Yetkinlik Sayısı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+    colWidths[startCompetencyIndex + competencies.length + 1] = { wpx: 200 };
 
-    thirdRow[startCompetencyIndex + competencies.length + 2] = { v: 'Sorumlu Olduğu Yetkinlik Sayısı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight } }
+    thirdRow[startCompetencyIndex + competencies.length + 2] = { v: 'Geliştirilmesi Gereken Yetkinlik Sayısı', t: 's', s: { ...headerStyle, border: borderStyles.header.topBottomRight, alignment: { wrapText: true, ...alignCenter } } }
     colWidths[startCompetencyIndex + competencies.length + 2] = { wpx: 200 };
 
     appendData.push(thirdRow);
@@ -306,12 +306,12 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
         employeeRow[startFirstCompetencyIndex + competencies.length] = { v: expectationMeetingRate.toFixed(2) + '%', t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
         employeeRowPlusOne[startFirstCompetencyIndex + competencies.length] = { v: '', t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
 
-        // geliştirilmesi gereken yetkinlik sayısı
-        employeeRow[startFirstCompetencyIndex + competencies.length + 1] = { v: competencyToBeImprovedCount, t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
+        // sorumlu olduğu yetkinlik sayısı
+        employeeRow[startFirstCompetencyIndex + competencies.length + 1] = { v: responsibleCompetencyCount, t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
         employeeRowPlusOne[startFirstCompetencyIndex + competencies.length + 1] = { v: '', t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
 
-        // sorumlu olduğu yetkinlik sayısı
-        employeeRow[startFirstCompetencyIndex + competencies.length + 2] = { v: responsibleCompetencyCount, t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
+        // geliştirilmesi gereken yetkinlik sayısı
+        employeeRow[startFirstCompetencyIndex + competencies.length + 2] = { v: competencyToBeImprovedCount, t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
         employeeRowPlusOne[startFirstCompetencyIndex + competencies.length + 2] = { v: '', t: 's', s: { ...realValueStyle, border: { bottom: { style: "thick", color: "000000" }, right: { style: "thick", color: "000000" } } } }
 
         // append

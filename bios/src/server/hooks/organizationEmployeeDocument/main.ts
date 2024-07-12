@@ -32,8 +32,8 @@ namespace OrganizationEmployeeDocument {
         isLoadingDocument: boolean
     } => {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument,
-            [Query.equal("employee_id", employee_id), Query.equal("is_active", true), Query.equal("is_deleted", false)])
-        return { documentList: documents[0] as any, isLoadingDocument: isLoading, }
+            [Query.equal("employee_id", employee_id), Query.equal("is_active", true), Query.equal("is_deleted", false), Query.limit(10000)])
+        return { documentList: documents as any, isLoadingDocument: isLoading, }
     }
 }
 

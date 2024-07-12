@@ -9,6 +9,7 @@ export function employeeTransferTemplateByExcel(line_is_active: boolean) {
         "DOGUM_TARIHI",
         "TELEFON_NO",
         "CINSIYET",
+        "EGITIM_DURUMU",
         "ISE_BASLAMA_TARIHI",
         "UNVAN_KODU",
         "UNVAN_TANIMI",

@@ -93,7 +93,7 @@ export class EmployeeDashboard extends UIController {
     const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetByEmployeeId(employeeDashboardState.$id)
 
     const { employeeLog, isLoadingEmployeeLog } = OrganizationStructureEmployeeLog.ListByEmployeeId(employeeDashboardState.$id)
-    const { organizationEmployeeDocumentList, isLoading: employeeDocumentLoading } = OrganizationEmployeeDocument.GetList(me?.prefs?.organization)
+    const { documentList, isLoadingDocument } = OrganizationEmployeeDocument.ListByEmployeeId(employeeDashboardState.$id)
 
 
 
@@ -178,7 +178,7 @@ export class EmployeeDashboard extends UIController {
 
 
     return isLoading || isLoadingDepartment || isLoadingPosition || isLoadingCompetencyDepartmentList || isLoadingListEmployeeCompetencyValue
-      || isLoadingAssignedEducationList || isLoadingEmployeeLog || isLoadingCompetencyList || employeeDocumentLoading ? VStack(Spinner())
+      || isLoadingAssignedEducationList || isLoadingEmployeeLog || isLoadingCompetencyList || isLoadingDocument ? VStack(Spinner())
       :
       UIViewBuilder(() => {
         const employeeChartInfos = {
@@ -363,7 +363,7 @@ export class EmployeeDashboard extends UIController {
                       period={employeeDashboardState.competency_evaluation_period}
                       positionId={employee.position}
                     />
-                    <EmployeeCertificateCard rows={organizationEmployeeDocumentList.filter((x) => x.employee_id === employeeDashboardState.$id).map((x) => ({
+                    <EmployeeCertificateCard rows={documentList.map((x) => ({
                       certificateName: x.document_name,
                       certificateExpirationDate: x.end_date ? new Date(x.end_date).toLocaleDateString() : "Süresiz"
                     }))} />
@@ -649,7 +649,7 @@ export class EmployeeDashboard extends UIController {
                                     {log.department_name}
                                   </TableCell>
                                   <TableCell align="center">
-                                    {log.job_start_date} - ???
+                                    {log.job_start_date ? new Date(log.job_start_date).toLocaleDateString() : ""} - ???
                                   </TableCell>
                                 </TableRow>
                               ))}
