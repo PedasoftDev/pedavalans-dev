@@ -18,6 +18,7 @@ import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import assignedEducationTemplate from "../../../components/email/AssignedEducationTemplate";
 import dayjs from "dayjs";
 import EducationPlan from "../../../../server/hooks/educationPlan/main";
+import Trainers from "../../../../server/hooks/trainers/main";
 
 const resetForm: IAssignedEducation.ICreate = {
     education_code: "",
@@ -49,12 +50,13 @@ export class AssignEducationController extends UIFormController {
         const { educationList, isLoading: isLoadingEducation } = Education.GetList();
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { trainersList, isLoadingTrainersList } = Trainers.GetList();
         const { createAssignedEducation } = AssignEducation.Create();
         const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingEducation || isLoadingEmployees || isLoadingAccounts || isLoadingEducationPlan ? VStack(Spinner()) :
+                isLoading || isLoadingEducation || isLoadingEmployees || isLoadingAccounts || isLoadingEducationPlan || isLoadingTrainersList ? VStack(Spinner()) :
                     UIViewBuilder(() => {
 
                         const [form, setForm] = useState<IAssignedEducation.ICreate>(resetForm);
@@ -224,15 +226,15 @@ export class AssignEducationController extends UIFormController {
                                             />
                                             <FormControl fullWidth size="small" required>
                                                 <Autocomplete
-                                                    options={accounts}
-                                                    getOptionLabel={(account) => account.name}
-                                                    value={accounts.find((account) => account.$id === form.educator_id) || null}
+                                                    options={trainersList.filter((trainersList) => trainersList.is_active === true)}
+                                                    getOptionLabel={(trainer) => trainer.trainer_name}
+                                                    value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                                                     onChange={(event, newValue) => {
                                                         if (newValue) {
                                                             setForm({
                                                                 ...form,
-                                                                educator_id: newValue.$id,
-                                                                educator_name: newValue.name
+                                                                educator_id: newValue.trainer_id,
+                                                                educator_name: newValue.trainer_name
                                                             });
                                                         }
                                                     }}

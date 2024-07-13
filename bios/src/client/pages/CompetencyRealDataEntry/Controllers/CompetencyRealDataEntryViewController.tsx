@@ -5,7 +5,7 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Tooltip } from "@mui/material";
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -187,7 +187,6 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                 setOpenEducationDialog(true);
                             }
                         }
-
                         const handleSubmitEducationDialog = (e) => {
                             e.preventDefault();
                             selectedEmployees.forEach((employee, _i) => {
@@ -425,10 +424,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
                                                     .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                                     .map((value) => (
-                                                        <Tooltip title={value.grade_level_name} key={value.grade_level_id}>
-                                                            <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
-                                                        </Tooltip>
-
+                                                        <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
                                                     ))}
                                             </Select>
                                         }
@@ -930,6 +926,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 </form>
                                             </DialogContent>
                                         </Dialog>
+
 
                                     </Container>
                                 )
