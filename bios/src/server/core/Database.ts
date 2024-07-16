@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 15,
+    "version": 18,
     "collections": [
         {
             "id": "competency",
@@ -1326,6 +1326,18 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key":"parent_department_id",
+                    "type":"string",
+                    "size":256,
+                    "version":16
+                },
+                {
+                    "key":"parent_department_name",
+                    "type":"string",
+                    "size":256,
+                    "version":16
+                },
+                {
                     "key": "is_active",
                     "type": "boolean",
                     "version": 1,
@@ -1337,6 +1349,60 @@ const Database: IDatabase = {
                     "version": 1,
                     "default": false
                 },
+
+            ]
+        },
+        {
+            "id": "position_relation_departments",
+            "name": "Position Relation Departments",
+            "description": {
+                "en": "Position Relation Departments Line is a collection of Position Relation Departments.",
+                "tr": "Departmanlara bağlı pozisyonların listesi."
+            },
+            "version": 18,
+            "attributes": [
+            {
+                "key":"id",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"parent_department_id",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"parent_department_name",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"relation_position_id",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"relation_position_name",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key": "is_active",
+                "type": "boolean",
+                "version": 1,
+                "default": true
+            },
+            {
+                "key": "is_deleted",
+                "type": "boolean",
+                "version": 1,
+                "default": false
+            },
 
             ]
         },

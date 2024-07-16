@@ -1,5 +1,5 @@
 import React, { useState, Fragment, useEffect } from 'react';
-import { FormControlLabel, Switch, TextField } from '@mui/material';
+import { Autocomplete, FormControlLabel, Switch, TextField } from '@mui/material';
 import { Toast } from '../../../../components/Toast';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
@@ -13,11 +13,19 @@ import { PedavalansServiceBroker } from '../../../../../server/brokers/Pedavalan
 import AppInfo from '../../../../../AppInfo';
 import Swal from 'sweetalert2';
 import removeDollarProperties from '../../../../assets/Functions/removeDollarProperties';
+import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
+import StyledDataGrid from '../../../../components/StyledDataGrid';
+import { GridColDef, trTR } from '@mui/x-data-grid';
+import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
+import Collections from '../../../../../server/core/Collections';
+import { is } from '@tuval/core';
 
 interface IFormDepartment {
   id: string;
   record_id: string;
   name: string;
+  parent_department_id: string;
+  parent_department_name: string;
   is_active: boolean;
 }
 
@@ -25,6 +33,8 @@ const formDepartmentState: IFormDepartment = {
   id: "",
   record_id: "",
   name: "",
+  parent_department_id: "",
+  parent_department_name: "",
   is_active: true
 }
 
@@ -41,18 +51,26 @@ export class UpdateDepartmentController extends UIController {
     const { document, isLoading: isLoadingDepartment } = OrganizationStructureDepartment.Get(id)
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
     const { updateDocument } = OrganizationStructureDepartment.Update();
-
+    const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
+    const { positionRelationDepartmentsByDepartment, isLoading: isLoadingPositionRelationDepartments } = PositionRelationDepartments.ListByDepartments(id);
+    const { updatePositionRelationDepartments } = PositionRelationDepartments.Update();
+    const { createPositionRelationDepartments } = PositionRelationDepartments.Create()
+    const [positionsForm, setPositionsForm] = useState<string[]>([]);
+    const [selectedPositions, setSelectedPositions] = useState<any[]>([]);
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     const navigate = useNavigate();
     return (
-      isLoading || isLoadingDepartments || isLoadingDepartment || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
+      isLoading || isLoadingPositions || isLoadingDepartments || isLoadingPositionRelationDepartments || isLoadingDepartment || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
         VStack(Spinner()) :
         UIViewBuilder(() => {
 
           const [formDepartment, setFormDepartment] = useState(formDepartmentState);
           const [isActive, setIsActive] = useState(document.is_active);
-
+          const [filterKey, setFilterKey] = useState("");
+          const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setFilterKey(e.target.value);
+          }
           const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             if (departments.some((department) => department.record_id == formDepartment.record_id && department.id != formDepartment.id)) {
@@ -67,9 +85,35 @@ export class UpdateDepartmentController extends UIController {
             updateDocument({
               databaseId: AppInfo.Database,
               collectionId: "organization_department",
-              documentId: formDepartment.id,
+              documentId: id,
               data: formDepartment
             }, () => {
+              positionRelationDepartmentsByDepartment.forEach((position) => {
+                updatePositionRelationDepartments({
+                  databaseId: AppInfo.Database,
+                  collectionId: Collections.PositionRelationDepartments,
+                  documentId: position.$id,
+                  data: {
+                    is_deleted: true,
+                    is_active: false
+                  }
+                })
+                positionsForm.forEach((positionId) => {
+                  const nanoId = nanoid();
+                  createPositionRelationDepartments({
+                    documentId: nanoId,
+                    data: {
+                      id: nanoId,
+                      parent_department_id: formDepartment.id,
+                      parent_department_name: formDepartment.name,
+                      relation_position_id: positionId,
+                      relation_position_name: positions.find((item) => item.id === positionId)?.name,
+                      is_active: true,
+                      is_deleted: false
+                    }
+                  })
+                })
+              })
               if (isNameChanged) {
                 PedavalansServiceBroker.Default.updateCompetencyDepartmentNames(formDepartment.id, formDepartment.name).then(() => {
                   Toast.fire({
@@ -84,11 +128,12 @@ export class UpdateDepartmentController extends UIController {
                   icon: "success",
                   title: "Departman başarıyla güncellendi!",
                 })
+                deleteCache();
                 onReset();
               }
             })
-
           }
+
 
           const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFormDepartment({ ...formDepartment, [e.target.name]: e.target.value });
@@ -129,13 +174,23 @@ export class UpdateDepartmentController extends UIController {
               })
             })
           }
+          const columns: GridColDef[] = [
+            {
+              field: "name",
+              headerName: "Pozisyon Adı",
+              flex: 1
+            }
+          ];
 
           useEffect(() => {
             if (document) {
               setFormDepartment(removeDollarProperties(document));
               setIsActive(document.is_active);
             }
+            setPositionsForm(positionRelationDepartmentsByDepartment.map((item) => item.relation_position_id));
           }, [])
+
+
 
 
           return (
@@ -167,7 +222,50 @@ export class UpdateDepartmentController extends UIController {
                             value={formDepartment.name}
                             onChange={onChange}
                           />
-
+                          <Autocomplete
+                            size='small'
+                            value={
+                              departments.find((department) => department.id === formDepartment.parent_department_id) || null
+                            }
+                            onChange={
+                              (event, newValue) => {
+                                setFormDepartment({
+                                  ...formDepartment,
+                                  parent_department_id: newValue ? newValue.id : "",
+                                  parent_department_name: newValue ? newValue.name : ""
+                                })
+                              }}
+                            options={departments.reduce(
+                              (acc, current) => {
+                                const x = acc.find((item) => item.parent_department_id === current.parent_department_id);
+                                if (!x) {
+                                  return acc.concat([current]);
+                                } else {
+                                  return acc;
+                                }
+                              }, []
+                            ).filter((department) => department.id !== formDepartment.id)}
+                            getOptionLabel={(option) => option.name}
+                            renderInput={(params) => <TextField {...params} label="Bağlı Olduğu Departman" />}
+                          />
+                          <TextField placeholder="Pozisyon Arayın..." size="small" fullWidth onChange={handleSearch} />
+                          <StyledDataGrid
+                            rows={
+                              positions.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                            }
+                            columns={columns}
+                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                              setPositionsForm(newRowSelectionModel)
+                            }}
+                            rowSelectionModel={positionsForm}
+                            getRowId={(row) => row.$id}
+                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                            isCellEditable={() => false}
+                            disableRowSelectionOnClick
+                            checkboxSelection
+                            rowHeight={30}
+                            columnHeaderHeight={30}
+                          />
                           <FormControlLabel
                             sx={{ width: "100%", alignContent: "end" }}
                             onChange={(e: any) => setFormDepartment({ ...formDepartment, is_active: e.target.checked })}

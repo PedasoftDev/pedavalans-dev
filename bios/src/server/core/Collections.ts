@@ -38,6 +38,7 @@ namespace Collections {
     export const CompetencyPositionRelation = "competency_position_relation";
     export const Trainers = "trainers";
     export const TrainerEducations = "trainer_educations";
+    export const PositionRelationDepartments = "position_relation_departments";
 }
 
 export default Collections;

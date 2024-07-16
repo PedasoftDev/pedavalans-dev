@@ -1,20 +1,27 @@
 import React, { useState, Fragment } from 'react';
-import { TextField } from '@mui/material';
+import { Autocomplete, TextField } from '@mui/material';
 import { Toast } from '../../../../components/Toast';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { useGetMe } from '@realmocean/sdk';
+import { useDeleteCache, useGetMe } from '@realmocean/sdk';
 import { Views } from '../../../../components/Views';
 import { Form } from '../../Views/Views';
 import { Resources } from '../../../../assets/Resources';
 import AccountRelation from '../../../../../server/hooks/accountRelation/main';
+import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
+import StyledDataGrid from '../../../../components/StyledDataGrid';
+import { GridColDef, trTR } from '@mui/x-data-grid';
+import IPositionRelationDepartments from '../../../../interfaces/IPositionRelationDepartments';
+import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
 
 
 const formDepartmentState: IOrganizationStructure.IDepartments.ICreateDepartment = {
   id: "",
   record_id: "",
   name: "",
+  parent_department_id: "",
+  parent_department_name: "",
   tenant_id: "",
   realm_id: "",
 }
@@ -27,18 +34,23 @@ export class CreateDepartmentController extends UIController {
     const { me, isLoading } = useGetMe("console");
     const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+    const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
 
     const navigate = useNavigate();
     return (
-      isLoading || isLoadingDepartments || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
+      isLoading || isLoadingPositions || isLoadingDepartments || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
         VStack(Spinner()) :
         UIViewBuilder(() => {
-
+          const { deleteCache } = useDeleteCache("console")
           const [formDepartment, setFormDepartment] = useState(formDepartmentState);
           const { createDocument, error, isError } = OrganizationStructureDepartment.Create();
+          const { createPositionRelationDepartments } = PositionRelationDepartments.Create();
 
-
-
+          const [selectedPositions, setSelectedPositions] = useState([]);
+          const [filterKey, setFilterKey] = useState("");
+          const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setFilterKey(e.target.value);
+          }
           const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             if (departments.some((document) => document.record_id == formDepartment.record_id)) {
@@ -49,22 +61,37 @@ export class CreateDepartmentController extends UIController {
               })
               return;
             }
-            const id = nanoid();
+            const departmentId = nanoid();
             createDocument({
-              documentId: id,
+              documentId: departmentId,
               data: {
                 ...formDepartment,
-                id: id,
-                tenant_id: me?.prefs?.organization
+                id: departmentId,
+                tenant_id: me?.prefs?.organization,
               }
             }, () => {
-              Toast.fire({
-                icon: "success",
-                title: "Departman başarıyla eklendi!",
+              selectedPositions.forEach((position) => {
+                const positionId = nanoid();
+                const createForm: IPositionRelationDepartments.ICreate = {
+                  id: positionId,
+                  parent_department_id: departmentId,
+                  parent_department_name: formDepartment.name,
+                  relation_position_id: position.$id,
+                  relation_position_name: position.name,
+                }
+                createPositionRelationDepartments({
+                  documentId: positionId,
+                  data: createForm
+                }, () => {
+                  Toast.fire({
+                    icon: "success",
+                    title: "Departman başarıyla eklendi!"
+                  })
+                  deleteCache();
+                  navigate(link + "/list")
+                })
               })
-              onReset();
-
-            });
+            })
             if (isError) {
               Toast.fire({
                 icon: "error",
@@ -81,6 +108,13 @@ export class CreateDepartmentController extends UIController {
           const onReset = () => {
             navigate(link + "/list")
           }
+          const columns: GridColDef[] = [
+            {
+              field: "name",
+              headerName: "Pozisyon Adı",
+              flex: 1
+            }
+          ];
 
           return (
             VStack({ alignment: cTop })(
@@ -112,6 +146,41 @@ export class CreateDepartmentController extends UIController {
                             onChange={onChange}
                             required
                           />
+                          <Autocomplete
+                            value={
+                              departments.find((department) => department.id === formDepartment.parent_department_id) || null
+                            }
+                            size='small'
+                            onChange={
+                              (event, newValue) => {
+                                setFormDepartment({
+                                  ...formDepartment,
+                                  parent_department_id: newValue ? newValue.id : "",
+                                  parent_department_name: newValue ? newValue.name : ""
+                                })
+                              }}
+                            options={departments}
+                            getOptionLabel={(option) => option.name}
+                            renderInput={(params) => <TextField {...params} label="Bağlı Olduğu Departman" />}
+                          />
+                          <TextField placeholder="Pozisyon Arayın..." size="small" fullWidth onChange={handleSearch} />
+                          <StyledDataGrid
+                            rows={
+                              positions.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                            }
+                            columns={columns}
+                            getRowId={(row) => row.$id}
+                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                            isCellEditable={() => false}
+                            disableRowSelectionOnClick
+                            checkboxSelection
+                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                              setSelectedPositions(newRowSelectionModel.map((item) => positions.find((position) => position.$id === item)))
+                            }}
+                            rowHeight={30}
+                            columnHeaderHeight={30}
+                          />
+
                         </div>
                       }
 
