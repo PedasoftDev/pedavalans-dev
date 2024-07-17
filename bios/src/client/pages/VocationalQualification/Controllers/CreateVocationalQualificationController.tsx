@@ -23,6 +23,20 @@ import VocationalQualification from '../../../../server/hooks/vocationalQualific
 import { Toast } from '../../../components/Toast'
 import IVocationalQualification from '../../../interfaces/IVocationalQualification'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import styled from "styled-components";
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const resetForm: IVocationalQualification.IAddDocument = {
   document_id: '',
@@ -176,6 +190,7 @@ export class CreateVocationalQualificationController extends UIFormController {
                       marginTop: '10px',
                     }}
                   >
+                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
                     <Button
                       type="submit"
                       variant="contained"

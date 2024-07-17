@@ -26,6 +26,7 @@ import removeDollarProperties from '../../../../assets/Functions/removeDollarPro
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
 import Swal from 'sweetalert2';
+import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -76,6 +77,8 @@ export class UpdateEmployeeController extends UIController {
     const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
+    const { isLoadingPositionRelationDepartmentsList, positionRelationDepartmentsList } = PositionRelationDepartments.GetList()
+
 
     const { updateEmployee } = OrganizationStructureEmployee.Update()
     const { createLog } = OrganizationStructureEmployeeLog.Create()
@@ -83,7 +86,7 @@ export class UpdateEmployeeController extends UIController {
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     return (
-      isLoading || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingDepartments || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -105,6 +108,8 @@ export class UpdateEmployeeController extends UIController {
             const [showEditValidityPeriod, setShowEditValidityPeriod] = useState<boolean>(false)
 
             const [formIsEmployee, setFormIsEmployee] = useState(true)
+            const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
+
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
 
@@ -115,14 +120,14 @@ export class UpdateEmployeeController extends UIController {
                 options: titles
               },
               {
-                id: "position_id",
-                label: "Bulunduğu Pozisyon",
-                options: positions
-              },
-              {
                 id: "department_id",
                 label: "Bulunduğu Departman",
-                options: departments
+                options: departments.filter((item) => item.is_active === true)
+              },
+              {
+                id: "position_id",
+                label: "Bulunduğu Pozisyon",
+                options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
               },
               {
                 id: "line_id",
@@ -337,6 +342,18 @@ export class UpdateEmployeeController extends UIController {
 
                 }
               }
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "position_relation_department"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+              })
+
             }, [])
 
             const onDelete = () => {

@@ -4,7 +4,7 @@ import { Toast } from '../../../../components/Toast';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate, useParams } from '@tuval/forms';
-import { useDeleteCache, useGetMe } from '@realmocean/sdk';
+import { Query, Services, useDeleteCache, useGetMe } from '@realmocean/sdk';
 import { Views } from '../../../../components/Views';
 import { Form } from '../../Views/Views';
 import { Resources } from '../../../../assets/Resources';
@@ -66,6 +66,7 @@ export class UpdateDepartmentController extends UIController {
         UIViewBuilder(() => {
 
           const [formDepartment, setFormDepartment] = useState(formDepartmentState);
+          const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
           const [isActive, setIsActive] = useState(document.is_active);
           const [filterKey, setFilterKey] = useState("");
           const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +87,7 @@ export class UpdateDepartmentController extends UIController {
               databaseId: AppInfo.Database,
               collectionId: "organization_department",
               documentId: id,
-              data: formDepartment
+              data: removeDollarProperties(formDepartment)
             }, () => {
               positionRelationDepartmentsByDepartment.forEach((position) => {
                 updatePositionRelationDepartments({
@@ -98,20 +99,20 @@ export class UpdateDepartmentController extends UIController {
                     is_active: false
                   }
                 })
-                positionsForm.forEach((positionId) => {
-                  const nanoId = nanoid();
-                  createPositionRelationDepartments({
-                    documentId: nanoId,
-                    data: {
-                      id: nanoId,
-                      parent_department_id: formDepartment.id,
-                      parent_department_name: formDepartment.name,
-                      relation_position_id: positionId,
-                      relation_position_name: positions.find((item) => item.id === positionId)?.name,
-                      is_active: true,
-                      is_deleted: false
-                    }
-                  })
+              })
+              positionsForm.forEach((positionId) => {
+                const nanoId = nanoid();
+                createPositionRelationDepartments({
+                  documentId: nanoId,
+                  data: {
+                    id: nanoId,
+                    parent_department_id: formDepartment.id,
+                    parent_department_name: formDepartment.name,
+                    relation_position_id: positionId,
+                    relation_position_name: positions.find((item) => item.id === positionId)?.name,
+                    is_active: true,
+                    is_deleted: false
+                  }
                 })
               })
               if (isNameChanged) {
@@ -188,6 +189,17 @@ export class UpdateDepartmentController extends UIController {
               setIsActive(document.is_active);
             }
             setPositionsForm(positionRelationDepartmentsByDepartment.map((item) => item.relation_position_id));
+            Services.Databases.listDocuments(
+              AppInfo.Name,
+              AppInfo.Database,
+              Collections.Parameter,
+              [
+                Query.equal("name", "position_relation_department"),
+                Query.limit(10000),
+              ]
+            ).then((res) => {
+              setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+            })
           }, [])
 
 
@@ -235,7 +247,7 @@ export class UpdateDepartmentController extends UIController {
                                   parent_department_name: newValue ? newValue.name : ""
                                 })
                               }}
-                            options={departments.reduce(
+                            options={departments.filter((item) => item.is_active === true).reduce(
                               (acc, current) => {
                                 const x = acc.find((item) => item.parent_department_id === current.parent_department_id);
                                 if (!x) {
@@ -248,24 +260,39 @@ export class UpdateDepartmentController extends UIController {
                             getOptionLabel={(option) => option.name}
                             renderInput={(params) => <TextField {...params} label="Bağlı Olduğu Departman" />}
                           />
-                          <TextField placeholder="Pozisyon Arayın..." size="small" fullWidth onChange={handleSearch} />
-                          <StyledDataGrid
-                            rows={
-                              positions.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
-                            }
-                            columns={columns}
-                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                              setPositionsForm(newRowSelectionModel)
-                            }}
-                            rowSelectionModel={positionsForm}
-                            getRowId={(row) => row.$id}
-                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                            isCellEditable={() => false}
-                            disableRowSelectionOnClick
-                            checkboxSelection
-                            rowHeight={30}
-                            columnHeaderHeight={30}
-                          />
+                          {
+                            positionRelationDepartmentsState ?
+                              <div>
+                                <TextField placeholder="Pozisyon Arayın..." size="small" fullWidth onChange={handleSearch} />
+                                <div style={{ height: 300, width: '100%' }}>
+                                  <StyledDataGrid
+                                    rows={
+                                      positions.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                                    }
+                                    columns={columns}
+                                    getRowId={(row) => row.$id}
+                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                    isCellEditable={() => false}
+                                    disableRowSelectionOnClick
+                                    checkboxSelection
+                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                      setSelectedPositions(newRowSelectionModel.map((item) => positions.find((position) => position.$id === item)))
+                                    }}
+                                    rowHeight={30}
+                                    columnHeaderHeight={30}
+                                    initialState={{
+                                      pagination: {
+                                        paginationModel: {
+                                          pageSize: 10,
+                                        },
+                                      },
+                                    }}
+                                    pageSizeOptions={[10, 20, 30]}
+                                  />
+                                </div>
+                              </div>
+                              : null
+                          }
                           <FormControlLabel
                             sx={{ width: "100%", alignContent: "end" }}
                             onChange={(e: any) => setFormDepartment({ ...formDepartment, is_active: e.target.checked })}

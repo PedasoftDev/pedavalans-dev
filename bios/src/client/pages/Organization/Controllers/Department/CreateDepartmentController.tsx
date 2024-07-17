@@ -1,10 +1,10 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import { Toast } from '../../../../components/Toast';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { useDeleteCache, useGetMe } from '@realmocean/sdk';
+import { Query, Services, useDeleteCache, useGetMe } from '@realmocean/sdk';
 import { Views } from '../../../../components/Views';
 import { Form } from '../../Views/Views';
 import { Resources } from '../../../../assets/Resources';
@@ -14,6 +14,8 @@ import StyledDataGrid from '../../../../components/StyledDataGrid';
 import { GridColDef, trTR } from '@mui/x-data-grid';
 import IPositionRelationDepartments from '../../../../interfaces/IPositionRelationDepartments';
 import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
+import AppInfo from '../../../../../AppInfo';
+import Collections from '../../../../../server/core/Collections';
 
 
 const formDepartmentState: IOrganizationStructure.IDepartments.ICreateDepartment = {
@@ -43,11 +45,14 @@ export class CreateDepartmentController extends UIController {
         UIViewBuilder(() => {
           const { deleteCache } = useDeleteCache("console")
           const [formDepartment, setFormDepartment] = useState(formDepartmentState);
+          const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
           const { createDocument, error, isError } = OrganizationStructureDepartment.Create();
           const { createPositionRelationDepartments } = PositionRelationDepartments.Create();
 
           const [selectedPositions, setSelectedPositions] = useState([]);
           const [filterKey, setFilterKey] = useState("");
+
+
           const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFilterKey(e.target.value);
           }
@@ -115,7 +120,19 @@ export class CreateDepartmentController extends UIController {
               flex: 1
             }
           ];
-
+          useEffect(() => {
+            Services.Databases.listDocuments(
+              AppInfo.Name,
+              AppInfo.Database,
+              Collections.Parameter,
+              [
+                Query.equal("name", "position_relation_department"),
+                Query.limit(10000),
+              ]
+            ).then((res) => {
+              setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+            })
+          }, [])
           return (
             VStack({ alignment: cTop })(
               HStack({ alignment: cLeading })(
@@ -159,27 +176,44 @@ export class CreateDepartmentController extends UIController {
                                   parent_department_name: newValue ? newValue.name : ""
                                 })
                               }}
-                            options={departments}
+                            options={departments.filter((item) => item.is_active === true)}
                             getOptionLabel={(option) => option.name}
                             renderInput={(params) => <TextField {...params} label="Bağlı Olduğu Departman" />}
                           />
-                          <TextField placeholder="Pozisyon Arayın..." size="small" fullWidth onChange={handleSearch} />
-                          <StyledDataGrid
-                            rows={
-                              positions.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
-                            }
-                            columns={columns}
-                            getRowId={(row) => row.$id}
-                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                            isCellEditable={() => false}
-                            disableRowSelectionOnClick
-                            checkboxSelection
-                            onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                              setSelectedPositions(newRowSelectionModel.map((item) => positions.find((position) => position.$id === item)))
-                            }}
-                            rowHeight={30}
-                            columnHeaderHeight={30}
-                          />
+                          {
+                            positionRelationDepartmentsState ?
+                              <div>
+                                <TextField placeholder="Pozisyon Arayın..." size="small" fullWidth onChange={handleSearch} />
+                                <div style={{ height: 300, width: '100%' }}>
+                                  <StyledDataGrid
+                                    rows={
+                                      positions.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                                    }
+                                    columns={columns}
+                                    getRowId={(row) => row.$id}
+                                    localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                    isCellEditable={() => false}
+                                    disableRowSelectionOnClick
+                                    checkboxSelection
+                                    onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                      setSelectedPositions(newRowSelectionModel.map((item) => positions.find((position) => position.$id === item)))
+                                    }}
+                                    rowHeight={30}
+                                    columnHeaderHeight={30}
+                                    initialState={{
+                                      pagination: {
+                                        paginationModel: {
+                                          pageSize: 10,
+                                        },
+                                      },
+                                    }}
+                                    pageSizeOptions={[10, 20, 30]}
+                                  />
+                                </div>
+                              </div>
+                              : null
+                          }
+
 
                         </div>
                       }

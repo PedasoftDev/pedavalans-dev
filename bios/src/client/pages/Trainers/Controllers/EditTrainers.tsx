@@ -107,14 +107,12 @@ export class EditTrainers extends UIController {
 
             }
           }, () => {
-            if (i === trainerEducationsForm.length - 1) {
-              Toast.fire({
-                icon: "success",
-                title: "Eğitim başarıyla güncellendi!"
-              });
-              deleteCache();
-              navigate("/app/trainer/list");
-            }
+            Toast.fire({
+              icon: "success",
+              title: "Eğitim başarıyla güncellendi!"
+            });
+            deleteCache();
+            navigate("/app/trainer/list");
           })
         })
       })

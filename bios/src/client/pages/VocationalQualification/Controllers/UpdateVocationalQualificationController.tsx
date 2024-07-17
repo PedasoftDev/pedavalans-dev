@@ -32,6 +32,20 @@ import IVocationalQualification from '../../../interfaces/IVocationalQualificati
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import styled from "styled-components";
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const formReset: IVocationalQualification.IBase = {
   document_id: '',
@@ -255,6 +269,7 @@ export class UpdateVocationalQualificationController extends UIController {
                       marginTop: '10px',
                     }}
                   >
+                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
                     <Button
                       type="submit"
                       variant="contained"
