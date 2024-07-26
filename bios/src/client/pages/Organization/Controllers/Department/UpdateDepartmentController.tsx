@@ -188,7 +188,6 @@ export class UpdateDepartmentController extends UIController {
               setFormDepartment(removeDollarProperties(document));
               setIsActive(document.is_active);
             }
-            setPositionsForm(positionRelationDepartmentsByDepartment.map((item) => item.relation_position_id));
             Services.Databases.listDocuments(
               AppInfo.Name,
               AppInfo.Database,
@@ -199,6 +198,18 @@ export class UpdateDepartmentController extends UIController {
               ]
             ).then((res) => {
               setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+            })
+            Services.Databases.listDocuments(
+              AppInfo.Name,
+              AppInfo.Database,
+              Collections.PositionRelationDepartments,
+              [
+                Query.equal("parent_department_id", id),
+                Query.equal("is_active", true),
+                Query.limit(10000)
+              ]
+            ).then((res) => {
+              setPositionsForm(res.documents.map((item) => item.relation_position_id))
             })
           }, [])
 
@@ -276,8 +287,9 @@ export class UpdateDepartmentController extends UIController {
                                     disableRowSelectionOnClick
                                     checkboxSelection
                                     onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                      setSelectedPositions(newRowSelectionModel.map((item) => positions.find((position) => position.$id === item)))
+                                      setPositionsForm(newRowSelectionModel);
                                     }}
+                                    rowSelectionModel={positionsForm}
                                     rowHeight={30}
                                     columnHeaderHeight={30}
                                     initialState={{

@@ -25,18 +25,10 @@ import IVocationalQualification from '../../../interfaces/IVocationalQualificati
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
+import FileUploadButton from '../Views/InputFileButton'
+import Bucket from '../../../../server/hooks/bucket/Main'
+import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
 
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
 
 const resetForm: IVocationalQualification.IAddDocument = {
   document_id: '',
@@ -59,13 +51,18 @@ export class CreateVocationalQualificationController extends UIFormController {
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
 
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
+    const { createBucketPage } = Bucket.Create("pedavalans", "education", "test")
+    const { getBucketPage, isLoadingBucket } = Bucket.GetBucket("pedavalans", "education")
+    const { createFilePage } = BucketFiles.Create("pedavalans", "education")
+
 
     return VStack({ alignment: cTop })(
-      isLoading || isLoadingDocument || isLoadingDocumentType
+      isLoading || isLoadingDocument || isLoadingDocumentType || isLoadingBucket
         ? VStack(Spinner())
         : UIViewBuilder(() => {
           const [form, setForm] = useState<IVocationalQualification.IAddDocument>(resetForm)
           const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
+          const [file, setFile] = useState(null);
 
           const navigateToList = () => navigate('/app/vocational-qualification/list')
 
@@ -83,14 +80,10 @@ export class CreateVocationalQualificationController extends UIFormController {
               })
               return
             }
-
-
             Toast.fire({
               icon: "info",
               title: "Mesleki Yeterlilik Belgesi Oluşturuluyor..."
             })
-
-
             const createDocumentId: string = nanoid()
             form.document_id = createDocumentId;
             form.tenant_id = me?.prefs?.organization
@@ -113,6 +106,32 @@ export class CreateVocationalQualificationController extends UIFormController {
               }
             )
           }
+          const handleFileChange = (event) => {
+            // const uploadedFile = event.target.files[0];
+            // setFile(uploadedFile);
+            // console.log('Dosya yüklendi:', uploadedFile);
+            // if (
+            //   getBucketPage
+            // ) {
+            //   createFilePage({
+            //     bucketId: "education",
+            //     fileId: form.document_id,
+            //     file: uploadedFile,
+            //     onProgress: (progress) => {
+            //       console.log('Yükleme durumu:', progress);
+            //       return {};
+            //     },
+            //   })
+
+            // } else if (
+            //   !getBucketPage
+            // ) {
+            //   createBucketPage({
+            //     bucketId: "education",
+            //     name: "test",
+            //   })
+            // }
+          };
 
           return ReactView(
             <Form
@@ -190,7 +209,10 @@ export class CreateVocationalQualificationController extends UIFormController {
                       marginTop: '10px',
                     }}
                   >
-                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
+                    <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+                      <FileUploadButton onFileChange={handleFileChange} />
+                      {file && <p>Yüklenen Dosya: {file.name}</p>}
+                    </div>
                     <Button
                       type="submit"
                       variant="contained"

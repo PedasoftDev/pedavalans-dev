@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
 import { HStack, ReactView, Spinner, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useParams } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Views } from "../../../components/Views";
@@ -25,6 +25,7 @@ import EducationCompetencyRelation from "../../../../server/hooks/educationCompe
 import EducationPlan from "../../../../server/hooks/educationPlan/main";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
+import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -37,6 +38,9 @@ const VisuallyHiddenInput = styled('input')({
     whiteSpace: 'nowrap',
     width: 1,
 });
+
+
+
 
 export class AssignedEducationListController extends UIFormController {
 
@@ -60,48 +64,118 @@ export class AssignedEducationListController extends UIFormController {
 
         const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
 
+        const { assignedEducationEmpList, isLoadingAssignedEducationEmpList } = AssignedEducationEmployees.GetList(me?.prefs?.organization);
+
         const [rowsActive, setRowsActive] = useState(true);
         const [filterKey, setFilterKey] = useState("");
 
         return (
-            isLoading || isLoadingResult || isLoadingAssignedEducationResultList || isLoadingEducationPlan || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
+            isLoading || isLoadingResult || isLoadingAssignedEducationEmpList || isLoadingAssignedEducationResultList || isLoadingEducationPlan || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
                         const [assignedEducationList, setAssignedEducationList] = useState<IAssignedEducation.IBase[]>([]);
                         const [selectedAssinedEducationId, setSelectedAssinedEducationId] = useState<string>("");
                         const [open, setOpen] = useState(false);
-
+                        const [assignedEducationResultListArr, setAssignedEducationResultListArr] = useState<IAssignedEducationResult.IBase[]>([]);
                         /* GLOBAL STATE ASSIGN EDUCATION */
                         const assignEducationState: IAssignedEducation.IBase = selector(selectAssignEducation);
+                        const [rowForms, setRowForms] = useState([]);
+
+                        const handleCheckboxChange = (rowId, checked) => {
+                            setRowForms(prevState => ({
+                                ...prevState,
+                                [rowId]: {
+                                    ...prevState[rowId],
+                                    attendance_status: checked
+                                }
+                            }));
+                        };
+
+                        const handleTextFieldChange = (rowId, field, value) => {
+                            // Puan için 0-100 arası kontrol
+                            if (field === 'point' && (value < 0 || value > 100)) {
+                                return;
+                            }
+
+                            setRowForms(prevState => ({
+                                ...prevState,
+                                [rowId]: {
+                                    ...prevState[rowId],
+                                    [field]: value
+                                }
+                            }));
+                        };
+
+                        const initializeRowForm = (row) => {
+                            if (!rowForms[row.$id]) {
+                                setRowForms(prevState => ({
+                                    ...prevState,
+                                    [row.$id]: {
+                                        employee_id: row.employee_id,
+                                        employee_name: row.employee_name,
+                                        educator_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_id,
+                                        educator_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_name,
+                                        education_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_id,
+                                        assigned_education_id: row.main_assigned_education_id,
+                                        attendance_status: false,
+                                        point: '',
+                                        educator_comment: ''
+                                    }
+                                }));
+                            }
+                        };
+
 
                         const [dialogForm, setDialogForm] = useState<IAssignedEducationResult.ICreate>({
                             assigned_education_id: "",
-                            educator_comment: "",
                             education_id: "",
-                            educator_id: "",
-                            educator_name: "",
                             employee_id: "",
                             employee_name: "",
+                            educator_id: "",
+                            educator_name: "",
+                            educator_comment: "",
                             is_education_completed: false,
                             tenant_id: "",
+                            attendance_status: true,
+                            point: 0
                         });
 
 
                         const handleOpenDialog = (assigned_education_id: string) => {
                             setSelectedAssinedEducationId(assigned_education_id);
+                            // assignedEducationResultList.filter((item) => item.$id === item.row_id && item.assigned_education_id === assigned_education_id).map((item) => {
+                            //     setRowForms(prevState => ({
+                            //         ...prevState,
+                            //         [item.employee_id]: {
+                            //             employee_id: item.employee_id,
+                            //             employee_name: item.employee_name,
+                            //             educator_id: item.educator_id,
+                            //             educator_name: item.educator_name,
+                            //             education_id: item.education_id,
+                            //             assigned_education_id: item.assigned_education_id,
+                            //             attendance_status: item.attendance_status,
+                            //             point: item.point,
+                            //             educator_comment: item.educator_comment
+                            //         }
+                            //     }))
+                            // })
                             if (assignedEducationResultList.find((item) => item.assigned_education_id === assigned_education_id)) {
-                                const result = assignedEducationResultList.find((item) => item.assigned_education_id === assigned_education_id);
-                                setDialogForm({
-                                    assigned_education_id: result.assigned_education_id,
-                                    educator_comment: result.educator_comment,
-                                    education_id: result.education_id,
-                                    educator_id: result.educator_id,
-                                    educator_name: result.educator_name,
-                                    employee_id: result.employee_id,
-                                    employee_name: result.employee_name,
-                                    is_education_completed: result.is_education_completed,
-                                    tenant_id: result.tenant_id
+                                assignedEducationResultList.filter((item) => item.$id === item.row_id && item.assigned_education_id === assigned_education_id).map((item) => {
+                                    setRowForms(prevState => ({
+                                        ...prevState,
+                                        [item.row_id]: {
+                                            employee_id: item.employee_id,
+                                            employee_name: item.employee_name,
+                                            educator_id: item.educator_id,
+                                            educator_name: item.educator_name,
+                                            education_id: item.education_id,
+                                            assigned_education_id: item.assigned_education_id,
+                                            attendance_status: item.attendance_status,
+                                            point: item.point,
+                                            educator_comment: item.educator_comment
+                                        }
+                                    }))
                                 })
                             }
                             setOpen(true);
@@ -111,48 +185,82 @@ export class AssignedEducationListController extends UIFormController {
                             setOpen(false);
                         }
 
-                        const handleSubmitDialog = () => {
-                            const submitData: IAssignedEducationResult.ICreate = {
-                                assigned_education_id: selectedAssinedEducationId,
-                                educator_comment: dialogForm.educator_comment,
-                                education_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_id,
-                                educator_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_id,
-                                educator_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_name,
-                                employee_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_id,
-                                employee_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name,
-                                is_education_completed: dialogForm.is_education_completed,
-                                tenant_id: me?.prefs?.organization
-                            }
-                            createAssignedEducationResult({
-                                data: submitData,
-                                documentId: selectedAssinedEducationId
-                            }, () => {
-                                if (submitData.is_education_completed) {
-                                    updateAssignedEducation({
-                                        databaseId: AppInfo.Database,
-                                        collectionId: Collections.AssignedEducation,
-                                        documentId: selectedAssinedEducationId,
-                                        data: { status: "completed" }
-                                    }, () => {
-                                        getAssignedEducationList();
-                                        setOpen(false);
-                                        setSelectedAssinedEducationId("");
-                                        Toast.fire({
-                                            icon: "success",
-                                            title: "Eğitim sonucu başarıyla kaydedildi."
-                                        })
-                                    })
-                                } else {
-                                    getAssignedEducationList();
-                                    setOpen(false);
-                                    setSelectedAssinedEducationId("");
+                        const handleSubmitDialog = async () => {
+                            // const submitData: IAssignedEducationResult.ICreate = {
+                            //     assigned_education_id: selectedAssinedEducationId,
+                            //     educator_comment: dialogForm.educator_comment,
+                            //     education_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_id,
+                            //     educator_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_id,
+                            //     educator_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_name,
+                            //     employee_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_id,
+                            //     employee_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name,
+                            //     is_education_completed: dialogForm.is_education_completed,
+                            //     tenant_id: me?.prefs?.organization
+                            // }
+                            // createAssignedEducationResult({
+                            //     data: submitData,
+                            //     documentId: selectedAssinedEducationId
+                            // }, () => {
+                            //     if (submitData.is_education_completed) {
+                            //         updateAssignedEducation({
+                            //             databaseId: AppInfo.Database,
+                            //             collectionId: Collections.AssignedEducation,
+                            //             documentId: selectedAssinedEducationId,
+                            //             data: { status: "completed" }
+                            //         }, () => {
+                            //             getAssignedEducationList();
+                            //             setOpen(false);
+                            //             setSelectedAssinedEducationId("");
+                            //             Toast.fire({
+                            //                 icon: "success",
+                            //                 title: "Eğitim sonucu başarıyla kaydedildi."
+                            //             })
+                            //         })
+                            //     } else {
+                            //         getAssignedEducationList();
+                            //         setOpen(false);
+                            //         setSelectedAssinedEducationId("");
+                            //         Toast.fire({
+                            //             icon: "success",
+                            //             title: "Eğitim sonucu başarıyla kaydedildi."
+                            //         })
+                            //     }
+
+                            // })
+                            const formattedData = Object.keys(rowForms).map(rowId => {
+                                const row = rowForms[rowId];
+                                return {
+                                    row_id: rowId,
+                                    assigned_education_id: row.assigned_education_id,
+                                    attendance_status: row.attendance_status,
+                                    education_id: row.education_id,
+                                    educator_comment: row.educator_comment,
+                                    educator_id: row.educator_id,
+                                    educator_name: row.educator_name,
+                                    employee_id: row.employee_id,
+                                    employee_name: row.employee_name,
+                                    point: row.point,
+                                    tenant_id: me?.prefs?.organization
+                                };
+                            });
+                            for (const data of formattedData) {
+                                try {
+                                    await createAssignedEducationResult({
+                                        documentId: data.row_id,
+                                        data: data
+                                    });
                                     Toast.fire({
                                         icon: "success",
                                         title: "Eğitim sonucu başarıyla kaydedildi."
-                                    })
+                                    });
+                                } catch (error) {
+                                    console.error("Hata:", error);
+                                    Toast.fire({
+                                        icon: "error",
+                                        title: "Eğitim sonucu kaydedilemedi."
+                                    });
                                 }
-
-                            })
+                            }
                         }
 
 
@@ -171,6 +279,17 @@ export class AssignedEducationListController extends UIFormController {
                                 field: "employee_name",
                                 headerName: "Eğitimi Alacak Personel",
                                 flex: 1,
+                                valueGetter(params) {
+                                    return assignedEducationEmpList.filter((item) => item.main_assigned_education_id === params.row.$id).map((item) => item.employee_name).join(", ");
+                                },
+                                renderCell(params) {
+                                    const employeeNames = params.value.split(", ");
+                                    return (
+                                        <Tooltip title={employeeNames.join(", ")}>
+                                            <span>{employeeNames.slice(0, 1).join(", ")}{employeeNames.length > 1 && ', ...'}</span>
+                                        </Tooltip>
+                                    )
+                                },
                             },
                             {
                                 field: "educator_name",
@@ -195,8 +314,8 @@ export class AssignedEducationListController extends UIFormController {
                             },
                             {
                                 field: "hour",
-                                headerName: "Saat",
-                                width: 100,
+                                headerName: "Eğitim Süresi(Saat)",
+                                width: 130,
                             },
                             {
                                 field: "status",
@@ -222,6 +341,76 @@ export class AssignedEducationListController extends UIFormController {
                                             }
                                         </div>
                                     )
+                                }
+                            }
+                        ];
+
+
+
+
+                        const columnsForDialogContent: GridColDef[] = [
+                            {
+                                field: "employee_name",
+                                headerName: "Adı Soyadı",
+                                flex: 1
+                            },
+                            {
+                                field: "attendance_status",
+                                headerName: "Katılım Durumu",
+                                flex: 1,
+                                renderCell: (params) => {
+                                    const rowId = params.id;
+                                    const attendanceStatus = rowForms[rowId]?.attendance_status || rowForms[params.row.row_id]?.attendance_status;
+                                    return (
+                                        <Checkbox
+
+                                            checked={attendanceStatus}
+                                            onChange={(event) => handleCheckboxChange(rowId, event.target.checked)}
+                                        />
+                                    );
+                                }
+                            },
+                            {
+                                field: "start_date",
+                                headerName: "Katılım Tarihi",
+                                flex: 1,
+                                valueGetter: (params) => {
+                                    return new Date(assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.start_date).toLocaleDateString('tr-TR');
+                                }
+                            },
+                            {
+                                field: "point",
+                                headerName: "Puan",
+                                flex: 1,
+                                renderCell: (params) => {
+                                    const rowId = params.id;
+                                    const employeeId = params.row.row_id;
+                                    const point = rowForms[rowId]?.point || rowForms[employeeId]?.point;
+                                    return (
+                                        <TextField
+                                            type="number"
+                                            value={point}
+                                            variant="standard"
+                                            onChange={(event) => handleTextFieldChange(rowId, 'point', Number(event.target.value))}
+                                            inputProps={{ min: 0, max: 100 }}
+                                        />
+                                    );
+                                }
+                            },
+                            {
+                                field: "educator_comment",
+                                headerName: "Açıklama",
+                                flex: 1,
+                                renderCell: (params) => {
+                                    const rowId = params.id;
+                                    const comment = rowForms[rowId]?.educator_comment || rowForms[params.row.row_id]?.educator_comment;
+                                    return (
+                                        <TextField
+                                            value={comment}
+                                            variant="standard"
+                                            onChange={(event) => handleTextFieldChange(rowId, 'educator_comment', event.target.value)}
+                                        />
+                                    );
                                 }
                             }
                         ];
@@ -256,7 +445,6 @@ export class AssignedEducationListController extends UIFormController {
                                     setAssignEducationNull();
                                 }, 1000);
                             }
-
                         }, [])
 
 
@@ -280,8 +468,10 @@ export class AssignedEducationListController extends UIFormController {
                                             <Dialog
                                                 open={open}
                                                 onClose={handleCloseDialog}
+                                                fullWidth
+                                                maxWidth="md"
                                             >
-                                                <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
+                                                {/* <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
                                                 <DialogContent>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
                                                         <DialogLabel><strong>Eğitim Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name}</DialogLabel>
@@ -301,6 +491,35 @@ export class AssignedEducationListController extends UIFormController {
                                                             label="Eğitim Gerçekleşti"
                                                             labelPlacement="start"
                                                         />
+                                                    </div>
+                                                </DialogContent> */}
+                                                <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
+                                                <DialogContent>
+                                                    <div>
+                                                        <div style={{ height: 300, width: '100%' }}>
+                                                            <StyledDataGrid
+                                                                rows={assignedEducationEmpList.filter((item) => item.main_assigned_education_id === selectedAssinedEducationId && item.employee_name.toLowerCase().includes(filterKey.toLowerCase()))}
+                                                                columns={columnsForDialogContent}
+                                                                getRowId={(row) => row.$id}
+                                                                localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                                isCellEditable={() => false}
+                                                                // onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                                                //     setSelectedEmployees(newRowSelectionModel.map((id: any) => employees.find((employee) => employee.$id === id)));
+                                                                // }}
+                                                                rowHeight={30}
+                                                                columnHeaderHeight={30}
+                                                                initialState={{
+                                                                    pagination: {
+                                                                        paginationModel: {
+                                                                            pageSize: 10,
+                                                                        },
+                                                                    },
+                                                                }}
+                                                                pageSizeOptions={[10, 20, 30]}
+                                                                onRowClick={(params) => initializeRowForm(params.row)} // Satır tıklandığında formu başlat
+
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </DialogContent>
                                                 <DialogActions>

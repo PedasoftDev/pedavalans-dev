@@ -56,8 +56,58 @@ export class CreateDepartmentController extends UIController {
           const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFilterKey(e.target.value);
           }
-          const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+          // const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+          //   e.preventDefault();
+          //   if (departments.some((document) => document.record_id == formDepartment.record_id)) {
+          //     Toast.fire({
+          //       icon: "error",
+          //       title: "Departman eklenirken bir hata oluştu!",
+          //       text: "Departman kodu zaten kullanılmaktadır."
+          //     })
+          //     return;
+          //   }
+          //   const departmentId = nanoid();
+          //   createDocument({
+          //     documentId: departmentId,
+          //     data: {
+          //       ...formDepartment,
+          //       id: departmentId,
+          //       tenant_id: me?.prefs?.organization,
+          //     }
+          //   }, () => {
+          //     selectedPositions.forEach((position) => {
+          //       const positionId = nanoid();
+          //       const createForm: IPositionRelationDepartments.ICreate = {
+          //         id: positionId,
+          //         parent_department_id: departmentId,
+          //         parent_department_name: formDepartment.name,
+          //         relation_position_id: position.$id,
+          //         relation_position_name: position.name,
+          //       }
+          //       createPositionRelationDepartments({
+          //         documentId: positionId,
+          //         data: createForm
+          //       }, () => {
+          //         Toast.fire({
+          //           icon: "success",
+          //           title: "Departman başarıyla eklendi!"
+          //         })
+          //         deleteCache();
+          //         navigate(link + "/list")
+          //       })
+          //     })
+          //   })
+          //   if (isError) {
+          //     Toast.fire({
+          //       icon: "error",
+          //       title: "Departman eklenirken bir hata oluştu!",
+          //       text: error?.message
+          //     })
+          //   }
+          // }
+          const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
+
             if (departments.some((document) => document.record_id == formDepartment.record_id)) {
               Toast.fire({
                 icon: "error",
@@ -66,16 +116,19 @@ export class CreateDepartmentController extends UIController {
               })
               return;
             }
-            const departmentId = nanoid();
-            createDocument({
-              documentId: departmentId,
-              data: {
-                ...formDepartment,
-                id: departmentId,
-                tenant_id: me?.prefs?.organization,
-              }
-            }, () => {
-              selectedPositions.forEach((position) => {
+
+            try {
+              const departmentId = nanoid();
+              await createDocument({
+                documentId: departmentId,
+                data: {
+                  ...formDepartment,
+                  id: departmentId,
+                  tenant_id: me?.prefs?.organization,
+                }
+              });
+
+              for (const position of selectedPositions) {
                 const positionId = nanoid();
                 const createForm: IPositionRelationDepartments.ICreate = {
                   id: positionId,
@@ -84,27 +137,25 @@ export class CreateDepartmentController extends UIController {
                   relation_position_id: position.$id,
                   relation_position_name: position.name,
                 }
-                createPositionRelationDepartments({
+
+                await createPositionRelationDepartments({
                   documentId: positionId,
                   data: createForm
-                }, () => {
-                  Toast.fire({
-                    icon: "success",
-                    title: "Departman başarıyla eklendi!"
-                  })
-                  deleteCache();
-                  navigate(link + "/list")
-                })
-              })
-            })
-            if (isError) {
+                });
+              }
+
               Toast.fire({
-                icon: "error",
-                title: "Departman eklenirken bir hata oluştu!",
-                text: error?.message
-              })
+                icon: "success",
+                title: "Departman başarıyla eklendi!"
+              });
+
+              deleteCache();
+              navigate(link + "/list");
+            } catch (error) {
+              console.log(error);
             }
           }
+
 
           const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFormDepartment({ ...formDepartment, [e.target.name]: e.target.value });

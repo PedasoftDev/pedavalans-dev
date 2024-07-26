@@ -1,6 +1,6 @@
-import { ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cTop, useEffect, useNavigate, useParams, useState } from "@tuval/forms";
+import { ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cTop, nanoid, useEffect, useNavigate, useParams, useState } from "@tuval/forms";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
-import { useGetMe, useListAccounts } from "@realmocean/sdk";
+import { Query, Services, useDeleteCache, useGetMe, useListAccounts } from "@realmocean/sdk";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import Education from "../../../../server/hooks/education/main";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
@@ -19,9 +19,13 @@ import Swal from "sweetalert2";
 import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import { Toast } from "../../../components/Toast";
+import StyledDataGrid from "../../../components/StyledDataGrid";
+import { GridColDef, trTR } from "@mui/x-data-grid";
+import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
+import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 const resetForm: IAssignedEducation.IBase = {
+  id: "",
   education_code: "",
-  employee_id: "",
   educator_id: "",
   start_date: "",
   end_date: "",
@@ -35,9 +39,15 @@ const resetForm: IAssignedEducation.IBase = {
   education_plan_name: "",
   location: "",
   educator_name: "",
-  employee_name: "",
   status: "open",
 };
+
+const assignedEducationeEmpResetForm: IAssignedEducationEmployees.ICreate = {
+  main_assigned_education_id: "",
+  employee_id: "",
+  employee_name: "",
+  tenant_id: ""
+}
 
 const educationResultReset: IAssignedEducationResult.IBase = {
   assigned_education_id: "",
@@ -59,6 +69,7 @@ export class UpdateAssignedEducationController extends UIController {
   public LoadView(): UIView {
     const { id }: { id: string } = useParams();
     const navigate = useNavigate();
+    const { deleteCache } = useDeleteCache("console")
 
     const { me, isLoading } = useGetMe("console");
     const { educationList, isLoading: isLoadingEducation } = Education.GetList();
@@ -69,9 +80,11 @@ export class UpdateAssignedEducationController extends UIController {
     const { assignedEducationResult, isLoadingAssignedEducationResult } = AssignEducationResult.Get(id);
     const { createAssignedEducationResult } = AssignEducationResult.Create();
     const { updateAssignedEducation } = AssignEducation.Update();
-
+    const { assingedEducationEmployeesByMainId, isLoading: isLoadingByMainId } = AssignedEducationEmployees.ListByMainAssignedEmp(id);
+    const { updateAssignedEducationEmp } = AssignedEducationEmployees.Update();
+    const { createAssignedEducationEmp } = AssignedEducationEmployees.Create();
     return (
-      isLoading || isLoadingAccounts || isLoadingEmployees || isLoadingAssignedEducation || isLoadingEducation || isLoadingResult || isLoadingAssignedEducationResult ? VStack(Spinner()) :
+      isLoading || isLoadingAccounts || isLoadingByMainId || isLoadingEmployees || isLoadingAssignedEducation || isLoadingEducation || isLoadingResult || isLoadingAssignedEducationResult ? VStack(Spinner()) :
         (accountRelations.length === 0 || (accountRelations[0].is_admin === false && accountRelations[0]?.authorization_profile !== "admin")) ?
           UINavigate("/login") :
           UIViewBuilder(() => {
@@ -79,65 +92,113 @@ export class UpdateAssignedEducationController extends UIController {
             const [educationResult, setEducationResult] = useState<IAssignedEducationResult.IBase>(educationResultReset);
             const [isActive, setIsActive] = useState(true);
 
+            const [assignedEmployees, setAssignedEmployees] = useState<string[]>([])
+
+
             const navigateToList = () => navigate("/app/education/assigned");
 
-            const handleSubmit = (e: any) => {
+            // const handleSubmit = (e: any) => {
+            //   e.preventDefault();
+            //   updateAssignedEducation({
+            //     databaseId: AppInfo.Database,
+            //     collectionId: Collections.AssignedEducation,
+            //     documentId: id,
+            //     data: {
+            //       ...form
+            //     }
+            //   }, () => {
+            //     if (assignedEducationResult) {
+            //       updateAssignedEducation({
+            //         databaseId: AppInfo.Database,
+            //         collectionId: Collections.AssignedEducationResult,
+            //         documentId: id,
+            //         data: {
+            //           ...educationResult
+            //         }
+            //       }, () => {
+            //         Toast.fire({
+            //           icon: "success",
+            //           title: "Eğitim başarıyla güncellendi."
+            //         })
+            //         navigateToList();
+            //       })
+            //     } else if (form.status === "completed") {
+            //       createAssignedEducationResult({
+            //         documentId: id,
+            //         data: {
+            //           assigned_education_id: id,
+            //           education_id: form.education_id,
+            //           educator_comment: educationResult.educator_comment,
+            //           educator_id: form.educator_id,
+            //           employee_id: form.employee_id,
+            //           educator_name: form.educator_name,
+            //           employee_name: form.employee_name,
+            //           is_active: true,
+            //           is_deleted: false,
+            //           is_education_completed: true,
+            //           tenant_id: me?.prefs?.organization
+            //         }
+            //       }, () => {
+            //         Toast.fire({
+            //           icon: "success",
+            //           title: "Eğitim başarıyla güncellendi."
+            //         })
+            //         navigateToList();
+            //       })
+            //     } else {
+
+            //       Toast.fire({
+            //         icon: "success",
+            //         title: "Eğitim başarıyla güncellendi."
+            //       })
+            //       navigateToList();
+            //     }
+
+            //   })
+            // }
+
+            const handleSubmit = (e) => {
               e.preventDefault();
+              Toast.fire({
+                icon: "info",
+                title: "Eğitici düzenleniyor...",
+                timer: 5000,
+              })
               updateAssignedEducation({
                 databaseId: AppInfo.Database,
                 collectionId: Collections.AssignedEducation,
                 documentId: id,
-                data: {
-                  ...form
-                }
+                data: { ...form }
               }, () => {
-                if (assignedEducationResult) {
-                  updateAssignedEducation({
+                assingedEducationEmployeesByMainId.forEach((item) => {
+                  updateAssignedEducationEmp({
                     databaseId: AppInfo.Database,
-                    collectionId: Collections.AssignedEducationResult,
-                    documentId: id,
+                    collectionId: Collections.AssignedEducationEmployees,
+                    documentId: item.$id,
                     data: {
-                      ...educationResult
+                      is_deleted: true,
+                      is_active: false
                     }
-                  }, () => {
-                    Toast.fire({
-                      icon: "success",
-                      title: "Eğitim başarıyla güncellendi."
-                    })
-                    navigateToList();
                   })
-                } else if (form.status === "completed") {
-                  createAssignedEducationResult({
-                    documentId: id,
+                })
+                assignedEmployees.forEach((employee_id) => {
+                  const nanoId = nanoid();
+                  createAssignedEducationEmp({
+                    documentId: nanoId,
                     data: {
-                      assigned_education_id: id,
-                      education_id: form.education_id,
-                      educator_comment: educationResult.educator_comment,
-                      educator_id: form.educator_id,
-                      employee_id: form.employee_id,
-                      educator_name: form.educator_name,
-                      employee_name: form.employee_name,
-                      is_active: true,
-                      is_deleted: false,
-                      is_education_completed: true,
+                      main_assigned_education_id: id,
+                      employee_id: employee_id,
+                      employee_name: employees.find((item) => item.$id === employee_id).first_name + " " + employees.find((item) => item.$id === employee_id).last_name,
                       tenant_id: me?.prefs?.organization
                     }
-                  }, () => {
-                    Toast.fire({
-                      icon: "success",
-                      title: "Eğitim başarıyla güncellendi."
-                    })
-                    navigateToList();
                   })
-                } else {
-
-                  Toast.fire({
-                    icon: "success",
-                    title: "Eğitim başarıyla güncellendi."
-                  })
-                  navigateToList();
-                }
-
+                })
+                Toast.fire({
+                  icon: "success",
+                  title: "Eğitim başarıyla güncellendi!"
+                })
+                deleteCache();
+                navigateToList();
               })
             }
 
@@ -145,6 +206,19 @@ export class UpdateAssignedEducationController extends UIController {
               setForm(removeDollarProperties(assignedEducation));
               setEducationResult(removeDollarProperties(assignedEducationResult));
               setIsActive(assignedEducation.is_active);
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.AssignedEducationEmployees,
+                [
+                  Query.equal("main_assigned_education_id", id),
+                  Query.equal("is_deleted", false),
+                  Query.equal("is_active", true),
+                  Query.limit(10000)
+                ]
+              ).then((res) => {
+                setAssignedEmployees(res.documents.map((doc) => doc.employee_id));
+              })
             }, [])
 
             const onDelete = () => {
@@ -181,6 +255,23 @@ export class UpdateAssignedEducationController extends UIController {
               { value: 'open', label: 'Açık' },
               { value: 'completed', label: 'Tamamlandı' }
             ];
+
+            const columns: GridColDef[] = [
+              {
+                field: "first_name",
+                headerName: "Personel Adı",
+                flex: 1
+              },
+              {
+                field: "last_name",
+                headerName: "Personel Soyadı",
+                flex: 1
+              }
+            ];
+            const [filterKey, setFilterKey] = useState("");
+            const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+              setFilterKey(e.target.value);
+            }
 
             return (
               VStack({ alignment: cTop })(
@@ -219,14 +310,42 @@ export class UpdateAssignedEducationController extends UIController {
                             />
                           )}
                         />
-                        <TextField
-                          name="employee_name"
-                          label="Çalışan"
-                          value={form.employee_name}
-                          size="small"
-                          required
-                          fullWidth
-                        />
+                        <div>
+                          <TextField placeholder="Personel Arayın..." size="small" fullWidth onChange={handleSearch} />
+                          <div style={{ height: 300, width: '100%' }}>
+                            <StyledDataGrid
+                              rows={
+                                employees.filter((employee) => {
+                                  if (filterKey === "") {
+                                    return employee;
+                                  } else if (employee.first_name.toLowerCase().includes(filterKey.toLowerCase()) || employee.last_name.toLowerCase().includes(filterKey.toLowerCase())) {
+                                    return employee;
+                                  }
+                                })
+                              }
+                              columns={columns}
+                              getRowId={(row) => row.$id}
+                              localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                              isCellEditable={() => false}
+                              disableRowSelectionOnClick
+                              checkboxSelection
+                              onRowSelectionModelChange={(newRowSelectionModel: any) => {
+                                setAssignedEmployees(newRowSelectionModel);
+                              }}
+                              rowSelectionModel={assignedEmployees}
+                              rowHeight={30}
+                              columnHeaderHeight={30}
+                              initialState={{
+                                pagination: {
+                                  paginationModel: {
+                                    pageSize: 10,
+                                  },
+                                },
+                              }}
+                              pageSizeOptions={[10, 20, 30]}
+                            />
+                          </div>
+                        </div>
                         <Autocomplete
                           options={accounts}
                           value={accounts.find((account) => account.$id === form.educator_id) || null}
@@ -347,7 +466,7 @@ export class UpdateAssignedEducationController extends UIController {
                             }}
                           />
                         </div>
-                        {(assignedEducationResult || form.status === "completed") && <TextField
+                        {/* {(assignedEducationResult || form.status === "completed") && <TextField
                           label="Eğitimcinin Yorumu"
                           size="small"
                           fullWidth
@@ -355,7 +474,7 @@ export class UpdateAssignedEducationController extends UIController {
                           rows={4}
                           value={educationResult.educator_comment}
                           onChange={(e) => setEducationResult({ ...educationResult, educator_comment: e.target.value })}
-                        />}
+                        />} */}
                         <Autocomplete
                           options={statusOptions}
                           value={statusOptions.find((option) => option.value === form.status) || null}

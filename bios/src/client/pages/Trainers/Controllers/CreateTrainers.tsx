@@ -37,7 +37,6 @@ export class CreateTrainers extends UIController {
 
     const [form, setForm] = useState<ITrainers.ICreate>(formReset);
     const [filterKey, setFilterKey] = useState("");
-    const [trainerEducationsForm, setTrainerEducationsForm] = useState<ITrainerEducations.ICreate>(trainerEducationsFormReset);
     const [educations, setEducations] = useState<any[]>([]);
 
 

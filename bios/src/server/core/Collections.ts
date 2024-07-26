@@ -39,6 +39,7 @@ namespace Collections {
     export const Trainers = "trainers";
     export const TrainerEducations = "trainer_educations";
     export const PositionRelationDepartments = "position_relation_departments";
+    export const AssignedEducationEmployees = "assigned_education_employees";
 }
 
 export default Collections;
