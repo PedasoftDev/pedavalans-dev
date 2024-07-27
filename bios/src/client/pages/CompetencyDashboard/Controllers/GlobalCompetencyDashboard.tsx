@@ -34,6 +34,7 @@ import OrganizationStructureEmployee from '../../../../server/hooks/organization
 import { BarChart } from '@mui/x-charts';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { FaAngleLeft } from "react-icons/fa";
+import EChartsReact from 'echarts-for-react';
 
 
 
@@ -298,7 +299,7 @@ export class GlobalCompetencyDashboard extends UIController {
                         gap: '5px',
                       }}
                     >
-                      <BarChart
+                      {/* <BarChart
                         series={[{
                           data: departmentAverages.sort(
                             (a, b) => a.average - b.average
@@ -310,6 +311,39 @@ export class GlobalCompetencyDashboard extends UIController {
                           scaleType: "band"
                         }]}
                         margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
+                      /> */}
+                      <EChartsReact
+                        option={{
+                          tooltip: {
+                            trigger: "axis"
+                          },
+                          grid: {
+                            left: '20%',
+                            right: '10%',
+                          },
+                          width: 300,
+                          xAxis: {
+                            type: 'value',
+                          },
+                          yAxis: {
+                            type: 'category',
+                            data: departmentAverages
+                              .map((x) => competencyDepartments.find(
+                                (competencyDepartment) => competencyDepartment.competency_department_id === x.departmentId
+                              )?.competency_department_name),
+                            axisLabel: {
+                              rotate: 45, // Etiketleri 45 derece döndürme
+                              formatter: (value) => value.length > 10 ? `${value.slice(0, 10)}...` : value, // Uzun etiketleri kırpma
+                            },
+                          },
+                          series: [{
+                            data: departmentAverages.sort(
+                              (a, b) => a.average - b.average
+                            ).map((x) => x.average),
+                            color: "#1D5291",
+                            type: 'bar',
+                          }],
+                        }}
                       />
 
                     </CardContent>

@@ -405,7 +405,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                                 </div>
                                 <div style={{ flexGrow: '1' }}></div>
                                 <span style={{ fontFamily: 'Poppins', fontSize: '10px' }}>
-                                {Resources.version}
+                                    {Resources.version}
                                 </span>
                             </div>
                         </NavbarDiv>

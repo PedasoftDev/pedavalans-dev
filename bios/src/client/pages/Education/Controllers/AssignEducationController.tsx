@@ -6,7 +6,7 @@ import {
     FormControl,
     Autocomplete,
 } from "@mui/material";
-import { EmailBroker, useGetMe, useListAccounts } from "@realmocean/sdk";
+import { EmailBroker, useDeleteCache, useGetMe, useListAccounts } from "@realmocean/sdk";
 import Form from "../../Competency/Views/Form";
 import Education from "../../../../server/hooks/education/main";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
@@ -25,6 +25,7 @@ import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationE
 import { create } from "@mui/material/styles/createTransitions";
 import { Toast } from "../../../components/Toast";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
+import AppInfo from "../../../../AppInfo";
 
 const resetForm: IAssignedEducation.ICreate = {
     id: "",
@@ -54,6 +55,7 @@ export class AssignEducationController extends UIFormController {
 
         const navigate = useNavigate();
         const { id } = useParams();
+        const { deleteCache } = useDeleteCache(AppInfo.Name);
 
         const { me, isLoading } = useGetMe("console")
 
@@ -152,6 +154,7 @@ export class AssignEducationController extends UIFormController {
                                                         startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
                                                         endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
                                                     })
+                                                deleteCache();
                                                 navigateToList();
                                             }
                                         }
@@ -211,6 +214,7 @@ export class AssignEducationController extends UIFormController {
                                                         startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
                                                         endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
                                                     })
+                                                deleteCache();
                                                 navigateToList();
                                             }
                                         }

@@ -6,7 +6,7 @@ import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import SummarizeIcon from '@mui/icons-material/Summarize';
-import { Query, Services, useGetMe } from "@realmocean/sdk";
+import { Query, Services, useDeleteCache, useGetMe } from "@realmocean/sdk";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import IAssignedEducationResult from "../../../interfaces/IAssignedEducationResult";
 import AssignEducationResult from "../../../../server/hooks/assignEducationResult/main";
@@ -47,6 +47,7 @@ export class AssignedEducationListController extends UIFormController {
 
     public LoadView(): UIView {
         const { id } = useParams();
+        const { deleteCache } = useDeleteCache(AppInfo.Name);
 
         const dispatch = useAppDispatch();
         const selector = useAppSelector;
@@ -58,6 +59,7 @@ export class AssignedEducationListController extends UIFormController {
         const { assignedEducationResultList, isLoadingAssignedEducationResultList } = AssignEducationResult.GetList(me?.prefs?.organization);
         const { updateAssignedEducation } = AssignEducation.Update();
         const { createAssignedEducationResult } = AssignEducationResult.Create();
+        const { updateAssignedEducationResult } = AssignEducationResult.Update();
         const { educationList, isLoading: isLoadingEducations } = Education.GetList();
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
         const { educationCompetencyRelationList, isLoading: isLoadingRelation } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
@@ -182,51 +184,11 @@ export class AssignedEducationListController extends UIFormController {
                         }
 
                         const handleCloseDialog = () => {
+                            deleteCache()
                             setOpen(false);
                         }
 
                         const handleSubmitDialog = async () => {
-                            // const submitData: IAssignedEducationResult.ICreate = {
-                            //     assigned_education_id: selectedAssinedEducationId,
-                            //     educator_comment: dialogForm.educator_comment,
-                            //     education_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_id,
-                            //     educator_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_id,
-                            //     educator_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.educator_name,
-                            //     employee_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_id,
-                            //     employee_name: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name,
-                            //     is_education_completed: dialogForm.is_education_completed,
-                            //     tenant_id: me?.prefs?.organization
-                            // }
-                            // createAssignedEducationResult({
-                            //     data: submitData,
-                            //     documentId: selectedAssinedEducationId
-                            // }, () => {
-                            //     if (submitData.is_education_completed) {
-                            //         updateAssignedEducation({
-                            //             databaseId: AppInfo.Database,
-                            //             collectionId: Collections.AssignedEducation,
-                            //             documentId: selectedAssinedEducationId,
-                            //             data: { status: "completed" }
-                            //         }, () => {
-                            //             getAssignedEducationList();
-                            //             setOpen(false);
-                            //             setSelectedAssinedEducationId("");
-                            //             Toast.fire({
-                            //                 icon: "success",
-                            //                 title: "Eğitim sonucu başarıyla kaydedildi."
-                            //             })
-                            //         })
-                            //     } else {
-                            //         getAssignedEducationList();
-                            //         setOpen(false);
-                            //         setSelectedAssinedEducationId("");
-                            //         Toast.fire({
-                            //             icon: "success",
-                            //             title: "Eğitim sonucu başarıyla kaydedildi."
-                            //         })
-                            //     }
-
-                            // })
                             const formattedData = Object.keys(rowForms).map(rowId => {
                                 const row = rowForms[rowId];
                                 return {
@@ -261,6 +223,55 @@ export class AssignedEducationListController extends UIFormController {
                                     });
                                 }
                             }
+                            updateAssignedEducation({
+                                databaseId: AppInfo.Database,
+                                collectionId: Collections.AssignedEducation,
+                                documentId: selectedAssinedEducationId,
+                                data: {
+                                    status: "completed"
+                                }
+                            });
+                            handleCloseDialog();
+                        }
+
+                        const handleUpdateDialog = async () => {
+                            const formattedData = Object.keys(rowForms).map(rowId => {
+                                const row = rowForms[rowId];
+                                return {
+                                    row_id: rowId,
+                                    assigned_education_id: row.assigned_education_id,
+                                    attendance_status: row.attendance_status,
+                                    education_id: row.education_id,
+                                    educator_comment: row.educator_comment,
+                                    educator_id: row.educator_id,
+                                    educator_name: row.educator_name,
+                                    employee_id: row.employee_id,
+                                    employee_name: row.employee_name,
+                                    point: row.point,
+                                    tenant_id: me?.prefs?.organization
+                                };
+                            });
+                            for (const data of formattedData) {
+                                try {
+                                    await updateAssignedEducationResult({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.AssignedEducationResult,
+                                        documentId: data.row_id,
+                                        data: data
+                                    });
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Eğitim sonucu başarıyla güncellendi."
+                                    });
+                                } catch (error) {
+                                    console.error("Hata:", error);
+                                    Toast.fire({
+                                        icon: "error",
+                                        title: "Eğitim sonucu güncellenemedi."
+                                    });
+                                }
+                            }
+
                         }
 
 
@@ -523,8 +534,9 @@ export class AssignedEducationListController extends UIFormController {
                                                     </div>
                                                 </DialogContent>
                                                 <DialogActions>
-                                                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
                                                     <Button onClick={handleCloseDialog} color='error' variant='contained'>İptal</Button>
+                                                    {assignedEducationResultList.find((item) => item.assigned_education_id === selectedAssinedEducationId) &&
+                                                        <Button variant='contained' color='primary' onClick={handleUpdateDialog}>Düzenle</Button>}
                                                     {!assignedEducationResultList.find((item) => item.assigned_education_id === selectedAssinedEducationId) &&
                                                         <Button variant='contained' color='primary' onClick={handleSubmitDialog}>Kaydet</Button>}
                                                 </DialogActions>
