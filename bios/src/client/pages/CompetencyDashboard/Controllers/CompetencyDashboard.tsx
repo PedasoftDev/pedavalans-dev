@@ -31,7 +31,7 @@ import CompetencyCard from '../Views/CompetencyCard';
 import Competency from '../../../../server/hooks/competency/main';
 import CompetencyDepartment from '../../../../server/hooks/competencyDepartment/main';
 import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main';
-import { BarChart } from '@mui/x-charts';
+import { BarChart, Gauge, gaugeClasses } from '@mui/x-charts';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { FaAngleLeft } from "react-icons/fa";
 import EChartsReact from 'echarts-for-react';
@@ -76,7 +76,20 @@ export class CompetencyDashboard extends UIController {
     const [departmens, setDepartmens] = useState([
       { employee_id: "", competency_department_id: "", failed_count: 0, department_name: "" }
     ])
+    //Gauge için ayarlar
 
+    const getColor = (value) => {
+      if (value >= 0 && value <= 39) {
+        return '#f44336' // Kırmızı
+      } else if (value >= 40 && value <= 69) {
+        return '#ffc107' // Sarı
+      } else if (value >= 70 && value <= 100) {
+        return '#52b201' // Yeşil
+      } else {
+        return '#000' // Varsayılan olarak siyah (hata durumu)
+      }
+    }
+    //
     const columns: GridColDef[] = [
       {
         field: 'employee_name',
@@ -136,6 +149,35 @@ export class CompetencyDashboard extends UIController {
         width: 150,
         editable: false,
         flex: 1,
+        renderCell: (params) => {
+          const value = params.value;
+          return (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: 80, height: 80 }}>
+                <Gauge
+                  value={Math.floor(value)}
+                  startAngle={-110}
+                  endAngle={110}
+                  width={80}
+                  height={80}
+                  cornerRadius="50%"
+                  sx={(theme) => ({
+                    [`& .${gaugeClasses.valueText}`]: {
+                      fontSize: 18,
+                    },
+                    [`& .${gaugeClasses.valueArc}`]: {
+                      fill: getColor(Math.floor(value)),
+                    },
+                    [`& .${gaugeClasses.referenceArc}`]: {
+                      fill: theme.palette.text.disabled,
+                    },
+                  })}
+                  text={({ value }) => `%${value}`}
+                />
+              </div>
+            </div>
+          );
+        },
       },
     ];
 

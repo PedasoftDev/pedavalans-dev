@@ -70,6 +70,8 @@ export class AssignedEducationListController extends UIFormController {
 
         const [rowsActive, setRowsActive] = useState(true);
         const [filterKey, setFilterKey] = useState("");
+        const [checkedRows, setCheckedRows] = useState({});
+
 
         return (
             isLoading || isLoadingResult || isLoadingAssignedEducationEmpList || isLoadingAssignedEducationResultList || isLoadingEducationPlan || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
@@ -84,7 +86,21 @@ export class AssignedEducationListController extends UIFormController {
                         const assignEducationState: IAssignedEducation.IBase = selector(selectAssignEducation);
                         const [rowForms, setRowForms] = useState([]);
 
+                        // const handleCheckboxChange = (rowId, checked) => {
+                        //     setChecked(true)
+                        //     setRowForms(prevState => ({
+                        //         ...prevState,
+                        //         [rowId]: {
+                        //             ...prevState[rowId],
+                        //             attendance_status: checked
+                        //         }
+                        //     }));
+                        // };
                         const handleCheckboxChange = (rowId, checked) => {
+                            setCheckedRows(prevState => ({
+                                ...prevState,
+                                [rowId]: checked
+                            }));
                             setRowForms(prevState => ({
                                 ...prevState,
                                 [rowId]: {
@@ -93,6 +109,7 @@ export class AssignedEducationListController extends UIFormController {
                                 }
                             }));
                         };
+
 
                         const handleTextFieldChange = (rowId, field, value) => {
                             // Puan için 0-100 arası kontrol
@@ -359,6 +376,74 @@ export class AssignedEducationListController extends UIFormController {
 
 
 
+                        // const columnsForDialogContent: GridColDef[] = [
+                        //     {
+                        //         field: "employee_name",
+                        //         headerName: "Adı Soyadı",
+                        //         flex: 1
+                        //     },
+                        //     {
+                        //         field: "attendance_status",
+                        //         headerName: "Katılım Durumu",
+                        //         flex: 1,
+                        //         renderCell: (params) => {
+                        //             const rowId = params.id;
+                        //             const attendanceStatus = rowForms[rowId]?.attendance_status || rowForms[params.row.row_id]?.attendance_status;
+                        //             return (
+                        //                 <Checkbox
+                        //                     checked={attendanceStatus}
+                        //                     onChange={(event) => handleCheckboxChange(rowId, event.target.checked)}
+                        //                 />
+                        //             );
+                        //         }
+                        //     },
+                        //     {
+                        //         field: "end_date",
+                        //         headerName: "Katılım Tarihi",
+                        //         flex: 1,
+                        //         valueGetter: (params) => {
+                        //             checked ? ((new Date(assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.end_date).toLocaleDateString('tr-TR')))
+                        //                 : ((""))
+                        //         }
+                        //     },
+                        //     {
+                        //         field: "point",
+                        //         headerName: "Puan",
+                        //         flex: 1,
+                        //         renderCell: (params) => {
+                        //             const rowId = params.id;
+                        //             const employeeId = params.row.row_id;
+                        //             const point = rowForms[rowId]?.point || rowForms[employeeId]?.point;
+                        //             return (
+                        //                 <TextField
+                        //                     disabled={!checked}
+                        //                     type="number"
+                        //                     value={point}
+                        //                     variant="standard"
+                        //                     onChange={(event) => handleTextFieldChange(rowId, 'point', Number(event.target.value))}
+                        //                     inputProps={{ min: 0, max: 100 }}
+                        //                 />
+                        //             );
+                        //         }
+                        //     },
+                        //     {
+                        //         field: "educator_comment",
+                        //         headerName: "Açıklama",
+                        //         flex: 1,
+                        //         renderCell: (params) => {
+                        //             const rowId = params.id;
+                        //             const comment = rowForms[rowId]?.educator_comment || rowForms[params.row.row_id]?.educator_comment;
+                        //             return (
+                        //                 <TextField
+                        //                     value={comment}
+                        //                     variant="standard"
+                        //                     onChange={(event) => handleTextFieldChange(rowId, 'educator_comment', event.target.value)}
+                        //                 />
+                        //             );
+                        //         }
+                        //     }
+                        // ];
+
                         const columnsForDialogContent: GridColDef[] = [
                             {
                                 field: "employee_name",
@@ -372,21 +457,24 @@ export class AssignedEducationListController extends UIFormController {
                                 renderCell: (params) => {
                                     const rowId = params.id;
                                     const attendanceStatus = rowForms[rowId]?.attendance_status || rowForms[params.row.row_id]?.attendance_status;
+                                    const isChecked = checkedRows[rowId] || false;
                                     return (
                                         <Checkbox
-
-                                            checked={attendanceStatus}
+                                            checked={isChecked}
                                             onChange={(event) => handleCheckboxChange(rowId, event.target.checked)}
                                         />
                                     );
                                 }
                             },
                             {
-                                field: "start_date",
+                                field: "end_date",
                                 headerName: "Katılım Tarihi",
                                 flex: 1,
                                 valueGetter: (params) => {
-                                    return new Date(assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.start_date).toLocaleDateString('tr-TR');
+                                    const isChecked = checkedRows[params.id] || false;
+                                    return isChecked ?
+                                        (new Date(assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.end_date).toLocaleDateString('tr-TR')) :
+                                        ("");
                                 }
                             },
                             {
@@ -397,8 +485,10 @@ export class AssignedEducationListController extends UIFormController {
                                     const rowId = params.id;
                                     const employeeId = params.row.row_id;
                                     const point = rowForms[rowId]?.point || rowForms[employeeId]?.point;
+                                    const isChecked = checkedRows[rowId] || false;
                                     return (
                                         <TextField
+                                            disabled={!isChecked}
                                             type="number"
                                             value={point}
                                             variant="standard"
@@ -514,9 +604,6 @@ export class AssignedEducationListController extends UIFormController {
                                                                 getRowId={(row) => row.$id}
                                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                                 isCellEditable={() => false}
-                                                                // onRowSelectionModelChange={(newRowSelectionModel: any) => {
-                                                                //     setSelectedEmployees(newRowSelectionModel.map((id: any) => employees.find((employee) => employee.$id === id)));
-                                                                // }}
                                                                 rowHeight={30}
                                                                 columnHeaderHeight={30}
                                                                 initialState={{

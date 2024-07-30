@@ -1,7 +1,7 @@
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useState } from "@tuval/forms";
 import React, { useEffect } from "react";
 import { Views } from "../../../components/Views";
-import { Box, Grid, IconButton, Tooltip } from "@mui/material";
+import { Box, Button, Grid, IconButton, Tooltip } from "@mui/material";
 import { CgArrowsExpandLeft } from "react-icons/cg";
 import { BackgroundDiv, ListItem, PendingTasksDiv, TaskList, ToggleDiv, ToggleDivHeader, WelcomeText } from "../Views/Views";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
@@ -24,6 +24,7 @@ import ICompetencyDepartment from "../../../interfaces/ICompetencyDepartment";
 import { setPendingEvaluation } from "../../../features/pendingEvaluation";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef } from "@mui/x-data-grid";
+import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 
 
 
@@ -40,9 +41,9 @@ export class PendingTaskListController extends UIController {
         const dispatch = useAppDispatch();
         const setAssignEducationToHook = (value: IAssignedEducation.IBase) => dispatch(setAssignEducation(value));
         const setPendingEvaluationToHook = (value: { polyvalence_table_id: string; evaluation_period: string; }) => dispatch(setPendingEvaluation(value));
-
+        const { assignedEducationEmpList, isLoadingAssignedEducationEmpList } = AssignedEducationEmployees.GetList(me?.prefs?.organization);
         return (
-            isLoading || isLoadingResult ? VStack(Spinner()) :
+            isLoading || isLoadingResult || isLoadingAssignedEducationEmpList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
                     const [isOpen, setIsOpen] = useState(-1);
                     const [isLoadingValues, setIsLoadingValues] = useState(true);
@@ -57,14 +58,36 @@ export class PendingTaskListController extends UIController {
 
                     const columns: GridColDef[] = [
                         {
-                            field: 'employee_name',
-                            headerName: 'Çalışan Adı',
-                            flex: 1
-                        },
-                        {
                             field: 'education_name',
                             headerName: 'Eğitim Adı',
-                            flex: 1
+                            flex: 1,
+                            renderCell: (params) => {
+                                return (
+                                    <Button
+                                        onClick={() => handleClickAssignedEducation(params.row as IAssignedEducation.IBase)}
+                                        variant="text"
+                                        style={{ textTransform: "none" }}
+                                    >
+                                        {params.value}
+                                    </Button>
+                                )
+                            }
+                        },
+                        {
+                            field: 'employee_name',
+                            headerName: 'Çalışan Adı',
+                            flex: 1,
+                            valueGetter(params) {
+                                return assignedEducationEmpList.filter((item) => item.main_assigned_education_id === params.row.$id).map((item) => item.employee_name).join(", ");
+                            },
+                            renderCell(params) {
+                                const employeeNames = params.value.split(", ");
+                                return (
+                                    <Tooltip title={employeeNames.join(", ")}>
+                                        <span>{employeeNames.slice(0, 1).join(", ")}{employeeNames.length > 1 && ', ...'}</span>
+                                    </Tooltip>
+                                )
+                            },
                         },
                         {
                             field: 'start_date',
@@ -77,21 +100,6 @@ export class PendingTaskListController extends UIController {
                             headerName: 'Bitiş Tarihi',
                             flex: 1,
                             valueGetter: (params) => new Date(params.row.end_date).toLocaleDateString("tr-TR")
-                        },
-                        {
-                            field: 'id',
-                            headerName: 'İşlem',
-                            width: 100,
-                            renderCell: (params) => {
-                                return (
-                                    <Tooltip title="Eğitimi Gerçekleştir">
-                                        <IconButton onClick={() => handleClickAssignedEducation(params.row as IAssignedEducation.IBase)}>
-                                            <CgArrowsExpandLeft />
-                                        </IconButton>
-                                    </Tooltip>
-                                )
-                            }
-
                         }
                     ]
 
@@ -101,6 +109,7 @@ export class PendingTaskListController extends UIController {
                     }
 
                     useEffect(() => {
+                        console.log(assignedEducationEmpList)
 
                         const getPendingTasks = async () => {
                             const queriesAssignedEducation = [Query.limit(10000), Query.equal("status", "open"), Query.equal("educator_id", me?.$id)]
