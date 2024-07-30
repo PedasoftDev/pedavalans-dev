@@ -280,6 +280,26 @@ class PedavalansService extends RealmoceanService {
         return res.status(500).json({ message: e.message });
       }
     })
+    router.post("/com.pedavalans.service.main/listEmployeeCompetencyValue", async (req, res) => {
+      const { competency_id, competency_evaluation_period } = req.body
+      try {
+        const result = await this.listEmployeeCompetencyValue(competency_id, competency_evaluation_period);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    })
+    router.post("/com.pedavalans.service.main/listEmployeeCompetencyValueGlobal", async (req, res) => {
+      const { competency_id } = req.body
+      try {
+        const result = await this.listEmployeeCompetencyValueGlobal(competency_id);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    })
 
 
 
@@ -1184,6 +1204,15 @@ class PedavalansService extends RealmoceanService {
     }
   }
 
+  async listEmployeeCompetencyValue (competency_id, competency_evaluation_period): Promise<any> {
+    const empList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [this.databaseService.Query.equal('competency_id', competency_id),this.databaseService.Query.equal('competency_evaluation_period',competency_evaluation_period),this.databaseService.Query.equal('is_active_competency_value', true), this.databaseService.Query.equal('is_deleted_competency_value', false),this.databaseService.Query.notEqual("competency_target_value", "no-target"),this.databaseService.Query.notEqual("competency_real_value", ""), this.databaseService.Query.limit(10000)]);
+    return empList.documents;
+  }
+  async listEmployeeCompetencyValueGlobal (competency_id): Promise<any> {
+    const empList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [this.databaseService.Query.equal('competency_id', competency_id),this.databaseService.Query.equal('is_active_competency_value', true), this.databaseService.Query.equal('is_deleted_competency_value', false),this.databaseService.Query.notEqual("competency_target_value", "no-target"),this.databaseService.Query.notEqual("competency_real_value", ""), this.databaseService.Query.limit(10000)]);
+    return empList.documents;
+
+  }
 
 }
 

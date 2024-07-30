@@ -314,7 +314,9 @@ export class EmployeeDashboard extends UIController {
                 </IconButton>
               )
             ).height().width().paddingTop("10px"),
-            Views.Title('Kişi Bilgileri').paddingTop('10px')
+            Views.Title(
+              `${employeeDashboardState.first_name} ${employeeDashboardState.last_name} - Personel Detay İzleme Paneli - ${employeeDashboardState.competency_evaluation_period}`,
+            ).paddingTop('10px')
           ).height(70).shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
           HStack({ alignment: cTop })(
             ReactView(

@@ -35,6 +35,10 @@ import { BarChart } from '@mui/x-charts';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { FaAngleLeft } from "react-icons/fa";
 import EChartsReact from 'echarts-for-react';
+import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
+import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
+import EmployeeCompetencyValue from '../../../../server/hooks/EmployeeCompetencyValue/main';
+import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker';
 
 
 
@@ -48,10 +52,14 @@ export class GlobalCompetencyDashboard extends UIController {
     const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
     const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByCompetencyId(id)
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
+    const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
+    const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
+
 
     const [positionLength, setPositionLength] = useState(0)
 
     const [avarageCompetencyValue, setAvarageCompetencyValue] = useState("")
+    const [globalArr, setGlobalArr] = useState([])
 
     const [departmentAverages, setDepartmentAverages] = useState([
       { departmentId: "", average: 0 }
@@ -64,16 +72,59 @@ export class GlobalCompetencyDashboard extends UIController {
 
     const columns: GridColDef[] = [
       {
-        field: 'competency_department_name',
-        headerName: 'Birim Adı',
+        field: 'employee_name',
+        headerName: 'Personel Adı Soyadı',
         width: 150,
         editable: false,
-        flex: 2,
-
+        flex: 1,
       },
       {
-        field: 'failed_count',
-        headerName: 'Geliştirilmesi Gereken Personel Sayısı',
+        field: 'name',
+        headerName: 'Departman',
+        width: 150,
+        editable: false,
+        flex: 1,
+        valueGetter: (params) => {
+          const employee = employees.find((employee) => employee.$id === params.row.employee_id);
+          if (!employee) return 'emp yok';  // employee bulunamazsa boş döndür
+          const department = departments.find((department) => department.id === employee.department_id);
+          return department ? department.name : 'dep yok';
+        },
+      },
+      {
+        field: 'position_name',
+        headerName: 'Pozisyon',
+        width: 150,
+        editable: false,
+        flex: 1,
+        valueGetter: (params) => {
+          const employee = employees.find((employee) => employee.$id === params.row.employee_id);
+          if (!employee) return 'emp yok';  // employee bulunamazsa boş döndür
+          const position = positions.find((position) => position.id === employee.position_id);
+          return position ? position.name : 'poz yok';
+        },
+      },
+      {
+        field: 'job_start_date',
+        headerName: 'Kıdem Süresi',
+        width: 150,
+        editable: false,
+        flex: 1,
+        valueGetter: (params) => {
+          const employee = employees.find((employee) => employee.$id === params.row.employee_id);
+          if (!employee || !employee.job_start_date) return '';  // employee veya job_start_date bulunamazsa boş döndür
+          const date = new Date(employee.job_start_date);
+          const today = new Date();
+          const differenceMilliSecond = today.getTime() - date.getTime();
+          const differenceYear = Math.floor(differenceMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
+          const differenceMonth = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
+          const differenceDay = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+          return `${differenceYear} Yıl ${differenceMonth} Ay ${differenceDay} Gün`;
+        },
+      },
+      {
+        field: 'average_competency_value',
+        headerName: 'Ortalama Yetkinlik Skoru',
         type: 'number',
         width: 150,
         editable: false,
@@ -88,41 +139,24 @@ export class GlobalCompetencyDashboard extends UIController {
       });
     }
 
-    return isLoading || isLoadingCompetencyList || isLoadingCompetencyDepartments || isLoadingEmployees
+
+    return isLoading || isLoadingCompetencyList || isLoadingCompetencyDepartments || isLoadingEmployees || isLoadingDepartments || isLoadingPositions
 
       ? VStack(Spinner())
       : UIViewBuilder(() => {
         useEffect(() => {
-          Services.Databases.listDocuments(
-            AppInfo.Name,
-            AppInfo.Database,
-            Collections.EmployeeCompetencyValue,
-            [
-              Query.limit(10000),
-              Query.equal("competency_id", id),
-              Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-            ]
-          ).then((response) => {
+          PedavalansServiceBroker.Default.listEmployeeCompetencyValueGlobal(id).then((response) => {
             let totalValue = 0
-            response.documents.forEach((element) => {
+            response.result.forEach((element) => {
               totalValue += Number(element.competency_real_value)
             });
-            setAvarageCompetencyValue((totalValue / response.documents.length).toLocaleString().slice(0, 3))
+            setAvarageCompetencyValue((totalValue / response.result.length).toLocaleString().slice(0, 3))
           }).then(() => {
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.EmployeeCompetencyValue,
-              [
-                Query.limit(10000),
-                Query.equal("competency_id", id),
-                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-              ]
-            ).then((response) => {
+            PedavalansServiceBroker.Default.listEmployeeCompetencyValueGlobal(id).then((response) => {
               const departmentTotals = {};
               const departmentCounts = {};
 
-              response.documents.forEach(doc => {
+              response.result.forEach(doc => {
                 const competency_department_id = doc.competency_department_id;
                 const competency_real_value = Number(doc.competency_real_value);
 
@@ -144,19 +178,10 @@ export class GlobalCompetencyDashboard extends UIController {
               console.log(averages)
             })
           }).then(() => {
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.EmployeeCompetencyValue,
-              [
-                Query.limit(10000),
-                Query.equal("competency_id", id),
-                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-              ]
-            ).then((response) => {
+            PedavalansServiceBroker.Default.listEmployeeCompetencyValueGlobal(id).then((response) => {
               const departmentCounts = {};
 
-              response.documents.forEach(doc => {
+              response.result.forEach(doc => {
                 const departmentId = doc.competency_department_id;
                 const department_name = doc.competency_department_name;
 
@@ -173,7 +198,7 @@ export class GlobalCompetencyDashboard extends UIController {
               const departments = [];
               for (const departmentId in departmentCounts) {
                 const failed_count = departmentCounts[departmentId];
-                const department_name = response.documents.find(doc => doc.competency_department_id === departmentId).competency_department_name;
+                const department_name = response.result.find(doc => doc.competency_department_id === departmentId).competency_department_name;
                 departments.push({ departmentId, failed_count, department_name });
               }
               setDepartmens(departments);
@@ -181,16 +206,7 @@ export class GlobalCompetencyDashboard extends UIController {
 
             })
           }).then(() => {
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.EmployeeCompetencyValue,
-              [
-                Query.limit(10000),
-                Query.equal("competency_id", id),
-                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-              ]
-            ).then((response) => {
+            PedavalansServiceBroker.Default.listEmployeeCompetencyValueGlobal(id).then((response) => {
               Services.Databases.listDocuments(
                 AppInfo.Name,
                 AppInfo.Database,
@@ -218,7 +234,30 @@ export class GlobalCompetencyDashboard extends UIController {
               })
             })
           })
+          PedavalansServiceBroker.Default.listEmployeeCompetencyValueGlobal(id).then((response) => {
+            setGlobalArr(response.result)
+          })
         }, [])
+        const getTopTenEmployeesByAverageCompetency = () => {
+          // Her bir employee için ortalama yetkinlik skorunu hesaplayıp yeni bir liste oluşturuyoruz
+          const employeesWithAverage = globalArr
+            .map(item => {
+              const competency_target_value = Number(item.competency_target_value);
+              const competency_real_value = Number(item.competency_real_value);
+              const average_competency_value = competency_target_value && competency_real_value
+                ? (competency_real_value / competency_target_value * 100).toFixed(2)
+                : '0'; // Ortalamayı string olarak tutuyoruz
+              return {
+                ...item,
+                average_competency_value: parseFloat(average_competency_value)  // Float olarak saklıyoruz ki sıralama doğru yapılsın
+              };
+            });
+
+          // Ortalama yetkinlik skoruna göre sıralayıp ilk 10 elemanı seçiyoruz
+          return employeesWithAverage
+            .sort((a, b) => b.average_competency_value - a.average_competency_value) // Ortalama yetkinlik skoruna göre azalan sırada sıralar
+            .slice(0, 10); // İlk 10 elemanı seçer
+        };
 
         return VStack({ alignment: cTopLeading })(
           HStack({ alignment: cLeading })(
@@ -229,7 +268,7 @@ export class GlobalCompetencyDashboard extends UIController {
                 </IconButton>
               )
             ).height().width().paddingTop("10px"),
-            Views.Title('Yetkinlik Bazlı Dashboard').paddingTop('10px')
+            Views.Title(`${competencyList.find((competency) => competency.competency_id === id)?.competency_name} - Yetkinlik Detay İzleme Paneli`).paddingTop('10px')
           )
             .height(70)
             .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
@@ -299,19 +338,6 @@ export class GlobalCompetencyDashboard extends UIController {
                         gap: '5px',
                       }}
                     >
-                      {/* <BarChart
-                        series={[{
-                          data: departmentAverages.sort(
-                            (a, b) => a.average - b.average
-                          ).map((x) => x.average), color: "#1D5291", layout: "horizontal"
-                        }]}
-                        height={300}
-                        yAxis={[{
-                          data: departmentAverages.map((x) => competencyDepartments.find((competencyDepartment) => competencyDepartment.competency_department_id === x.departmentId)?.competency_department_name),
-                          scaleType: "band"
-                        }]}
-                        margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
-                      /> */}
                       <EChartsReact
                         option={{
                           tooltip: {
@@ -384,16 +410,9 @@ export class GlobalCompetencyDashboard extends UIController {
                     >
                       <Box sx={{ height: 400, width: '100%' }}>
                         <DataGrid
-                          rows={
-                            departmens.sort((a, b) => b.failed_count - a.failed_count)
-                              .map((department) => ({
-                                id: nanoid(),
-                                competency_department_name: department.department_name,
-                                failed_count: department.failed_count
-                              }))
-
-                          }
+                          rows={getTopTenEmployeesByAverageCompetency()}
                           columns={columns}
+                          getRowId={(row) => row.employee_id}
                           initialState={{
                             pagination: {
                               paginationModel: {
