@@ -86,7 +86,7 @@ export class EducationListController extends UIFormController {
                         return (
                             VStack({ spacing: 15, alignment: cTopLeading })(
                                 HStack({ alignment: cLeading })(
-                                    Views.Title(rowsActive ? "Eğitimler" : "Pasif Eğitimler").paddingTop("10px")
+                                    Views.Title(rowsActive ? "Eğitim Katalogu" : "Pasif Eğitim Katalogu").paddingTop("10px")
                                 ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                                 HStack({ alignment: cTop })(
                                     ReactView(
@@ -102,9 +102,9 @@ export class EducationListController extends UIFormController {
                                                 alignItems: "center"
                                             }}>
                                                 <div style={{ width: "70%" }}>
-                                                    <TextField placeholder="Eğitim Arayın..." size="small" fullWidth onChange={handleSearch} />
+                                                    <TextField placeholder="Eğitim Katalogu Arayın..." size="small" fullWidth onChange={handleSearch} />
                                                 </div>
-                                                <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Eğitimleri Göster`}>
+                                                <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Eğitim Kataloglarını Göster`}>
                                                     <IconButton onClick={handleSetActiveRows}>
                                                         <FilterAltOutlinedIcon />
                                                     </IconButton>
@@ -115,8 +115,7 @@ export class EducationListController extends UIFormController {
                                                     gap: "10px"
                                                 }}>
                                                     {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/create")}>Yeni Eğitim</Button>}
-                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
-                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/plans")}>Eğitim Planları</Button>
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education-plan/assigned")}>Plansız Eğitimler</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>

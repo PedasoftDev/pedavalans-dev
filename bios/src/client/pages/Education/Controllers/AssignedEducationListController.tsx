@@ -364,8 +364,8 @@ export class AssignedEducationListController extends UIFormController {
                                                 İncele
                                             </Button>
                                             {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") &&
-                                                id ? <Button onClick={() => navigate(`/app/education/assigned/${id}/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
-                                                : <Button onClick={() => navigate(`/app/education/assigned/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
+                                                id ? <Button onClick={() => navigate(`/app/education-plan/assigned/${id}/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
+                                                : <Button onClick={() => navigate(`/app/education-plan/assigned/${params.value}`)} size="small" fullWidth variant="text">Düzenle</Button>
                                             }
                                         </div>
                                     )
@@ -555,7 +555,7 @@ export class AssignedEducationListController extends UIFormController {
                                     Views.Title(
                                         id ?
                                             `${educationPlanList.find((item) => item.education_plan_id === id).education_plan_name} - Atanan Eğitimler`
-                                            : rowsActive ? "Atanan Eğitimler" : "Pasif Atanan Eğitimler"
+                                            : rowsActive ? "Plansız Eğitimler" : "Pasif Plansız Eğitimler"
                                     )
                                 ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                                 HStack({ alignment: cTop })(
@@ -661,12 +661,12 @@ export class AssignedEducationListController extends UIFormController {
                                                 }}>
                                                     {
                                                         id ?
-                                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate(`/app/education/assign/${id}`)}>Yeni Eğitim Ata</Button>
+                                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate(`/app/education-plan/assign/${id}`)}>Yeni Eğitim Ata</Button>
                                                             :
-                                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assign")}>Yeni Eğitim Ata</Button>
+                                                            <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education-plan/assign")}>Yeni Eğitim Ata</Button>
                                                     }
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
-                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/plans")}>Eğitim Planları</Button>
+                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education-plan/plans")}>Eğitim Planları</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>

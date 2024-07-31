@@ -21,6 +21,7 @@ import { BiCalendarPlus, BiCalendarCheck } from 'react-icons/bi';
 import { VscOrganization } from 'react-icons/vsc';
 import { TiFlowParallel } from 'react-icons/ti';
 import { MdOutlineManageAccounts, MdOutlineLibraryBooks, MdPendingActions } from 'react-icons/md';
+import { GrPlan } from "react-icons/gr";
 import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import LogoutIcon from '@mui/icons-material/Logout';
 
@@ -141,9 +142,15 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             title: 'Eğitim Yönetimi',
             subMenu: [
                 {
-                    title: 'Eğitimler',
+                    title: 'Eğitim Katalogu',
                     link: '/app/education/list',
                     icon: <MdOutlineLibraryBooks size={25} />,
+                    isVisible: true,
+                },
+                {
+                    title: 'Eğitim Planları',
+                    link: '/app/education-plan/plans',
+                    icon: <GrPlan size={25} />,
                     isVisible: true,
                 },
                 {
