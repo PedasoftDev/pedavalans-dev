@@ -104,7 +104,7 @@ export class PendingTaskListController extends UIController {
                     ]
 
                     const handleClickAssignedEducation = (assignedEducation: IAssignedEducation.IBase) => {
-                        navigate("/app/education/assigned");
+                        navigate("/app/education-plan/assigned");
                         setAssignEducationToHook(assignedEducation);
                     }
 
