@@ -94,6 +94,7 @@ import { TrainersController } from './pages/Trainers/Controllers/TrainersControl
 import { TrainersList } from './pages/Trainers/Controllers/TrainersList';
 import { CreateTrainers } from './pages/Trainers/Controllers/CreateTrainers';
 import { EditTrainers } from './pages/Trainers/Controllers/EditTrainers';
+import { AssignEducationControllers } from './pages/Education/Controllers/AssignEducationControllers';
 
 
 export const Routes = () => {
@@ -214,6 +215,11 @@ export const Routes = () => {
                 UIRoute('education', EducationController).children(
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
+                   
+                ),
+
+                // education plans
+                UIRoute('education-plan', AssignEducationControllers).children(
                     UIRoute('assigned', AssignedEducationListController),
                     UIRoute('assigned/:id', UpdateAssignedEducationController),
                     UIRoute('assigned/:id/:id', UpdateAssignedEducationController),
@@ -225,7 +231,6 @@ export const Routes = () => {
                     UIRoute('edit/:id', UpdateEducationController),
                     UIRoute('planed/:id', AssignedEducationListController),
                 ),
-
                 UIRoute('pending-task', PendindTasksController).children(
                     UIRoute('list', PendingTaskListController)
                 ),

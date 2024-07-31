@@ -94,9 +94,9 @@ export class AssignEducationController extends UIFormController {
 
                         const navigateToList = () => {
                             if (id) {
-                                navigate(`/app/education/planed/${id}`)
+                                navigate(`/app/education-plan/planed/${id}`)
                             } else {
-                                navigate("/app/education/assigned")
+                                navigate("/app/education-plan/assigned")
                             }
                         }
 

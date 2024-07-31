@@ -51,7 +51,7 @@ export class UpdateEducationPlanController extends UIFormController {
                         const [form, setForm] = useState<IEducationPlan.IBase>(resetForm);
                         const [isActive, setIsActive] = useState<boolean>(true)
 
-                        const navigateToList = () => navigate("/app/education/plans");
+                        const navigateToList = () => navigate("/app/education-plan/plans");
 
                         useEffect(() => {
                             setForm(removeDollarProperties(educationPlanList))

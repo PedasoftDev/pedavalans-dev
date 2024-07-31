@@ -95,7 +95,7 @@ export class UpdateAssignedEducationController extends UIController {
             const [assignedEmployees, setAssignedEmployees] = useState<string[]>([])
 
 
-            const navigateToList = () => navigate("/app/education/assigned");
+            const navigateToList = () => navigate(-1);
 
             // const handleSubmit = (e: any) => {
             //   e.preventDefault();
