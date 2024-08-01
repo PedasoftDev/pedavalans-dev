@@ -148,7 +148,7 @@ export class CreateTrainers extends UIController {
                       />
                       <StyledDataGrid
                         rows={
-                          educationList.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                          educationList.filter((item) => item.is_active === true && item.is_deleted === false).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
                         }
                         columns={columns}
                         getRowId={(row) => row.$id}

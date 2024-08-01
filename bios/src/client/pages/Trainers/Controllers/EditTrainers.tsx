@@ -226,7 +226,9 @@ export class EditTrainers extends UIController {
                         value={accounts.find((item) => item.$id === form.trainer_id) || null}
                       />
                       <StyledDataGrid
-                        rows={educationList}
+                        rows={
+                          educationList.filter((item) => item.is_active === true && item.is_deleted === false)
+                        }
                         columns={columns}
                         getRowId={(row) => row.$id}
                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
