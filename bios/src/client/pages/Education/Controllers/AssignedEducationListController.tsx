@@ -594,7 +594,9 @@ export class AssignedEducationListController extends UIFormController {
                                                         />
                                                     </div>
                                                 </DialogContent> */}
-                                                <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
+                                                <DialogTitle>{
+                                                    assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name
+                                                } - Eğitim Gerçekleştirme</DialogTitle>
                                                 <DialogContent>
                                                     <div>
                                                         <div style={{ height: 300, width: '100%' }}>
