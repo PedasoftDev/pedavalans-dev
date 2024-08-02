@@ -170,7 +170,7 @@ export class ReportPolyvalenceUnitList extends UIController {
                                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyMachineAssociation, [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false)]).then(competencyMachineRes => {
 
 
-                                            getReportToExcelByMachinePolyvalenceTable(machineRes.documents as any, competencyMachineRes.documents as any, competencyList, filteredGroupsObj, excelData, polyvalenceUnit.polyvalence_table_name)
+                                            getReportToExcelByMachinePolyvalenceTable(machineRes.documents as any, competencyMachineRes.documents as any, competencyList, filteredGroupsObj, excelData, polyvalenceUnit.polyvalence_table_name, positions, employees)
                                         })
                                     })
                                 } else {
