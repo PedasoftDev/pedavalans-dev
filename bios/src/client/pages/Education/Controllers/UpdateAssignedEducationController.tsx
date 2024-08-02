@@ -23,6 +23,7 @@ import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
+import Trainers from "../../../../server/hooks/trainers/main";
 const resetForm: IAssignedEducation.IBase = {
   id: "",
   education_code: "",
@@ -83,6 +84,7 @@ export class UpdateAssignedEducationController extends UIController {
     const { assingedEducationEmployeesByMainId, isLoading: isLoadingByMainId } = AssignedEducationEmployees.ListByMainAssignedEmp(id);
     const { updateAssignedEducationEmp } = AssignedEducationEmployees.Update();
     const { createAssignedEducationEmp } = AssignedEducationEmployees.Create();
+    const { trainersList, isLoadingTrainersList } = Trainers.GetList();
     return (
       isLoading || isLoadingAccounts || isLoadingByMainId || isLoadingEmployees || isLoadingAssignedEducation || isLoadingEducation || isLoadingResult || isLoadingAssignedEducationResult ? VStack(Spinner()) :
         (accountRelations.length === 0 || (accountRelations[0].is_admin === false && accountRelations[0]?.authorization_profile !== "admin")) ?
@@ -355,21 +357,22 @@ export class UpdateAssignedEducationController extends UIController {
                           </div>
                         </div>
                         <Autocomplete
-                          options={accounts}
-                          value={accounts.find((account) => account.$id === form.educator_id) || null}
+                          options={trainersList.filter((trainersList) => trainersList.is_active === true)}
+                          getOptionLabel={(trainer) => trainer.trainer_name}
+                          value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                           onChange={(event, newValue) => {
-                            setForm({
-                              ...form,
-                              educator_id: newValue?.$id || "",
-                              educator_name: newValue?.name || ""
-                            });
+                            if (newValue) {
+                              setForm({
+                                ...form,
+                                educator_id: newValue.trainer_id,
+                                educator_name: newValue.trainer_name
+                              });
+                            }
                           }}
-                          getOptionLabel={(option) => option.name}
                           renderInput={(params) => (
                             <TextField
                               {...params}
                               label="Eğitimci"
-                              name="educator_id"
                               size="small"
                               required
                             />

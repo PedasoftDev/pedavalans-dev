@@ -175,22 +175,6 @@ export class AssignedEducationListController extends UIFormController {
 
                         const handleOpenDialog = (assigned_education_id: string) => {
                             setSelectedAssinedEducationId(assigned_education_id);
-                            // assignedEducationResultList.filter((item) => item.$id === item.row_id && item.assigned_education_id === assigned_education_id).map((item) => {
-                            //     setRowForms(prevState => ({
-                            //         ...prevState,
-                            //         [item.employee_id]: {
-                            //             employee_id: item.employee_id,
-                            //             employee_name: item.employee_name,
-                            //             educator_id: item.educator_id,
-                            //             educator_name: item.educator_name,
-                            //             education_id: item.education_id,
-                            //             assigned_education_id: item.assigned_education_id,
-                            //             attendance_status: item.attendance_status,
-                            //             point: item.point,
-                            //             educator_comment: item.educator_comment
-                            //         }
-                            //     }))
-                            // })
                             if (assignedEducationResultList.find((item) => item.assigned_education_id === assigned_education_id)) {
                                 assignedEducationResultList.filter((item) => item.$id === item.row_id && item.assigned_education_id === assigned_education_id).map((item) => {
                                     setRowForms(prevState => ({
@@ -368,7 +352,7 @@ export class AssignedEducationListController extends UIFormController {
                             {
                                 field: "$id",
                                 headerName: "İşlemler",
-                                width: (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") ? 200 : 100,
+                                width: (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") ? 200 : 200,
                                 renderCell: (params) => {
                                     return (
                                         <div style={{ display: "flex", gap: "5px" }}>
@@ -388,7 +372,7 @@ export class AssignedEducationListController extends UIFormController {
 
 
 
-                        // const columnsForDialogContent: GridColDef[] = [
+
                         //     {
                         //         field: "employee_name",
                         //         headerName: "Adı Soyadı",
@@ -584,28 +568,6 @@ export class AssignedEducationListController extends UIFormController {
                                                 fullWidth
                                                 maxWidth="md"
                                             >
-                                                {/* <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
-                                                <DialogContent>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "400px", padding: "10px" }}>
-                                                        <DialogLabel><strong>Eğitim Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name}</DialogLabel>
-                                                        <DialogLabel><strong>Çalışan Adı: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.employee_name}</DialogLabel>
-                                                        <DialogLabel><strong>Eğitim Yeri: </strong>{assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.location}</DialogLabel>
-                                                        <TextField label="Eğitimcinin Yorumu" size="small" fullWidth multiline rows={4} value={dialogForm.educator_comment} onChange={(e) => setDialogForm({ ...dialogForm, educator_comment: e.target.value })} />
-                                                        <FormControlLabel
-                                                            sx={{ width: "100%", alignContent: "end" }}
-                                                            onChange={(e: any) => {
-                                                                setDialogForm({ ...dialogForm, is_education_completed: e.target.checked })
-                                                            }}
-                                                            value={dialogForm.is_education_completed}
-                                                            control={<Switch color="primary"
-                                                                checked={dialogForm.is_education_completed}
-                                                            />
-                                                            }
-                                                            label="Eğitim Gerçekleşti"
-                                                            labelPlacement="start"
-                                                        />
-                                                    </div>
-                                                </DialogContent> */}
                                                 <DialogTitle>{
                                                     assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name
                                                 } - Eğitim Gerçekleştirme</DialogTitle>

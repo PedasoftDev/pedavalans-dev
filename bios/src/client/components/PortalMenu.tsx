@@ -157,7 +157,7 @@ export const PortalMenu = (selectedMenuTitle: string) => {
                     title: 'Eğiticiler',
                     link: '/app/trainer/list',
                     icon: <GrUserWorker size={25} />,
-                    isVisible: true,
+                    isVisible: tableAuth ? isAdmin : true,
                 },
             ],
             isVisible: true,
