@@ -328,7 +328,7 @@ export class AssignEducationController extends UIFormController {
                                             </div>
                                             <FormControl fullWidth size="small" required>
                                                 <Autocomplete
-                                                    options={trainersList.filter((trainersList) => trainersList.is_active === true)}
+                                                    options={trainersList.filter((trainersList) => trainersList.is_active === true && trainersList.is_deleted === false)}
                                                     getOptionLabel={(trainer) => trainer.trainer_name}
                                                     value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                                                     onChange={(event, newValue) => {

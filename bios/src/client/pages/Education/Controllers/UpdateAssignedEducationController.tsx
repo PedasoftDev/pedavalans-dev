@@ -357,7 +357,7 @@ export class UpdateAssignedEducationController extends UIController {
                           </div>
                         </div>
                         <Autocomplete
-                          options={trainersList.filter((trainersList) => trainersList.is_active === true)}
+                          options={trainersList.filter((trainersList) => trainersList.is_active === true && trainersList.is_deleted === false)}
                           getOptionLabel={(trainer) => trainer.trainer_name}
                           value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                           onChange={(event, newValue) => {
