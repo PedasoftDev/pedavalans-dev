@@ -20,7 +20,7 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import { Toast } from "../../../components/Toast";
 import StyledDataGrid from "../../../components/StyledDataGrid";
-import { GridColDef, trTR } from "@mui/x-data-grid";
+import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 const resetForm: IAssignedEducation.IBase = {
@@ -311,7 +311,6 @@ export class UpdateAssignedEducationController extends UIController {
                           )}
                         />
                         <div>
-                          <TextField placeholder="Personel Arayın..." size="small" fullWidth onChange={handleSearch} />
                           <div style={{ height: 300, width: '100%' }}>
                             <StyledDataGrid
                               rows={
@@ -343,6 +342,15 @@ export class UpdateAssignedEducationController extends UIController {
                                 },
                               }}
                               pageSizeOptions={[10, 20, 30]}
+                              disableColumnFilter
+                              disableColumnSelector
+                              disableDensitySelector
+                              slots={{ toolbar: GridToolbar }}
+                              slotProps={{
+                                toolbar: {
+                                  showQuickFilter: true,
+                                },
+                              }}
                             />
                           </div>
                         </div>

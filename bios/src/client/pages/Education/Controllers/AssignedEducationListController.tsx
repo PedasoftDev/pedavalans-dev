@@ -84,7 +84,19 @@ export class AssignedEducationListController extends UIFormController {
                         const [assignedEducationResultListArr, setAssignedEducationResultListArr] = useState<IAssignedEducationResult.IBase[]>([]);
                         /* GLOBAL STATE ASSIGN EDUCATION */
                         const assignEducationState: IAssignedEducation.IBase = selector(selectAssignEducation);
-                        const [rowForms, setRowForms] = useState([]);
+                        const [rowForms, setRowForms] = useState<IAssignedEducationResult.ICreate>({
+                            assigned_education_id: "",
+                            education_id: "",
+                            employee_id: "",
+                            employee_name: "",
+                            educator_id: "",
+                            educator_name: "",
+                            educator_comment: "",
+                            is_education_completed: false,
+                            tenant_id: "",
+                            attendance_status: true,
+                            point: 0
+                        });
 
                         // const handleCheckboxChange = (rowId, checked) => {
                         //     setChecked(true)
@@ -138,7 +150,7 @@ export class AssignedEducationListController extends UIFormController {
                                         education_id: assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_id,
                                         assigned_education_id: row.main_assigned_education_id,
                                         attendance_status: false,
-                                        point: '',
+                                        point: 0,
                                         educator_comment: ''
                                     }
                                 }));
@@ -456,11 +468,11 @@ export class AssignedEducationListController extends UIFormController {
                                 flex: 1,
                                 renderCell: (params) => {
                                     const rowId = params.id;
-                                    const attendanceStatus = rowForms[rowId]?.attendance_status || rowForms[params.row.row_id]?.attendance_status;
+                                    const attendanceStatus = rowForms[rowId]?.attendance_status;
                                     const isChecked = checkedRows[rowId] || false;
                                     return (
                                         <Checkbox
-                                            checked={isChecked}
+                                            checked={attendanceStatus}
                                             onChange={(event) => handleCheckboxChange(rowId, event.target.checked)}
                                         />
                                     );
@@ -594,7 +606,9 @@ export class AssignedEducationListController extends UIFormController {
                                                         />
                                                     </div>
                                                 </DialogContent> */}
-                                                <DialogTitle>Eğitim Gerçekleştirme</DialogTitle>
+                                                <DialogTitle>{
+                                                    assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.education_name
+                                                } - Eğitim Gerçekleştirme</DialogTitle>
                                                 <DialogContent>
                                                     <div>
                                                         <div style={{ height: 300, width: '100%' }}>

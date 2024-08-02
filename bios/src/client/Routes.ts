@@ -215,6 +215,7 @@ export const Routes = () => {
                 UIRoute('education', EducationController).children(
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
+                    UIRoute('edit/:id', UpdateEducationController),
                    
                 ),
 
@@ -228,7 +229,6 @@ export const Routes = () => {
                     UIRoute('plans', EducationPlansListController),
                     UIRoute('planed', CreateEducationPlanController),
                     UIRoute('plan-edit/:id', UpdateEducationPlanController),
-                    UIRoute('edit/:id', UpdateEducationController),
                     UIRoute('planed/:id', AssignedEducationListController),
                 ),
                 UIRoute('pending-task', PendindTasksController).children(

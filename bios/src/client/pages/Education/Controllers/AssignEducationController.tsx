@@ -20,7 +20,7 @@ import dayjs from "dayjs";
 import EducationPlan from "../../../../server/hooks/educationPlan/main";
 import Trainers from "../../../../server/hooks/trainers/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
-import { GridColDef, trTR } from "@mui/x-data-grid";
+import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
 import { create } from "@mui/material/styles/createTransitions";
 import { Toast } from "../../../components/Toast";
@@ -284,7 +284,6 @@ export class AssignEducationController extends UIFormController {
                                                 }}
                                             /> */}
                                             <div>
-                                                <TextField placeholder="Personel Arayın..." size="small" fullWidth onChange={handleSearch} />
                                                 <div style={{ height: 300, width: '100%' }}>
                                                     <StyledDataGrid
                                                         rows={
@@ -315,6 +314,15 @@ export class AssignEducationController extends UIFormController {
                                                             },
                                                         }}
                                                         pageSizeOptions={[10, 20, 30]}
+                                                        disableColumnFilter
+                                                        disableColumnSelector
+                                                        disableDensitySelector
+                                                        slots={{ toolbar: GridToolbar }}
+                                                        slotProps={{
+                                                            toolbar: {
+                                                                showQuickFilter: true,
+                                                            },
+                                                        }}
                                                     />
                                                 </div>
                                             </div>
