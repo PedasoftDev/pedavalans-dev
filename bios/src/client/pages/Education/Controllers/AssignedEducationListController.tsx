@@ -276,6 +276,7 @@ export class AssignedEducationListController extends UIFormController {
                                         icon: "success",
                                         title: "Eğitim sonucu başarıyla güncellendi."
                                     });
+                                    handleCloseDialog();
                                 } catch (error) {
                                     console.error("Hata:", error);
                                     Toast.fire({
@@ -373,72 +374,7 @@ export class AssignedEducationListController extends UIFormController {
 
 
 
-                        //     {
-                        //         field: "employee_name",
-                        //         headerName: "Adı Soyadı",
-                        //         flex: 1
-                        //     },
-                        //     {
-                        //         field: "attendance_status",
-                        //         headerName: "Katılım Durumu",
-                        //         flex: 1,
-                        //         renderCell: (params) => {
-                        //             const rowId = params.id;
-                        //             const attendanceStatus = rowForms[rowId]?.attendance_status || rowForms[params.row.row_id]?.attendance_status;
-                        //             return (
-                        //                 <Checkbox
-                        //                     checked={attendanceStatus}
-                        //                     onChange={(event) => handleCheckboxChange(rowId, event.target.checked)}
-                        //                 />
-                        //             );
-                        //         }
-                        //     },
-                        //     {
-                        //         field: "end_date",
-                        //         headerName: "Katılım Tarihi",
-                        //         flex: 1,
-                        //         valueGetter: (params) => {
-                        //             checked ? ((new Date(assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.end_date).toLocaleDateString('tr-TR')))
-                        //                 : ((""))
-                        //         }
-                        //     },
-                        //     {
-                        //         field: "point",
-                        //         headerName: "Puan",
-                        //         flex: 1,
-                        //         renderCell: (params) => {
-                        //             const rowId = params.id;
-                        //             const employeeId = params.row.row_id;
-                        //             const point = rowForms[rowId]?.point || rowForms[employeeId]?.point;
-                        //             return (
-                        //                 <TextField
-                        //                     disabled={!checked}
-                        //                     type="number"
-                        //                     value={point}
-                        //                     variant="standard"
-                        //                     onChange={(event) => handleTextFieldChange(rowId, 'point', Number(event.target.value))}
-                        //                     inputProps={{ min: 0, max: 100 }}
-                        //                 />
-                        //             );
-                        //         }
-                        //     },
-                        //     {
-                        //         field: "educator_comment",
-                        //         headerName: "Açıklama",
-                        //         flex: 1,
-                        //         renderCell: (params) => {
-                        //             const rowId = params.id;
-                        //             const comment = rowForms[rowId]?.educator_comment || rowForms[params.row.row_id]?.educator_comment;
-                        //             return (
-                        //                 <TextField
-                        //                     value={comment}
-                        //                     variant="standard"
-                        //                     onChange={(event) => handleTextFieldChange(rowId, 'educator_comment', event.target.value)}
-                        //                 />
-                        //             );
-                        //         }
-                        //     }
-                        // ];
+
 
                         const columnsForDialogContent: GridColDef[] = [
                             {
@@ -453,7 +389,6 @@ export class AssignedEducationListController extends UIFormController {
                                 renderCell: (params) => {
                                     const rowId = params.id;
                                     const attendanceStatus = rowForms[rowId]?.attendance_status;
-                                    const isChecked = checkedRows[rowId] || false;
                                     return (
                                         <Checkbox
                                             checked={attendanceStatus}
@@ -467,7 +402,8 @@ export class AssignedEducationListController extends UIFormController {
                                 headerName: "Katılım Tarihi",
                                 flex: 1,
                                 valueGetter: (params) => {
-                                    const isChecked = checkedRows[params.id] || false;
+                                    const rowId = params.id;
+                                    const isChecked = rowForms[rowId]?.attendance_status || false;
                                     return isChecked ?
                                         (new Date(assignedEducationList.find((item) => item.$id === selectedAssinedEducationId)?.end_date).toLocaleDateString('tr-TR')) :
                                         ("");
