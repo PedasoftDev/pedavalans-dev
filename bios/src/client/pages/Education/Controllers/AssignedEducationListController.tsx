@@ -522,7 +522,7 @@ export class AssignedEducationListController extends UIFormController {
 
                         const getAssignedEducationList = async () => {
 
-                            if (accountRelations[0].is_admin) {
+                            if (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") {
                                 const assignedData: IAssignedEducation.IBase[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
                                     [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.limit(10000)]).then((res) => res.documents as any[]);
                                 setAssignedEducationList(assignedData);
@@ -534,7 +534,6 @@ export class AssignedEducationListController extends UIFormController {
                         };
 
                         useEffect(() => {
-
                             getAssignedEducationList();
                             if (assignEducationState) {
                                 handleOpenDialog(assignEducationState.$id);
