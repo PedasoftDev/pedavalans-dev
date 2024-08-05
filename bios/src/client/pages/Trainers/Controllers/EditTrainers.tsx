@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import ITrainerEducations from "../../../interfaces/ITrainerEducations";
 import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
-import { GridColDef, trTR } from "@mui/x-data-grid";
+import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
@@ -106,17 +106,14 @@ export class EditTrainers extends UIController {
               is_deleted: false
 
             }
-          }, () => {
-            if (i === trainerEducationsForm.length - 1) {
-              Toast.fire({
-                icon: "success",
-                title: "Eğitim başarıyla güncellendi!"
-              });
-              deleteCache();
-              navigate("/app/trainer/list");
-            }
           })
         })
+        Toast.fire({
+          icon: "success",
+          title: "Eğitim başarıyla güncellendi!"
+        });
+        deleteCache();
+        navigate("/app/trainer/list");
       })
 
 
@@ -229,7 +226,9 @@ export class EditTrainers extends UIController {
                         value={accounts.find((item) => item.$id === form.trainer_id) || null}
                       />
                       <StyledDataGrid
-                        rows={educationList}
+                        rows={
+                          educationList.filter((item) => item.is_active === true && item.is_deleted === false)
+                        }
                         columns={columns}
                         getRowId={(row) => row.$id}
                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
@@ -242,7 +241,15 @@ export class EditTrainers extends UIController {
                         rowSelectionModel={trainerEducationsForm}
                         rowHeight={30}
                         columnHeaderHeight={30}
-
+                        disableColumnFilter
+                        disableColumnSelector
+                        disableDensitySelector
+                        slots={{ toolbar: GridToolbar }}
+                        slotProps={{
+                          toolbar: {
+                            showQuickFilter: true,
+                          },
+                        }}
                       />
 
                       <FormControlLabel

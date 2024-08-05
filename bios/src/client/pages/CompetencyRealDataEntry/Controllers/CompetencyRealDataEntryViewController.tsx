@@ -5,7 +5,7 @@ import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
 import { Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Tooltip } from "@mui/material";
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -43,6 +43,8 @@ import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
+import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
+import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -139,6 +141,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { educationList, isLoading: isLoadingEducation } = Education.GetList();
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();
+        const { createAssignedEducationEmp } = AssignedEducationEmployees.Create();
 
 
         const { educationCompetencyRelationList, isLoading: isLoadingCompetencyRelations } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
@@ -187,18 +190,52 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                 setOpenEducationDialog(true);
                             }
                         }
+                        // const handleSubmitEducationDialog = (e) => {
+                        //     e.preventDefault();
 
+                        //     selectedEmployees.forEach((employee, _i) => {
+                        //         const createForm: IAssignedEducation.ICreate = {
+                        //             education_code: form.education_code,
+                        //             employee_id: employee.$id,
+                        //             education_id: form.education_id,
+                        //             education_name: form.education_name,
+                        //             educator_id: form.educator_id,
+                        //             educator_name: form.educator_name,
+                        //             employee_name: `${employee.first_name} ${employee.last_name}`,
+                        //             hour: form.hour,
+                        //             start_hour: form.start_hour,
+                        //             start_date: form.start_date,
+                        //             end_date: form.end_date,
+                        //             location: form.location,
+                        //             status: "open",
+                        //             tenant_id: me?.prefs?.organization
+                        //         }
+                        //         createAssignedEducation({
+                        //             data: createForm
+                        //         }, () => {
+                        //             if (_i === selectedEmployees.length - 1) {
+                        //                 Toast.fire({
+                        //                     icon: "success",
+                        //                     title: "Eğitim atamaları başarıyla yapıldı.",
+                        //                     timer: 1000
+                        //                 })
+                        //                 handleCloseEducationDialog();
+                        //             }
+                        //         })
+                        //     })
+                        // }
                         const handleSubmitEducationDialog = (e) => {
                             e.preventDefault();
-                            selectedEmployees.forEach((employee, _i) => {
-                                const createForm: IAssignedEducation.ICreate = {
+                            const assignedEducationId = nanoid();
+                            createAssignedEducation({
+                                documentId: assignedEducationId,
+                                data: {
+                                    id: assignedEducationId,
                                     education_code: form.education_code,
-                                    employee_id: employee.$id,
                                     education_id: form.education_id,
                                     education_name: form.education_name,
                                     educator_id: form.educator_id,
                                     educator_name: form.educator_name,
-                                    employee_name: `${employee.first_name} ${employee.last_name}`,
                                     hour: form.hour,
                                     start_hour: form.start_hour,
                                     start_date: form.start_date,
@@ -207,20 +244,30 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     status: "open",
                                     tenant_id: me?.prefs?.organization
                                 }
-                                createAssignedEducation({
-                                    data: createForm
-                                }, () => {
-                                    if (_i === selectedEmployees.length - 1) {
-                                        Toast.fire({
-                                            icon: "success",
-                                            title: "Eğitim atamaları başarıyla yapıldı.",
-                                            timer: 1000
-                                        })
-                                        handleCloseEducationDialog();
+                            }, () => {
+                                selectedEmployees.forEach((employee, i) => {
+                                    const createForm: IAssignedEducationEmployees.ICreate = {
+                                        main_assigned_education_id: assignedEducationId,
+                                        employee_id: employee.$id,
+                                        employee_name: `${employee.first_name} ${employee.last_name}`,
+                                        tenant_id: me?.prefs?.organization
                                     }
-                                })
+                                    createAssignedEducationEmp({
+                                        data: createForm
+                                    }, () => {
+                                        if (i === selectedEmployees.length - 1) {
+                                            Toast.fire({
+                                                icon: "success",
+                                                title: "Eğitim atamaları başarıyla yapıldı.",
+                                                timer: 1000
+                                            })
+                                            handleCloseEducationDialog();
+                                        }
+                                    })
+                                });
                             })
                         }
+
 
 
 
@@ -425,10 +472,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
                                                     .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                                     .map((value) => (
-                                                        <Tooltip title={value.grade_level_name} key={value.grade_level_id}>
-                                                            <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
-                                                        </Tooltip>
-
+                                                        <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
                                                     ))}
                                             </Select>
                                         }
@@ -781,16 +825,16 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             (
 
                                                                 <Autocomplete
-                                                                    options={accounts}
-                                                                    value={accounts.find((account) => account.$id === form.educator_id) || null}
+                                                                    options={trainersList}
+                                                                    value={trainersList.find((trainer) => trainer.id === form.educator_id) || null}
                                                                     onChange={(event, newValue) => {
                                                                         setForm({
                                                                             ...form,
                                                                             educator_id: newValue?.$id || "",
-                                                                            educator_name: newValue?.name || ""
+                                                                            educator_name: newValue?.trainer_name || ""
                                                                         });
                                                                     }}
-                                                                    getOptionLabel={(option) => option.name}
+                                                                    getOptionLabel={(option) => option.trainer_name}
                                                                     renderInput={(params) => (
                                                                         <TextField
                                                                             {...params}
@@ -930,6 +974,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 </form>
                                             </DialogContent>
                                         </Dialog>
+
 
                                     </Container>
                                 )

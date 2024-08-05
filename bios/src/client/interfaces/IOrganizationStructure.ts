@@ -77,6 +77,8 @@ export namespace IOrganizationStructure {
             id: string;
             record_id: string;
             name: string;
+            parent_department_id?: string;
+            parent_department_name?: string;
             tenant_id: string;
             realm_id: string;
         }
@@ -86,6 +88,8 @@ export namespace IOrganizationStructure {
             realm_id: string;
             record_id: string;
             name: string;
+            parent_department_id?: string;
+            parent_department_name?: string;
             is_active: boolean;
             is_deleted: boolean;
         }

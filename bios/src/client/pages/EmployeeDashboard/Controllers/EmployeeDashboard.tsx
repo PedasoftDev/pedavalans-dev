@@ -130,7 +130,7 @@ export class EmployeeDashboard extends UIController {
 
     const [employee, setEmployee] = useState(EmployeeInfos)
 
-    const [education, setEducation] = useState(EducationInfos)
+    const [assignedEducationListArr, setAssignedEducationListArr] = useState([]);
 
     const [employeeGaugeValue, setEmployeeGaugeValue] = useState(0)
 
@@ -234,15 +234,25 @@ export class EmployeeDashboard extends UIController {
               })
             })
             .then(() => {
-              Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AssignedEducation,
-                [
-                  Query.limit(10000),
-                  Query.equal('employee_id', employeeDashboardState.$id),
-                  Query.equal('status', 'completed'),
-                ]
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.AssignedEducationEmployees,
+                [Query.equal('employee_id', employeeDashboardState.$id),]
               ).then((res) => {
-                setEducation({
-                  educationName: res.documents[0]?.education_name,
+                Services.Databases.listDocuments(
+                  AppInfo.Name,
+                  AppInfo.Database,
+                  Collections.AssignedEducation,
+                  [
+                    Query.equal("id", res.documents.map((x) => x.main_assigned_education_id)),
+                    Query.equal("status", "completed"),
+                    Query.equal('is_active', true),
+                    Query.equal('is_deleted', false),
+                  ]
+                ).then((res) => {
+                  console.log(res.documents)
+                  setAssignedEducationListArr(res.documents)
                 })
               })
             })
@@ -314,7 +324,9 @@ export class EmployeeDashboard extends UIController {
                 </IconButton>
               )
             ).height().width().paddingTop("10px"),
-            Views.Title('Kişi Bilgileri').paddingTop('10px')
+            Views.Title(
+              `${employeeDashboardState.first_name} ${employeeDashboardState.last_name} - Personel Detay İzleme Paneli - ${employeeDashboardState.competency_evaluation_period}`,
+            ).paddingTop('10px')
           ).height(70).shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
           HStack({ alignment: cTop })(
             ReactView(
@@ -538,7 +550,7 @@ export class EmployeeDashboard extends UIController {
                           gap: '5px',
                         }}
                       >
-                        {education?.educationName == '' ? (
+                        {assignedEducationListArr.length === 0 ? (
                           <h3>Tamamlanmış Eğitim Bulunmamaktadır</h3>
                         ) : (
                           <TableContainer component={Paper}>
@@ -558,7 +570,7 @@ export class EmployeeDashboard extends UIController {
                                 </TableRow>
                               </TableHead>
                               <TableBody>
-                                {assignedEducationList.sort(
+                                {assignedEducationListArr.sort(
                                   (a, b) =>
                                     new Date(b.start_date).getTime() -
                                     new Date(a.start_date).getTime()

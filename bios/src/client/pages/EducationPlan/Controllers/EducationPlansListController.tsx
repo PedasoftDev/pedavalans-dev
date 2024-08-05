@@ -62,8 +62,8 @@ export class EducationPlansListController extends UIFormController {
                                     return (
                                         <div style={{ display: "flex", gap: "3px" }}>
                                             {(accountRelations[0].is_admin || accountRelations[0].authorization_profile == "admin") &&
-                                                <Button size="small" variant="outlined" onClick={() => navigate(`/app/education/plan-edit/${params.value}`)}>Düzenle</Button>
-                                            }<Button size="small" variant="outlined" onClick={() => navigate(`/app/education/planed/${params.value}`)}>Atanan Eğitimler</Button>
+                                                <Button size="small" variant="outlined" onClick={() => navigate(`/app/education-plan/plan-edit/${params.value}`)}>Düzenle</Button>
+                                            }<Button size="small" variant="outlined" onClick={() => navigate(`/app/education-plan/planed/${params.value}`)}>Atanan Eğitimler</Button>
                                         </div>
                                     )
                                 }
@@ -110,9 +110,8 @@ export class EducationPlansListController extends UIFormController {
                                                     display: "flex",
                                                     gap: "10px"
                                                 }}>
-                                                    {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/planed")}>Yeni Eğitim Planı Ekle</Button>}
+                                                    {(accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") && <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education-plan/planed")}>Yeni Eğitim Planı Ekle</Button>}
                                                     <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/list")}>Eğitimler</Button>
-                                                    <Button size="small" fullWidth variant="outlined" onClick={() => navigate("/app/education/assigned")}>Atanan Eğitimler</Button>
                                                 </div>
                                             </div>
                                             <GridContainer>

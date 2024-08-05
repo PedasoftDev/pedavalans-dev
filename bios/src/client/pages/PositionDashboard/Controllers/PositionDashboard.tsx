@@ -285,7 +285,7 @@ export class PositionDashboard extends UIController {
                 </IconButton>
               )
             ).height().width().paddingTop("10px"),
-            Views.Title('Pozisyon Bazlı Dashboard').paddingTop('10px')
+            Views.Title(`${positions.find((position) => position.id === id).name} - Pozisyon Detay İzleme Paneli - ${employeeDashboardState.competency_evaluation_period}`).paddingTop('10px')
           )
             .height(70)
             .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),

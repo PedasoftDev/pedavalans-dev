@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { HStack, Spinner, ReactView, UIController, UIView, UIViewBuilder, VStack, cLeading, cTopLeading, cTop, useNavigate, UINavigate } from "@tuval/forms";
+import { HStack, Spinner, ReactView, UIController, UIView, UIViewBuilder, VStack, cLeading, cTopLeading, cTop, useNavigate, UINavigate, State } from "@tuval/forms";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import PolyvalenceUnit from "../../../../server/hooks/polyvalenceUnit/main";
 import { Views as ViewsMain } from "../../../components/Views";
@@ -27,6 +27,7 @@ import IEmployeeDashboard from "../../../interfaces/IEmployeeDashboard";
 import { setEmployeeDashboard } from "../../../features/employeeDashboard";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { selectCompetencyStatusReport, setCompetencyStatusReport, setCompetencyStatusReportToNull } from "../../../features/competencyStatusReport";
+import IAccountRelation from "../../../interfaces/IAccountRelation";
 
 const resetForm = {
     polyvalence_table_id: "",
@@ -35,10 +36,48 @@ const resetForm = {
 };
 
 export class CompetencyStatusReportViewController extends UIController {
+    @State()
+    private polyvalenceUnitList: IPolyvalenceUnit.IPolyvalenceUnit[];
+
+    protected BindRouterParams(): void {
+        Services.Accounts.get().then((me) => {
+            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.limit(10000), Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
+                if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
+                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
+
+                        const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
+                        if (accountRelationData.is_admin || accountRelationData.authorization_profile === "admin") {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
+                                this.polyvalenceUnitList = unitTables.documents as any
+                            })
+                        } else if (accountRelationData.authorization_profile === "responsible") {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataResponsible, [Query.limit(10000), Query.equal("responsible_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                const responsibleTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
+                                    this.polyvalenceUnitList = unitTables.documents.filter((x) => responsibleTableIds.includes(x.polyvalence_table_id)) as any
+                                })
+                            })
+                        }
+                        else if (accountRelationData.authorization_profile === "viewer") {
+                            Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTableDataViewer, [Query.limit(10000), Query.equal("viewer_employee_id", me.$id), Query.equal("is_deleted", false)]).then((polyvalenceUnitTables) => {
+                                const viewerTableIds = polyvalenceUnitTables.documents.map((x) => x.polyvalence_table_id);
+                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false), Query.equal("is_active_table", true)]).then((unitTables) => {
+                                    this.polyvalenceUnitList = unitTables.documents.filter((x) => viewerTableIds.includes(x.polyvalence_table_id)) as any
+                                })
+                            })
+                        }
+                    })
+                } else {
+                    Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_table", false)]).then((unitTables) => {
+                        this.polyvalenceUnitList = unitTables.documents as any
+                    })
+                }
+            })
+        })
+    }
     public LoadView(): UIView {
 
         const { me, isLoading } = useGetMe("console");
-        const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetActiveList(me?.prefs?.organization);
         const { dataResponsible, isLoadingDataResponsible } = PolyvalenceUnitTableDataResponsible.GetListByAccountId(me?.$id);
         const { dataViewer, isLoadingDataViewer } = PolyvalenceUnitTableDataViewer.GetListByAccountId(me?.$id);
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
@@ -58,7 +97,7 @@ export class CompetencyStatusReportViewController extends UIController {
 
         return (
 
-            isLoading || isLoadingPolyvalenceUnit || isLoadingPeriod || isLoadingResult || isLoadingDataResponsible || isLoadingDataViewer || isLoadingTableAuth ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriod || isLoadingResult || isLoadingDataResponsible || isLoadingDataViewer || isLoadingTableAuth ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     UIViewBuilder(() => {
                         // tablo, dönem, yüzdelik filtresi
@@ -73,19 +112,6 @@ export class CompetencyStatusReportViewController extends UIController {
                         const [filteredPolyTable, setFilteredPolyTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit[]>([]);
 
                         useEffect(() => {
-                            if (tableAuth && tableAuth[0] && tableAuth[0]?.is_active) {
-                                if (accountRelations[0].is_admin || accountRelations[0].authorization_profile === "admin") {
-                                    setFilteredPolyTable(polyvalenceUnitList)
-                                } else if (accountRelations[0].authorization_profile === "responsible") {
-                                    const responsibleTableIds = dataResponsible.map((x) => x.polyvalence_table_id);
-                                    setFilteredPolyTable(polyvalenceUnitList.filter((x) => responsibleTableIds.includes(x.polyvalence_table_id)) as any)
-                                } else if (accountRelations[0].authorization_profile === "viewer") {
-                                    const viewerTableIds = dataViewer.map((x) => x.polyvalence_table_id);
-                                    setFilteredPolyTable(polyvalenceUnitList.filter((x) => viewerTableIds.includes(x.polyvalence_table_id)) as any)
-                                }
-                            } else {
-                                setFilteredPolyTable(polyvalenceUnitList)
-                            }
                             if (competencyStatusReport !== null) {
                                 handleChangePolyvalenceTable({ target: { value: competencyStatusReport.polyvalence_table_id } } as any)
                                 setFormFilters({
@@ -130,7 +156,7 @@ export class CompetencyStatusReportViewController extends UIController {
                         }, [])
 
                         const handleChangePolyvalenceTable = (e) => {
-                            const selectedEvaluationFrequency = polyvalenceUnitList.find((item) => item.$id === e.target.value).polyvalence_evaluation_frequency
+                            const selectedEvaluationFrequency = this.polyvalenceUnitList.find((item) => item.$id === e.target.value).polyvalence_evaluation_frequency
                             const periodYear = Number(periods[0].evaluation_period_year)
                             if (selectedEvaluationFrequency == "Yıl") {
                                 setEvaluationPeriod(getYearPeriods(periodYear))
@@ -153,9 +179,9 @@ export class CompetencyStatusReportViewController extends UIController {
                             e.preventDefault();
                             setCompetencyStatusReportToHook({
                                 polyvalence_table_id: formFilters.polyvalence_table_id,
-                                polycalence_table_name: polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_table_name,
+                                polycalence_table_name: this.polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_table_name,
                                 evaluation_period: formFilters.evaluation_period,
-                                frequency: polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
+                                frequency: this.polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
                             })
                             setIsLoading(true);
                             const employeeCompetencyValues: IEmployeeCompetencyValue.IEmployeeCompetencyValue[] = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, [Query.limit(10000), Query.equal("polyvalence_table_id", formFilters.polyvalence_table_id), Query.equal("competency_evaluation_period", formFilters.evaluation_period),
@@ -198,8 +224,8 @@ export class CompetencyStatusReportViewController extends UIController {
                                             <form onSubmit={getReport}>
                                                 <Views.SelectItems>
                                                     <Autocomplete
-                                                        options={polyvalenceUnitList}
-                                                        value={polyvalenceUnitList.find((item) => item.$id === formFilters.polyvalence_table_id) || null}
+                                                        options={this.polyvalenceUnitList}
+                                                        value={this.polyvalenceUnitList.find((item) => item.$id === formFilters.polyvalence_table_id) || null}
                                                         onChange={(event, newValue) => {
                                                             const selectedEvaluationFrequency = newValue?.polyvalence_evaluation_frequency;
                                                             const periodYear = Number(periods[0].evaluation_period_year);
@@ -284,7 +310,7 @@ export class CompetencyStatusReportViewController extends UIController {
                                                                                 ...employees.find((employee) => employee.$id === item.employee_id),
                                                                                 competency_evaluation_period: formFilters.evaluation_period,
                                                                                 polyvalence_table_id: formFilters.polyvalence_table_id,
-                                                                                frequency: polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
+                                                                                frequency: this.polyvalenceUnitList.find((x) => x.$id === formFilters.polyvalence_table_id).polyvalence_evaluation_frequency
                                                                             })
                                                                             navigate('/app/employee-dashboard/view')
                                                                         }} />

@@ -70,11 +70,18 @@ export class DepartmentListController extends UIController {
           const handleChange = (event: React.SyntheticEvent<Element, Event>, newValue: any) => {
             navigate(Resources.OrganizationStructureTabValues.find(x => x.value === newValue)?.link + "/list");
           }
-
+          const uniqueDepartments = departments.reduce((acc, current) => {
+            const x = acc.find(item => item.id === current.id);
+            if (!x) {
+              return acc.concat([current]);
+            } else {
+              return acc;
+            }
+          }, []);
           return (
             VStack({ alignment: cTop })(
               HStack({ alignment: cLeading })(
-                Views.Title("Organizasyon Yapısı").paddingTop("20px")
+                Views.Title(active ? "Organizasyon Yapısı" : "Organizasyon Yapısı / Pasif Departmanlar").paddingTop("20px")
               ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
               VStack({ alignment: cTop })(
                 ReactView(
@@ -106,7 +113,7 @@ export class DepartmentListController extends UIController {
                         </div>
                         <GridContainer>
                           <StyledDataGrid
-                            rows={departments.filter(x => x.is_active === active).filter(x => x.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
+                            rows={uniqueDepartments.filter(x => x.is_active === active).filter(x => x.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                             columns={columns} />
                         </GridContainer>
                       </div>

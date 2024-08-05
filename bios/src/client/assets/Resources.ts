@@ -76,6 +76,11 @@ export namespace Resources {
             name: "Yetkinlik-Eğitim İlişkisi Kurulacak mı?",
             localStr: "competency_education_relationship",
             type: "boolean",
+        },
+        {
+            name: "Departman-Pozisyon İlişkisi Kurulacak mı?",
+            localStr: "position_relation_department",
+            type: "boolean",
         }
     ];
 

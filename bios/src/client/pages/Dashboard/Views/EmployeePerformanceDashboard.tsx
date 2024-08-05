@@ -27,7 +27,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                         <ReactECharts
                             option={{
                                 title: {
-                                    text: 'Çalışanların Pozisyon Bazlı Dağılım Grafiği'
+                                    text: 'Çalışanların Ünvan Bazlı Dağılım Grafiği'
                                 },
                                 tooltip: {
                                     trigger: 'axis',
@@ -44,7 +44,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                                 },
                                 xAxis: {
                                     type: 'category',
-                                    data: props.employeesByPosition.map((x) => x.positionName),
+                                    data: props.employeesByTitle.map((x) => x.titleName),
                                     axisLabel: {
                                         interval: 0,
                                         rotate: 30,
@@ -57,7 +57,7 @@ export const EmployeePerformanceDashboard: React.FC<{
                                     {
                                         name: 'Çalışan Sayısı',
                                         type: 'bar',
-                                        data: props.employeesByPosition.map((x) => x.employeeCount),
+                                        data: props.employeesByTitle.map((x) => x.employeeCount),
                                         itemStyle: {
                                             color: '#EE7D20'
                                         }

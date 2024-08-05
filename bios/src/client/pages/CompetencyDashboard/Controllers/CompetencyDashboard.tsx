@@ -31,21 +31,38 @@ import CompetencyCard from '../Views/CompetencyCard';
 import Competency from '../../../../server/hooks/competency/main';
 import CompetencyDepartment from '../../../../server/hooks/competencyDepartment/main';
 import OrganizationStructureEmployee from '../../../../server/hooks/organizationStructureEmployee/main';
-import { BarChart } from '@mui/x-charts';
+import { BarChart, Gauge, gaugeClasses } from '@mui/x-charts';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { FaAngleLeft } from "react-icons/fa";
+import EChartsReact from 'echarts-for-react';
+import { XAxis } from 'recharts';
+import { useAppDispatch, useAppSelector } from '../../../hooks';
+import IEmployeeDashboard from '../../../interfaces/IEmployeeDashboard';
+import { selectEmployeeDashboard, setEmployeeDashboard, setEmployeeDashboardToNull } from '../../../features/employeeDashboard';
+import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
+import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
+import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker';
 
 export class CompetencyDashboard extends UIController {
   public LoadView(): UIView {
     const navigate = useNavigate()
     const { me, isLoading } = useGetMe('console')
     const { id, period } = useParams()
+    const dispatch = useAppDispatch();
+    const selector = useAppSelector;
+    const setEmployeeDashboardToHook = (value: IEmployeeDashboard.IBase) => dispatch(setEmployeeDashboard(value));
+    const setEmployeeDashboardNull = () => dispatch(setEmployeeDashboardToNull());
+    const employeeDashboardState: IEmployeeDashboard.IBase = selector(selectEmployeeDashboard);
 
     const transformPeriodName = period.split("&").join(" ").split("C").join("Ç").split("i").join("ı").split("o").join("ö").split("Dönemı").join("Dönemi")
 
     const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
     const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByCompetencyId(id)
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
+    const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
+    const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
+
+
 
     const [positionLength, setPositionLength] = useState(0)
 
@@ -53,31 +70,117 @@ export class CompetencyDashboard extends UIController {
 
     const [departmentAverages, setDepartmentAverages] = useState([
       { departmentId: "", average: 0 }
-
     ])
+    const [resArr, setResArr] = useState([])
 
     const [departmens, setDepartmens] = useState([
       { employee_id: "", competency_department_id: "", failed_count: 0, department_name: "" }
     ])
+    //Gauge için ayarlar
 
+    const getColor = (value) => {
+      if (value >= 0 && value <= 39) {
+        return '#f44336' // Kırmızı
+      } else if (value >= 40 && value <= 69) {
+        return '#ffc107' // Sarı
+      } else if (value >= 70 && value <= 100) {
+        return '#52b201' // Yeşil
+      } else {
+        return '#000' // Varsayılan olarak siyah (hata durumu)
+      }
+    }
+    //
     const columns: GridColDef[] = [
       {
-        field: 'competency_department_name',
-        headerName: 'Birim Adı',
-        width: 150,
-        editable: false,
-        flex: 2,
-
-      },
-      {
-        field: 'failed_count',
-        headerName: 'Geliştirilmesi Gereken Personel Sayısı',
-        type: 'number',
+        field: 'employee_name',
+        headerName: 'Personel Adı Soyadı',
         width: 150,
         editable: false,
         flex: 1,
       },
+      {
+        field: 'name',
+        headerName: 'Departman',
+        width: 150,
+        editable: false,
+        flex: 1,
+        valueGetter: (params) => {
+          const employee = employees.find((employee) => employee.$id === params.row.employee_id);
+          if (!employee) return 'emp yok';  // employee bulunamazsa boş döndür
+          const department = departments.find((department) => department.id === employee.department_id);
+          return department ? department.name : 'dep yok';
+        },
+      },
+      {
+        field: 'position_name',
+        headerName: 'Pozisyon',
+        width: 150,
+        editable: false,
+        flex: 1,
+        valueGetter: (params) => {
+          const employee = employees.find((employee) => employee.$id === params.row.employee_id);
+          if (!employee) return 'emp yok';  // employee bulunamazsa boş döndür
+          const position = positions.find((position) => position.id === employee.position_id);
+          return position ? position.name : 'poz yok';
+        },
+      },
+      {
+        field: 'job_start_date',
+        headerName: 'Kıdem Süresi',
+        width: 150,
+        editable: false,
+        flex: 1,
+        valueGetter: (params) => {
+          const employee = employees.find((employee) => employee.$id === params.row.employee_id);
+          if (!employee || !employee.job_start_date) return '';  // employee veya job_start_date bulunamazsa boş döndür
+          const date = new Date(employee.job_start_date);
+          const today = new Date();
+          const differenceMilliSecond = today.getTime() - date.getTime();
+          const differenceYear = Math.floor(differenceMilliSecond / (1000 * 60 * 60 * 24 * 365.25));
+          const differenceMonth = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.4375));
+          const differenceDay = Math.floor((differenceMilliSecond % (1000 * 60 * 60 * 24 * 30.4375)) / (1000 * 60 * 60 * 24));
+          return `${differenceYear} Yıl ${differenceMonth} Ay ${differenceDay} Gün`;
+        },
+      },
+      {
+        field: 'average_competency_value',
+        headerName: 'Ortalama Yetkinlik Skoru',
+        type: 'number',
+        width: 150,
+        editable: false,
+        flex: 1,
+        renderCell: (params) => {
+          const value = params.value;
+          return (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: 80, height: 80 }}>
+                <Gauge
+                  value={Math.floor(value)}
+                  startAngle={-110}
+                  endAngle={110}
+                  width={80}
+                  height={80}
+                  cornerRadius="50%"
+                  sx={(theme) => ({
+                    [`& .${gaugeClasses.valueText}`]: {
+                      fontSize: 18,
+                    },
+                    [`& .${gaugeClasses.valueArc}`]: {
+                      fill: getColor(Math.floor(value)),
+                    },
+                    [`& .${gaugeClasses.referenceArc}`]: {
+                      fill: theme.palette.text.disabled,
+                    },
+                  })}
+                  text={({ value }) => `%${value}`}
+                />
+              </div>
+            </div>
+          );
+        },
+      },
     ];
+
 
     function filterUnique(array) {
       const seen = {};
@@ -85,43 +188,26 @@ export class CompetencyDashboard extends UIController {
         return seen.hasOwnProperty(item) ? false : (seen[item] = true);
       });
     }
-    return isLoading || isLoadingCompetencyList || isLoadingCompetencyDepartments || isLoadingEmployees
+
+
+
+    return isLoading || isLoadingCompetencyList || isLoadingPositions || isLoadingDepartments || isLoadingCompetencyDepartments || isLoadingEmployees
 
       ? VStack(Spinner())
       : UIViewBuilder(() => {
         useEffect(() => {
-          Services.Databases.listDocuments(
-            AppInfo.Name,
-            AppInfo.Database,
-            Collections.EmployeeCompetencyValue,
-            [
-              Query.limit(10000),
-              Query.equal("competency_evaluation_period", transformPeriodName),
-              Query.equal("competency_id", id),
-              Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-            ]
-          ).then((response) => {
+          PedavalansServiceBroker.Default.listEmployeeCompetencyValue(id, employeeDashboardState.competency_evaluation_period).then((response) => {
             let totalValue = 0
-            response.documents.forEach((element) => {
+            response.result.forEach((element) => {
               totalValue += Number(element.competency_real_value)
             });
-            setAvarageCompetencyValue((totalValue / response.documents.length).toLocaleString().slice(0, 3))
+            setAvarageCompetencyValue((totalValue / response.result.length).toLocaleString().slice(0, 3))
           }).then(() => {
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.EmployeeCompetencyValue,
-              [
-                Query.limit(10000),
-                Query.equal("competency_evaluation_period", transformPeriodName),
-                Query.equal("competency_id", id),
-                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-              ]
-            ).then((response) => {
+            PedavalansServiceBroker.Default.listEmployeeCompetencyValue(id, employeeDashboardState.competency_evaluation_period).then((response) => {
               const departmentTotals = {};
               const departmentCounts = {};
 
-              response.documents.forEach(doc => {
+              response.result.forEach(doc => {
                 const competency_department_id = doc.competency_department_id;
                 const competency_real_value = Number(doc.competency_real_value);
 
@@ -143,21 +229,11 @@ export class CompetencyDashboard extends UIController {
               console.log(averages)
             })
           }).then(() => {
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.EmployeeCompetencyValue,
-              [
-                Query.limit(10000),
-                Query.equal("competency_evaluation_period", transformPeriodName),
-                Query.equal("competency_id", id),
-                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-              ]
-            ).then((response) => {
+            PedavalansServiceBroker.Default.listEmployeeCompetencyValue(id, employeeDashboardState.competency_evaluation_period).then((response) => {
               const departmentCounts = {};
 
               // Her belgeyi döngüye alarak işlemleri gerçekleştiriyoruz
-              response.documents.forEach(doc => {
+              response.result.forEach(doc => {
                 const departmentId = doc.competency_department_id;
                 const department_name = doc.competency_department_name;
 
@@ -176,7 +252,7 @@ export class CompetencyDashboard extends UIController {
               const departments = [];
               for (const departmentId in departmentCounts) {
                 const failed_count = departmentCounts[departmentId];
-                const department_name = response.documents.find(doc => doc.competency_department_id === departmentId).competency_department_name;
+                const department_name = response.result.find(doc => doc.competency_department_id === departmentId).competency_department_name;
                 departments.push({ departmentId, failed_count, department_name });
               }
               setDepartmens(departments);
@@ -184,17 +260,7 @@ export class CompetencyDashboard extends UIController {
 
             })
           }).then(() => {
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.EmployeeCompetencyValue,
-              [
-                Query.limit(10000),
-                Query.equal("competency_evaluation_period", transformPeriodName),
-                Query.equal("competency_id", id),
-                Query.notEqual("competency_target_value", "no-target"), Query.notEqual("competency_real_value", "")
-              ]
-            ).then((response) => {
+            PedavalansServiceBroker.Default.listEmployeeCompetencyValue(id, employeeDashboardState.competency_evaluation_period).then((response) => {
               Services.Databases.listDocuments(
                 AppInfo.Name,
                 AppInfo.Database,
@@ -222,7 +288,30 @@ export class CompetencyDashboard extends UIController {
               })
             })
           })
+          PedavalansServiceBroker.Default.listEmployeeCompetencyValue(id, employeeDashboardState.competency_evaluation_period).then((res) => {
+            setResArr(res.result)
+          })
         }, [])
+        const getTopTenEmployeesByAverageCompetency = () => {
+          // Her bir employee için ortalama yetkinlik skorunu hesaplayıp yeni bir liste oluşturuyoruz
+          const employeesWithAverage = resArr
+            .map(item => {
+              const competency_target_value = Number(item.competency_target_value);
+              const competency_real_value = Number(item.competency_real_value);
+              const average_competency_value = competency_target_value && competency_real_value
+                ? (competency_real_value / competency_target_value * 100).toFixed(2)
+                : '0'; // Ortalamayı string olarak tutuyoruz
+              return {
+                ...item,
+                average_competency_value: parseFloat(average_competency_value)  // Float olarak saklıyoruz ki sıralama doğru yapılsın
+              };
+            });
+
+          // Ortalama yetkinlik skoruna göre sıralayıp ilk 10 elemanı seçiyoruz
+          return employeesWithAverage
+            .sort((a, b) => b.average_competency_value - a.average_competency_value) // Ortalama yetkinlik skoruna göre azalan sırada sıralar
+            .slice(0, 10); // İlk 10 elemanı seçer
+        };
 
         return VStack({ alignment: cTopLeading })(
           HStack({ alignment: cLeading })(
@@ -233,7 +322,7 @@ export class CompetencyDashboard extends UIController {
                 </IconButton>
               )
             ).height().width().paddingTop("10px"),
-            Views.Title('Yetkinlik Bazlı Dashboard').paddingTop('10px')
+            Views.Title(`${competencyList.find((competency) => competency.competency_id === id)?.competency_name} - Yetkinlik Detay İzleme Paneli - ${employeeDashboardState.competency_evaluation_period}`).paddingTop('10px')
           )
             .height(70)
             .shadow('rgb(0 0 0 / 5%) 0px 4px 2px -2px'),
@@ -312,20 +401,39 @@ export class CompetencyDashboard extends UIController {
                         gap: '5px',
                       }}
                     >
-                      <BarChart
-                        series={[{
-                          data: departmentAverages.sort(
-                            (a, b) => a.average - b.average
-                          ).map((x) => x.average), color: "#1D5291", layout: "horizontal"
-                        }]}
-                        height={300}
-                        yAxis={[{
-                          data: departmentAverages.map((x) => competencyDepartments.find((competencyDepartment) => competencyDepartment.competency_department_id === x.departmentId)?.competency_department_name),
-                          scaleType: "band"
-                        }]}
-                        margin={{ top: 10, bottom: 30, left: 120, right: 30 }}
+                      <EChartsReact
+                        option={{
+                          tooltip: {
+                            trigger: "axis"
+                          },
+                          grid: {
+                            left: '20%',
+                            right: '10%',
+                          },
+                          width: 300,
+                          xAxis: {
+                            type: 'value',
+                          },
+                          yAxis: {
+                            type: 'category',
+                            data: departmentAverages
+                              .map((x) => competencyDepartments.find(
+                                (competencyDepartment) => competencyDepartment.competency_department_id === x.departmentId
+                              )?.competency_department_name),
+                            axisLabel: {
+                              rotate: 45, // Etiketleri 45 derece döndürme
+                              formatter: (value) => value.length > 10 ? `${value.slice(0, 10)}...` : value, // Uzun etiketleri kırpma
+                            },
+                          },
+                          series: [{
+                            data: departmentAverages
+                              .sort((a, b) => a.average - b.average)
+                              .map((x) => x.average),
+                            color: "#1D5291",
+                            type: 'bar',
+                          }],
+                        }}
                       />
-
                     </CardContent>
                   </Card>
                 </div>
@@ -347,7 +455,7 @@ export class CompetencyDashboard extends UIController {
                     <CardHeader
                       title={
                         <Typography variant="h6" style={{ fontSize: '1rem' }}>
-                          Bu Yetkinlik Özelinde Gelişime İhtiyacı Olan Birimler
+                          En Yetkin 10 Personel
                         </Typography>
                       }
                       style={{
@@ -363,15 +471,9 @@ export class CompetencyDashboard extends UIController {
                     >
                       <Box sx={{ height: 400, width: '100%' }}>
                         <DataGrid
-                          rows={
-                            departmens.sort((a, b) => b.failed_count - a.failed_count).map((department) => ({
-                              id: nanoid(),
-                              competency_department_name: department.department_name,
-                              failed_count: department.failed_count
-                            }))
-
-                          }
+                          rows={getTopTenEmployeesByAverageCompetency()}
                           columns={columns}
+                          getRowId={(row) => row.employee_id}
                           initialState={{
                             pagination: {
                               paginationModel: {

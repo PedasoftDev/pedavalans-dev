@@ -72,5 +72,33 @@ export class PedavalansServiceBroker extends ServiceBroker<any> {
     }, payload);
   }
 
+  async listEmployeeCompetencyValue(competency_id,competency_evaluation_period?): Promise<any> {
+
+
+    let path = '/listEmployeeCompetencyValue';
+    let payload: Payload = {};
+
+    payload['competency_id'] = competency_id;
+    payload['competency_evaluation_period'] = competency_evaluation_period;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+  }
+  async listEmployeeCompetencyValueGlobal(competency_id): Promise<any> {
+
+
+    let path = '/listEmployeeCompetencyValueGlobal';
+    let payload: Payload = {};
+
+    payload['competency_id'] = competency_id;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+  }
+
 
 }

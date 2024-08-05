@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 15,
+    "version": 23,
     "collections": [
         {
             "id": "competency",
@@ -1326,6 +1326,18 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key":"parent_department_id",
+                    "type":"string",
+                    "size":256,
+                    "version":16
+                },
+                {
+                    "key":"parent_department_name",
+                    "type":"string",
+                    "size":256,
+                    "version":16
+                },
+                {
                     "key": "is_active",
                     "type": "boolean",
                     "version": 1,
@@ -1337,6 +1349,60 @@ const Database: IDatabase = {
                     "version": 1,
                     "default": false
                 },
+
+            ]
+        },
+        {
+            "id": "position_relation_departments",
+            "name": "Position Relation Departments",
+            "description": {
+                "en": "Position Relation Departments Line is a collection of Position Relation Departments.",
+                "tr": "Departmanlara bağlı pozisyonların listesi."
+            },
+            "version": 18,
+            "attributes": [
+            {
+                "key":"id",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"parent_department_id",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"parent_department_name",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"relation_position_id",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key":"relation_position_name",
+                "type":"string",
+                "size":256,
+                "version":1
+            },
+            {
+                "key": "is_active",
+                "type": "boolean",
+                "version": 1,
+                "default": true
+            },
+            {
+                "key": "is_deleted",
+                "type": "boolean",
+                "version": 1,
+                "default": false
+            },
 
             ]
         },
@@ -2015,6 +2081,18 @@ const Database: IDatabase = {
             "version": 2,
             "attributes": [
                 {
+                    "key":"id",
+                    "type":"string",
+                    "size":256,
+                    "version":21
+                },
+                {
+                    "key":"main_assigned_education_id",
+                    "type":"string",
+                    "size":256,
+                    "version":19
+                },
+                {
                     "key": "education_id",
                     "type": "string",
                     "size": 256,
@@ -2135,6 +2213,12 @@ const Database: IDatabase = {
             "version": 3,
             "attributes": [
                 {
+                    "key": "row_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 23
+                },
+                {
                     "key": "assigned_education_id",
                     "type": "string",
                     "size": 256,
@@ -2175,6 +2259,18 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 1
+                },
+                {
+                    "key": "point",
+                    "type": "number",
+                    "size": 256,
+                    "version": 22
+                },
+                {
+                    "key": "attendance_status",
+                    "type": "boolean",
+                    "size": 256,
+                    "version": 22
                 },
                 {
                     "key": "is_education_completed",
@@ -2761,6 +2857,53 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "trainer_duty_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "assigned_education_employees",
+            "name": "Assigned Education Employees",
+            "description": {
+                "en": "TAssigned Education Employees is a collection of Assigned Education Employees.",
+                "tr": "Atanan Egitime bagli calisanlarin koleksiyonudur."
+            },
+            "version": 20,
+            "attributes": [
+                {
+                    "key": "main_assigned_education_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "employee_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
                     "type": "string",
                     "size": 256,
                     "version": 1

@@ -43,7 +43,7 @@ export class CreateEducationPlanController extends UIFormController {
 
                         const [form, setForm] = useState<IEducationPlan.ICreate>(resetForm);
 
-                        const navigateToList = () => navigate("/app/education/plans");
+                        const navigateToList = () => navigate("/app/education-plan/plans");
 
                         const handleChangeText = (e: any) => {
                             setForm({ ...form, [e.target.name]: e.target.value });

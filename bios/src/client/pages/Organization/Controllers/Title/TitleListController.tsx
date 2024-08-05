@@ -74,7 +74,7 @@ export class TitleListController extends UIController {
           return (
             VStack({ alignment: cTop })(
               HStack({ alignment: cLeading })(
-                Views.Title("Organizasyon Yapısı").paddingTop("20px")
+                Views.Title(active ? "Organizasyon Yapısı" : "Organizasyon Yapısı / Pasif Ünvanlar").paddingTop("20px")
               ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
               VStack({ alignment: cTop })(
                 ReactView(

@@ -11,7 +11,7 @@ import Trainers from "../../../../server/hooks/trainers/main";
 import ITrainerEducations from "../../../interfaces/ITrainerEducations";
 import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
-import { GridColDef, trTR } from "@mui/x-data-grid";
+import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -37,7 +37,6 @@ export class CreateTrainers extends UIController {
 
     const [form, setForm] = useState<ITrainers.ICreate>(formReset);
     const [filterKey, setFilterKey] = useState("");
-    const [trainerEducationsForm, setTrainerEducationsForm] = useState<ITrainerEducations.ICreate>(trainerEducationsFormReset);
     const [educations, setEducations] = useState<any[]>([]);
 
 
@@ -147,10 +146,9 @@ export class CreateTrainers extends UIController {
                         }}
                         value={accounts.find((item) => item.$id === form.trainer_id) || null}
                       />
-                      <TextField placeholder="Eğitim Arayın..." size="small" fullWidth onChange={handleSearch} />
                       <StyledDataGrid
                         rows={
-                          educationList.filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
+                          educationList.filter((item) => item.is_active === true && item.is_deleted === false).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)
                         }
                         columns={columns}
                         getRowId={(row) => row.$id}
@@ -163,6 +161,15 @@ export class CreateTrainers extends UIController {
                         }}
                         rowHeight={30}
                         columnHeaderHeight={30}
+                        disableColumnFilter
+                        disableColumnSelector
+                        disableDensitySelector
+                        slots={{ toolbar: GridToolbar }}
+                        slotProps={{
+                          toolbar: {
+                            showQuickFilter: true,
+                          },
+                        }}
                       />
 
                       <div style={{

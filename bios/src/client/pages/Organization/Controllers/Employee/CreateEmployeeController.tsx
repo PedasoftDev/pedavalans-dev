@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { HStack, ReactView, Spinner, Text, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { useGetMe } from '@realmocean/sdk'
+import { Query, Services, useGetMe } from '@realmocean/sdk'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
@@ -24,6 +24,9 @@ import { PlusOneRounded } from '@mui/icons-material';
 import { BiPlusCircle } from 'react-icons/bi';
 import StyledDataGrid from '../../../../components/StyledDataGrid';
 import { Resources } from '../../../../assets/Resources';
+import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
+import AppInfo from '../../../../../AppInfo';
+import Collections from '../../../../../server/core/Collections';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -72,6 +75,7 @@ export class CreateEmployeeController extends UIController {
     const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
+    const { isLoadingPositionRelationDepartmentsList, positionRelationDepartmentsList } = PositionRelationDepartments.GetList()
 
     const { createEmployee } = OrganizationStructureEmployee.Create()
     const { createLog } = OrganizationStructureEmployeeLog.Create()
@@ -79,7 +83,7 @@ export class CreateEmployeeController extends UIController {
     const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
 
     return (
-      isLoading || isLoadingResult || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingResult || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const accountRelation = accountRelations[0]
@@ -95,6 +99,8 @@ export class CreateEmployeeController extends UIController {
             const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
 
             const [formIsEmployee, setFormIsEmployee] = useState(true)
+            const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
+
 
             const selectFormStates = [
               {
@@ -103,14 +109,14 @@ export class CreateEmployeeController extends UIController {
                 options: titles
               },
               {
-                id: "position_id",
-                label: "Bulunduğu Pozisyon",
-                options: positions
-              },
-              {
                 id: "department_id",
                 label: "Bulunduğu Departman",
-                options: departments
+                options: departments.filter((item) => item.is_active === true)
+              },
+              {
+                id: "position_id",
+                label: "Bulunduğu Pozisyon",
+                options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
               },
               {
                 id: "line_id",
@@ -238,6 +244,20 @@ export class CreateEmployeeController extends UIController {
             const onReset = () => {
               navigate(link + "/list")
             }
+
+            useEffect(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "position_relation_department"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+              })
+            }, [])
 
             return (
               VStack({ alignment: cTop })(
