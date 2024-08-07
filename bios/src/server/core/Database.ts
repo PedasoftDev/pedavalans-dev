@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 23,
+    "version": 24,
     "collections": [
         {
             "id": "competency",
@@ -1326,16 +1326,16 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
-                    "key":"parent_department_id",
-                    "type":"string",
-                    "size":256,
-                    "version":16
+                    "key": "parent_department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 16
                 },
                 {
-                    "key":"parent_department_name",
-                    "type":"string",
-                    "size":256,
-                    "version":16
+                    "key": "parent_department_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 16
                 },
                 {
                     "key": "is_active",
@@ -1361,48 +1361,48 @@ const Database: IDatabase = {
             },
             "version": 18,
             "attributes": [
-            {
-                "key":"id",
-                "type":"string",
-                "size":256,
-                "version":1
-            },
-            {
-                "key":"parent_department_id",
-                "type":"string",
-                "size":256,
-                "version":1
-            },
-            {
-                "key":"parent_department_name",
-                "type":"string",
-                "size":256,
-                "version":1
-            },
-            {
-                "key":"relation_position_id",
-                "type":"string",
-                "size":256,
-                "version":1
-            },
-            {
-                "key":"relation_position_name",
-                "type":"string",
-                "size":256,
-                "version":1
-            },
-            {
-                "key": "is_active",
-                "type": "boolean",
-                "version": 1,
-                "default": true
-            },
-            {
-                "key": "is_deleted",
-                "type": "boolean",
-                "version": 1,
-                "default": false
-            },
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "parent_department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "parent_department_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "relation_position_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "relation_position_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
 
             ]
         },
@@ -2081,16 +2081,16 @@ const Database: IDatabase = {
             "version": 2,
             "attributes": [
                 {
-                    "key":"id",
-                    "type":"string",
-                    "size":256,
-                    "version":21
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 21
                 },
                 {
-                    "key":"main_assigned_education_id",
-                    "type":"string",
-                    "size":256,
-                    "version":19
+                    "key": "main_assigned_education_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 19
                 },
                 {
                     "key": "education_id",
@@ -2921,7 +2921,112 @@ const Database: IDatabase = {
                     "version": 1
                 }
             ]
-        }
+        },
+        {
+            "id": "email_message",
+            "name": "Email Message",
+            "description": {
+                "en": "Email Message is a collection of email messages.",
+                "tr": "Email mesajlarının koleksiyonudur."
+            },
+            "version": 24,
+            "attributes": [
+                {
+                    "key": "sender",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "recipient",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "subject",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "errorReason",
+                    "type": "string",
+                    "size": 512,
+                    "version": 1
+                },
+                {
+                    "key": "attemptCount",
+                    "type": "number",
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "mail_settings",
+            "name": "Mail Settings",
+            "description": {
+                "en": "Mail Settings is a collection of mail settings.",
+                "tr": "Mail ayarlarının koleksiyonudur."
+            },
+            "version": 24,
+            "attributes": [
+                {
+                    "key": "smtp_server",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "smtp_port",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "username",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "password",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tls",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
     ]
 }
 
