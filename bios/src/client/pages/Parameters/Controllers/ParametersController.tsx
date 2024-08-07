@@ -5,6 +5,7 @@ import {
     HStack,
     Icon,
     ReactView,
+    ScrollView,
     Spacer,
     Spinner,
     Toggle,
@@ -139,9 +140,21 @@ export class ParametersController extends UIFormController {
                                             <Button variant="contained">Kaydet</Button>
                                         )
                                     ).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px").height(50).marginBottom(20),
-                                    VStack({ alignment: cTopLeading })(
+                                    ScrollView({ alignment: cTopLeading, axes: "cVertical" })(
                                         ReactView(
                                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+                                                {accountRelations && accountRelations[0] && accountRelations[0].is_admin &&
+                                                    <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
+                                                        <div style={{ fontSize: "14px", fontWeight: 400 }}>
+                                                            {"Mail Konfigürasyonu"}
+                                                        </div>
+                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                                            <IconButton onClick={() => navigate("/app/mail-configuration/view")}>
+                                                                <RxExternalLink size={20} />
+                                                            </IconButton>
+                                                        </div>
+                                                    </div>
+                                                }
                                                 {accountRelations && accountRelations[0] && accountRelations[0].is_admin &&
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>
