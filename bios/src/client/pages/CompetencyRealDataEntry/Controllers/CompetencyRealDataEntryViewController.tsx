@@ -720,7 +720,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                         competencyEducationRelationship ? (
                                                             <Autocomplete
                                                                 options={
-                                                                    educationCompetencyRelationList.filter((item) => item.competency_id === selectedCompetencyId).map((item) => educationList.find((education) => education.$id === item.education_id))
+                                                                    educationCompetencyRelationList.filter((item) => item.competency_id === selectedCompetencyId).map((item) => educationList.find((education) => education.$id === item.education_id)).filter((item) => item.is_active === true && item.is_deleted === false)
                                                                 }
                                                                 value={
                                                                     educationList.find((education) => education.$id === form.education_id) || null
@@ -748,7 +748,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             :
                                                             (
                                                                 <Autocomplete
-                                                                    options={educationList}
+                                                                    options={educationList.filter((item) => item.is_active === true && item.is_deleted === false)}
                                                                     value={educationList.find((education) => education.$id === form.education_id) || null}
                                                                     onChange={(event, newValue) => {
                                                                         setForm({

@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 24,
+    "version": 27,
     "collections": [
         {
             "id": "competency",
@@ -3017,6 +3017,65 @@ const Database: IDatabase = {
                     "key": "tls",
                     "type": "boolean",
                     "default": false,
+                    "version": 1
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "default": false,
+                    "version": 1
+                }
+            ]
+        },
+        {
+            "id": "education_competency_status_infos",
+            "name": "Education Competency Status Infos",
+            "description": {
+                "en": "Education Competency Status Infos is a collection of education competency status infos.",
+                "tr": "Egitimlerin compteyencye ozel puan durumlarinin koleksiyonudur."
+            },
+            "version": 25,
+            "attributes": [
+                {
+                    "key": "education_id",
+                    "type": "string",
+                    "size": 256,
+                    "version":1                    
+                },
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version":1                    
+                },
+                {
+                    "key": "lower_bound",
+                    "type": "string",
+                    "size": 256,
+                    "version":1                    
+                },
+                {
+                    "key": "upper_bound",
+                    "type": "string",
+                    "size": 256,
+                    "version":1                    
+                },
+                {
+                    "key": "competency_level",
+                    "type": "string",
+                    "size": 256,
+                    "version":1                    
+                },
+                {
+                    "key":"tenant_id",
+                    "type":"string",
+                    "size":256,
+                    "version":27
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "default": true,
                     "version": 1
                 },
                 {

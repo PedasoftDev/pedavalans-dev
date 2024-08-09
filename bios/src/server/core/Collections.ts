@@ -42,6 +42,7 @@ namespace Collections {
     export const AssignedEducationEmployees = "assigned_education_employees";
     export const MailSettings = "mail_settings";
     export const EmailMessage = "email_message";
+    export const EducationCompetencyStatusInfos ="education_competency_status_infos";
 }
 
 export default Collections;

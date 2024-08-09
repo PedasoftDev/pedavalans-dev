@@ -12,6 +12,11 @@ import {
   Autocomplete,
   FormControlLabel,
   Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Grid,
+  DialogActions,
 } from "@mui/material";
 import { Query, Services, useDeleteCache, useGetMe } from "@realmocean/sdk";
 import Competency from "../../../../server/hooks/competency/main";
@@ -28,6 +33,7 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import Swal from "sweetalert2";
+import EducationCompetencyStatusInfos from "../../../../server/hooks/educationCompetencyStatusInfos/Main";
 
 const resetForm: IEducation.IBase = {
   code: "",
@@ -62,10 +68,11 @@ export class UpdateEducationController extends UIFormController {
     const { createEducationCompetencyRelation } = EducationCompetencyRelation.Create()
     const { updateEducationCompetencyRelation } = EducationCompetencyRelation.Update()
     const { educationList, isLoading: isLoadingEducation } = Education.GetList()
+    const { educationCompetencyStatusList, isLoading: isLoadingEducationCompetencyStatusInfos } = EducationCompetencyStatusInfos.GetList(me?.prefs?.organization)
 
     return (
       VStack({ alignment: cTop })(
-        isLoading || isLoadingCompetencyList || isLoadingEducation || isLoadingGetEducation || isLoadingEducationCompetencyRelationList ? VStack(Spinner()) :
+        isLoading || isLoadingCompetencyList || isLoadingEducation || isLoadingEducationCompetencyStatusInfos || isLoadingGetEducation || isLoadingEducationCompetencyRelationList ? VStack(Spinner()) :
           UIViewBuilder(() => {
 
             const [form, setForm] = useState<IEducation.IBase>(resetForm);
@@ -166,8 +173,9 @@ export class UpdateEducationController extends UIFormController {
                 field: "competency_level",
                 headerName: "İlişkiki Yetkinlik Seviyesi",
                 flex: 1
-              }
+              },
             ]
+
 
             const onDelete = () => {
               Swal.fire({
@@ -214,6 +222,11 @@ export class UpdateEducationController extends UIFormController {
               setForm(education);
               setEducationCompetencyRelation(educationCompetencyRelationList.map((relation) => relation.competency_id))
               setIsActive(education.is_active);
+              const append = []
+              educationCompetencyStatusList.filter((item) => item.education_id === id).map((item) => {
+                append.push(removeDollarProperties(item))
+              })
+              setRows(append)
             }, [])
             const [addEducationToUpdateCompetencyStatusParams, setAddEducationToUpdateCompetencyStatusParams] = useState(educationToUpdateCompetencyStatusParams)
             const handleChangeEducationToUpdateCompetencyStatusParams = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -362,7 +375,7 @@ export class UpdateEducationController extends UIFormController {
 
                           }
                         }>
-                          <div style={{
+                          {/* <div style={{
                             display: "flex",
                             flexDirection: "row",
                             gap: "5px",
@@ -373,7 +386,6 @@ export class UpdateEducationController extends UIFormController {
                               name="lower_bound"
                               inputProps={{ maxLength: 50 }}
                               label="Alt Aralık"
-                              required
                               value={addEducationToUpdateCompetencyStatusParams.lower_bound}
                               onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                             />
@@ -383,7 +395,6 @@ export class UpdateEducationController extends UIFormController {
                               name="upper_bound"
                               inputProps={{ maxLength: 50 }}
                               label="Üst Aralık"
-                              required
                               value={addEducationToUpdateCompetencyStatusParams.upper_bound}
                               onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                             />
@@ -393,7 +404,6 @@ export class UpdateEducationController extends UIFormController {
                               name="competency_level"
                               inputProps={{ maxLength: 50 }}
                               label="İlişkili Yetkinlik Seviyesi"
-                              required
                               value={addEducationToUpdateCompetencyStatusParams.competency_level}
                               onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                             />
@@ -405,9 +415,9 @@ export class UpdateEducationController extends UIFormController {
                             >
                               Ekle
                             </Button>
-                          </div>
+                          </div> */}
                           <StyledDataGrid
-                            rows={rows}
+                            rows={rows.sort((a, b) => a.lower_bound - b.lower_bound)}
                             columns={educationToUpdateCompetencyStatusColums}
                             localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                             isCellEditable={() => false}
