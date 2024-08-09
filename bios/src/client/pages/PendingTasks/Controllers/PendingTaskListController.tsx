@@ -103,6 +103,19 @@ export class PendingTaskListController extends UIController {
                         }
                     ]
 
+                    const columnsTask: GridColDef[] = [
+                        {
+                            field: 'task_name',
+                            headerName: 'Görev Adı',
+                            flex: 1,
+                        },
+                        {
+                            field: 'polyvalence_table_name',
+                            headerName: 'Polivalans Tablo Adı',
+                            flex: 1
+                        }
+                    ]
+
                     const handleClickAssignedEducation = (assignedEducation: IAssignedEducation.IBase) => {
                         navigate("/app/education-plan/assigned");
                         setAssignEducationToHook(assignedEducation);
@@ -119,8 +132,14 @@ export class PendingTaskListController extends UIController {
                                 value: assignedEducationsOpen.length,
                                 list: assignedEducationsOpen
                             }
+                            const tasks = {
+                                title: "Bekleyen Görevlerim",
+                                value: 0,
+                                list: []
+                            }
                             const pendingTaskState = [...pendingTasks];
                             pendingTaskState[0] = education;
+                            pendingTaskState[1] = tasks;
                             setPendingTasks(pendingTaskState);
                             setIsLoadingValues(false);
                         }
@@ -174,6 +193,14 @@ export class PendingTaskListController extends UIController {
                                                                 <div>{task.title}</div>
                                                                 <div>{task.value}</div>
                                                             </ToggleDivHeader>
+                                                            {isOpen === i &&
+                                                                <StyledDataGrid
+                                                                    rows={task.list}
+                                                                    columns={columnsTask}
+                                                                    getRowId={(row) => row.$id}
+                                                                    style={{ width: "100%" }}
+                                                                />
+                                                            }
                                                         </ToggleDiv>
                                                     </PendingTasksDiv>
                                             )}

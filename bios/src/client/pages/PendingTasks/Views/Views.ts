@@ -33,7 +33,7 @@ export const ToggleDiv = styled.div<{ isExpanded: boolean }>`
     padding: 5 10px;
     box-shadow: ${({ isExpanded }) => isExpanded ? '0 0 3px 0 rgb(0 0 0 / 15%)' : '0 0 2px 0 rgb(0 0 0 / 15%)'};
     border-radius: 5px;
-    height: ${({ isExpanded }) => isExpanded ? '300px' : '40px'};
+    height: ${({ isExpanded }) => isExpanded ? '400px' : '40px'};
     overflow-y: ${({ isExpanded }) => isExpanded ? 'scroll' : 'hidden'};
     transition: height 0.5s ease, box-shadow 0.5s ease;
     align-items: ${({ isExpanded }) => isExpanded ? 'flex-start' : 'center'};
