@@ -1,7 +1,7 @@
 
 const config: any = {};
 
-config.title = 'Pedavalans' ;
-config.company = 'Pedasoft' ;
+config.title = 'Celmino' ;
+config.company = 'Tuvalsoft' ;
 
 module.exports = config;

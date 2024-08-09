@@ -1,7 +1,9 @@
 import { DatabaseService } from "./DatabaseService";
 import { EmailService } from "./EmailService";
+import { MiningService } from "./MiningService";
 import { ScheduleService } from "./ScheduleService";
 import { SchemaService } from "./SchemaService";
+import { WebServerService } from "./WebServerService";
 
 
 declare global {
@@ -13,6 +15,12 @@ declare global {
         schemaService: SchemaService;
         emailService: EmailService;
         scheduleService: ScheduleService;
-        createKey(params: T): Promise<any>;
+        webServer: WebServerService;
+        miningService: MiningService;
+        createKey(params: T): string;
+    }
+
+    export class BaseComponent {
+        
     }
 }
