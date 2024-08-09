@@ -1,4 +1,4 @@
-import { ReactView, Spinner, UIFormController, UIView, UIViewBuilder, VStack, cTop, useNavigate } from "@tuval/forms";
+import { ReactView, Spinner, UIFormController, UIView, UIViewBuilder, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import {
     Button,
@@ -23,6 +23,8 @@ import EducationCompetencyRelation from "../../../../server/hooks/educationCompe
 import { Toast } from "../../../components/Toast";
 import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
+import EducationCompetencyStatusInfos from "../../../../server/hooks/educationCompetencyStatusInfos/Main";
+import IEducationCompetencyStatusInfos from "../../../interfaces/IEducationCompetencyStatusInfos";
 
 const resetForm: IEducation.ICreate = {
     code: "",
@@ -52,6 +54,7 @@ export class CreateEducationController extends UIFormController {
 
         const { createEducationCompetencyRelation } = EducationCompetencyRelation.Create()
         const { educationList, isLoading: isLoadingEducation } = Education.GetList()
+        const { createEducationCompetencyStatusInfos } = EducationCompetencyStatusInfos.Create()
 
         return (
 
@@ -109,6 +112,21 @@ export class CreateEducationController extends UIFormController {
                                         }
                                     })
                                 })
+                                for (let i = 0; i < rows.length; i++) {
+                                    const educationCompetencyStatusInfosId = nanoid();
+                                    const educationCompetencyStatusInfos: IEducationCompetencyStatusInfos.ICreate = {
+                                        education_id: res.$id,
+                                        id: educationCompetencyStatusInfosId,
+                                        lower_bound: rows[i].lower_bound,
+                                        upper_bound: rows[i].upper_bound,
+                                        competency_level: rows[i].competency_level,
+                                        tenant_id: me?.prefs?.organization,
+                                    }
+                                    createEducationCompetencyStatusInfos({
+                                        documentId: educationCompetencyStatusInfosId,
+                                        data: educationCompetencyStatusInfos
+                                    })
+                                }
                                 if (form.relatedCompetencies.length === 0) {
                                     Toast.fire({
                                         icon: "success",
@@ -316,7 +334,6 @@ export class CreateEducationController extends UIFormController {
                                                             name="lower_bound"
                                                             inputProps={{ maxLength: 50 }}
                                                             label="Alt Aralık"
-                                                            required
                                                             value={addEducationToUpdateCompetencyStatusParams.lower_bound}
                                                             onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                                                         />
@@ -326,7 +343,6 @@ export class CreateEducationController extends UIFormController {
                                                             name="upper_bound"
                                                             inputProps={{ maxLength: 50 }}
                                                             label="Üst Aralık"
-                                                            required
                                                             value={addEducationToUpdateCompetencyStatusParams.upper_bound}
                                                             onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                                                         />
@@ -336,7 +352,6 @@ export class CreateEducationController extends UIFormController {
                                                             name="competency_level"
                                                             inputProps={{ maxLength: 50 }}
                                                             label="İlişkili Yetkinlik Seviyesi"
-                                                            required
                                                             value={addEducationToUpdateCompetencyStatusParams.competency_level}
                                                             onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                                                         />
