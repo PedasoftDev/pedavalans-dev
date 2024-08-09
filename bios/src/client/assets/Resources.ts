@@ -87,6 +87,11 @@ export namespace Resources {
             name: "Departman-Pozisyon İlişkisi Kurulacak mı?",
             localStr: "position_relation_department",
             type: "boolean",
+        },
+        {
+            name: "Eğitim Değerlendirme Sonucuna Göre Yetkinlik Durumları Otomatik Güncellenecek mi?",
+            localStr: "education_result_to_update_competency_status",
+            type: "boolean",
         }
     ];
 
