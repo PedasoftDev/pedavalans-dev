@@ -2952,7 +2952,7 @@ const Database: IDatabase = {
                 {
                     "key": "content",
                     "type": "string",
-                    "size": 256,
+                    "size": 1024,
                     "version": 1
                 },
                 {

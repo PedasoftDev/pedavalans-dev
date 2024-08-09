@@ -11,5 +11,4 @@ export interface EmailService extends RealmoceanService<EmailServiceAccessObject
     from_email: string,
     to_email: string, subject: string, html: string, values: any): Promise<any>;
 
-
 }

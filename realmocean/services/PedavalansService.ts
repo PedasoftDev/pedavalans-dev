@@ -1,3 +1,6 @@
+import EmailTemplates from "./EmailTemplates";
+import Interfaces from "./Interfaces";
+
 interface IRoot {
   $id?: string;
   $updatedAt?: string;
@@ -227,6 +230,8 @@ class PedavalansService extends RealmoceanService {
   readonly PositionVocationalQualificationRelation = "position_vocational_qualification";
   readonly StringParameter = "string_parameter";
   readonly ChartValue = "chart_value";
+  readonly EmailMessage = "email_message";
+  readonly MailSettings = "mail_settings";
 
 
   async init() {
@@ -237,8 +242,22 @@ class PedavalansService extends RealmoceanService {
       await this.checkVocationQualification();
       await this.checkTargetDateForReminder();
       await this.checkRealDataForReminder();
+    })
 
-
+    this.scheduleService.addJob('*/30 * * * * *', async () => {
+      const emailList: Interfaces.IEmailMessage[] = await this.getEmailList();
+      if (emailList && emailList.length > 0) {
+        const emailSettings: Interfaces.IMailSettings = await this.getEmailSettings();
+        const emailKey = await this.createEmailKey(emailSettings.smtp_server, emailSettings.smtp_port, emailSettings.username, emailSettings.password, emailSettings.tls);
+        emailList.forEach(async (email) => {
+          try {
+            this.emailService.sendEmail(emailKey, emailSettings.username, email.recipient, "Eğitim Kaydı Bildirimi", EmailTemplates.getTemplate("education"), JSON.parse(email.content));
+            await this.databaseService.updateDocument(this.appName, this.databaseName, this.EmailMessage, email.$id, { status: "sent" });
+          } catch (error) {
+            await this.databaseService.updateDocument(this.appName, this.databaseName, this.EmailMessage, email.$id, { status: "failed", errorReason: error.message, attemptCount: email.attemptCount + 1 });
+          }
+        })
+      }
     })
 
     const router = this.webServer.getRouter();
@@ -280,6 +299,7 @@ class PedavalansService extends RealmoceanService {
         return res.status(500).json({ message: e.message });
       }
     })
+
     router.post("/com.pedavalans.service.main/listEmployeeCompetencyValue", async (req, res) => {
       const { competency_id, competency_evaluation_period } = req.body
       try {
@@ -290,6 +310,7 @@ class PedavalansService extends RealmoceanService {
         return res.status(500).json({ message: e.message });
       }
     })
+
     router.post("/com.pedavalans.service.main/listEmployeeCompetencyValueGlobal", async (req, res) => {
       const { competency_id } = req.body
       try {
@@ -1204,14 +1225,47 @@ class PedavalansService extends RealmoceanService {
     }
   }
 
-  async listEmployeeCompetencyValue (competency_id, competency_evaluation_period): Promise<any> {
-    const empList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [this.databaseService.Query.equal('competency_id', competency_id),this.databaseService.Query.equal('competency_evaluation_period',competency_evaluation_period),this.databaseService.Query.equal('is_active_competency_value', true), this.databaseService.Query.equal('is_deleted_competency_value', false),this.databaseService.Query.notEqual("competency_target_value", "no-target"),this.databaseService.Query.notEqual("competency_real_value", ""), this.databaseService.Query.limit(10000)]);
+  async listEmployeeCompetencyValue(competency_id, competency_evaluation_period): Promise<any> {
+    const empList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [this.databaseService.Query.equal('competency_id', competency_id), this.databaseService.Query.equal('competency_evaluation_period', competency_evaluation_period), this.databaseService.Query.equal('is_active_competency_value', true), this.databaseService.Query.equal('is_deleted_competency_value', false), this.databaseService.Query.notEqual("competency_target_value", "no-target"), this.databaseService.Query.notEqual("competency_real_value", ""), this.databaseService.Query.limit(10000)]);
     return empList.documents;
   }
-  async listEmployeeCompetencyValueGlobal (competency_id): Promise<any> {
-    const empList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [this.databaseService.Query.equal('competency_id', competency_id),this.databaseService.Query.equal('is_active_competency_value', true), this.databaseService.Query.equal('is_deleted_competency_value', false),this.databaseService.Query.notEqual("competency_target_value", "no-target"),this.databaseService.Query.notEqual("competency_real_value", ""), this.databaseService.Query.limit(10000)]);
+
+  async listEmployeeCompetencyValueGlobal(competency_id): Promise<any> {
+    const empList = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmployeeCompetencyValue, [this.databaseService.Query.equal('competency_id', competency_id), this.databaseService.Query.equal('is_active_competency_value', true), this.databaseService.Query.equal('is_deleted_competency_value', false), this.databaseService.Query.notEqual("competency_target_value", "no-target"), this.databaseService.Query.notEqual("competency_real_value", ""), this.databaseService.Query.limit(10000)]);
     return empList.documents;
 
+  }
+
+  async getEmailList() {
+    const emailMessages = await this.databaseService.listDocuments(this.appName, this.databaseName, this.EmailMessage, [this.databaseService.Query.limit(10000), this.databaseService.Query.equal("status", "pending")]).then(x => x.documents);
+    return emailMessages;
+  }
+
+  async getEmailSettings() {
+    const emailSettings = await this.databaseService.getDocument(this.appName, this.databaseName, this.MailSettings, "mail_settings");
+    return emailSettings;
+  }
+
+  async createEmailKey(smtp_server: string, smtp_port: string, username: string, password: string, tls: boolean) {
+    function decrypt(encryptedText: string): string {
+      const decodedText = atob(encryptedText);
+      let decrypted = '';
+      for (let i = 0; i < decodedText.length; i++) {
+        const keyChar = "mysecretkey12345".charCodeAt(i % "mysecretkey12345".length);
+        const textChar = decodedText.charCodeAt(i);
+        decrypted += String.fromCharCode(textChar ^ keyChar);
+      }
+      return decrypted;
+    }
+
+    const key = await this.emailService.createKey({
+      smtpServer: smtp_server,
+      smtpPort: smtp_port,
+      password: decrypt(password),
+      username: username,
+      tls: tls
+    })
+    return key;
   }
 
 }

@@ -188,19 +188,6 @@ export class ParametersController extends UIFormController {
                                                         :
                                                         <StringParameter stringParameter={stringParameter} index={i} />
                                                 )}
-                                                {monitoring.map((monitor) =>
-                                                    <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
-                                                        <div style={{ fontSize: "14px", fontWeight: 400 }}>
-                                                            {"Yetkinlik performansı kabul kriteri(%)?"}
-                                                        </div>
-                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                                            <TextField
-                                                                size="small"
-                                                                value={monitor.lowest_accepted_average}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         )
                                     )
