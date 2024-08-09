@@ -385,6 +385,7 @@ class RealmService extends RealmoceanService {
                             email.$id,
                             { status: "failed", errorReason: error.message, attemptCount: email.attemptCount + 1 }
                         );
+                        console.log(error);
                     }
                 }
             }
@@ -432,6 +433,7 @@ class RealmService extends RealmoceanService {
                                 attemptCount: email.attemptCount + 1
                             }
                         );
+                        console.log(error);
                     }
                 }
             }
