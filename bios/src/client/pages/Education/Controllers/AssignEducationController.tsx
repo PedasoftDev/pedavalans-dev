@@ -142,7 +142,9 @@ export class AssignEducationController extends UIFormController {
                                             name: form.education_name,
                                             hour: form.hour,
                                             startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
-                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
+                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR"),
+                                            location: form.location,
+                                            employeeName: `${employee.first_name} ${employee.last_name}`
                                         }
                                         createEmailRequest({
                                             data: {
@@ -203,7 +205,9 @@ export class AssignEducationController extends UIFormController {
                                             name: form.education_name,
                                             hour: form.hour,
                                             startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
-                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
+                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR"),
+                                            location: form.location,
+                                            employeeName: `${employee.first_name} ${employee.last_name}`
                                         }
                                         createEmailRequest({
                                             data: {
@@ -224,7 +228,7 @@ export class AssignEducationController extends UIFormController {
                                                 deleteCache();
                                                 navigateToList();
                                             }
-                                            
+
                                         }
                                         )
 
