@@ -45,6 +45,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
 import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
+import EmailMessage from "../../../../server/hooks/emailMessage/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -142,6 +143,8 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
         const { createAssignedEducation } = AssignEducation.Create();
         const { createAssignedEducationEmp } = AssignedEducationEmployees.Create();
+
+        const { createEmailRequest } = EmailMessage.Create();
 
 
         const { educationCompetencyRelationList, isLoading: isLoadingCompetencyRelations } = EducationCompetencyRelation.GetList(me?.prefs?.organization);
@@ -255,6 +258,27 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     createAssignedEducationEmp({
                                         data: createForm
                                     }, () => {
+                                        const emailValues = {
+                                            educatorName: form.educator_name,
+                                            code: form.education_code,
+                                            name: form.education_name,
+                                            hour: form.hour,
+                                            startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
+                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR"),
+                                            location: form.location,
+                                            employeeName: `${employee.first_name} ${employee.last_name}`
+                                        }
+                                        createEmailRequest({
+                                            data: {
+                                                sender: me?.email,
+                                                recipient: accounts.find(x => x.$id === form.educator_id)?.email,
+                                                subject: "education",
+                                                content: JSON.stringify(emailValues),
+                                                status: "pending",
+                                                errorReason: "",
+                                                attemptCount: 0
+                                            }
+                                        })
                                         if (i === selectedEmployees.length - 1) {
                                             Toast.fire({
                                                 icon: "success",
