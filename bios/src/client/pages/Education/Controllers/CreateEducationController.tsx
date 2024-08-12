@@ -25,6 +25,8 @@ import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
 import EducationCompetencyStatusInfos from "../../../../server/hooks/educationCompetencyStatusInfos/Main";
 import IEducationCompetencyStatusInfos from "../../../interfaces/IEducationCompetencyStatusInfos";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
+import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 
 const resetForm: IEducation.ICreate = {
     code: "",
@@ -55,7 +57,8 @@ export class CreateEducationController extends UIFormController {
         const { createEducationCompetencyRelation } = EducationCompetencyRelation.Create()
         const { educationList, isLoading: isLoadingEducation } = Education.GetList()
         const { createEducationCompetencyStatusInfos } = EducationCompetencyStatusInfos.Create()
-
+        const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
+        const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         return (
 
             VStack({ alignment: cTop })(
@@ -66,6 +69,7 @@ export class CreateEducationController extends UIFormController {
                         const [form, setForm] = useState<IEducation.ICreate>(resetForm);
 
                         const [educationToUpdateCompetencyStatus, setEducationToUpdateCompetencyStatus] = useState<boolean>(false)
+                        const [addCompetencyLevel, setAddCompetencyLevel] = useState<string>("")
                         const [rows, setRows] = useState([])
 
                         const navigateToList = () => navigate("/app/education/list");
@@ -117,6 +121,7 @@ export class CreateEducationController extends UIFormController {
                                     const educationCompetencyStatusInfos: IEducationCompetencyStatusInfos.ICreate = {
                                         education_id: res.$id,
                                         id: educationCompetencyStatusInfosId,
+                                        competency_id: selectedCompetencyId[0],
                                         lower_bound: rows[i].lower_bound,
                                         upper_bound: rows[i].upper_bound,
                                         competency_level: rows[i].competency_level,
@@ -167,6 +172,10 @@ export class CreateEducationController extends UIFormController {
                             const { name, value } = e.target
                             setAddEducationToUpdateCompetencyStatusParams({ ...addEducationToUpdateCompetencyStatusParams, [name]: value })
                         }
+                        const handleChange = (event: SelectChangeEvent) => {
+                            setAddCompetencyLevel(event.target.value as string);
+
+                        };
                         const handleAddEducationToUpdateCompetencyStatusParams = () => {
                             const { lower_bound, upper_bound } = addEducationToUpdateCompetencyStatusParams;
 
@@ -204,7 +213,7 @@ export class CreateEducationController extends UIFormController {
                                     id: prevRows.length + 1,
                                     lower_bound: lower_bound,
                                     upper_bound: upper_bound,
-                                    competency_level: addEducationToUpdateCompetencyStatusParams.competency_level
+                                    competency_level: addCompetencyLevel
                                 }
                             ]);
 
@@ -215,14 +224,21 @@ export class CreateEducationController extends UIFormController {
                                 upper_bound: '',
                                 competency_level: ''
                             });
+                            setAddCompetencyLevel("");
                         };
                         const [selectedRows, setSelectedRows] = useState<string[]>([]);
+                        const [selectedCompetencyId, setSelectedCompetencyId] = useState<string[]>([]);
 
                         const handleSelectionModelChange = (newSelectionModel: any) => {
+                            console.log(newSelectionModel)
                             if (educationToUpdateCompetencyStatus && newSelectionModel.length > 1) {
-                                setSelectedRows([newSelectionModel[newSelectionModel.length - 1]]);
+                                const selectionSet = new Set(newSelectionModel);
+                                const result = newSelectionModel.filter((item) => !selectionSet.has(item));
+                                setSelectedRows(result);
+                                setSelectedCompetencyId(result);
                             } else {
                                 setSelectedRows(newSelectionModel);
+                                setSelectedCompetencyId(newSelectionModel);
                             }
                             setForm({ ...form, relatedCompetencies: newSelectionModel });
                         };
@@ -346,15 +362,23 @@ export class CreateEducationController extends UIFormController {
                                                             value={addEducationToUpdateCompetencyStatusParams.upper_bound}
                                                             onChange={handleChangeEducationToUpdateCompetencyStatusParams}
                                                         />
-                                                        <TextField
-                                                            size="small"
-                                                            fullWidth
-                                                            name="competency_level"
-                                                            inputProps={{ maxLength: 50 }}
-                                                            label="İlişkili Yetkinlik Seviyesi"
-                                                            value={addEducationToUpdateCompetencyStatusParams.competency_level}
-                                                            onChange={handleChangeEducationToUpdateCompetencyStatusParams}
-                                                        />
+                                                        <FormControl fullWidth size="small">
+                                                            <InputLabel id="competency_level">İlişkili Yetkinlik Seviyesi</InputLabel>
+                                                            <Select
+                                                                labelId="competency_level"
+                                                                id="competency_level"
+                                                                value={addCompetencyLevel}
+                                                                label="İlişkili Yetkinlik Seviyesi"
+                                                                onChange={handleChange}
+                                                                size="small"
+                                                            >
+                                                                {
+                                                                    levels.filter((x) => x.grade_id === groups.find((x) => x.competency_group_id === competencyList.find((x) => x.competency_id === selectedCompetencyId[0])?.competency_group_id)?.competency_grade_id).map((level) => (
+                                                                        <MenuItem key={level.grade_id} value={level.grade_level_name}>{level.grade_level_name}</MenuItem>
+                                                                    ))
+                                                                }
+                                                            </Select>
+                                                        </FormControl>
                                                         <Button
                                                             variant="contained"
                                                             color="primary"
@@ -364,15 +388,19 @@ export class CreateEducationController extends UIFormController {
                                                             Ekle
                                                         </Button>
                                                     </div>
-                                                    <StyledDataGrid
-                                                        rows={rows}
-                                                        columns={educationToUpdateCompetencyStatusColums}
-                                                        localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
-                                                        isCellEditable={() => false}
-                                                        disableRowSelectionOnClick
-                                                        rowHeight={30}
-                                                        columnHeaderHeight={30}
-                                                    />
+                                                    <div style={{
+                                                        height: "280px",
+                                                    }}>
+                                                        <StyledDataGrid
+                                                            rows={rows}
+                                                            columns={educationToUpdateCompetencyStatusColums}
+                                                            localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                            isCellEditable={() => false}
+                                                            disableRowSelectionOnClick
+                                                            rowHeight={30}
+                                                            columnHeaderHeight={30}
+                                                        />
+                                                    </div>
                                                 </div>
                                             }
                                             <div
