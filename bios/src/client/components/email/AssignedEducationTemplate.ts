@@ -76,13 +76,12 @@ const email = (educationUserList): string => `<!DOCTYPE html>
    <p>Aşağıdaki bilgiler ile yeni bir eğitim kaydı açılmıştır:</p>
     <p><strong>Eğitim Kodu:</strong> <span class="highlight">{{code}}</span></p>
     <p><strong>Eğitim Adı:</strong> <span class="highlight">{{name}}</span></p>
-    <p><strong>Eğitim Saati:</strong> <span class="highlight">{{hour}}</span></p>
+    <p><strong>Eğitim Süresi:</strong> <span class="highlight">{{hour}}</span></p>
+    <p><strong>Eğitim Başlangıç Saati:</strong> <span class="highlight">{{hour}}</span></p>
     <p><strong>Başlangıç Tarihi:</strong> <span class="highlight">{{startDate}}</span></p>
     <p><strong>Bitiş Tarihi:</strong> <span class="highlight">{{endDate}}</span></p>
-    <h3>Eğitim Alacak Çalışanlar:</h3>
-        <ul>
-            ${educationUserList.map((user) => `<li>${user}</li>`).join("")}
-        </ul>
+    <p><strong>Eğitim Yeri:</strong> <span class="highlight">{{location}}</span></p>
+    <p><strong>Eğitim Alacak Çalışan:</strong> <span class="highlight">{{employeeName}}</span></p>
     <div class="footer">
         <p>İyi çalışmalar<br>Pedavalans Ekibi</p>
     </div>

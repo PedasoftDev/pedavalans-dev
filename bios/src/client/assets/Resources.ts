@@ -6,7 +6,13 @@ import { themeColor as _themeColor } from "./Colors/themeColor";
 import { formatDate as _formatDate } from "./Functions/formatDate";
 
 export namespace Resources {
-    export const version = "v1.2.1.05"
+    export const version = "v1.2.1.20"
+
+    export namespace MailConf {
+        export const secretKey = 'mysecretkey12345';
+
+    }
+
     export namespace Colors {
         export const colorTextField = _colorTextField;
         export const themeColor = _themeColor;
@@ -80,6 +86,11 @@ export namespace Resources {
         {
             name: "Departman-Pozisyon İlişkisi Kurulacak mı?",
             localStr: "position_relation_department",
+            type: "boolean",
+        },
+        {
+            name: "Eğitim Değerlendirme Sonucuna Göre Yetkinlik Durumları Otomatik Güncellenecek mi?",
+            localStr: "education_result_to_update_competency_status",
             type: "boolean",
         }
     ];

@@ -26,6 +26,7 @@ import { create } from "@mui/material/styles/createTransitions";
 import { Toast } from "../../../components/Toast";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 import AppInfo from "../../../../AppInfo";
+import EmailMessage from "../../../../server/hooks/emailMessage/main";
 
 const resetForm: IAssignedEducation.ICreate = {
     id: "",
@@ -66,6 +67,9 @@ export class AssignEducationController extends UIFormController {
         const { createAssignedEducation } = AssignEducation.Create();
         const { createAssignedEducationEmp } = AssignedEducationEmployees.Create();
         const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
+
+        // Mail Requests
+        const { createEmailRequest } = EmailMessage.Create();
 
         const columns: GridColDef[] = [
             {
@@ -132,28 +136,31 @@ export class AssignEducationController extends UIFormController {
                                             employee_name: `${employee.first_name} ${employee.last_name}`,
                                             tenant_id: me?.prefs?.organization
                                         }
+                                        const emailValues = {
+                                            educatorName: form.educator_name,
+                                            code: form.education_code,
+                                            name: form.education_name,
+                                            hour: form.hour,
+                                            startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
+                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR"),
+                                            location: form.location,
+                                            employeeName: `${employee.first_name} ${employee.last_name}`
+                                        }
+                                        createEmailRequest({
+                                            data: {
+                                                sender: me?.email,
+                                                recipient: accounts.find(x => x.$id === form.educator_id)?.email,
+                                                subject: "education",
+                                                content: JSON.stringify(emailValues),
+                                                status: "pending",
+                                                errorReason: "",
+                                                attemptCount: 0
+                                            }
+                                        })
                                         createAssignedEducationEmp({
                                             data: createForm
                                         }, async () => {
                                             if (_i === selectedEmployees.length - 1) {
-                                                const account = accounts.find(x => x.$id === form.educator_id);
-                                                const emailTemplate = assignedEducationTemplate(selectedEmployees.map(x => `${x.first_name} ${x.last_name}`));
-                                                const key = await EmailBroker.Default.createKey({
-                                                    smtpServer: "smtp-mail.outlook.com",
-                                                    smtpPort: "587",
-                                                    password: "V%443989818492ug",
-                                                    username: "notification@pedabilisim.com",
-                                                    tls: false
-                                                })
-                                                await EmailBroker.Default.setKey(key)
-                                                    .sendEmail("notification@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
-                                                        educatorName: form.educator_name,
-                                                        code: form.education_code,
-                                                        name: form.education_name,
-                                                        hour: form.hour,
-                                                        startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
-                                                        endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
-                                                    })
                                                 deleteCache();
                                                 navigateToList();
                                             }
@@ -192,31 +199,36 @@ export class AssignEducationController extends UIFormController {
                                             employee_name: `${employee.first_name} ${employee.last_name}`,
                                             tenant_id: me?.prefs?.organization
                                         }
+                                        const emailValues = {
+                                            educatorName: form.educator_name,
+                                            code: form.education_code,
+                                            name: form.education_name,
+                                            hour: form.hour,
+                                            startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
+                                            endDate: new Date(form.end_date).toLocaleDateString("tr-TR"),
+                                            location: form.location,
+                                            employeeName: `${employee.first_name} ${employee.last_name}`
+                                        }
+                                        createEmailRequest({
+                                            data: {
+                                                sender: me?.email,
+                                                recipient: accounts.find(x => x.$id === form.educator_id)?.email,
+                                                subject: "education",
+                                                content: JSON.stringify(emailValues),
+                                                status: "pending",
+                                                errorReason: "",
+                                                attemptCount: 0
+                                            }
+                                        })
                                         createAssignedEducationEmp({
                                             data: createForm
                                         }, async () => {
+
                                             if (_i === selectedEmployees.length - 1) {
-                                                const account = accounts.find(x => x.$id === form.educator_id);
-                                                const emailTemplate = assignedEducationTemplate(selectedEmployees.map(x => `${x.first_name} ${x.last_name}`));
-                                                const key = await EmailBroker.Default.createKey({
-                                                    smtpServer: "smtp-mail.outlook.com",
-                                                    smtpPort: "587",
-                                                    password: "V%443989818492ug",
-                                                    username: "notification@pedabilisim.com",
-                                                    tls: false
-                                                })
-                                                await EmailBroker.Default.setKey(key)
-                                                    .sendEmail("notification@pedabilisim.com", account?.email, "Eğitim Ataması", emailTemplate, {
-                                                        educatorName: form.educator_name,
-                                                        code: form.education_code,
-                                                        name: form.education_name,
-                                                        hour: form.hour,
-                                                        startDate: new Date(form.start_date).toLocaleDateString("tr-TR"),
-                                                        endDate: new Date(form.end_date).toLocaleDateString("tr-TR")
-                                                    })
                                                 deleteCache();
                                                 navigateToList();
                                             }
+
                                         }
                                         )
 
@@ -265,24 +277,6 @@ export class AssignEducationController extends UIFormController {
                                                     )}
                                                 />
                                             </FormControl>
-                                            {/* <Autocomplete
-                                                multiple
-                                                disableCloseOnSelect
-                                                options={employees}
-                                                getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
-                                                filterSelectedOptions
-                                                size="small"
-                                                renderInput={(params) => (
-                                                    <TextField
-                                                        {...params}
-                                                        label="Eğitim Alacak Personel"
-                                                        size="small"
-                                                    />
-                                                )}
-                                                onChange={(event, newValue) => {
-                                                    setSelectedEmployees(newValue);
-                                                }}
-                                            /> */}
                                             <div>
                                                 <div style={{ height: 300, width: '100%' }}>
                                                     <StyledDataGrid

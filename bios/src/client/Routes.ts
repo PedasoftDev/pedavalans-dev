@@ -95,6 +95,7 @@ import { TrainersList } from './pages/Trainers/Controllers/TrainersList';
 import { CreateTrainers } from './pages/Trainers/Controllers/CreateTrainers';
 import { EditTrainers } from './pages/Trainers/Controllers/EditTrainers';
 import { AssignEducationControllers } from './pages/Education/Controllers/AssignEducationControllers';
+import { MailConfigurationController } from './pages/MailConfiguration/Controllers/MailConfigurationController';
 
 
 export const Routes = () => {
@@ -216,7 +217,7 @@ export const Routes = () => {
                     UIRoute('list', EducationListController),
                     UIRoute('create', CreateEducationController),
                     UIRoute('edit/:id', UpdateEducationController),
-                   
+
                 ),
 
                 // education plans
@@ -269,6 +270,8 @@ export const Routes = () => {
                     UIRoute('create', CreateQualificationTypeController),
                     UIRoute('edit/:id', UpdateVocationalQualificationTypeController)
                 ),
+
+                UIRoute('mail-configuration/view', MailConfigurationController),
 
 
                 // not found

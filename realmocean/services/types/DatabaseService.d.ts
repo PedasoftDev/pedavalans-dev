@@ -1,4 +1,4 @@
-import { Query } from "./Queryd";
+import { Query } from "./Query";
 
 
 export interface DatabaseService {

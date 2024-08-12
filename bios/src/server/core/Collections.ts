@@ -40,6 +40,9 @@ namespace Collections {
     export const TrainerEducations = "trainer_educations";
     export const PositionRelationDepartments = "position_relation_departments";
     export const AssignedEducationEmployees = "assigned_education_employees";
+    export const MailSettings = "mail_settings";
+    export const EmailMessage = "email_message";
+    export const EducationCompetencyStatusInfos ="education_competency_status_infos";
 }
 
 export default Collections;
