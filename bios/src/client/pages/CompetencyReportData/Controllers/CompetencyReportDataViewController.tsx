@@ -322,6 +322,7 @@ export class CompetencyReportDataViewController extends UIController {
                                                     />
                                                 )}
                                                 fullWidth
+                                                disableClearable
                                             />
                                             <Autocomplete
                                                 options={dataYear}

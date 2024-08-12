@@ -62,7 +62,7 @@ export class CreateEducationController extends UIFormController {
         return (
 
             VStack({ alignment: cTop })(
-                isLoading || isLoadingCompetencyList || isLoadingEducation ? VStack(Spinner()) :
+                isLoading || isLoadingCompetencyList || isLoadingLevels || isLoadingGroups || isLoadingEducation ? VStack(Spinner()) :
                     UIViewBuilder(() => {
 
 
@@ -230,7 +230,6 @@ export class CreateEducationController extends UIFormController {
                         const [selectedCompetencyId, setSelectedCompetencyId] = useState<string[]>([]);
 
                         const handleSelectionModelChange = (newSelectionModel: any) => {
-                            console.log(newSelectionModel)
                             if (educationToUpdateCompetencyStatus && newSelectionModel.length > 1) {
                                 const selectionSet = new Set(newSelectionModel);
                                 const result = newSelectionModel.filter((item) => !selectionSet.has(item));

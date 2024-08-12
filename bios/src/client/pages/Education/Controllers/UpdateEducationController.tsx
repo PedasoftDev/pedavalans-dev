@@ -17,6 +17,7 @@ import {
   DialogContent,
   Grid,
   DialogActions,
+  IconButton,
 } from "@mui/material";
 import { Query, Services, useDeleteCache, useGetMe } from "@realmocean/sdk";
 import Competency from "../../../../server/hooks/competency/main";
@@ -34,6 +35,10 @@ import Collections from "../../../../server/core/Collections";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
 import Swal from "sweetalert2";
 import EducationCompetencyStatusInfos from "../../../../server/hooks/educationCompetencyStatusInfos/Main";
+import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
+import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
+import { FaPlus } from "react-icons/fa6";
+
 
 const resetForm: IEducation.IBase = {
   code: "",
@@ -69,10 +74,13 @@ export class UpdateEducationController extends UIFormController {
     const { updateEducationCompetencyRelation } = EducationCompetencyRelation.Update()
     const { educationList, isLoading: isLoadingEducation } = Education.GetList()
     const { educationCompetencyStatusList, isLoading: isLoadingEducationCompetencyStatusInfos } = EducationCompetencyStatusInfos.GetList(me?.prefs?.organization)
+    const { updateEducationCompetencyStatusInfos } = EducationCompetencyStatusInfos.Update()
+    const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
+    const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
 
     return (
       VStack({ alignment: cTop })(
-        isLoading || isLoadingCompetencyList || isLoadingEducation || isLoadingEducationCompetencyStatusInfos || isLoadingGetEducation || isLoadingEducationCompetencyRelationList ? VStack(Spinner()) :
+        isLoading || isLoadingCompetencyList || isLoadingLevels || isLoadingGroups || isLoadingEducation || isLoadingEducationCompetencyStatusInfos || isLoadingGetEducation || isLoadingEducationCompetencyRelationList ? VStack(Spinner()) :
           UIViewBuilder(() => {
 
             const [form, setForm] = useState<IEducation.IBase>(resetForm);
@@ -82,6 +90,17 @@ export class UpdateEducationController extends UIFormController {
             const [educationToUpdateCompetencyStatus, setEducationToUpdateCompetencyStatus] = useState<boolean>(false)
             const [rows, setRows] = useState([])
 
+            const [addCompetencyLevel, setAddCompetencyLevel] = useState<string>("")
+            const handleChange = (event: SelectChangeEvent) => {
+              setAddCompetencyLevel(event.target.value as string);
+              setSelectedRow({ ...selectedRow, competency_level: event.target.value as string })
+
+            };
+            const [selectedCompetencyId, setSelectedCompetencyId] = useState<string[]>([]);
+            const [selectedRow, setSelectedRow] = useState(null);
+
+
+            const [editMode, setEditMode] = useState<boolean>(false)
             const navigateToList = () => navigate("/app/education/list");
 
             const handleChangeText = (e: any) => {
@@ -90,8 +109,6 @@ export class UpdateEducationController extends UIFormController {
 
             const handleSubmit = (e: React.FormEvent) => {
               e.preventDefault();
-
-
               if (educationList.some((education) => education.$id != form.$id && education.code === form.code)) {
                 Toast.fire({
                   icon: "error",
@@ -99,7 +116,6 @@ export class UpdateEducationController extends UIFormController {
                 });
                 return;
               }
-
               updateEducation({
                 databaseId: AppInfo.Database,
                 collectionId: Collections.Education,
@@ -172,7 +188,27 @@ export class UpdateEducationController extends UIFormController {
               {
                 field: "competency_level",
                 headerName: "İlişkiki Yetkinlik Seviyesi",
-                flex: 1
+                flex: 2
+              },
+              {
+                field: "actions",
+                headerName: "Düzenle",
+                width: 100,
+                align: "center",
+                renderCell: (params) => {
+                  return (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setEditMode(true);
+                        setSelectedRow(params.row);
+
+                      }}
+                    >
+                      <FaPlus />
+                    </IconButton>
+                  );
+                }
               },
             ]
 
@@ -222,19 +258,73 @@ export class UpdateEducationController extends UIFormController {
               setForm(education);
               setEducationCompetencyRelation(educationCompetencyRelationList.map((relation) => relation.competency_id))
               setIsActive(education.is_active);
+              setSelectedCompetencyId(educationCompetencyRelationList.map((relation) => relation.competency_id))
               const append = []
               educationCompetencyStatusList.filter((item) => item.education_id === id).map((item) => {
                 append.push(removeDollarProperties(item))
               })
               setRows(append)
             }, [])
+
             const [addEducationToUpdateCompetencyStatusParams, setAddEducationToUpdateCompetencyStatusParams] = useState(educationToUpdateCompetencyStatusParams)
+
             const handleChangeEducationToUpdateCompetencyStatusParams = (e: React.ChangeEvent<HTMLInputElement>) => {
               const { name, value } = e.target
-              setAddEducationToUpdateCompetencyStatusParams({ ...addEducationToUpdateCompetencyStatusParams, [name]: value })
+              setSelectedRow({ ...selectedRow, [name]: value })
             }
-            const handleAddEducationToUpdateCompetencyStatusParams = () => {
-              const { lower_bound, upper_bound } = addEducationToUpdateCompetencyStatusParams;
+
+            // const handleAddEducationToUpdateCompetencyStatusParams = () => {
+            //   const { lower_bound, upper_bound } = addEducationToUpdateCompetencyStatusParams;
+
+            //   // string değerleri sayıya dönüştür
+            //   const lower = parseFloat(lower_bound);
+            //   const upper = parseFloat(upper_bound);
+
+            //   if (isNaN(lower) || isNaN(upper)) {
+            //     alert("Lütfen geçerli sayısal değerler girin.");
+            //     return;
+            //   }
+
+            //   if (lower >= upper) {
+            //     alert("Alt aralık üst aralıktan küçük olmalıdır.");
+            //     return;
+            //   }
+
+            //   // Mevcut aralıklarla çakışma kontrolü
+            //   const isOverlap = rows.some(row => {
+            //     const rowLower = parseFloat(row.lower_bound);
+            //     const rowUpper = parseFloat(row.upper_bound);
+
+            //     return (lower >= rowLower && lower <= rowUpper) || (upper >= rowLower && upper <= rowUpper);
+            //   });
+
+            //   if (isOverlap) {
+            //     alert("Girilen aralık, mevcut aralıklarla çakışıyor.");
+            //     return;
+            //   }
+
+            //   // Yeni aralığı ekleme işlemi
+            //   setRows(prevRows => [
+            //     ...prevRows,
+            //     {
+            //       id: prevRows.length + 1,
+            //       lower_bound: lower_bound,
+            //       upper_bound: upper_bound,
+            //       competency_level: addEducationToUpdateCompetencyStatusParams.competency_level
+            //     }
+            //   ]);
+
+            //   // Formu temizle
+            //   setAddEducationToUpdateCompetencyStatusParams({
+            //     id: 1,
+            //     lower_bound: '',
+            //     upper_bound: '',
+            //     competency_level: ''
+            //   });
+            // };
+
+            const handleUpdateEducationCompetencyStatusInfo = () => {
+              const { lower_bound, upper_bound, competency_level } = selectedRow;
 
               // string değerleri sayıya dönüştür
               const lower = parseFloat(lower_bound);
@@ -251,44 +341,50 @@ export class UpdateEducationController extends UIFormController {
               }
 
               // Mevcut aralıklarla çakışma kontrolü
-              const isOverlap = rows.some(row => {
-                const rowLower = parseFloat(row.lower_bound);
-                const rowUpper = parseFloat(row.upper_bound);
+              // const isOverlap = rows.some(row => {
+              //   const rowLower = parseFloat(row.lower_bound);
+              //   const rowUpper = parseFloat(row.upper_bound);
 
-                return (lower >= rowLower && lower <= rowUpper) || (upper >= rowLower && upper <= rowUpper);
-              });
+              //   return (lower >= rowLower && lower <= rowUpper) || (upper >= rowLower && upper <= rowUpper);
+              // });
 
-              if (isOverlap) {
-                alert("Girilen aralık, mevcut aralıklarla çakışıyor.");
-                return;
-              }
+              // if (isOverlap) {
+              //   alert("Girilen aralık, mevcut aralıklarla çakışıyor.");
+              //   return;
+              // }
 
               // Yeni aralığı ekleme işlemi
-              setRows(prevRows => [
-                ...prevRows,
-                {
-                  id: prevRows.length + 1,
-                  lower_bound: lower_bound,
-                  upper_bound: upper_bound,
-                  competency_level: addEducationToUpdateCompetencyStatusParams.competency_level
+              const updatedRows = rows.map(row => {
+                if (row.id === selectedRow.id) {
+                  return {
+                    ...row,
+                    lower_bound: lower_bound,
+                    upper_bound: upper_bound,
+                    competency_level: competency_level
+                  };
                 }
-              ]);
 
-              // Formu temizle
-              setAddEducationToUpdateCompetencyStatusParams({
-                id: 1,
-                lower_bound: '',
-                upper_bound: '',
-                competency_level: ''
+                return row;
               });
-            };
-            const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
-            const handleRowSelectionModelChange = (newRowSelectionModel: any) => {
-              if (educationToUpdateCompetencyStatus && newRowSelectionModel.length > 1) {
-                setEducationCompetencyRelation([newRowSelectionModel[newRowSelectionModel.length - 1]]);
+              setRows(updatedRows);
+              setEditMode(false);
+
+
+
+
+            }
+
+
+            const handleRowSelectionModelChange = (newSelectionModel: any) => {
+              if (educationToUpdateCompetencyStatus && newSelectionModel.length > 1) {
+                const selectionSet = new Set(newSelectionModel);
+                const result = newSelectionModel.filter((item) => !selectionSet.has(item));
+                setEducationCompetencyRelation(result);
+                setSelectedCompetencyId(result);
               } else {
-                setEducationCompetencyRelation(newRowSelectionModel);
+                setEducationCompetencyRelation(newSelectionModel);
+                setSelectedCompetencyId(newSelectionModel);
               }
             };
 
@@ -375,47 +471,58 @@ export class UpdateEducationController extends UIFormController {
 
                           }
                         }>
-                          {/* <div style={{
-                            display: "flex",
-                            flexDirection: "row",
-                            gap: "5px",
-                          }}>
-                            <TextField
-                              size="small"
-                              fullWidth
-                              name="lower_bound"
-                              inputProps={{ maxLength: 50 }}
-                              label="Alt Aralık"
-                              value={addEducationToUpdateCompetencyStatusParams.lower_bound}
-                              onChange={handleChangeEducationToUpdateCompetencyStatusParams}
-                            />
-                            <TextField
-                              size="small"
-                              fullWidth
-                              name="upper_bound"
-                              inputProps={{ maxLength: 50 }}
-                              label="Üst Aralık"
-                              value={addEducationToUpdateCompetencyStatusParams.upper_bound}
-                              onChange={handleChangeEducationToUpdateCompetencyStatusParams}
-                            />
-                            <TextField
-                              size="small"
-                              fullWidth
-                              name="competency_level"
-                              inputProps={{ maxLength: 50 }}
-                              label="İlişkili Yetkinlik Seviyesi"
-                              value={addEducationToUpdateCompetencyStatusParams.competency_level}
-                              onChange={handleChangeEducationToUpdateCompetencyStatusParams}
-                            />
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              size="small"
-                              onClick={handleAddEducationToUpdateCompetencyStatusParams}
-                            >
-                              Ekle
-                            </Button>
-                          </div> */}
+                          {editMode ?
+                            <div style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              gap: "5px",
+                            }}>
+                              <TextField
+                                size="small"
+                                fullWidth
+                                name="lower_bound"
+                                inputProps={{ maxLength: 50 }}
+                                label="Alt Aralık"
+                                value={selectedRow?.lower_bound || ""}
+                                onChange={handleChangeEducationToUpdateCompetencyStatusParams}
+                              />
+                              <TextField
+                                size="small"
+                                fullWidth
+                                name="upper_bound"
+                                inputProps={{ maxLength: 50 }}
+                                label="Üst Aralık"
+                                value={selectedRow?.upper_bound || ""}
+                                onChange={handleChangeEducationToUpdateCompetencyStatusParams}
+                              />
+                              <FormControl fullWidth size="small">
+                                <InputLabel id="competency_level">İlişkili Yetkinlik Seviyesi</InputLabel>
+                                <Select
+                                  labelId="competency_level"
+                                  id="competency_level"
+                                  value={selectedRow?.competency_level || ""}
+                                  label="İlişkili Yetkinlik Seviyesi"
+                                  onChange={handleChange}
+                                  size="small"
+                                >
+                                  {
+                                    levels.filter((x) => x.grade_id === groups.find((x) => x.competency_group_id === competencyList.find((x) => x.competency_id === selectedCompetencyId[0])?.competency_group_id)?.competency_grade_id).map((level) => (
+                                      <MenuItem key={level.grade_id} value={level.grade_level_name}>{level.grade_level_name}</MenuItem>
+                                    ))
+                                  }
+                                </Select>
+                              </FormControl>
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                                onClick={handleUpdateEducationCompetencyStatusInfo}
+                              >
+                                Kaydet
+                              </Button>
+                            </div>
+                            : null
+                          }
                           <StyledDataGrid
                             rows={rows.sort((a, b) => a.lower_bound - b.lower_bound)}
                             columns={educationToUpdateCompetencyStatusColums}
