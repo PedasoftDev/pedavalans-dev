@@ -38,6 +38,7 @@ import EducationCompetencyStatusInfos from "../../../../server/hooks/educationCo
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import { FaPlus } from "react-icons/fa6";
+import IEducationCompetencyStatusInfos from "../../../interfaces/IEducationCompetencyStatusInfos";
 
 
 const resetForm: IEducation.IBase = {
@@ -154,6 +155,25 @@ export class UpdateEducationController extends UIFormController {
                     }
                   })
                 })
+                for (let i = 0; i < rows.length; i++) {
+                  const educationCompetencyStatusInfos: IEducationCompetencyStatusInfos.IBase = {
+                    education_id: id,
+                    id: rows[i].id,
+                    competency_id: selectedCompetencyId[0],
+                    lower_bound: rows[i].lower_bound,
+                    upper_bound: rows[i].upper_bound,
+                    competency_level: rows[i].competency_level,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  updateEducationCompetencyStatusInfos({
+                    databaseId: AppInfo.Database,
+                    collectionId: Collections.EducationCompetencyStatusInfos,
+                    documentId: educationCompetencyStatusInfos.id,
+                    data: educationCompetencyStatusInfos
+                  })
+                }
                 if (educationCompetencyRelation.length === 0) {
                   Toast.fire({
                     icon: "success",
@@ -164,8 +184,9 @@ export class UpdateEducationController extends UIFormController {
                 }
               })
 
-
             };
+
+
 
             const columns: GridColDef[] = [
               {
@@ -188,25 +209,49 @@ export class UpdateEducationController extends UIFormController {
               {
                 field: "competency_level",
                 headerName: "İlişkiki Yetkinlik Seviyesi",
-                flex: 2
+                flex: 1
               },
               {
                 field: "actions",
                 headerName: "Düzenle",
-                width: 100,
+                flex: 1,
                 align: "center",
                 renderCell: (params) => {
                   return (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setEditMode(true);
-                        setSelectedRow(params.row);
+                    <div>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                          setEditMode(true);
+                          setSelectedRow(params.row)
 
-                      }}
-                    >
-                      <FaPlus />
-                    </IconButton>
+                        }}
+                      >
+                        Düzenle
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => {
+                          const { id } = params.row
+                          const newRows = rows.filter((row) => row.id !== id)
+                          setRows(newRows)
+                          updateEducationCompetencyStatusInfos({
+                            databaseId: AppInfo.Database,
+                            collectionId: Collections.EducationCompetencyStatusInfos,
+                            documentId: id,
+                            data: {
+                              is_deleted: true,
+                              is_active: false
+                            }
+                          })
+                        }}
+                      >
+                        Sil
+                      </Button>
+                    </div>
                   );
                 }
               },
