@@ -27,6 +27,7 @@ import { Resources } from '../../../../assets/Resources';
 import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -39,6 +40,7 @@ const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   gender: '',
   educational_status: '',
   position_id: '',
+  workplace_id: '',
   line_id: '',
   title_id: '',
   manager_id: '',
@@ -71,6 +73,7 @@ export class CreateEmployeeController extends UIController {
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
     const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization)
     const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization)
     const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
@@ -83,7 +86,7 @@ export class CreateEmployeeController extends UIController {
     const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
 
     return (
-      isLoading || isLoadingResult || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingResult || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const accountRelation = accountRelations[0]
@@ -117,6 +120,11 @@ export class CreateEmployeeController extends UIController {
                 id: "position_id",
                 label: "Bulunduğu Pozisyon",
                 options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
+              },
+              {
+                id: "workplace_id",
+                label: "Bulunduğu İşyeri",
+                options: workPlaces.filter((item) => item.is_active === true)
               },
               {
                 id: "line_id",
@@ -367,7 +375,9 @@ export class CreateEmployeeController extends UIController {
                                         [selectFormState.id]: newValue ? newValue.id : ''
                                       });
                                     }}
-                                    getOptionLabel={(option) => option.name}
+                                    getOptionLabel={
+                                      (option) => `${option.record_id} - ${option.name}`
+                                    }
                                     renderInput={(params) => (
                                       <TextField
                                         {...params}

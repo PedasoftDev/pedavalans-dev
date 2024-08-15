@@ -126,6 +126,7 @@ export class CreateEducationController extends UIFormController {
                                         upper_bound: rows[i].upper_bound,
                                         competency_level: rows[i].competency_level,
                                         tenant_id: me?.prefs?.organization,
+                                        competency_level_id: levels.find((x) => x.grade_level_name === rows[i].competency_level)?.grade_level_id
                                     }
                                     createEducationCompetencyStatusInfos({
                                         documentId: educationCompetencyStatusInfosId,
@@ -373,7 +374,7 @@ export class CreateEducationController extends UIFormController {
                                                             >
                                                                 {
                                                                     levels.filter((x) => x.grade_id === groups.find((x) => x.competency_group_id === competencyList.find((x) => x.competency_id === selectedCompetencyId[0])?.competency_group_id)?.competency_grade_id).map((level) => (
-                                                                        <MenuItem key={level.grade_id} value={level.grade_level_name}>{level.grade_level_name}</MenuItem>
+                                                                        <MenuItem key={level.grade_id} value={level.grade_level_name}>{level.grade_level_name} - {level.grade_level_number}</MenuItem>
                                                                     ))
                                                                 }
                                                             </Select>

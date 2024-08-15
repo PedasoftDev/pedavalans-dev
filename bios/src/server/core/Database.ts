@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 28,
+    "version": 31,
     "collections": [
         {
             "id": "competency",
@@ -1625,6 +1625,12 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "workplace_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 31
+                },
+                {
                     "key": "manager_id",
                     "type": "string",
                     "size": 256,
@@ -3073,6 +3079,12 @@ const Database: IDatabase = {
                     "version":1                    
                 },
                 {
+                    "key": "competency_level_id",
+                    "type": "string",
+                    "size": 256,
+                    "version":29                    
+                },
+                {
                     "key":"tenant_id",
                     "type":"string",
                     "size":256,
@@ -3090,6 +3102,60 @@ const Database: IDatabase = {
                     "default": false,
                     "version": 1
                 }
+            ]
+        },
+        {
+            "id": "organization_workplace",
+            "name": "Organization Workplace",
+            "description": {
+                "en": "Organization Workplace is a collection of organization workplace.",
+                "tr": "Organizasyon is yeri koleksiyonudur."
+            },
+            "version": 30,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "realm_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
             ]
         },
     ]

@@ -27,6 +27,7 @@ import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
 import Swal from 'sweetalert2';
 import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
+import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -38,6 +39,7 @@ const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   department_start_date: '',
   gender: '',
   position_id: '',
+  workplace_id: '',
   line_id: '',
   title_id: '',
   manager_id: '',
@@ -73,6 +75,7 @@ export class UpdateEmployeeController extends UIController {
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
     const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization)
     const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization)
     const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
@@ -86,7 +89,7 @@ export class UpdateEmployeeController extends UIController {
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     return (
-      isLoading || isLoadingDepartments || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingDepartments || isLoadingWorkPlace || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -128,6 +131,11 @@ export class UpdateEmployeeController extends UIController {
                 id: "position_id",
                 label: "Bulunduğu Pozisyon",
                 options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
+              },
+              {
+                id: "workplace_id",
+                label: "Bulunduğu İşyeri",
+                options: workPlaces.filter((item) => item.is_active === true)
               },
               {
                 id: "line_id",

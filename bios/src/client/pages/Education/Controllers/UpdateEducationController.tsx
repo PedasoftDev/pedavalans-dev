@@ -163,6 +163,7 @@ export class UpdateEducationController extends UIFormController {
                     lower_bound: rows[i].lower_bound,
                     upper_bound: rows[i].upper_bound,
                     competency_level: rows[i].competency_level,
+                    competency_level_id: levels.find((x) => x.grade_level_name === rows[i].competency_level)?.grade_id,
                     tenant_id: me?.prefs?.organization,
                     is_active: true,
                     is_deleted: false

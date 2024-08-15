@@ -96,6 +96,9 @@ import { CreateTrainers } from './pages/Trainers/Controllers/CreateTrainers';
 import { EditTrainers } from './pages/Trainers/Controllers/EditTrainers';
 import { AssignEducationControllers } from './pages/Education/Controllers/AssignEducationControllers';
 import { MailConfigurationController } from './pages/MailConfiguration/Controllers/MailConfigurationController';
+import { WorkPlaceListController } from './pages/Organization/Controllers/WorkPlace/WorkPlaceListController';
+import { CreateWorkPlace } from './pages/Organization/Controllers/WorkPlace/CreateWorkPlace';
+import { UpdateWorkPlace } from './pages/Organization/Controllers/WorkPlace/UpdateWorkPlace';
 
 
 export const Routes = () => {
@@ -159,6 +162,11 @@ export const Routes = () => {
                     UIRoute('department/list', DepartmentListController),
                     UIRoute('department/create', CreateDepartmentController),
                     UIRoute('department/:id', UpdateDepartmentController),
+
+                    // workplace
+                    UIRoute('work-place/list', WorkPlaceListController),
+                    UIRoute('work-place/create', CreateWorkPlace),
+                    UIRoute('work-place/:id', UpdateWorkPlace),
                 ),
 
                 // competency
