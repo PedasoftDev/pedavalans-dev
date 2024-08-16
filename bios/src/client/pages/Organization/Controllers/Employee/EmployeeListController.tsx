@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Tooltip } from '@mui/material'
 import { GridColDef, GridToolbarContainer, GridToolbarExport, trTR } from '@mui/x-data-grid'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { MdDisplaySettings } from 'react-icons/md'
 import StyledDataGrid from '../../../../components/StyledDataGrid'
 import { SiMicrosoftexcel } from 'react-icons/si'
@@ -8,7 +8,7 @@ import { employeeTransferTemplateByExcel } from '../../../../assets/Functions/em
 import { Resources } from '../../../../assets/Resources'
 import excelToJson from '../../../../assets/Functions/excelToJson'
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { Services, useGetMe } from '@realmocean/sdk'
+import { Query, Services, useGetMe } from '@realmocean/sdk'
 import LinearProgressWithLabel from '../../../../components/LinearProgressWithLabel'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
@@ -80,6 +80,9 @@ export class EmployeeListController extends UIController {
           const [excelColumns, setExcelColumns] = useState<GridColDef[]>([]);
           const [isTransfer, setIsTransfer] = useState(false);
           const [transferPercent, setTransferPercent] = useState(0);
+
+          const [lineRelationState, setLineRelationState] = useState<boolean>(false);
+
 
           const filteredEmployees = propEmployees.filter((employee) =>
             employee.first_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1 ||
@@ -601,7 +604,19 @@ export class EmployeeListController extends UIController {
           const employeeExport = () => {
             employeeListExport(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false, filteredEmployees.filter(x => x.is_active === active), propDepartments, propTitles, propPositions, propLines)
           }
-
+          useEffect(() => {
+            Services.Databases.listDocuments(
+              AppInfo.Name,
+              AppInfo.Database,
+              Collections.Parameter,
+              [
+                Query.equal("name", "line_based_competency_relationship"),
+                Query.limit(10000),
+              ]
+            ).then((res) => {
+              setLineRelationState(res.documents[0]?.is_active)
+            })
+          }, [])
           return (
             VStack({ alignment: cTop })(
               HStack({ alignment: cLeading })(
@@ -611,7 +626,7 @@ export class EmployeeListController extends UIController {
                 ReactView(
                   <div style={{ width: "100%", height: "100%" }}>
                     <AntTabs value={value} onChange={handleChange}>
-                      {Resources.OrganizationStructureTabValues.map((tabValue) => (
+                      {Resources.OrganizationStructureTabValues.filter((tabValue) => tabValue.value !== 3 || lineRelationState).map((tabValue) => (
                         <AntTab key={tabValue.value} label={tabValue.label} {...a11yProps(tabValue.value)} />
                       ))}
                     </AntTabs>
@@ -696,7 +711,9 @@ export class EmployeeListController extends UIController {
                           </div>
                         </div>
                         <GridContainer>
-                          <StyledDataGrid rows={filteredEmployees.filter(x => x.is_active === active)} columns={columns}
+                          <StyledDataGrid rows={filteredEmployees.filter(x => x.is_active === active)} columns={columns} columnVisibilityModel={{
+                            line_id: lineRelationState ? true : false,
+                          }}
                           // slots={{ toolbar: CustomToolbar }}
                           />
                         </GridContainer>

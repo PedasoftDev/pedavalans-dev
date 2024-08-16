@@ -875,12 +875,12 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                                         trainerEducationsList.filter((item) => item.trainer_duty_id === form.education_id).map((item) => trainersList.find((trainer) => trainer.id === item.trainer_id))
                                                                     }
                                                                     value={
-                                                                        trainersList.find((trainer) => trainer.id === form.educator_id) || null
+                                                                        trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null
                                                                     }
                                                                     onChange={(event, newValue) => {
                                                                         setForm({
                                                                             ...form,
-                                                                            educator_id: newValue?.id || "",
+                                                                            educator_id: newValue?.trainer_id || "",
                                                                             educator_name: newValue?.trainer_name || ""
                                                                         });
                                                                     }}
@@ -902,11 +902,11 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
                                                                 <Autocomplete
                                                                     options={trainersList}
-                                                                    value={trainersList.find((trainer) => trainer.id === form.educator_id) || null}
+                                                                    value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                                                                     onChange={(event, newValue) => {
                                                                         setForm({
                                                                             ...form,
-                                                                            educator_id: newValue?.$id || "",
+                                                                            educator_id: newValue?.trainer_id || "",
                                                                             educator_name: newValue?.trainer_name || ""
                                                                         });
                                                                     }}

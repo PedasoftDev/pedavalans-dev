@@ -112,6 +112,8 @@ export class UpdateEmployeeController extends UIController {
 
             const [formIsEmployee, setFormIsEmployee] = useState(true)
             const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
+            const [lineRelationState, setLineRelationState] = useState<boolean>(false);
+
 
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
@@ -136,11 +138,6 @@ export class UpdateEmployeeController extends UIController {
                 id: "workplace_id",
                 label: "Bulunduğu İşyeri",
                 options: workPlaces.filter((item) => item.is_active === true)
-              },
-              {
-                id: "line_id",
-                label: "Bulunduğu Hat",
-                options: lines.filter((line) => line.department_id === formEmployee.department_id)
               }
             ];
 
@@ -360,6 +357,18 @@ export class UpdateEmployeeController extends UIController {
                 ]
               ).then((res) => {
                 setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Name,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "line_based_competency_relationship"),
+                    Query.limit(10000),
+                  ]
+                ).then((res) => {
+                  setLineRelationState(res.documents[0]?.is_active)
+                })
               })
 
             }, [])
@@ -572,6 +581,29 @@ export class UpdateEmployeeController extends UIController {
                                   )}
                                 </div>
                               )}
+                              {lineRelationState ?
+                                (
+                                  <Autocomplete
+                                    options={lines.filter((line) => line.department_id === formEmployee.department_id)}
+                                    value={lines.find(option => option.id === formEmployee.line_id) || null}
+                                    onChange={(event, newValue) => {
+                                      setFormEmployee({
+                                        ...formEmployee,
+                                        line_id: newValue.id
+                                      });
+                                    }}
+                                    getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        label="Bulunduğu Hat"
+                                        name="line_id"
+                                        size="small"
+                                      />
+                                    )}
+                                  />
+                                ) : null
+                              }
                               <Autocomplete
                                 options={employees.filter((employee) => employee.id !== formEmployee.id && employee.is_active === true)}
                                 value={employees.find(option => option.$id === formEmployee.manager_id) || null}
