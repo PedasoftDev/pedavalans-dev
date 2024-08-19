@@ -712,7 +712,11 @@ export class AssignedEducationListController extends UIFormController {
                                         }}>
                                             <Dialog
                                                 open={open}
-                                                onClose={handleCloseDialog}
+                                                onClose={(event, reason) => {
+                                                    if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+                                                        handleCloseDialog();
+                                                    }
+                                                }}
                                                 fullWidth
                                                 maxWidth="md"
                                             >

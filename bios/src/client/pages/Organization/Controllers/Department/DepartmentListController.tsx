@@ -1,16 +1,18 @@
 import { Button, TextField, Tooltip } from '@mui/material'
 import { GridColDef, } from '@mui/x-data-grid'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MdDisplaySettings } from 'react-icons/md'
 import StyledDataGrid from '../../../../components/StyledDataGrid'
 import { Resources } from '../../../../assets/Resources'
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, useNavigate } from '@tuval/forms';
-import { useGetMe } from '@realmocean/sdk'
+import { Query, Services, useGetMe } from '@realmocean/sdk'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
 import { GridContainer } from '../../Views/Views'
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
 import { AntTab, AntTabs, TabPanel, a11yProps } from '../../../../components/Tabs'
+import AppInfo from '../../../../../AppInfo'
+import Collections from '../../../../../server/core/Collections'
 
 
 export class DepartmentListController extends UIController {
@@ -32,6 +34,7 @@ export class DepartmentListController extends UIController {
 
           const [filterKey, setFilterKey] = useState("");
           const [active, setActive] = useState(true);
+          const [lineRelationState, setLineRelationState] = useState<boolean>(false);
 
           const columns: GridColDef[] = [
             {
@@ -78,6 +81,19 @@ export class DepartmentListController extends UIController {
               return acc;
             }
           }, []);
+          useEffect(() => {
+            Services.Databases.listDocuments(
+              AppInfo.Name,
+              AppInfo.Database,
+              Collections.Parameter,
+              [
+                Query.equal("name", "line_based_competency_relationship"),
+                Query.limit(10000),
+              ]
+            ).then((res) => {
+              setLineRelationState(res.documents[0]?.is_active)
+            })
+          }, [])
           return (
             VStack({ alignment: cTop })(
               HStack({ alignment: cLeading })(
@@ -88,7 +104,11 @@ export class DepartmentListController extends UIController {
                   <div style={{ width: "100%", height: "100%" }}>
                     <AntTabs value={value} onChange={handleChange}>
                       {Resources.OrganizationStructureTabValues.map((tabValue) => (
-                        <AntTab key={tabValue.value} label={tabValue.label} {...a11yProps(tabValue.value)} />
+                        <AntTab
+                          key={tabValue.value}
+                          label={tabValue.label}
+                          disabled={tabValue.value === 3 && !lineRelationState} // "Hatlar" sekmesi devre dışı bırakılır
+                          {...a11yProps(tabValue.value)} />
                       ))}
                     </AntTabs>
                     <TabPanel value={value} index={value}>

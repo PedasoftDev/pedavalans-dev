@@ -167,6 +167,13 @@ export class CreateEmployeeController extends UIController {
                 setFormIsEmployee(true)
                 ToastError("Personel bilgileri eksik", "")
                 return;
+              } else if (employees.some((document) => document.id == formEmployee.id)) {
+                Toast.fire({
+                  icon: "error",
+                  title: "Çalışan eklenirken bir hata oluştu!",
+                  text: "Çalışan sicil numarası zaten kullanılmaktadır."
+                })
+                return;
               }
               createEmployee({
                 documentId: id,

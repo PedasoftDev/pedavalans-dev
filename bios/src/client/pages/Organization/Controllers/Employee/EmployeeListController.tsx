@@ -626,8 +626,12 @@ export class EmployeeListController extends UIController {
                 ReactView(
                   <div style={{ width: "100%", height: "100%" }}>
                     <AntTabs value={value} onChange={handleChange}>
-                      {Resources.OrganizationStructureTabValues.filter((tabValue) => tabValue.value !== 3 || lineRelationState).map((tabValue) => (
-                        <AntTab key={tabValue.value} label={tabValue.label} {...a11yProps(tabValue.value)} />
+                      {Resources.OrganizationStructureTabValues.map((tabValue) => (
+                        <AntTab
+                          key={tabValue.value}
+                          label={tabValue.label}
+                          disabled={tabValue.value === 3 && !lineRelationState} // "Hatlar" sekmesi devre dışı bırakılır
+                          {...a11yProps(tabValue.value)} />
                       ))}
                     </AntTabs>
                     <TabPanel value={value} index={0}>
