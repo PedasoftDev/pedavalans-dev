@@ -347,6 +347,58 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                 setSelectedEmployeeId(id);
                                 getCompetencies(id);
                             }
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.AssignedEducationResult,
+                                [
+                                    Query.limit(10000),
+                                    Query.equal("employee_id", id),
+                                ]
+                            ).then((res) => {
+                                const educationId = res.documents.find((x) => x.employee_id === id)?.education_id;
+                                const selectedEmployeePoint = res.documents.find((x) => x.employee_id === id)?.point;
+                                Services.Databases.listDocuments(
+                                    AppInfo.Name,
+                                    AppInfo.Database,
+                                    Collections.EducationCompetencyStatusInfos,
+                                    [
+                                        Query.limit(10000),
+                                        Query.equal("education_id", educationId),
+                                    ]
+                                ).then((res) => {
+                                    const matchedDocument = res.documents.find((x) =>
+                                        x.education_id === educationId &&
+                                        selectedEmployeePoint >= x.lower_bound &&
+                                        selectedEmployeePoint <= x.upper_bound
+                                    );
+
+                                    if (matchedDocument) {
+                                        const competencyId = matchedDocument.competency_id;
+                                        const matchedCompetencyLevel = matchedDocument.competency_level;
+                                        const matchedCompetencyLevelId = matchedDocument.competency_level_id;
+                                        Services.Databases.listDocuments(
+                                            AppInfo.Name,
+                                            AppInfo.Database,
+                                            Collections.CompetencyGradeLevel,
+                                            [
+                                                Query.limit(10000),
+                                                Query.equal("grade_level_id", matchedCompetencyLevelId)
+                                            ]
+                                        ).then((res) => {
+                                            const matchedCompetencyGradeLevelNumber = res.documents[0].grade_level_number;
+                                            console.log(`Point ${selectedEmployeePoint} is within range ${matchedDocument.lower_bound}-${matchedDocument.upper_bound} for competency ID: ${competencyId} and competency level: ${matchedCompetencyLevel} and competency level id ${matchedCompetencyLevelId} and competency grade level number ${matchedCompetencyGradeLevelNumber}`);
+
+                                        })
+                                        // Burada competency_level ile ilgili daha fazla işlem yapabilirsiniz.
+                                    } else {
+                                        console.log('No matching competency found for the given point.');
+                                    }
+                                })
+                            })
+
+
+
                         }
 
                         const handleSubmitDialog = (e) => {
@@ -823,12 +875,12 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                                         trainerEducationsList.filter((item) => item.trainer_duty_id === form.education_id).map((item) => trainersList.find((trainer) => trainer.id === item.trainer_id))
                                                                     }
                                                                     value={
-                                                                        trainersList.find((trainer) => trainer.id === form.educator_id) || null
+                                                                        trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null
                                                                     }
                                                                     onChange={(event, newValue) => {
                                                                         setForm({
                                                                             ...form,
-                                                                            educator_id: newValue?.id || "",
+                                                                            educator_id: newValue?.trainer_id || "",
                                                                             educator_name: newValue?.trainer_name || ""
                                                                         });
                                                                     }}
@@ -850,11 +902,11 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
                                                                 <Autocomplete
                                                                     options={trainersList}
-                                                                    value={trainersList.find((trainer) => trainer.id === form.educator_id) || null}
+                                                                    value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                                                                     onChange={(event, newValue) => {
                                                                         setForm({
                                                                             ...form,
-                                                                            educator_id: newValue?.$id || "",
+                                                                            educator_id: newValue?.trainer_id || "",
                                                                             educator_name: newValue?.trainer_name || ""
                                                                         });
                                                                     }}

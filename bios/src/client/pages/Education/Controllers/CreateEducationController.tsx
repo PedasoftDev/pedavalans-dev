@@ -62,7 +62,7 @@ export class CreateEducationController extends UIFormController {
         return (
 
             VStack({ alignment: cTop })(
-                isLoading || isLoadingCompetencyList || isLoadingEducation ? VStack(Spinner()) :
+                isLoading || isLoadingCompetencyList || isLoadingLevels || isLoadingGroups || isLoadingEducation ? VStack(Spinner()) :
                     UIViewBuilder(() => {
 
 
@@ -126,6 +126,7 @@ export class CreateEducationController extends UIFormController {
                                         upper_bound: rows[i].upper_bound,
                                         competency_level: rows[i].competency_level,
                                         tenant_id: me?.prefs?.organization,
+                                        competency_level_id: levels.find((x) => x.grade_level_name === rows[i].competency_level)?.grade_level_id
                                     }
                                     createEducationCompetencyStatusInfos({
                                         documentId: educationCompetencyStatusInfosId,
@@ -230,7 +231,6 @@ export class CreateEducationController extends UIFormController {
                         const [selectedCompetencyId, setSelectedCompetencyId] = useState<string[]>([]);
 
                         const handleSelectionModelChange = (newSelectionModel: any) => {
-                            console.log(newSelectionModel)
                             if (educationToUpdateCompetencyStatus && newSelectionModel.length > 1) {
                                 const selectionSet = new Set(newSelectionModel);
                                 const result = newSelectionModel.filter((item) => !selectionSet.has(item));
@@ -374,7 +374,7 @@ export class CreateEducationController extends UIFormController {
                                                             >
                                                                 {
                                                                     levels.filter((x) => x.grade_id === groups.find((x) => x.competency_group_id === competencyList.find((x) => x.competency_id === selectedCompetencyId[0])?.competency_group_id)?.competency_grade_id).map((level) => (
-                                                                        <MenuItem key={level.grade_id} value={level.grade_level_name}>{level.grade_level_name}</MenuItem>
+                                                                        <MenuItem key={level.grade_id} value={level.grade_level_name}>{level.grade_level_name} - {level.grade_level_number}</MenuItem>
                                                                     ))
                                                                 }
                                                             </Select>

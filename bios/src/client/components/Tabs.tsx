@@ -4,7 +4,8 @@ import React from 'react';
 
 interface StyledTabProps {
     label: string;
-  }
+    disabled?: boolean;
+}
 
 export const AntTabs = styled(Tabs)({
     '& .MuiTabs-indicator': {

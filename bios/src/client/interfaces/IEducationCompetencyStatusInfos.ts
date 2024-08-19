@@ -8,6 +8,7 @@ namespace IEducationCompetencyStatusInfos {
         lower_bound: string;
         upper_bound: string;
         competency_level: string;
+        competency_level_id: string;
         tenant_id: string;
         is_active: boolean;
         is_deleted: boolean;
@@ -20,6 +21,7 @@ namespace IEducationCompetencyStatusInfos {
         lower_bound: string;
         upper_bound: string;
         competency_level: string;
+        competency_level_id: string;
         tenant_id: string;
     }
 }

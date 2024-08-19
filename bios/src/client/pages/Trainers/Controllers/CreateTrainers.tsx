@@ -83,19 +83,16 @@ export class CreateTrainers extends UIController {
           createTrainerEducations({
             documentId: trainerEducationId,
             data: createForm
-          }, () => {
-            Toast.fire({
-              icon: "success",
-              title: "Eğitici eklendi",
-              timer: 5000,
-            })
-            deleteCache()
-            navigate("/app/trainer/list")
-
           })
-
         })
       })
+      Toast.fire({
+        icon: "success",
+        title: "Eğitici eklendi",
+        timer: 5000,
+      })
+      deleteCache()
+      navigate("/app/trainer/list")
     }
 
     const onCancel = () => {

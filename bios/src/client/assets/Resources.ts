@@ -146,6 +146,7 @@ export namespace Resources {
         { label: "Ünvanlar", value: 1, link: "/app/organization-structure/title" },
         { label: "Pozisyonlar", value: 2, link: "/app/organization-structure/position" },
         { label: "Hatlar", value: 3, link: "/app/organization-structure/line" },
-        { label: "Departmanlar", value: 4, link: "/app/organization-structure/department" }
+        { label: "Departmanlar", value: 4, link: "/app/organization-structure/department" },
+        { label: "İş Yerleri", value: 5, link: "/app/organization-structure/work-place" }
     ]
 }

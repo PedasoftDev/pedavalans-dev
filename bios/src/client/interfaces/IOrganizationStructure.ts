@@ -10,6 +10,7 @@ export namespace IOrganizationStructure {
             last_name: string;
             title_id: string;
             position_id: string;
+            workplace_id: string;
             line_id: string;
             manager_id: string;
             department_id: string;
@@ -30,6 +31,7 @@ export namespace IOrganizationStructure {
             last_name: string;
             title_id: string;
             position_id: string;
+            workplace_id: string;
             manager_id: string;
             line_id: string;
             department_id: string;
@@ -191,6 +193,24 @@ export namespace IOrganizationStructure {
         }
 
         export interface ITitle extends IRoot {
+            id: string;
+            tenant_id: string;
+            realm_id: string;
+            record_id: string;
+            name: string;
+            is_active: boolean;
+            is_deleted: boolean;
+        }
+    }
+    export namespace IWorkPlace {
+        export interface ICreateWorkPlace {
+            id: string;
+            record_id: string;
+            name: string;
+            tenant_id: string;
+            realm_id: string;
+        }
+        export interface IWorkPlace extends IRoot {
             id: string;
             tenant_id: string;
             realm_id: string;

@@ -67,6 +67,7 @@ export class AssignedEducationListController extends UIFormController {
         const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
 
         const { assignedEducationEmpList, isLoadingAssignedEducationEmpList } = AssignedEducationEmployees.GetList(me?.prefs?.organization);
+        const [educationToUpdateCompetencyStatus, setEducationToUpdateCompetencyStatus] = useState<boolean>(false)
 
         const [rowsActive, setRowsActive] = useState(true);
         const [filterKey, setFilterKey] = useState("");
@@ -80,6 +81,7 @@ export class AssignedEducationListController extends UIFormController {
 
                         const [assignedEducationList, setAssignedEducationList] = useState<IAssignedEducation.IBase[]>([]);
                         const [selectedAssinedEducationId, setSelectedAssinedEducationId] = useState<string>("");
+                        const [selectedEducationId, setSelectedEducationId] = useState<string>("");
                         const [open, setOpen] = useState(false);
                         const [assignedEducationResultListArr, setAssignedEducationResultListArr] = useState<IAssignedEducationResult.IBase[]>([]);
                         /* GLOBAL STATE ASSIGN EDUCATION */
@@ -98,16 +100,6 @@ export class AssignedEducationListController extends UIFormController {
                             point: 0
                         });
 
-                        // const handleCheckboxChange = (rowId, checked) => {
-                        //     setChecked(true)
-                        //     setRowForms(prevState => ({
-                        //         ...prevState,
-                        //         [rowId]: {
-                        //             ...prevState[rowId],
-                        //             attendance_status: checked
-                        //         }
-                        //     }));
-                        // };
                         const handleCheckboxChange = (rowId, checked) => {
                             setCheckedRows(prevState => ({
                                 ...prevState,
@@ -173,8 +165,11 @@ export class AssignedEducationListController extends UIFormController {
                         });
 
 
+
                         const handleOpenDialog = (assigned_education_id: string) => {
                             setSelectedAssinedEducationId(assigned_education_id);
+                            setSelectedEducationId(assignedEducationList.find((item) => item.$id === assigned_education_id)?.education_id);
+
                             if (assignedEducationResultList.find((item) => item.assigned_education_id === assigned_education_id)) {
                                 assignedEducationResultList.filter((item) => item.$id === item.row_id && item.assigned_education_id === assigned_education_id).map((item) => {
                                     setRowForms(prevState => ({
@@ -200,6 +195,141 @@ export class AssignedEducationListController extends UIFormController {
                             deleteCache()
                             setOpen(false);
                         }
+
+
+
+                        const handleSubmitDialogWithParameters = async () => {
+                            const formattedData = await Promise.all(Object.keys(rowForms).map(async (rowId) => {
+                                const row = rowForms[rowId];
+                                const selectedEmployeePoint = row.point;
+                                const educationId = row.education_id;
+
+                                let competencyId, matchedCompetencyGradeLevelNumber;
+
+                                try {
+                                    // Competency sınırlarını alıyoruz
+                                    const competencyResponse = await Services.Databases.listDocuments(
+                                        AppInfo.Name,
+                                        AppInfo.Database,
+                                        Collections.EducationCompetencyStatusInfos,
+                                        [
+                                            Query.limit(10000),
+                                            Query.equal("education_id", educationId),
+                                        ]
+                                    );
+
+                                    const matchedDocument = competencyResponse.documents.find((x) =>
+                                        selectedEmployeePoint >= x.lower_bound && selectedEmployeePoint <= x.upper_bound
+                                    );
+
+                                    if (matchedDocument) {
+                                        competencyId = matchedDocument.competency_id;
+                                        const matchedCompetencyLevelId = matchedDocument.competency_level_id;
+
+                                        // Competency level numarasını alıyoruz
+                                        const competencyLevelResponse = await Services.Databases.listDocuments(
+                                            AppInfo.Name,
+                                            AppInfo.Database,
+                                            Collections.CompetencyGradeLevel,
+                                            [
+                                                Query.limit(10000),
+                                                Query.equal("grade_level_id", matchedCompetencyLevelId)
+                                            ]
+                                        );
+
+                                        matchedCompetencyGradeLevelNumber = competencyLevelResponse.documents[0]?.grade_level_number;
+
+                                        console.log(`employee_name: ${row.employee_name} employee_id: ${row.employee_id} competency_id: ${competencyId} education_id: ${educationId} point: ${selectedEmployeePoint} lower_bound: ${matchedDocument.lower_bound} upper_bound: ${matchedDocument.upper_bound} competency_grade_level_number: ${matchedCompetencyGradeLevelNumber}`);
+
+                                        // EmployeeCompetencyValue güncelleme işlemi
+                                        const employeeCompetencyValueResponse = await Services.Databases.listDocuments(
+                                            AppInfo.Name,
+                                            AppInfo.Database,
+                                            Collections.EmployeeCompetencyValue,
+                                            [
+                                                Query.limit(10000),
+                                                Query.equal("employee_id", row.employee_id),
+                                                Query.equal("competency_id", competencyId)
+                                            ]
+                                        );
+
+                                        if (employeeCompetencyValueResponse.documents.length > 0) {
+                                            await Services.Databases.updateDocument(
+                                                AppInfo.Name,
+                                                AppInfo.Database,
+                                                Collections.EmployeeCompetencyValue,
+                                                employeeCompetencyValueResponse.documents[0].$id,
+                                                {
+                                                    competency_real_value: matchedCompetencyGradeLevelNumber
+                                                }
+                                            );
+                                        }
+                                    } else {
+                                        console.log(`No matching competency found for employee_name: ${row.employee_name} employee_id: ${row.employee_id} with point: ${selectedEmployeePoint}`);
+                                    }
+
+                                } catch (error) {
+                                    console.error("Error fetching competency data:", error);
+                                }
+
+                                return {
+                                    row_id: rowId,
+                                    assigned_education_id: row.assigned_education_id,
+                                    attendance_status: row.attendance_status,
+                                    education_id: row.education_id,
+                                    educator_comment: row.educator_comment,
+                                    educator_id: row.educator_id,
+                                    educator_name: row.educator_name,
+                                    employee_id: row.employee_id,
+                                    employee_name: row.employee_name,
+                                    point: row.point,
+                                    tenant_id: me?.prefs?.organization
+                                };
+                            }));
+
+                            // createAssignedEducationResult işlemi
+                            for (const data of formattedData) {
+                                try {
+                                    await createAssignedEducationResult({
+                                        documentId: data.row_id,
+                                        data: data
+                                    });
+                                    Toast.fire({
+                                        icon: "success",
+                                        title: "Eğitim sonucu başarıyla kaydedildi."
+                                    });
+                                } catch (error) {
+                                    console.error("Hata:", error);
+                                    Toast.fire({
+                                        icon: "error",
+                                        title: "Eğitim sonucu kaydedilemedi."
+                                    });
+                                }
+                            }
+
+                            // Eğitimi tamamlanmış olarak işaretleme ve dialogu kapatma
+                            try {
+                                await updateAssignedEducation({
+                                    databaseId: AppInfo.Database,
+                                    collectionId: Collections.AssignedEducation,
+                                    documentId: selectedAssinedEducationId,
+                                    data: {
+                                        status: "completed"
+                                    }
+                                });
+                                handleCloseDialog();
+                                Toast.fire({
+                                    icon: "success",
+                                    title: "Eğitim sonucu başarıyla kaydedildi."
+                                });
+                            } catch (error) {
+                                console.error("Eğitim güncellenirken hata:", error);
+                                Toast.fire({
+                                    icon: "error",
+                                    title: "Eğitim güncellenemedi."
+                                });
+                            }
+                        };
 
                         const handleSubmitDialog = async () => {
                             const formattedData = Object.keys(rowForms).map(rowId => {
@@ -247,9 +377,82 @@ export class AssignedEducationListController extends UIFormController {
                             handleCloseDialog();
                         }
 
+
+
                         const handleUpdateDialog = async () => {
-                            const formattedData = Object.keys(rowForms).map(rowId => {
+                            const formattedData = await Promise.all(Object.keys(rowForms).map(async (rowId) => {
                                 const row = rowForms[rowId];
+                                const selectedEmployeePoint = row.point;
+                                const educationId = row.education_id;
+
+                                let competencyId, matchedCompetencyGradeLevelNumber;
+
+                                try {
+                                    // Competency sınırlarını alıyoruz
+                                    const competencyResponse = await Services.Databases.listDocuments(
+                                        AppInfo.Name,
+                                        AppInfo.Database,
+                                        Collections.EducationCompetencyStatusInfos,
+                                        [
+                                            Query.limit(10000),
+                                            Query.equal("education_id", educationId),
+                                        ]
+                                    );
+
+                                    const matchedDocument = competencyResponse.documents.find((x) =>
+                                        selectedEmployeePoint >= x.lower_bound && selectedEmployeePoint <= x.upper_bound
+                                    );
+
+                                    if (matchedDocument) {
+                                        competencyId = matchedDocument.competency_id;
+                                        const matchedCompetencyLevelId = matchedDocument.competency_level_id;
+
+                                        // Competency level numarasını alıyoruz
+                                        const competencyLevelResponse = await Services.Databases.listDocuments(
+                                            AppInfo.Name,
+                                            AppInfo.Database,
+                                            Collections.CompetencyGradeLevel,
+                                            [
+                                                Query.limit(10000),
+                                                Query.equal("grade_level_id", matchedCompetencyLevelId)
+                                            ]
+                                        );
+
+                                        matchedCompetencyGradeLevelNumber = competencyLevelResponse.documents[0]?.grade_level_number;
+
+                                        console.log(`employee_name: ${row.employee_name} employee_id: ${row.employee_id} competency_id: ${competencyId} education_id: ${educationId} point: ${selectedEmployeePoint} lower_bound: ${matchedDocument.lower_bound} upper_bound: ${matchedDocument.upper_bound} competency_grade_level_number: ${matchedCompetencyGradeLevelNumber}`);
+
+                                        // EmployeeCompetencyValue güncelleme işlemi
+                                        const employeeCompetencyValueResponse = await Services.Databases.listDocuments(
+                                            AppInfo.Name,
+                                            AppInfo.Database,
+                                            Collections.EmployeeCompetencyValue,
+                                            [
+                                                Query.limit(10000),
+                                                Query.equal("employee_id", row.employee_id),
+                                                Query.equal("competency_id", competencyId)
+                                            ]
+                                        );
+
+                                        if (employeeCompetencyValueResponse.documents.length > 0) {
+                                            await Services.Databases.updateDocument(
+                                                AppInfo.Name,
+                                                AppInfo.Database,
+                                                Collections.EmployeeCompetencyValue,
+                                                employeeCompetencyValueResponse.documents[0].$id,
+                                                {
+                                                    competency_real_value: matchedCompetencyGradeLevelNumber
+                                                }
+                                            );
+                                        }
+                                    } else {
+                                        console.log(`No matching competency found for employee_name: ${row.employee_name} employee_id: ${row.employee_id} with point: ${selectedEmployeePoint}`);
+                                    }
+
+                                } catch (error) {
+                                    console.error("Error fetching competency data:", error);
+                                }
+
                                 return {
                                     row_id: rowId,
                                     assigned_education_id: row.assigned_education_id,
@@ -263,7 +466,9 @@ export class AssignedEducationListController extends UIFormController {
                                     point: row.point,
                                     tenant_id: me?.prefs?.organization
                                 };
-                            });
+                            }));
+
+                            // updateAssignedEducationResult işlemi
                             for (const data of formattedData) {
                                 try {
                                     await updateAssignedEducationResult({
@@ -276,7 +481,6 @@ export class AssignedEducationListController extends UIFormController {
                                         icon: "success",
                                         title: "Eğitim sonucu başarıyla güncellendi."
                                     });
-                                    handleCloseDialog();
                                 } catch (error) {
                                     console.error("Hata:", error);
                                     Toast.fire({
@@ -286,7 +490,8 @@ export class AssignedEducationListController extends UIFormController {
                                 }
                             }
 
-                        }
+                            handleCloseDialog();
+                        };
 
 
                         const columns: GridColDef[] = [
@@ -371,11 +576,6 @@ export class AssignedEducationListController extends UIFormController {
                         ];
 
 
-
-
-
-
-
                         const columnsForDialogContent: GridColDef[] = [
                             {
                                 field: "employee_name",
@@ -420,7 +620,9 @@ export class AssignedEducationListController extends UIFormController {
                                     const isChecked = checkedRows[rowId] || false;
                                     return (
                                         <TextField
-                                            disabled={!isChecked}
+                                            disabled={
+                                                rowForms[rowId]?.attendance_status === false
+                                            }
                                             type="number"
                                             value={point}
                                             variant="standard"
@@ -477,6 +679,17 @@ export class AssignedEducationListController extends UIFormController {
                                     setAssignEducationNull();
                                 }, 1000);
                             }
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "education_result_to_update_competency_status"),
+                                    Query.limit(10000),
+                                ]
+                            ).then((res) => {
+                                setEducationToUpdateCompetencyStatus(res.documents[0]?.is_active)
+                            })
                         }, [])
 
 
@@ -499,7 +712,11 @@ export class AssignedEducationListController extends UIFormController {
                                         }}>
                                             <Dialog
                                                 open={open}
-                                                onClose={handleCloseDialog}
+                                                onClose={(event, reason) => {
+                                                    if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+                                                        handleCloseDialog();
+                                                    }
+                                                }}
                                                 fullWidth
                                                 maxWidth="md"
                                             >
@@ -526,7 +743,6 @@ export class AssignedEducationListController extends UIFormController {
                                                                 }}
                                                                 pageSizeOptions={[10, 20, 30]}
                                                                 onRowClick={(params) => initializeRowForm(params.row)} // Satır tıklandığında formu başlat
-
                                                             />
                                                         </div>
                                                     </div>
@@ -536,10 +752,13 @@ export class AssignedEducationListController extends UIFormController {
                                                     {assignedEducationResultList.find((item) => item.assigned_education_id === selectedAssinedEducationId) &&
                                                         <Button variant='contained' color='primary' onClick={handleUpdateDialog}>Düzenle</Button>}
                                                     {!assignedEducationResultList.find((item) => item.assigned_education_id === selectedAssinedEducationId) &&
-                                                        <Button variant='contained' color='primary' onClick={handleSubmitDialog}>Kaydet</Button>}
+                                                        <Button variant='contained' color='primary' onClick={
+                                                            educationToUpdateCompetencyStatus ?
+                                                                handleSubmitDialogWithParameters
+                                                                : handleSubmitDialog
+                                                        }>Kaydet</Button>}
                                                 </DialogActions>
                                             </Dialog>
-
                                             <div style={{
                                                 display: "flex",
                                                 gap: "10px",

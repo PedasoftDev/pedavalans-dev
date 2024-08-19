@@ -19,6 +19,7 @@ import { GridColDef, trTR } from '@mui/x-data-grid';
 import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
 import Collections from '../../../../../server/core/Collections';
 import { is } from '@tuval/core';
+import PolyvalenceUnit from '../../../../../server/hooks/polyvalenceUnit/main';
 
 interface IFormDepartment {
   id: string;
@@ -57,11 +58,12 @@ export class UpdateDepartmentController extends UIController {
     const { createPositionRelationDepartments } = PositionRelationDepartments.Create()
     const [positionsForm, setPositionsForm] = useState<string[]>([]);
     const [selectedPositions, setSelectedPositions] = useState<any[]>([]);
+    const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     const navigate = useNavigate();
     return (
-      isLoading || isLoadingPositions || isLoadingDepartments || isLoadingPositionRelationDepartments || isLoadingDepartment || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
+      isLoading || isLoadingPositions || isLoadingPolyvalenceUnit || isLoadingDepartments || isLoadingPositionRelationDepartments || isLoadingDepartment || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
         VStack(Spinner()) :
         UIViewBuilder(() => {
 
@@ -123,6 +125,16 @@ export class UpdateDepartmentController extends UIController {
                   })
                   deleteCache()
                   onReset();
+                }).then(() => {
+                  Services.Databases.updateDocument(
+                    AppInfo.Name,
+                    AppInfo.Database,
+                    Collections.PolyvalenceUnitTable,
+                    polyvalenceUnitList.find((item) => item.polyvalence_department_id === formDepartment.id).$id,
+                    {
+                      polyvalence_department_name: formDepartment.name
+                    }
+                  )
                 })
               } else {
                 Toast.fire({
