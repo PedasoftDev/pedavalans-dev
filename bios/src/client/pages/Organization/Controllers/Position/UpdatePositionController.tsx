@@ -1,17 +1,20 @@
 import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate, useParams } from "@tuval/forms";
 import AccountRelation from "../../../../../server/hooks/accountRelation/main";
 import OrganizationStructurePosition from "../../../../../server/hooks/organizationStructrePosition/main";
-import { useGetMe } from "@realmocean/sdk";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
 import { Views } from "../../../../components/Views";
 import React, { useEffect, useState } from "react";
 import { Form } from "../../Views/Views";
-import { FormControlLabel, Switch, TextField } from "@mui/material";
+import { Autocomplete, FormControlLabel, Switch, TextField } from "@mui/material";
 import { Resources } from "../../../../assets/Resources";
 import { ToastError, ToastSuccess } from "../../../../components/Toast";
 import { IOrganizationStructure } from "../../../../interfaces/IOrganizationStructure";
 import AppInfo from "../../../../../AppInfo";
 import removeDollarProperties from "../../../../assets/Functions/removeDollarProperties";
 import Swal from "sweetalert2";
+import Collections from "../../../../../server/core/Collections";
+import OrganizationStructureWorkPlace from "../../../../../server/hooks/organizationStructureWorkPlace/main";
+import RelatedPositionsWorkPlaces from "../../../../../server/hooks/relatedPositionsWorkPlaces/Main";
 
 const resetFormPosition: IOrganizationStructure.IPositions.IPosition = {
   record_id: "",
@@ -36,14 +39,22 @@ export class UpdatePositionController extends UIController {
     const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
     const { update } = OrganizationStructurePosition.Update()
     const { position, isLoadingPosition } = OrganizationStructurePosition.Get(id)
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+    const { relatedPositionsWorkPlacesList, isLoading: isLoadigRelPosWorkPlacesList } = RelatedPositionsWorkPlaces.GetList();
+    const { updateRelatedPositonsWorkPlace } = RelatedPositionsWorkPlaces.Update();
+    const { createRelatedPositionsWorkPlaces } = RelatedPositionsWorkPlaces.Create();
 
     return (
-      isLoading || isLoadingResult || isLoadingPositions || isLoadingPosition ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
+      isLoading || isLoadingResult || isLoadingWorkPlace || isLoadigRelPosWorkPlacesList || isLoadingPositions || isLoadingPosition ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
         VStack(Spinner()) :
         UIViewBuilder(() => {
 
           const [formPosition, setFormPosition] = useState(resetFormPosition)
           const [isActive, setIsActive] = useState(true)
+
+          const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+          const [formWorkPlace, setFormWorkPlace] = useState([]);
+          const [relatedPositions, setRelatedPositions] = useState<any[]>([]);
 
           const onChange = (e: any) => {
             setFormPosition({ ...formPosition, [e.target.name]: e.target.value })
@@ -67,6 +78,41 @@ export class UpdatePositionController extends UIController {
                 ...removeDollarProperties(formPosition)
               }
             }, () => {
+              if (workPlaceDefination) {
+                // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
+                relatedPositionsWorkPlacesList.forEach((position) => {
+                  if (!formWorkPlace.some(workPlace => workPlace.id === position.workplace_id)) {
+                    updateRelatedPositonsWorkPlace({
+                      databaseId: AppInfo.Database,
+                      collectionId: Collections.Related_Position_Workplaces,
+                      documentId: position.$id,
+                      data: {
+                        is_active: false,
+                        is_deleted: true
+                      }
+                    });
+                  }
+                });
+
+                // Eklenmesi gerekenler: yeni eklenen iş yerleri
+                formWorkPlace.forEach((workPlace) => {
+                  if (!relatedPositionsWorkPlacesList.some(position => position.workplace_id === workPlace.id)) {
+                    const nanoId = nanoid();
+                    createRelatedPositionsWorkPlaces({
+                      documentId: nanoId,
+                      data: {
+                        id: nanoId,
+                        related_positon_id: id,
+                        related_position_record_id: formPosition.record_id,
+                        workplace_id: workPlace.id,
+                        workplace_record_id: workPlace.record_id,
+                        is_active: true,
+                        is_deleted: false
+                      },
+                    });
+                  }
+                });
+              }
               ToastSuccess("Başarılı!", "Pozisyon başarıyla güncellendi!")
               onReset()
             })
@@ -100,11 +146,47 @@ export class UpdatePositionController extends UIController {
 
           }
 
+
           useEffect(() => {
-            if (position) {
-              setFormPosition(position)
-              setIsActive(position.is_active)
+            const fetchData = async () => {
+              if (position) {
+                setFormPosition(position)
+                setIsActive(position.is_active)
+              }
+              const workPlaceDefinationRes = await
+                Services.Databases.listDocuments(
+                  AppInfo.Name,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "work_place_definition"),
+                    Query.limit(10000),
+                  ]
+                )
+              setWorkPlaceDefination(workPlaceDefinationRes.documents[0]?.is_active)
+              const relatedPositionsResponse = await Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Related_Position_Workplaces,
+                [
+                  Query.equal('related_positon_id', id),
+                  Query.limit(10000),
+                  Query.equal('is_deleted', false),
+                  Query.equal('is_active', true)
+                ]
+              )
+              setRelatedPositions(relatedPositionsResponse.documents)
+              if (workPlaces.length > 0 && relatedPositionsResponse.documents.length > 0) {
+                const initialWorkplaces = workPlaces.filter((workPlace) =>
+                  relatedPositionsResponse.documents.some((department) =>
+                    department.workplace_id === workPlace.id && department.is_active
+                  )
+                );
+                console.log('Filtered workplaces:', initialWorkplaces);
+                setFormWorkPlace(initialWorkplaces);
+              }
             }
+            fetchData();
           }, [])
 
           return (
@@ -136,6 +218,20 @@ export class UpdatePositionController extends UIController {
                             onChange={onChange}
                             required
                           />
+                          {
+                            workPlaceDefination ? (<Autocomplete
+                              size='small'
+                              multiple
+                              onChange={(event, newValue) => {
+                                setFormWorkPlace(newValue);
+                              }}
+                              options={workPlaces.filter((item) => item.is_active === true)}
+                              value={formWorkPlace}
+                              getOptionLabel={(option) => option?.record_id + " - " + option?.name}
+                              renderInput={(params) => <TextField {...params} label="Bağlı Olduğu İşyeri" />}
+                            />)
+                              : null
+                          }
                           <FormControlLabel
                             sx={{ width: "100%", alignContent: "end" }}
                             onChange={(e: any) => setFormPosition({ ...formPosition, is_active: e.target.checked })}

@@ -20,6 +20,8 @@ import PositionRelationDepartments from '../../../../../server/hooks/positionRel
 import Collections from '../../../../../server/core/Collections';
 import { is } from '@tuval/core';
 import PolyvalenceUnit from '../../../../../server/hooks/polyvalenceUnit/main';
+import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
+import RelatedDepartmentsWorkPlaces from '../../../../../server/hooks/relatedDepartmentsWorkPlaces/Main';
 
 interface IFormDepartment {
   id: string;
@@ -59,11 +61,16 @@ export class UpdateDepartmentController extends UIController {
     const [positionsForm, setPositionsForm] = useState<string[]>([]);
     const [selectedPositions, setSelectedPositions] = useState<any[]>([]);
     const { polyvalenceUnitList, isLoadingPolyvalenceUnit } = PolyvalenceUnit.GetList(me?.prefs?.organization);
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+    const { isLoading: isLoadingRelDepWorkPlacesList, relatedDepartmentsWorkPlacesList } = RelatedDepartmentsWorkPlaces.GetList();
+    const { createRelatedDepartmentsWorkPlaces } = RelatedDepartmentsWorkPlaces.Create();
+    const { updateRelatedDepartmentsWorkPlace } = RelatedDepartmentsWorkPlaces.Update();
+
     const { deleteCache } = useDeleteCache(AppInfo.Name);
 
     const navigate = useNavigate();
     return (
-      isLoading || isLoadingPositions || isLoadingPolyvalenceUnit || isLoadingDepartments || isLoadingPositionRelationDepartments || isLoadingDepartment || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
+      isLoading || isLoadingPositions || isLoadingRelDepWorkPlacesList || isLoadingWorkPlace || isLoadingPolyvalenceUnit || isLoadingDepartments || isLoadingPositionRelationDepartments || isLoadingDepartment || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
         VStack(Spinner()) :
         UIViewBuilder(() => {
 
@@ -71,59 +78,77 @@ export class UpdateDepartmentController extends UIController {
           const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
           const [isActive, setIsActive] = useState(document.is_active);
           const [filterKey, setFilterKey] = useState("");
+          const [formWorkPlace, setFormWorkPlace] = useState([]);
+          const [relatedDepartments, setRelatedDepartments] = useState<any[]>([]);
+          const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+
           const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFilterKey(e.target.value);
           }
+
           const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
+
+            // Mevcut departmanın unique olup olmadığını kontrol et
             if (departments.some((department) => department.record_id == formDepartment.record_id && department.id != formDepartment.id)) {
               Toast.fire({
                 icon: "error",
                 title: "Departman eklenirken bir hata oluştu!",
                 text: "Departman kodu zaten kullanılmaktadır."
-              })
+              });
               return;
             }
+
             let isNameChanged = document.name != formDepartment.name;
+
             updateDocument({
               databaseId: AppInfo.Database,
               collectionId: "organization_department",
               documentId: id,
               data: removeDollarProperties(formDepartment)
             }, () => {
-              positionRelationDepartmentsByDepartment.forEach((position) => {
-                updatePositionRelationDepartments({
-                  databaseId: AppInfo.Database,
-                  collectionId: Collections.PositionRelationDepartments,
-                  documentId: position.$id,
-                  data: {
-                    is_deleted: true,
-                    is_active: false
+              if (workPlaceDefination) {
+                // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
+                relatedDepartmentsWorkPlacesList.forEach((department) => {
+                  if (!formWorkPlace.some(workPlace => workPlace.id === department.workplace_id)) {
+                    updateRelatedDepartmentsWorkPlace({
+                      databaseId: AppInfo.Database,
+                      collectionId: Collections.Related_Departments_Workplaces,
+                      documentId: department.$id,
+                      data: {
+                        is_active: false,
+                        is_deleted: true
+                      }
+                    });
                   }
-                })
-              })
-              positionsForm.forEach((positionId) => {
-                const nanoId = nanoid();
-                createPositionRelationDepartments({
-                  documentId: nanoId,
-                  data: {
-                    id: nanoId,
-                    parent_department_id: formDepartment.id,
-                    parent_department_name: formDepartment.name,
-                    relation_position_id: positionId,
-                    relation_position_name: positions.find((item) => item.id === positionId)?.name,
-                    is_active: true,
-                    is_deleted: false
+                });
+
+                // Eklenmesi gerekenler: yeni eklenen iş yerleri
+                formWorkPlace.forEach((workPlace) => {
+                  if (!relatedDepartmentsWorkPlacesList.some(department => department.workplace_id === workPlace.id)) {
+                    const nanoId = nanoid();
+                    createRelatedDepartmentsWorkPlaces({
+                      documentId: nanoId,
+                      data: {
+                        id: nanoId,
+                        related_department_record_id: formDepartment.record_id,
+                        related_department_id: formDepartment.id,
+                        workplace_id: workPlace.id,
+                        workplace_record_id: workPlace.record_id,
+                        is_active: true,
+                        is_deleted: false
+                      },
+                    });
                   }
-                })
-              })
+                });
+              }
               if (isNameChanged) {
                 PedavalansServiceBroker.Default.updateCompetencyDepartmentNames(formDepartment.id, formDepartment.name).then(() => {
                   Toast.fire({
                     icon: "success",
                     title: "Departman başarıyla güncellendi!",
-                  })
-                  deleteCache()
+                  });
+                  deleteCache();
                   onReset();
                 }).then(() => {
                   Services.Databases.updateDocument(
@@ -134,18 +159,19 @@ export class UpdateDepartmentController extends UIController {
                     {
                       polyvalence_department_name: formDepartment.name
                     }
-                  )
-                })
+                  );
+                });
               } else {
                 Toast.fire({
                   icon: "success",
                   title: "Departman başarıyla güncellendi!",
-                })
+                });
                 deleteCache();
                 onReset();
               }
-            })
+            });
           }
+
 
 
           const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,36 +222,67 @@ export class UpdateDepartmentController extends UIController {
           ];
 
           useEffect(() => {
-            if (document) {
-              setFormDepartment(removeDollarProperties(document));
-              setIsActive(document.is_active);
-            }
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.Parameter,
-              [
-                Query.equal("name", "position_relation_department"),
-                Query.limit(10000),
-              ]
-            ).then((res) => {
-              setPositionRelationDepartmentsState(res.documents[0]?.is_active)
-            })
-            Services.Databases.listDocuments(
-              AppInfo.Name,
-              AppInfo.Database,
-              Collections.PositionRelationDepartments,
-              [
-                Query.equal("parent_department_id", id),
-                Query.equal("is_active", true),
-                Query.limit(10000)
-              ]
-            ).then((res) => {
-              setPositionsForm(res.documents.map((item) => item.relation_position_id))
-            })
-          }, [])
+            const fetchData = async () => {
+              if (document) {
+                setFormDepartment(removeDollarProperties(document));
+                setIsActive(document.is_active);
+              }
+              const positionRelationDepartmentsResponse = await Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "position_relation_department"),
+                  Query.limit(10000),
+                ]
+              );
+              setPositionRelationDepartmentsState(positionRelationDepartmentsResponse.documents[0]?.is_active);
 
+              const workPlaceDefinationResponse = await Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "work_place_definition"),
+                  Query.limit(10000),
+                ]
+              );
+              setWorkPlaceDefination(workPlaceDefinationResponse.documents[0]?.is_active);
 
+              const positionsFormResponse = await Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.PositionRelationDepartments,
+                [
+                  Query.equal("parent_department_id", id),
+                  Query.equal("is_active", true),
+                  Query.limit(10000)
+                ]
+              );
+              setPositionsForm(positionsFormResponse.documents.map((item) => item.relation_position_id));
+              const relatedDepartmentsResponse = await Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Related_Departments_Workplaces,
+                [
+                  Query.equal("related_department_id", id),
+                  Query.equal("is_active", true),
+                  Query.limit(10000)
+                ]
+              );
+              setRelatedDepartments(relatedDepartmentsResponse.documents);
+              if (workPlaces.length > 0 && relatedDepartmentsResponse.documents.length > 0) {
+                const initialWorkplaces = workPlaces.filter((workPlace) =>
+                  relatedDepartmentsResponse.documents.some((department) =>
+                    department.workplace_id === workPlace.id && department.is_active
+                  )
+                );
+                console.log('Filtered workplaces:', initialWorkplaces);
+                setFormWorkPlace(initialWorkplaces);
+              }
+            };
+            fetchData();
+          }, []);
 
 
           return (
@@ -249,7 +306,6 @@ export class UpdateDepartmentController extends UIController {
                             value={formDepartment.record_id}
                             onChange={onChange}
                           />
-
                           <TextField
                             name='name'
                             size='small'
@@ -257,6 +313,20 @@ export class UpdateDepartmentController extends UIController {
                             value={formDepartment.name}
                             onChange={onChange}
                           />
+                          {
+                            workPlaceDefination ? (<Autocomplete
+                              size='small'
+                              multiple
+                              onChange={(event, newValue) => {
+                                setFormWorkPlace(newValue);
+                              }}
+                              options={workPlaces.filter((item) => item.is_active === true)}
+                              value={formWorkPlace}
+                              getOptionLabel={(option) => option?.record_id + " - " + option?.name}
+                              renderInput={(params) => <TextField {...params} label="Bağlı Olduğu İşyeri" />}
+                            />)
+                              : null
+                          }
                           <Autocomplete
                             size='small'
                             value={

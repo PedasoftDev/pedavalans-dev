@@ -16,6 +16,9 @@ import IPositionRelationDepartments from '../../../../interfaces/IPositionRelati
 import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
+import IRelatedDepartmentsWorkPlaces from '../../../../interfaces/IRelatedDepartmentsWorkPlaces';
+import RelatedDepartmentsWorkPlaces from '../../../../../server/hooks/relatedDepartmentsWorkPlaces/Main';
 
 
 const formDepartmentState: IOrganizationStructure.IDepartments.ICreateDepartment = {
@@ -28,6 +31,7 @@ const formDepartmentState: IOrganizationStructure.IDepartments.ICreateDepartment
   realm_id: "",
 }
 
+
 const link: string = Resources.OrganizationStructureTabValues.find((tab) => tab.value === 4)?.link;
 
 export class CreateDepartmentController extends UIController {
@@ -36,21 +40,25 @@ export class CreateDepartmentController extends UIController {
     const { me, isLoading } = useGetMe("console");
     const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
     const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
 
     const navigate = useNavigate();
     return (
-      isLoading || isLoadingPositions || isLoadingDepartments || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
+      isLoading || isLoadingPositions || isLoadingWorkPlace || isLoadingDepartments || isLoadingResult ? (me === undefined || accountRelations === undefined) ? UINavigate("/login") :
         VStack(Spinner()) :
         UIViewBuilder(() => {
           const { deleteCache } = useDeleteCache("console")
           const [formDepartment, setFormDepartment] = useState(formDepartmentState);
+          const [formWorkPlace, setFormWorkPlace] = useState([]);
           const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
           const { createDocument, error, isError } = OrganizationStructureDepartment.Create();
           const { createPositionRelationDepartments } = PositionRelationDepartments.Create();
+          const { createRelatedDepartmentsWorkPlaces } = RelatedDepartmentsWorkPlaces.Create();
 
           const [selectedPositions, setSelectedPositions] = useState([]);
           const [filterKey, setFilterKey] = useState("");
+          const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
 
 
           const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +115,6 @@ export class CreateDepartmentController extends UIController {
           // }
           const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-
             if (departments.some((document) => document.record_id == formDepartment.record_id)) {
               Toast.fire({
                 icon: "error",
@@ -144,6 +151,20 @@ export class CreateDepartmentController extends UIController {
                 });
               }
 
+              for (const item of formWorkPlace) {
+                const relatedDepId = nanoid();
+                const createForm: IRelatedDepartmentsWorkPlaces.ICreate = {
+                  id: relatedDepId,
+                  related_department_id: departmentId,
+                  related_department_record_id: formDepartment.record_id,
+                  workplace_id: item.id,
+                  workplace_record_id: item.record_id,
+                }
+                await createRelatedDepartmentsWorkPlaces({
+                  documentId: relatedDepId,
+                  data: createForm
+                })
+              }
               Toast.fire({
                 icon: "success",
                 title: "Departman başarıyla eklendi!"
@@ -182,6 +203,18 @@ export class CreateDepartmentController extends UIController {
               ]
             ).then((res) => {
               setPositionRelationDepartmentsState(res.documents[0]?.is_active)
+            }).then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "work_place_definition"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setWorkPlaceDefination(res.documents[0]?.is_active)
+              })
             })
           }, [])
           return (
@@ -214,6 +247,21 @@ export class CreateDepartmentController extends UIController {
                             onChange={onChange}
                             required
                           />
+                          {
+                            workPlaceDefination ? (<Autocomplete
+                              size='small'
+                              multiple
+                              onChange={
+                                (event, newValue) => {
+                                  setFormWorkPlace(newValue)
+                                }}
+                              options={workPlaces.filter((item) => item.is_active === true)}
+                              value={formWorkPlace}
+                              getOptionLabel={(option) => option.record_id + " - " + option.name}
+                              renderInput={(params) => <TextField {...params} required={formWorkPlace.length === 0} label="Bağlı Olduğu İşyeri" />}
+                            />)
+                              : null
+                          }
                           <Autocomplete
                             value={
                               departments.find((department) => department.id === formDepartment.parent_department_id) || null

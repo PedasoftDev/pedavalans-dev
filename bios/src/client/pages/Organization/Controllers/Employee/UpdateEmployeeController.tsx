@@ -113,6 +113,7 @@ export class UpdateEmployeeController extends UIController {
             const [formIsEmployee, setFormIsEmployee] = useState(true)
             const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
+            const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
 
 
 
@@ -134,11 +135,6 @@ export class UpdateEmployeeController extends UIController {
                 label: "Bulunduğu Pozisyon",
                 options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
               },
-              {
-                id: "workplace_id",
-                label: "Bulunduğu İşyeri",
-                options: workPlaces.filter((item) => item.is_active === true)
-              }
             ];
 
             const documentColumns = [
@@ -369,6 +365,18 @@ export class UpdateEmployeeController extends UIController {
                 ).then((res) => {
                   setLineRelationState(res.documents[0]?.is_active)
                 })
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Database,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "work_place_definition"),
+                    Query.limit(10000),
+                  ]
+                ).then((res) => {
+                  setWorkPlaceDefination(res.documents[0]?.is_active)
+                })
               })
 
             }, [])
@@ -525,6 +533,27 @@ export class UpdateEmployeeController extends UIController {
                                   <MenuItem value="university">Üniversite</MenuItem>
                                 </Select>
                               </FormControl>
+                              {
+                                workPlaceDefination ? (<Autocomplete
+                                  options={workPlaces.filter((item) => item.is_active === true)}
+                                  value={workPlaces.find(option => option.id === formEmployee.workplace_id) || null}
+                                  onChange={(event, newValue) => {
+                                    setFormEmployee({
+                                      ...formEmployee,
+                                      workplace_id: newValue.id
+                                    });
+                                  }}
+                                  getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                  renderInput={(params) => (
+                                    <TextField
+                                      {...params}
+                                      label="Bulunduğu İşyeri"
+                                      name="workplace_id"
+                                      size="small"
+                                    />
+                                  )}
+                                />) : null
+                              }
                               {selectFormStates.map((selectFormState) =>
                                 <div key={selectFormState.id}>
                                   <Autocomplete
