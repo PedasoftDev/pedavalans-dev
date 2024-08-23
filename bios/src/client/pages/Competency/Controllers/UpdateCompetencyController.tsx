@@ -8,7 +8,7 @@ import Form from "../Views/Form";
 import React from "react";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
-import { useDeleteCache, useGetMe } from "@realmocean/sdk";
+import { Query, Services, useDeleteCache, useGetMe } from "@realmocean/sdk";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import Competency from "../../../../server/hooks/competency/main";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
@@ -21,6 +21,8 @@ import OrganizationStructureLine from "../../../../server/hooks/organizationStru
 import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
 import Collections from "../../../../server/core/Collections";
 import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
+import RelatedDepartmentsWorkPlaces from "../../../../server/hooks/relatedDepartmentsWorkPlaces/Main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -36,6 +38,8 @@ const formReset: ICompetency.ICompetency = {
     competency_value_desc: "",
     employee_id: "",
     employee_name: "",
+    work_place_id: "",
+    work_place_name: "",
     is_active_competency: false,
     is_deleted_competency: false,
     polyvalence_table_id: "",
@@ -75,12 +79,16 @@ export class UpdateCompetencyController extends UIController {
         const { competencyPositionRelationList, isLoading: isLoadingCompetencyPositionRelationList } = CompetencyPositionRelation.GetByCompetencyId(id);
         const { createCompetencyPositionRelation } = CompetencyPositionRelation.Create();
 
+        //workplace
+        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+        const { isLoading: isLoadingRelWorkPlaces, relatedDepartmentsWorkPlacesList } = RelatedDepartmentsWorkPlaces.GetList();
 
         const { deleteCache } = useDeleteCache(AppInfo.Name);
 
 
         return (
-            isLoading || isLoadingCompetency || isLoadingDepartments || isLoadingPositions || isLoadingCompetencyPositionRelationList ||
+            isLoading || isLoadingCompetency || isLoadingRelWorkPlaces || isLoadingWorkPlace || isLoadingDepartments || isLoadingPositions || isLoadingCompetencyPositionRelationList ||
                 isLoadingGroups || isLoadingCompetencyDepartments || isLoadingCompetencyLineRelation ||
                 isLoadingLines || isLoadingParameter ? VStack(Spinner()) :
                 UIViewBuilder(() => {
@@ -126,6 +134,17 @@ export class UpdateCompetencyController extends UIController {
                             setSelectedPositions(positions.filter((position) => positionIds.includes(position.$id)))
                         }
                         setIsActive(competency.is_active_competency)
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Parameter,
+                            [
+                                Query.equal("name", "work_place_definition"),
+                                Query.limit(10000)
+                            ]
+                        ).then((res) => {
+                            setWorkPlaceDefination(res.documents[0]?.is_active)
+                        })
                     }, [])
 
                     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -353,6 +372,33 @@ export class UpdateCompetencyController extends UIController {
                                                 rows={4}
                                                 label="Yetkinlik Açıklaması"
                                             />
+                                            {
+                                                workPlaceDefination ? (
+                                                    <Autocomplete
+                                                        onChange={(event, newValue) => {
+                                                            setForm({
+                                                                ...form,
+                                                                work_place_id: newValue ? newValue.id : '',
+                                                                work_place_name: newValue ? newValue.name : ''
+                                                            });
+                                                        }}
+                                                        value={workPlaces.find((workPlace) => workPlace.id === form.work_place_id) || null}
+                                                        options={workPlaces.filter(x => x.is_active === true)}
+                                                        getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="İlgili İşyeri"
+                                                                size="small"
+                                                                required
+                                                                fullWidth
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                        size="small"
+                                                    />
+                                                ) : null
+                                            }
                                             {positionBased ?
                                                 <FormControl fullWidth size="small">
                                                     <Autocomplete
@@ -386,7 +432,16 @@ export class UpdateCompetencyController extends UIController {
                                                 }}>
                                                     <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
                                                     <StyledDataGrid
-                                                        rows={departments}
+                                                        rows={
+                                                            workPlaceDefination ?
+                                                                departments.filter((item) => item.is_active).filter((department) =>
+                                                                    relatedDepartmentsWorkPlacesList.some((x) =>
+                                                                        x.workplace_id === form.work_place_id && x.related_department_id === department.id
+                                                                    )
+                                                                )
+                                                                :
+                                                                departments.filter((item) => item.is_active)
+                                                        }
                                                         columns={departmentColumns}
                                                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                         isCellEditable={() => false}

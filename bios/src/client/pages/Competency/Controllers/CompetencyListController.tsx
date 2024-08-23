@@ -24,6 +24,7 @@ import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import { GridContainer } from "../Views/View";
 import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
 import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
+import CompetencyWorkplace from "../../../../server/hooks/competencyWorkPlace/Main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -49,9 +50,11 @@ export class CompetencyListController extends UIController {
         // positions
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const { competencyPositionRelationList, isLoading } = CompetencyPositionRelation.GetList();
-
+        // workplace
+        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+        const { competencyWorkplaceList, isLoadingCompetencyWorkplacetList } = CompetencyWorkplace.GetList(me?.prefs?.organization);
         return (
-            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyDepartmentList || isLoadingResult || isLoading || isLoadingPositions ? VStack(Spinner()) :
+            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyWorkplacetList || isLoadingCompetencyDepartmentList || isLoadingResult || isLoading || isLoadingPositions ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [filterKey, setFilterKey] = useState("");
@@ -300,6 +303,18 @@ export class CompetencyListController extends UIController {
                                         .map((item) => item.competency_department_name).join(", ");
                                 }
                             },
+                        workPlaceDefination &&
+                        {
+                            field: "work_place_name",
+                            headerName: "Çalışma Yeri",
+                            minWidth: 200,
+                            editable: false,
+                            disableColumnMenu: true,
+                            flex: 1,
+                            valueGetter(params) {
+                                return competencyWorkplaceList.filter((item) => item.competency_id === params.row.$id).map((item) => item.work_place_name).join(", ");
+                            },
+                        },
                         {
                             field: "competency_id",
                             headerName: "İşlemler",
@@ -323,6 +338,20 @@ export class CompetencyListController extends UIController {
                     const handleSetActiveRows = () => {
                         setRowsActive(!rowsActive);
                     }
+
+                    useEffect(() => {
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Parameter,
+                            [
+                                Query.equal("name", "work_place_definition"),
+                                Query.limit(10000)
+                            ]
+                        ).then((res) => {
+                            setWorkPlaceDefination(res.documents[0]?.is_active)
+                        })
+                    }, [])
 
                     return (
                         VStack({ spacing: 15, alignment: cTopLeading })(

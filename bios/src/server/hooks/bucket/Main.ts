@@ -3,7 +3,7 @@ import { Query, useCreateBucket, useCreateDocument, useGetBucket, useGetDocument
 
 namespace Bucket {
     export const Create = (projectId,bucketId,name) => {
-        const {createBucket } = useCreateBucket(projectId, bucketId, name)
+        const {createBucket } = useCreateBucket(projectId)
         return {
             createBucketPage : createBucket
         }

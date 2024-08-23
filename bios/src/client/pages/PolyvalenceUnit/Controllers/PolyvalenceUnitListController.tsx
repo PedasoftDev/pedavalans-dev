@@ -52,6 +52,7 @@ export class PolyvalenceUnitListController extends UIController {
 
                     const [filteredPolyvalenceUnitList, setFilteredPolyvalenceUnitList] = useState<IPolyvalenceUnitWithResponsible[]>([]);
 
+                    const [workPlaceDefination, setWorkPlaceDefination] = React.useState(false);
 
                     useEffect(() => {
                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.PolyvalenceUnitTable, [Query.equal("is_deleted_table", false), Query.limit(200)]).then(x => {
@@ -120,12 +121,24 @@ export class PolyvalenceUnitListController extends UIController {
                                 setIsLoadingFirst(false)
                             }
                         })
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Parameter,
+                            [
+                                Query.equal("name", "work_place_definition"),
+                                Query.limit(10000)
+                            ]
+                        ).then((res) => {
+                            setWorkPlaceDefination(res.documents[0]?.is_active)
+                        })
 
 
 
                     }, [])
 
                     const filterPolyvalenceUnitList = filteredPolyvalenceUnitList.filter(x => x.polyvalence_table_name.toLowerCase().indexOf(searchText.toLowerCase()) > -1);
+
 
                     return (
                         isLoadingFirst ? VStack(Spinner()) :
@@ -164,24 +177,41 @@ export class PolyvalenceUnitListController extends UIController {
                                         ScrollView({ axes: "cVertical" })(
                                             HStack({ alignment: cTop })(
                                                 ...ForEach(filterPolyvalenceUnitList.filter(x => x.is_active_table === isActive).sort((a, b) => a.polyvalence_table_name.localeCompare(b.polyvalence_table_name)))((item, i) =>
-                                                    positionBased ?
-                                                        Views.PolyvalenceUnitCardPosition(item.polyvalence_table_name, item.positions?.join(", "),
+                                                    positionBased ? (
+                                                        workPlaceDefination ? (Views.PolyvalenceUnitCardWithWorkPlace(item.polyvalence_table_name, item.work_place_name, item.positions?.join(", "),
                                                             item.polyvalence_evaluation_frequency,
                                                             item.is_admin || item.is_responsible || isAdmin ? {
                                                                 title: "Düzenle",
                                                                 action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
                                                             } : null,
                                                             () => navigate(`/app/polyvalence-unit/report/${item.polyvalence_table_id}`)
-                                                        ).margin("0 20px 20px 0")
-                                                        :
-                                                        Views.PolyvalenceUnitCard(item.polyvalence_table_name, item.polyvalence_department_name,
+                                                        ).margin("0 20px 20px 0"))
+                                                            : (Views.PolyvalenceUnitCard(item.polyvalence_table_name, item.polyvalence_department_name,
+                                                                item.polyvalence_evaluation_frequency,
+                                                                item.is_admin || item.is_responsible || isAdmin ? {
+                                                                    title: "Düzenle",
+                                                                    action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
+                                                                } : null,
+                                                                () => navigate(`/app/polyvalence-unit/report/${item.polyvalence_table_id}`)
+                                                            ).margin("0 20px 20px 0"))
+                                                    ) : (
+                                                        workPlaceDefination ? (Views.PolyvalenceUnitCardWithWorkPlace(item.polyvalence_table_name, item.work_place_name, item.polyvalence_department_name,
                                                             item.polyvalence_evaluation_frequency,
                                                             item.is_admin || item.is_responsible || isAdmin ? {
                                                                 title: "Düzenle",
                                                                 action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
                                                             } : null,
                                                             () => navigate(`/app/polyvalence-unit/report/${item.polyvalence_table_id}`)
-                                                        ).margin("0 20px 20px 0")
+                                                        ).margin("0 20px 20px 0"))
+                                                            : (Views.PolyvalenceUnitCard(item.polyvalence_table_name, item.polyvalence_department_name,
+                                                                item.polyvalence_evaluation_frequency,
+                                                                item.is_admin || item.is_responsible || isAdmin ? {
+                                                                    title: "Düzenle",
+                                                                    action: () => navigate(`/app/polyvalence-unit/edit/${item.polyvalence_table_id}`)
+                                                                } : null,
+                                                                () => navigate(`/app/polyvalence-unit/report/${item.polyvalence_table_id}`)
+                                                            ).margin("0 20px 20px 0"))
+                                                    )
                                                 ),
                                                 isAdmin ? Views.NewPolyvalenceUnitCard("/app/polyvalence-unit/create").margin("0 20px 20px 0") : null
 

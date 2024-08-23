@@ -5,6 +5,7 @@ namespace Collections {
     export const CompetencyGrade: string = "competency_grade";
     export const CompetencyDepartment: string = "competency_department";
     export const CompetencyMachineAssociation: string = "competency_machine_association";
+    export const CompetencyWorkPlace: string = "competency_work_place";
     export const AccountRelation: string = "account_relation";
     export const PolyvalenceUnitTableDataResponsible: string = "polyvalence_unit_table_data_respon";
     export const PolyvalenceUnitTableDataViewer: string = "polyvalence_unit_table_data_viewer";

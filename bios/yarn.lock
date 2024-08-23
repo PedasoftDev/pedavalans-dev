@@ -871,10 +871,10 @@
     "@react-spring/shared" "~9.7.3"
     "@react-spring/types" "~9.7.3"
 
-"@realmocean/sdk@^1.0.177":
-  version "1.0.177"
-  resolved "https://registry.npmjs.org/@realmocean/sdk/-/sdk-1.0.177.tgz"
-  integrity sha512-brgmhNBW0XE5KEUUcWesm2LLyzZtEzTJxyjYnA2OauXCsYrS3lNEwT28VSwfTjk6zJAgSY6SmYuk22KOgiiXvQ==
+"@realmocean/sdk@^1.0.180":
+  version "1.0.180"
+  resolved "https://registry.npmjs.org/@realmocean/sdk/-/sdk-1.0.180.tgz"
+  integrity sha512-sry5ZCwpxAP51v3lEm5+Cp9RxIlX5mV4x+2KeT7HPSsz3r6Neqgqtlvirgv2L9cVElgv9Rd6kZrwBWXSyYoJiQ==
   dependencies:
     "@editorjs/image" "^2.8.1"
     "@editorjs/inline-code" "^1.4.0"

@@ -1,10 +1,13 @@
 import { Button, ButtonGroup, IconButton, Menu, MenuItem } from "@mui/material";
 import { GridMoreVertIcon } from "@mui/x-data-grid";
 import { Color, ForEach, HStack, Icon, ReactView, Spacer, Text, TextAlignment, UIButton, UIContextMenu, UIRouteLink, VStack, cLeading, cTop } from "@tuval/forms";
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { HiOutlinePencilAlt, HiOutlineDocumentReport } from "react-icons/hi";
 import MenuMain from "./Menu";
+import { Query, Services } from "@realmocean/sdk";
+import AppInfo from "../../AppInfo";
+import Collections from "../../server/core/Collections";
 
 export namespace Views {
     export const Title = (title: string) =>
@@ -120,6 +123,48 @@ export namespace Views {
                 ).height()
             ).width(350)
                 .height(150)
+                .padding(12)
+                .shadow("rgba(0, 0, 0, 0.35) 0px 5px 15px")
+                .cornerRadius(10)
+        )
+    }
+    export const PolyvalenceUnitCardWithWorkPlace = (table_name: string, work_place_name: string, department_name: string, period_name: string, item: { title: string, action: Function } | null, report: Function) => {
+        return (
+            VStack({ alignment: cTop, spacing: 10 })(
+                HStack(
+                    VStack({ alignment: cLeading })(
+                        PedaText("Polivalans Tablosu").fontSize("10px").foregroundColor("gray"),
+                        HStack(PedaText(table_name.length > 30 ? table_name.substring(0, 30) + "..." : table_name)).width().height().tooltip(table_name)
+                    ),
+                    Spacer(),
+                    ReactView(
+                        <HiOutlineDocumentReport cursor={"pointer"} size={"18px"} onClick={() => report()} style={{ marginRight: "10px" }} />
+                    ).tooltip("Yetkinlik Matrisi"),
+                    item != null ?
+                        ReactView(
+                            <HiOutlinePencilAlt cursor={"pointer"} size={"18px"} onClick={() => item.action()} />
+                        ).tooltip("Düzenle") : null,
+                ).height(),
+                HStack({ alignment: cLeading })(
+                    VStack({ alignment: cLeading })(
+                        PedaText("İşyeri").fontSize("10px").foregroundColor("gray"),
+                        PedaText(work_place_name ? work_place_name : "İşyeri Yok")
+                    )
+                ).height(),
+                HStack({ alignment: cLeading })(
+                    VStack({ alignment: cLeading })(
+                        PedaText("Departman").fontSize("10px").foregroundColor("gray"),
+                        PedaText(department_name)
+                    )
+                ).height(),
+                HStack({ alignment: cLeading })(
+                    VStack({ alignment: cLeading })(
+                        PedaText("Değerlendirme Sıklığı").fontSize("10px").foregroundColor("gray"),
+                        PedaText(period_name)
+                    )
+                ).height()
+            ).width(350)
+                .height(200)
                 .padding(12)
                 .shadow("rgba(0, 0, 0, 0.35) 0px 5px 15px")
                 .cornerRadius(10)

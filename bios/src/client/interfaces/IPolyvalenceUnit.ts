@@ -7,6 +7,8 @@ namespace IPolyvalenceUnit {
         polyvalence_department_id: string;
         polyvalence_department_name: string;
         polyvalence_evaluation_frequency: string;
+        work_place_id?: string;
+        work_place_name?: string;
         is_active_table: boolean;
         is_deleted_table: boolean;
         tenant_id: string;
@@ -19,6 +21,8 @@ namespace IPolyvalenceUnit {
         polyvalence_department_id: string;
         polyvalence_department_name: string;
         polyvalence_evaluation_frequency: string;
+        work_place_id?: string;
+        work_place_name?: string;
         tenant_id: string;
         realm_id: string;
     }

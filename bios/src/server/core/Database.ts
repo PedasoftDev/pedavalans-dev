@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 32,
+    "version": 35,
     "collections": [
         {
             "id": "competency",
@@ -101,6 +101,18 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 1
+                },
+                {
+                    "key":"work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 33
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 33
                 },
                 {
                     "key": "is_active_competency",
@@ -511,6 +523,18 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 1
+                },
+                {
+                    "key": "work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 35
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 35
                 },
                 {
                     "key": "is_active_table",
@@ -3247,6 +3271,60 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "related_positon_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
+            "id": "competency_work_place",
+            "name": "Competency Work Place",
+            "description": {
+                "en": "Competency Work Place is a collection of competency work place.",
+                "tr": "Yetkinlik is yeri koleksiyonudur."
+            },
+            "version": 34,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "competency_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
                     "type": "string",
                     "size": 256,
                     "version": 1

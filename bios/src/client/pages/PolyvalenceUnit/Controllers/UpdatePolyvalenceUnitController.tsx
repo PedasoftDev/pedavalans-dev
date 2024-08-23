@@ -17,7 +17,7 @@ import { trTR } from '@mui/x-data-grid';
 import StyledDataGrid from '../../../components/StyledDataGrid';
 import { Toast } from '../../../components/Toast';
 import IPolyvalenceUnit from '../../../interfaces/IPolyvalenceUnit';
-import { Services, useDeleteCache, useGetMe, useListAccounts } from '@realmocean/sdk';
+import { Query, Services, useDeleteCache, useGetMe, useListAccounts } from '@realmocean/sdk';
 import OrganizationStructureDepartment from '../../../../server/hooks/organizationStructureDepartment/main';
 import AppInfo from '../../../../AppInfo';
 import PolyvalenceUnit from '../../../../server/hooks/polyvalenceUnit/main';
@@ -35,6 +35,8 @@ import IPolyvalenceUnitTableDataResponsible from '../../../interfaces/IPolyvalen
 import OrganizationStructurePosition from '../../../../server/hooks/organizationStructrePosition/main';
 import PolyvalenceUnitPositionRelation from '../../../../server/hooks/polyvalenceUnitPositionRelation/main';
 import AccountRelation from '../../../../server/hooks/accountRelation/main';
+import OrganizationStructureWorkPlace from '../../../../server/hooks/organizationStructureWorkPlace/main';
+import RelatedDepartmentsWorkPlaces from '../../../../server/hooks/relatedDepartmentsWorkPlaces/Main';
 
 const formReset = {
     polyvalence_table_id: "",
@@ -42,6 +44,8 @@ const formReset = {
     polyvalence_department_id: "",
     polyvalence_department_name: "",
     polyvalence_evaluation_frequency: "",
+    work_place_id: "",
+    work_place_name: "",
     is_active_table: true,
     is_deleted_table: false,
     realm_id: "",
@@ -81,13 +85,18 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { updatePolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Update();
         const { updatePolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Update();
 
+        //workplace
+        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+        const { relatedDepartmentsWorkPlacesList, isLoading: isLoadingRelDepList } = RelatedDepartmentsWorkPlaces.GetList();
+
         const { deleteCache } = useDeleteCache(AppInfo.Name)
 
         const { polyvalenceUnitPositionRelations, isLoading: isLoadingPolyvalenceUnitPositionRelations } = PolyvalenceUnitPositionRelation.GetByPolyvalenceUnitId(id);
         const { createPolyvalenceUnitPositionRelation } = PolyvalenceUnitPositionRelation.Create();
 
         return (
-            isLoading || isLoadingAccounts || isLoadingAccountRelations || isLoadingPositions || isLoadingPolyvalenceUnitPositionRelations || isLoadingDepartments || isLoadingPolyvalenceUnit || isLoadingTableAuth || isLoadingDataResponsible || isLoadingDataViewer
+            isLoading || isLoadingAccounts || isLoadingWorkPlace || isLoadingRelDepList || isLoadingAccountRelations || isLoadingPositions || isLoadingPolyvalenceUnitPositionRelations || isLoadingDepartments || isLoadingPolyvalenceUnit || isLoadingTableAuth || isLoadingDataResponsible || isLoadingDataViewer
                 || isLoadingParameter || isLoadingLines || isLoadingLineRelation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
@@ -283,6 +292,17 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             }
                         })
                         setAccountsData(accountsDataCpy)
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Parameter,
+                            [
+                                Query.equal("name", "work_place_definition"),
+                                Query.limit(10000)
+                            ]
+                        ).then((res) => {
+                            setWorkPlaceDefination(res.documents[0]?.is_active)
+                        })
                     }, [])
 
                     return (
@@ -307,10 +327,45 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                 onChange={(e) => setForm({ ...form, [e.target.name]: e.target.value })}
                                                 required
                                             />
+                                            {
+                                                workPlaceDefination ? (
+                                                    <Autocomplete
+                                                        onChange={(event, newValue) => {
+                                                            setForm({
+                                                                ...form,
+                                                                work_place_id: newValue.id,
+                                                                work_place_name: newValue.name
+
+                                                            })
+                                                        }}
+                                                        value={workPlaces.find((workPlace) => workPlace.id === form.work_place_id) || null}
+                                                        options={workPlaces.filter(x => x.is_active === true)}
+                                                        getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="İlgili İşyeri"
+                                                                size="small"
+                                                                fullWidth
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                        size="small"
+                                                    />
+                                                ) : null
+                                            }
                                             {!positionBased ?
                                                 <FormControl fullWidth size="small">
                                                     <Autocomplete
-                                                        options={departments}
+                                                        options={
+                                                            workPlaceDefination
+                                                                ? departments.filter((department) =>
+                                                                    relatedDepartmentsWorkPlacesList.some((x) =>
+                                                                        x.workplace_id === form.work_place_id && x.related_department_id === department.id
+                                                                    )
+                                                                )
+                                                                : departments.filter((item) => item.is_active)
+                                                        }
                                                         getOptionLabel={(department) => department.name}
                                                         value={departments.find((department) => department.id === form.polyvalence_department_id) || null}
                                                         onChange={(event, newValue) => {
