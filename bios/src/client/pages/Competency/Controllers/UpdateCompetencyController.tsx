@@ -23,6 +23,7 @@ import Collections from "../../../../server/core/Collections";
 import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
 import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
 import RelatedDepartmentsWorkPlaces from "../../../../server/hooks/relatedDepartmentsWorkPlaces/Main";
+import CompetencyWorkplace from "../../../../server/hooks/competencyWorkPlace/Main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -83,12 +84,16 @@ export class UpdateCompetencyController extends UIController {
         const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
         const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
         const { isLoading: isLoadingRelWorkPlaces, relatedDepartmentsWorkPlacesList } = RelatedDepartmentsWorkPlaces.GetList();
+        const { competencyWorkplaceList, isLoadingCompetencyWorkplacetList } = CompetencyWorkplace.GetList(me?.prefs?.organization);
+        const { CreateWorkPlace } = CompetencyWorkplace.CreateWorkPlace();
+        const { updateDocument } = CompetencyWorkplace.Update();
+        const [selectedWorkPlace, setSelectedWorkPlace] = useState([]);
 
         const { deleteCache } = useDeleteCache(AppInfo.Name);
 
 
         return (
-            isLoading || isLoadingCompetency || isLoadingRelWorkPlaces || isLoadingWorkPlace || isLoadingDepartments || isLoadingPositions || isLoadingCompetencyPositionRelationList ||
+            isLoading || isLoadingCompetency || isLoadingCompetencyWorkplacetList || isLoadingRelWorkPlaces || isLoadingWorkPlace || isLoadingDepartments || isLoadingPositions || isLoadingCompetencyPositionRelationList ||
                 isLoadingGroups || isLoadingCompetencyDepartments || isLoadingCompetencyLineRelation ||
                 isLoadingLines || isLoadingParameter ? VStack(Spinner()) :
                 UIViewBuilder(() => {
@@ -145,6 +150,19 @@ export class UpdateCompetencyController extends UIController {
                         ).then((res) => {
                             setWorkPlaceDefination(res.documents[0]?.is_active)
                         })
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.CompetencyWorkPlace,
+                            [
+                                Query.equal("competency_id", id),
+                                Query.limit(10000),
+                                Query.equal("is_deleted", false),
+                                Query.equal("is_active", true),
+                            ]
+                        ).then((res) => {
+                            setSelectedWorkPlace(res.documents)
+                        })
                     }, [])
 
                     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +187,40 @@ export class UpdateCompetencyController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
+                            if (workPlaceDefination) {
+                                // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
+                                competencyWorkplaceList.forEach((workplace) => {
+                                    if (!selectedWorkPlace.some(workPlace => workPlace.work_place_id === workplace.work_place_id)) {
+                                        updateDocument({
+                                            databaseId: AppInfo.Database,
+                                            collectionId: Collections.CompetencyWorkPlace,
+                                            documentId: workplace.$id,
+                                            data: {
+                                                is_active: false,
+                                                is_deleted: true
+                                            }
+                                        });
+                                    }
+                                });
+
+                                // Eklenmesi gerekenler: yeni eklenen iş yerleri
+                                selectedWorkPlace.forEach((workPlace) => {
+                                    if (!competencyWorkplaceList.some(workplace => workplace.work_place_id === workPlace.work_place_id)) {
+                                        const nanoId = nanoid();
+                                        CreateWorkPlace({
+                                            documentId: nanoId,
+                                            data: {
+                                                id: nanoId,
+                                                competency_id: id,
+                                                work_place_id: workPlace.work_place_id,  // Burada $id yerine work_place_id kullanıyoruz
+                                                work_place_name: workPlace.work_place_name,  // Burada name yerine work_place_name kullanıyoruz
+                                                tenant_id: me?.prefs?.organization,
+                                            },
+                                        });
+                                    }
+                                });
+                            }
+
                             if (!positionBased) {
                                 if (lineBased[0]?.is_active) {
                                     competencyLineRelation.map((line) => {
@@ -375,22 +427,38 @@ export class UpdateCompetencyController extends UIController {
                                             {
                                                 workPlaceDefination ? (
                                                     <Autocomplete
+                                                        multiple
                                                         onChange={(event, newValue) => {
-                                                            setForm({
-                                                                ...form,
-                                                                work_place_id: newValue ? newValue.id : '',
-                                                                work_place_name: newValue ? newValue.name : ''
-                                                            });
+                                                            if (selectedDepartments.length > 0) {
+                                                                Swal.fire({
+                                                                    title: 'Seçili Departmanlar Bulunmaktadır!',
+                                                                    text: "Bu İşyeri kaldırılamaz!",
+                                                                    icon: 'error',
+                                                                    confirmButtonColor: '#d33',
+                                                                    confirmButtonText: 'Tamam',
+                                                                })
+                                                                return;
+                                                            }
+                                                            setSelectedWorkPlace(newValue.map((workPlace) => {
+                                                                return {
+                                                                    work_place_id: workPlace.$id,
+                                                                    work_place_name: workPlace.name
+                                                                }
+                                                            }));
                                                         }}
-                                                        value={workPlaces.find((workPlace) => workPlace.id === form.work_place_id) || null}
                                                         options={workPlaces.filter(x => x.is_active === true)}
+                                                        value={
+                                                            workPlaces.filter((workPlace) =>
+                                                                selectedWorkPlace.some((x) => x.work_place_id === workPlace.$id)
+                                                            )
+                                                        }
                                                         getOptionLabel={(position) => position.record_id + " - " + position.name}
                                                         renderInput={(params) => (
                                                             <TextField
                                                                 {...params}
                                                                 label="İlgili İşyeri"
                                                                 size="small"
-                                                                required
+                                                                required={selectedWorkPlace.length === 0}
                                                                 fullWidth
                                                             />
                                                         )}
@@ -433,14 +501,16 @@ export class UpdateCompetencyController extends UIController {
                                                     <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
                                                     <StyledDataGrid
                                                         rows={
-                                                            workPlaceDefination ?
-                                                                departments.filter((item) => item.is_active).filter((department) =>
-                                                                    relatedDepartmentsWorkPlacesList.some((x) =>
-                                                                        x.workplace_id === form.work_place_id && x.related_department_id === department.id
+                                                            workPlaceDefination
+                                                                ? departments.filter((item) => item.is_active).filter((department) =>
+                                                                    selectedWorkPlace.some((selectedWorkPlaceItem) =>
+                                                                        relatedDepartmentsWorkPlacesList.some((x) =>
+                                                                            x.workplace_id === selectedWorkPlaceItem.work_place_id &&
+                                                                            x.related_department_id === department.id
+                                                                        )
                                                                     )
                                                                 )
-                                                                :
-                                                                departments.filter((item) => item.is_active)
+                                                                : departments.filter((item) => item.is_active)
                                                         }
                                                         columns={departmentColumns}
                                                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}

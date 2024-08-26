@@ -60,7 +60,7 @@ export class AccountManagementViewController extends UIController {
             isError: isCreateAccountError,
             error: createAccountError
         } = useCreateAccount('console');
-        const { accounts, isLoading: isLoadingAccounts } = useListAccounts()
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
         const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
         const { createAccountRelation } = AccountRelation.Create()
         const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization)
