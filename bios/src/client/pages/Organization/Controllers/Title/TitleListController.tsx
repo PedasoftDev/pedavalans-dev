@@ -35,6 +35,8 @@ export class TitleListController extends UIController {
           const [filterKey, setFilterKey] = useState("");
           const [active, setActive] = useState(true);
           const [lineRelationState, setLineRelationState] = useState<boolean>(false);
+          const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+
 
           const columns: GridColDef[] = [
             {
@@ -84,6 +86,18 @@ export class TitleListController extends UIController {
               ]
             ).then((res) => {
               setLineRelationState(res.documents[0]?.is_active)
+            }).then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Database,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "work_place_definition"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setWorkPlaceDefination(res.documents[0]?.is_active)
+              })
             })
           }, [])
 
@@ -100,7 +114,7 @@ export class TitleListController extends UIController {
                         <AntTab
                           key={tabValue.value}
                           label={tabValue.label}
-                          disabled={tabValue.value === 3 && !lineRelationState} // "Hatlar" sekmesi devre dışı bırakılır
+                          disabled={tabValue.value === 3 && !lineRelationState || tabValue.value === 5 && !workPlaceDefination} // "Hatlar" sekmesi devre dışı bırakılır
                           {...a11yProps(tabValue.value)} />
                       ))}
                     </AntTabs>

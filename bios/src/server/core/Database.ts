@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 31,
+    "version": 35,
     "collections": [
         {
             "id": "competency",
@@ -101,6 +101,18 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 1
+                },
+                {
+                    "key":"work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 33
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 33
                 },
                 {
                     "key": "is_active_competency",
@@ -511,6 +523,18 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 1
+                },
+                {
+                    "key": "work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 35
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 35
                 },
                 {
                     "key": "is_active_table",
@@ -3139,6 +3163,168 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
+            "id": "related_departments_workplaces",
+            "name": "Related Departments Workplaces",
+            "description": {
+                "en": "Related Departments Workplaces is a collection of related departments workplaces.",
+                "tr": "Ilgili departmanlarin is yeri koleksiyonudur."
+            },
+            "version": 32,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "related_department_record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "related_department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
+            "id": "related_position_workplaces",
+            "name": "Related Position Workplaces",
+            "description": {
+                "en": "Related Position Workplaces is a collection of related position workplaces.",
+                "tr": "Ilgili pozisyonlarin is yeri koleksiyonudur."
+            },
+            "version": 32,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "related_position_record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "related_positon_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
+            "id": "competency_work_place",
+            "name": "Competency Work Place",
+            "description": {
+                "en": "Competency Work Place is a collection of competency work place.",
+                "tr": "Yetkinlik is yeri koleksiyonudur."
+            },
+            "version": 34,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "competency_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
                     "type": "string",
                     "size": 256,
                     "version": 1

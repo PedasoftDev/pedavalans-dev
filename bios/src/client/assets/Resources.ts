@@ -92,6 +92,11 @@ export namespace Resources {
             name: "Eğitim Değerlendirme Sonucuna Göre Yetkinlik Durumları Otomatik Güncellenecek mi?",
             localStr: "education_result_to_update_competency_status",
             type: "boolean",
+        },
+        {
+            name: "İş Yeri Tanımlaması Kullanılacak mı?",
+            localStr: "work_place_definition",
+            type: "boolean",
         }
     ];
 

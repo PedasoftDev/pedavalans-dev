@@ -1,10 +1,10 @@
 import { ReactView, Spinner, UIController, UIView, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Autocomplete, Button, FormControl, SelectChangeEvent, TextField, Typography } from "@mui/material";
-import { GridColDef, trTR } from "@mui/x-data-grid";
+import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 import ICompetency from "../../../interfaces/ICompetency";
 import { Resources } from "../../../assets/Resources";
-import { useGetMe } from "@realmocean/sdk";
+import { Query, Services, useGetMe } from "@realmocean/sdk";
 import OrganizationStructureDepartment from "../../../../server/hooks/organizationStructureDepartment/main";
 import CompetencyGroup from "../../../../server/hooks/competencyGroup/main";
 import { Toast } from "../../../components/Toast";
@@ -17,6 +17,12 @@ import OrganizationStructureLine from "../../../../server/hooks/organizationStru
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
 import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
+import AppInfo from "../../../../AppInfo";
+import Collections from "../../../../server/core/Collections";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
+import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
+import RelatedDepartmentsWorkPlaces from "../../../../server/hooks/relatedDepartmentsWorkPlaces/Main";
+import CompetencyWorkplace from "../../../../server/hooks/competencyWorkPlace/Main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -27,6 +33,8 @@ const formReset: ICompetency.ICreateCompetency = {
     competency_description: "",
     competency_group_id: "",
     competency_group_name: "",
+    work_place_id: "",
+    work_place_name: "",
     realm_id: "",
     tenant_id: "",
 }
@@ -39,7 +47,6 @@ export class CreateCompetencyController extends UIController {
         const navigate = useNavigate();
 
         const [form, setForm] = useState<ICompetency.ICreateCompetency>(formReset);
-
 
         const { me, isLoading } = useGetMe("console");
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetActiveList(me?.prefs?.organization);
@@ -61,9 +68,14 @@ export class CreateCompetencyController extends UIController {
         // positions
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const [selectedPositions, setSelectedPositions] = useState<typeof positions>([]);
-
         const { createCompetencyPositionRelation } = CompetencyPositionRelation.Create();
 
+        // workplaces
+        const { CreateWorkPlace } = CompetencyWorkplace.CreateWorkPlace();
+        const [selectedWorkPlace, setSelectedWorkPlace] = useState([]);
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+        const { isLoading: isLoadingRelWorkPlaces, relatedDepartmentsWorkPlacesList } = RelatedDepartmentsWorkPlaces.GetList();
+        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
 
         const departmentColumns: GridColDef[] = [
             {
@@ -121,9 +133,24 @@ export class CreateCompetencyController extends UIController {
                 data: {
                     ...form,
                     competency_id: competency_id,
-                    tenant_id: me?.prefs?.organization
+                    tenant_id: me?.prefs?.organization,
                 }
             }, () => {
+                if (workPlaceDefination) {
+                    for (const item in selectedWorkPlace) {
+                        const comp_wp_id = nanoid();
+                        CreateWorkPlace({
+                            documentId: comp_wp_id,
+                            data: {
+                                id: comp_wp_id,
+                                work_place_id: selectedWorkPlace[item].id,
+                                work_place_name: selectedWorkPlace[item].name,
+                                competency_id: competency_id,
+                                tenant_id: me?.prefs?.organization
+                            }
+                        })
+                    }
+                }
                 for (let i = 0; i < formSelectedDepartments.length; i++) {
                     const comp_dep_id = nanoid();
                     createCompetencyDepartment({
@@ -176,13 +203,26 @@ export class CreateCompetencyController extends UIController {
             })
         }
 
+
         const onCancel = () => {
             navigate("/app/competency/list");
         }
-
+        useEffect(() => {
+            Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                    Query.equal("name", "work_place_definition"),
+                    Query.limit(10000)
+                ]
+            ).then((res) => {
+                setWorkPlaceDefination(res.documents[0]?.is_active)
+            })
+        }, [])
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingDepartments || isLoadingActiveGroups || isLoadingParameter || isLoadingLines || isLoadingPositions ? VStack(Spinner()) :
+                isLoading || isLoadingDepartments || isLoadingRelWorkPlaces || isLoadingWorkPlace || isLoadingActiveGroups || isLoadingParameter || isLoadingLines || isLoadingPositions ? VStack(Spinner()) :
                     ReactView(
                         <Form
                             title="Yeni Yetkinlik Ekleyin"
@@ -230,6 +270,30 @@ export class CreateCompetencyController extends UIController {
                                         rows={4}
                                         label="Yetkinlik Açıklaması"
                                     />
+                                    {
+                                        workPlaceDefination ? (
+                                            <Autocomplete
+                                                multiple
+                                                onChange={(event, newValue) => {
+                                                    setSelectedWorkPlace(newValue);
+                                                }}
+                                                options={workPlaces.filter(x => x.is_active === true)}
+                                                value={selectedWorkPlace}
+                                                getOptionLabel={(position) => position.record_id + " - " + position.name}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="İlgili İşyeri"
+                                                        size="small"
+                                                        required={selectedWorkPlace.length === 0}
+                                                        fullWidth
+                                                    />
+                                                )}
+                                                fullWidth
+                                                size="small"
+                                            />
+                                        ) : null
+                                    }
                                     {positionBased ?
                                         <FormControl fullWidth size="small">
                                             <Autocomplete
@@ -261,7 +325,18 @@ export class CreateCompetencyController extends UIController {
                                         }}>
                                             <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
                                             <StyledDataGrid
-                                                rows={departments}
+                                                rows={
+                                                    workPlaceDefination
+                                                        ? departments.filter((item) => item.is_active).filter((department) =>
+                                                            selectedWorkPlace.some((selectedWorkPlaceItem) =>
+                                                                relatedDepartmentsWorkPlacesList.some((x) =>
+                                                                    x.workplace_id === selectedWorkPlaceItem.id &&
+                                                                    x.related_department_id === department.id
+                                                                )
+                                                            )
+                                                        )
+                                                        : departments.filter((item) => item.is_active)
+                                                }
                                                 columns={departmentColumns}
                                                 getRowId={(row) => row.$id}
                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
@@ -273,6 +348,15 @@ export class CreateCompetencyController extends UIController {
                                                 }}
                                                 rowHeight={30}
                                                 columnHeaderHeight={30}
+                                                disableColumnFilter
+                                                disableColumnSelector
+                                                disableDensitySelector
+                                                slots={{ toolbar: GridToolbar }}
+                                                slotProps={{
+                                                    toolbar: {
+                                                        showQuickFilter: true,
+                                                    },
+                                                }}
 
                                             />
                                         </div>}
@@ -301,6 +385,15 @@ export class CreateCompetencyController extends UIController {
                                                 rowSelectionModel={selectedLines}
                                                 rowHeight={30}
                                                 columnHeaderHeight={30}
+                                                disableColumnFilter
+                                                disableColumnSelector
+                                                disableDensitySelector
+                                                slots={{ toolbar: GridToolbar }}
+                                                slotProps={{
+                                                    toolbar: {
+                                                        showQuickFilter: true,
+                                                    },
+                                                }}
                                             />
                                         </div>
 

@@ -5,6 +5,7 @@ namespace Collections {
     export const CompetencyGrade: string = "competency_grade";
     export const CompetencyDepartment: string = "competency_department";
     export const CompetencyMachineAssociation: string = "competency_machine_association";
+    export const CompetencyWorkPlace: string = "competency_work_place";
     export const AccountRelation: string = "account_relation";
     export const PolyvalenceUnitTableDataResponsible: string = "polyvalence_unit_table_data_respon";
     export const PolyvalenceUnitTableDataViewer: string = "polyvalence_unit_table_data_viewer";
@@ -44,6 +45,8 @@ namespace Collections {
     export const MailSettings = "mail_settings";
     export const EmailMessage = "email_message";
     export const EducationCompetencyStatusInfos ="education_competency_status_infos";
+    export const Related_Departments_Workplaces = "related_departments_workplaces";
+    export const Related_Position_Workplaces = "related_position_workplaces";
 }
 
 export default Collections;

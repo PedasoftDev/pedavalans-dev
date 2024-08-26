@@ -7,6 +7,8 @@ namespace ICompetency {
         competency_name: string;
         competency_group_id: string;
         competency_group_name: string;
+        work_place_id?: string;
+        work_place_name?: string;
         competency_description?: string;
         competency_target_value: string;
         competency_real_value: string;
@@ -28,6 +30,8 @@ namespace ICompetency {
         competency_description?: string;
         competency_group_id: string;
         competency_group_name: string;
+        work_place_id?: string;
+        work_place_name?: string;
         tenant_id: string;
         realm_id: string;
     }
