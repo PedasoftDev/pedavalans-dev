@@ -306,7 +306,7 @@ export class CompetencyListController extends UIController {
                         workPlaceDefination &&
                         {
                             field: "work_place_name",
-                            headerName: "Çalışma Yeri",
+                            headerName: "İşyeri",
                             minWidth: 200,
                             editable: false,
                             disableColumnMenu: true,

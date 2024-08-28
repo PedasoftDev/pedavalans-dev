@@ -33,6 +33,7 @@ import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel
 
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -126,7 +127,11 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                         const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                         const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
                         const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
-
+                        // workplace 
+                        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+                        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+                        const [selectedWorkPlaceId, setSelectedWorkPlaceId] = useState<string>("");
+                        //
                         // Dialog State
                         const [dialogOpen, setDialogOpen] = useState(false);
                         const [dialogForm, setDialogForm] = useState<{ polyvalence_table_id: string, previous_evaluation_period: string, current_evaluation_period: string }>({
@@ -435,6 +440,17 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 setEmployeeCompetencyValue([])
                                 setAssignEducationNull();
                             }
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "work_place_definition"),
+                                    Query.limit(10000)
+                                ]
+                            ).then((res) => {
+                                setWorkPlaceDefination(res.documents[0]?.is_active)
+                            })
                         }, [])
 
                         return (
@@ -454,8 +470,30 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                     <Container>
                                         <LeftContainer>
                                             <LeftContainerHeader>
+                                                {
+                                                    workPlaceDefination ? (<Autocomplete
+                                                        options={workPlaces.filter((x) => x.is_active)}
+                                                        onChange={(event, newValue) => {
+                                                            setSelectedWorkPlaceId(newValue?.$id || "")
+                                                        }}
+                                                        getOptionLabel={(option) => option.name}
+                                                        renderInput={(params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                label="İşyeri"
+                                                                name="work_place_id"
+                                                                size="small"
+                                                                required
+                                                            />
+                                                        )}
+                                                        fullWidth
+                                                    />) : null
+                                                }
                                                 <Autocomplete
-                                                    options={this.polyvalenceUnitList}
+                                                    options={
+                                                        workPlaceDefination ? this.polyvalenceUnitList.filter((item) => item.work_place_id === selectedWorkPlaceId)
+                                                            : this.polyvalenceUnitList
+                                                    }
                                                     value={this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === selectedTable?.polyvalence_table_id) || null}
                                                     onChange={(event, newValue) => onChangeTable(newValue?.polyvalence_table_id || "")}
                                                     getOptionLabel={(option) => option.polyvalence_table_name}

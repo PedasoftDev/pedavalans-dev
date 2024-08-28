@@ -28,6 +28,7 @@ import { setEmployeeDashboard } from "../../../features/employeeDashboard";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { selectCompetencyStatusReport, setCompetencyStatusReport, setCompetencyStatusReportToNull } from "../../../features/competencyStatusReport";
 import IAccountRelation from "../../../interfaces/IAccountRelation";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
 
 const resetForm = {
     polyvalence_table_id: "",
@@ -84,6 +85,7 @@ export class CompetencyStatusReportViewController extends UIController {
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { periods, isLoading: isLoadingPeriod } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
         const navigate = useNavigate();
 
         const dispatch = useAppDispatch();
@@ -95,9 +97,12 @@ export class CompetencyStatusReportViewController extends UIController {
 
         const competencyStatusReport: any = selector(selectCompetencyStatusReport);
 
+        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+        const [selectedWorkPlaceId, setSelectedWorkPlaceId] = useState<string>("");
+
         return (
 
-            isLoading || this.polyvalenceUnitList == null || isLoadingPeriod || isLoadingResult || isLoadingDataResponsible || isLoadingDataViewer || isLoadingTableAuth ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingWorkPlace || isLoadingPeriod || isLoadingResult || isLoadingDataResponsible || isLoadingDataViewer || isLoadingTableAuth ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     UIViewBuilder(() => {
                         // tablo, dönem, yüzdelik filtresi
@@ -153,6 +158,17 @@ export class CompetencyStatusReportViewController extends UIController {
                                     setCompetencyStatusReportNull()
                                 })
                             }
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "work_place_definition"),
+                                    Query.limit(10000)
+                                ]
+                            ).then((res) => {
+                                setWorkPlaceDefination(res.documents[0]?.is_active)
+                            })
                         }, [])
 
                         const handleChangePolyvalenceTable = (e) => {
@@ -223,8 +239,29 @@ export class CompetencyStatusReportViewController extends UIController {
                                         <Views.Container>
                                             <form onSubmit={getReport}>
                                                 <Views.SelectItems>
+                                                    {
+                                                        workPlaceDefination ? (<Autocomplete
+                                                            options={workPlaces.filter((x) => x.is_active)}
+                                                            onChange={(event, newValue) => {
+                                                                setSelectedWorkPlaceId(newValue?.$id || "")
+                                                            }}
+                                                            getOptionLabel={(option) => option.name}
+                                                            renderInput={(params) => (
+                                                                <TextField
+                                                                    {...params}
+                                                                    label="İşyeri"
+                                                                    name="work_place_id"
+                                                                    size="small"
+                                                                    required
+                                                                />
+                                                            )}
+                                                            fullWidth
+                                                        />) : null
+                                                    }
                                                     <Autocomplete
-                                                        options={this.polyvalenceUnitList}
+                                                        options={
+                                                            workPlaceDefination ? this.polyvalenceUnitList.filter((item) => item.work_place_id === selectedWorkPlaceId) : this.polyvalenceUnitList
+                                                        }
                                                         value={this.polyvalenceUnitList.find((item) => item.$id === formFilters.polyvalence_table_id) || null}
                                                         onChange={(event, newValue) => {
                                                             const selectedEvaluationFrequency = newValue?.polyvalence_evaluation_frequency;

@@ -28,6 +28,7 @@ import { Resources } from "../../../assets/Resources";
 import { Legend, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { SiMicrosoftexcel } from "react-icons/si";
 import { getReportToExcelByEmployee } from "../../../assets/Functions/getReportToExcelByEmployee";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -110,6 +111,12 @@ export class CompetencyReportDataViewController extends UIController {
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
+
+        // workplace 
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+        const [selectedWorkPlaceId, setSelectedWorkPlaceId] = useState<string>("");
+        //
 
 
         return (
@@ -279,6 +286,17 @@ export class CompetencyReportDataViewController extends UIController {
                             })
                             navigate("/app/competency-evaluation-period/list")
                         }
+                        Services.Databases.listDocuments(
+                            AppInfo.Name,
+                            AppInfo.Database,
+                            Collections.Parameter,
+                            [
+                                Query.equal("name", "work_place_definition"),
+                                Query.limit(10000)
+                            ]
+                        ).then((res) => {
+                            setWorkPlaceDefination(res.documents[0]?.is_active)
+                        })
                     }, [])
 
                     return (
@@ -290,8 +308,30 @@ export class CompetencyReportDataViewController extends UIController {
                                 <Container>
                                     <LeftContainer>
                                         <LeftContainerHeader>
+                                            {
+                                                workPlaceDefination ? (<Autocomplete
+                                                    options={workPlaces.filter((x) => x.is_active)}
+                                                    onChange={(event, newValue) => {
+                                                        setSelectedWorkPlaceId(newValue?.$id || "")
+                                                    }}
+                                                    getOptionLabel={(option) => option.name}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="İşyeri"
+                                                            name="work_place_id"
+                                                            size="small"
+                                                            required
+                                                        />
+                                                    )}
+                                                    fullWidth
+                                                />) : null
+                                            }
                                             <Autocomplete
-                                                options={this.polyvalenceUnitList}
+                                                options={
+                                                    workPlaceDefination ? this.polyvalenceUnitList.filter((item) => item.work_place_id === selectedWorkPlaceId)
+                                                        : this.polyvalenceUnitList
+                                                }
                                                 value={selectedTable}
                                                 onChange={(event, newValue) => {
                                                     setSelectedTable(newValue);
