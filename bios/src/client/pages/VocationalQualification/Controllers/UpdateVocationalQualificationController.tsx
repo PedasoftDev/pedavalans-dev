@@ -34,6 +34,7 @@ import VocationalQualificationType from '../../../../server/hooks/vocationalQual
 import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
+import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -73,7 +74,11 @@ export class UpdateVocationalQualificationController extends UIController {
 
     const { documentTypeGetList } = VocationalQualificationType.GetList(me?.prefs?.organization)
 
-    return isLoading || isLoadingDocument || isLoadingDocuments ? VStack(Spinner())
+    const { getFilePage, isLoadingFile } = BucketFiles.GetList(AppInfo.Name, "vocational_qualification_bucket", document.$id)
+    const { getFileDownload, isLoadingDownloadFile } = BucketFiles.GetDownload(AppInfo.Name, "vocational_qualification_bucket", document.$id)
+    const { getFilePreview, isLoadingPreviewFile } = BucketFiles.GetPreview(AppInfo.Name, "vocational_qualification_bucket", document.$id)
+
+    return isLoading || isLoadingDocument || isLoadingFile || isLoadingPreviewFile || isLoadingDocuments || isLoadingDownloadFile ? VStack(Spinner())
       : UIViewBuilder(() => {
         const [form, setForm] = useState<IVocationalQualification.IBase>(formReset)
         const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
@@ -243,6 +248,9 @@ export class UpdateVocationalQualificationController extends UIController {
                     name="document_name"
                     label="Belge Adı"
                   />
+                  <img src={getFileDownload as any} />
+                  <img src={getFilePreview as any} />
+                  <a href={getFilePreview as any}>{getFilePage?.name}</a>
                   {showValidityPeriod && (
                     <TextField
                       size="small"

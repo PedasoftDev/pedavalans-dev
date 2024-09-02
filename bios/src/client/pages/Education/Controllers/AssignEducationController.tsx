@@ -1,12 +1,12 @@
 import { ReactView, Spinner, UIFormController, UIView, UIViewBuilder, VStack, cTop, nanoid, useNavigate, useParams } from "@tuval/forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Button,
     TextField,
     FormControl,
     Autocomplete,
 } from "@mui/material";
-import { EmailBroker, useDeleteCache, useGetMe, useListAccounts } from "@realmocean/sdk";
+import { EmailBroker, Query, Services, useDeleteCache, useGetMe, useListAccounts } from "@realmocean/sdk";
 import Form from "../../Competency/Views/Form";
 import Education from "../../../../server/hooks/education/main";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
@@ -27,6 +27,8 @@ import { Toast } from "../../../components/Toast";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 import AppInfo from "../../../../AppInfo";
 import EmailMessage from "../../../../server/hooks/emailMessage/main";
+import Collections from "../../../../server/core/Collections";
+import RelatedWorkPlacesToTrainer from "../../../../server/hooks/relatedWorkplacesToTrainer/Main";
 
 const resetForm: IAssignedEducation.ICreate = {
     id: "",
@@ -68,6 +70,8 @@ export class AssignEducationController extends UIFormController {
         const { createAssignedEducationEmp } = AssignedEducationEmployees.Create();
         const { educationPlanList, isLoading: isLoadingEducationPlan } = EducationPlan.GetList();
 
+        const { relatedWorkPlacesToTrainer, isLoading: isLoadingRelatedWorkplacesToTrainer } = RelatedWorkPlacesToTrainer.GetList()
+
         // Mail Requests
         const { createEmailRequest } = EmailMessage.Create();
 
@@ -90,11 +94,13 @@ export class AssignEducationController extends UIFormController {
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingEducation || isLoadingEmployees || isLoadingAccounts || isLoadingEducationPlan || isLoadingTrainersList ? VStack(Spinner()) :
+                isLoading || isLoadingEducation || isLoadingEmployees || isLoadingRelatedWorkplacesToTrainer || isLoadingAccounts || isLoadingEducationPlan || isLoadingTrainersList ? VStack(Spinner()) :
                     UIViewBuilder(() => {
 
                         const [form, setForm] = useState<IAssignedEducation.ICreate>(resetForm);
                         const [selectedEmployees, setSelectedEmployees] = useState<typeof employees>([]);
+                        //workplace
+                        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
 
                         const navigateToList = () => {
                             if (id) {
@@ -237,6 +243,19 @@ export class AssignEducationController extends UIFormController {
 
                             }
                         }
+                        useEffect(() => {
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "work_place_definition"),
+                                    Query.limit(10000),
+                                ]
+                            ).then((res) => {
+                                setWorkPlaceDefination(res.documents[0]?.is_active)
+                            })
+                        }, [])
 
                         return (
                             ReactView(
@@ -281,13 +300,18 @@ export class AssignEducationController extends UIFormController {
                                                 <div style={{ height: 300, width: '100%' }}>
                                                     <StyledDataGrid
                                                         rows={
-                                                            employees.filter((employee) => {
-                                                                if (filterKey === "") {
-                                                                    return employee;
-                                                                } else if (employee.first_name.toLowerCase().includes(filterKey.toLowerCase()) || employee.last_name.toLowerCase().includes(filterKey.toLowerCase())) {
-                                                                    return employee;
-                                                                }
-                                                            })
+                                                            workPlaceDefination && id ? (
+                                                                employees.filter((employees) => employees.workplace_id === educationPlanList.find((plan) => plan.education_plan_id === id).work_place_id)
+
+                                                            )
+                                                                :
+                                                                (employees.filter((employee) => {
+                                                                    if (filterKey === "") {
+                                                                        return employee;
+                                                                    } else if (employee.first_name.toLowerCase().includes(filterKey.toLowerCase()) || employee.last_name.toLowerCase().includes(filterKey.toLowerCase())) {
+                                                                        return employee;
+                                                                    }
+                                                                }))
                                                         }
                                                         columns={columns}
                                                         getRowId={(row) => row.$id}
@@ -322,7 +346,17 @@ export class AssignEducationController extends UIFormController {
                                             </div>
                                             <FormControl fullWidth size="small" required>
                                                 <Autocomplete
-                                                    options={trainersList.filter((trainersList) => trainersList.is_active === true && trainersList.is_deleted === false)}
+                                                    options={
+                                                        workPlaceDefination && id ?
+                                                            (
+                                                                trainersList.filter((trainer) =>
+                                                                    relatedWorkPlacesToTrainer
+                                                                        .filter((rel) => rel.work_place_id === educationPlanList.find((plan) => plan.education_plan_id === id).work_place_id)
+                                                                        .some((rel) => rel.trainer_id === trainer.id)
+                                                                )
+                                                            ) :
+                                                            trainersList.filter((trainersList) => trainersList.is_active === true && trainersList.is_deleted === false)
+                                                    }
                                                     getOptionLabel={(trainer) => trainer.trainer_name}
                                                     value={trainersList.find((trainer) => trainer.trainer_id === form.educator_id) || null}
                                                     onChange={(event, newValue) => {

@@ -187,37 +187,87 @@ export class UpdateCompetencyController extends UIController {
                             documentId: id,
                             data: form
                         }, () => {
+                            // if (workPlaceDefination) {
+                            //     // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
+                            //     competencyWorkplaceList.forEach((workplace) => {
+                            //         if (!selectedWorkPlace.some(workPlace => workPlace.work_place_id === workplace.work_place_id)) {
+                            //             updateDocument({
+                            //                 databaseId: AppInfo.Database,
+                            //                 collectionId: Collections.CompetencyWorkPlace,
+                            //                 documentId: workplace.$id,
+                            //                 data: {
+                            //                     is_active: false,
+                            //                     is_deleted: true
+                            //                 }
+                            //             });
+                            //         }
+                            //     });
+
+                            //     // Eklenmesi gerekenler: yeni eklenen iş yerleri
+                            //     selectedWorkPlace.forEach((workPlace) => {
+                            //         if (!competencyWorkplaceList.some(workplace => workplace.work_place_id === workPlace.work_place_id)) {
+                            //             const nanoId = nanoid();
+                            //             CreateWorkPlace({
+                            //                 documentId: nanoId,
+                            //                 data: {
+                            //                     id: nanoId,
+                            //                     competency_id: id,
+                            //                     work_place_id: workPlace.work_place_id,  // Burada $id yerine work_place_id kullanıyoruz
+                            //                     work_place_name: workPlace.work_place_name,  // Burada name yerine work_place_name kullanıyoruz
+                            //                     tenant_id: me?.prefs?.organization,
+                            //                 },
+                            //             });
+                            //         }
+                            //     });
+                            // }
                             if (workPlaceDefination) {
-                                // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
-                                competencyWorkplaceList.forEach((workplace) => {
-                                    if (!selectedWorkPlace.some(workPlace => workPlace.work_place_id === workplace.work_place_id)) {
-                                        updateDocument({
-                                            databaseId: AppInfo.Database,
-                                            collectionId: Collections.CompetencyWorkPlace,
-                                            documentId: workplace.$id,
-                                            data: {
-                                                is_active: false,
-                                                is_deleted: true
-                                            }
-                                        });
-                                    }
+                                // Ensure that we only deal with workplaces related to the current trainer
+                                const currentRelatedWorkplaces = competencyWorkplaceList.filter(
+                                    (relatedWorkplace) => relatedWorkplace.competency_id === id
+                                );
+
+                                // Identify removed workplaces (those that are in the database but not in the selected list)
+                                const removedWorkplaces = currentRelatedWorkplaces.filter(
+                                    (relatedWorkplace) =>
+                                        !selectedWorkPlace.some(
+                                            (selectedWorkplace) => selectedWorkplace.id === relatedWorkplace.work_place_id
+                                        )
+                                );
+
+                                // Identify new workplaces (those that are selected but not in the database)
+                                const newWorkplaces = selectedWorkPlace.filter(
+                                    (selectedWorkplace) =>
+                                        !currentRelatedWorkplaces.some(
+                                            (relatedWorkplace) => relatedWorkplace.work_place_id === selectedWorkplace.id
+                                        )
+                                );
+
+                                // Update removed workplaces to be inactive and deleted
+                                removedWorkplaces.forEach((workplace) => {
+                                    updateDocument({
+                                        databaseId: AppInfo.Database,
+                                        collectionId: Collections.CompetencyWorkPlace,
+                                        documentId: workplace.$id,
+                                        data: {
+                                            is_active: false,
+                                            is_deleted: true,
+                                        },
+                                    });
                                 });
 
-                                // Eklenmesi gerekenler: yeni eklenen iş yerleri
-                                selectedWorkPlace.forEach((workPlace) => {
-                                    if (!competencyWorkplaceList.some(workplace => workplace.work_place_id === workPlace.work_place_id)) {
-                                        const nanoId = nanoid();
-                                        CreateWorkPlace({
-                                            documentId: nanoId,
-                                            data: {
-                                                id: nanoId,
-                                                competency_id: id,
-                                                work_place_id: workPlace.work_place_id,  // Burada $id yerine work_place_id kullanıyoruz
-                                                work_place_name: workPlace.work_place_name,  // Burada name yerine work_place_name kullanıyoruz
-                                                tenant_id: me?.prefs?.organization,
-                                            },
-                                        });
-                                    }
+                                // Add new workplaces
+                                newWorkplaces.forEach((selectedWorkplace) => {
+                                    const nanoId = nanoid();
+                                    CreateWorkPlace({
+                                        documentId: nanoId,
+                                        data: {
+                                            id: nanoId,
+                                            competency_id: id,
+                                            work_place_id: selectedWorkplace.work_place_id,  // Burada $id yerine work_place_id kullanıyoruz
+                                            work_place_name: selectedWorkplace.work_place_name,  // Burada name yerine work_place_name kullanıyoruz
+                                            tenant_id: me?.prefs?.organization,
+                                        },
+                                    });
                                 });
                             }
 

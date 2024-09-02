@@ -1,7 +1,7 @@
 import { ReactView, UIController, UIView, VStack, UINavigate, Spinner, useState, useNavigate, State, nanoid } from "@tuval/forms";
 import React, { useRef } from "react";
 import bgImage from "../../../assets/BackgroundImage";
-import { useGetMe, ID, Services } from "@realmocean/sdk";
+import { useGetMe, ID, Services, useCreateBucket } from "@realmocean/sdk";
 import Button from "../../../components/Button";
 import TextFieldL from "../.././../components/TextFieldLarge";
 import AppInfo from "../../../../AppInfo";
@@ -43,6 +43,8 @@ export class SetupController extends UIController {
         const ul = useRef<HTMLUListElement>(null);
 
         const { me, isLoading: isLoad } = useGetMe("console");
+
+        const { createBucket } = useCreateBucket(AppInfo.Name)
 
         const [form, setForm] = useState({
             organizationId: ID.unique(),
@@ -143,6 +145,22 @@ export class SetupController extends UIController {
                 }
                 tasks.Wait(1);
 
+                tasks.Task(async () => {
+                    createBucket({
+                        bucketId: "employees_image_bucket",
+                        name: "employees_image_bucket",
+                    })
+                })
+                tasks.Wait(1);
+
+                tasks.Task(async () => {
+                    createBucket({
+                        bucketId: "vocational_qualification_bucket",
+                        name: "vocational_qualification_bucket",
+                    })
+                })
+                tasks.Wait(1);
+
 
                 tasks.Task(async () => {
                     for (let i = 0; i < crashedStringTasks.length; i++) {
@@ -207,19 +225,19 @@ export class SetupController extends UIController {
                 tasks.Wait(1);
 
                 Resources.StringParameters.forEach(async (param) => {
-             
-                        tasks.Task(async () => {
-                            try {
-                                await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "string_parameter", nanoid(), {
-                                    name: param.localStr
-                                })
-                            } catch (error) {
-                                console.log(error)
-                                console.log("StringParameter oluşturulamadı", param.localStr)
-                            }
-                        })
-                        tasks.Wait(1)
-                    
+
+                    tasks.Task(async () => {
+                        try {
+                            await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, "string_parameter", nanoid(), {
+                                name: param.localStr
+                            })
+                        } catch (error) {
+                            console.log(error)
+                            console.log("StringParameter oluşturulamadı", param.localStr)
+                        }
+                    })
+                    tasks.Wait(1)
+
                 })
 
                 tasks.Task(async () => {

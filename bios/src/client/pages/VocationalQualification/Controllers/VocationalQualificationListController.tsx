@@ -13,20 +13,22 @@ import {
   cTopLeading,
   useNavigate,
 } from '@tuval/forms'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Views } from '../../../components/Views'
 import StyledDataGrid from '../../../components/StyledDataGrid'
 import { GridColDef, trTR } from '@mui/x-data-grid'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
-import { useGetMe } from '@realmocean/sdk'
+import { useDeleteCache, useGetMe } from '@realmocean/sdk'
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 import { GridContainer } from '../Views/View'
+import AppInfo from '../../../../AppInfo'
 
 export class VocationalQualificationListController extends UIFormController {
   public LoadView(): UIView {
     const navigate = useNavigate()
     const { me, isLoading } = useGetMe('console')
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
 
@@ -102,6 +104,9 @@ export class VocationalQualificationListController extends UIFormController {
             setFilterKey(e.target.value)
           }
 
+          useEffect(() => {
+            deleteCache()
+          }, [])
           return VStack({ spacing: 15, alignment: cTopLeading })(
             HStack({ alignment: cLeading })(
               Views.Title(

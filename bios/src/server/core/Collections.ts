@@ -47,6 +47,7 @@ namespace Collections {
     export const EducationCompetencyStatusInfos ="education_competency_status_infos";
     export const Related_Departments_Workplaces = "related_departments_workplaces";
     export const Related_Position_Workplaces = "related_position_workplaces";
+    export const Related_Workplaces_To_Trainer = "related_workplaces_to_trainer";
 }
 
 export default Collections;

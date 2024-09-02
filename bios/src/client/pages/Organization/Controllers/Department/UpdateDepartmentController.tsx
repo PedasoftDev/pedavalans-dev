@@ -108,38 +108,55 @@ export class UpdateDepartmentController extends UIController {
               data: removeDollarProperties(formDepartment)
             }, () => {
               if (workPlaceDefination) {
-                // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
-                relatedDepartmentsWorkPlacesList.forEach((department) => {
-                  if (!formWorkPlace.some(workPlace => workPlace.id === department.workplace_id)) {
-                    updateRelatedDepartmentsWorkPlace({
-                      databaseId: AppInfo.Database,
-                      collectionId: Collections.Related_Departments_Workplaces,
-                      documentId: department.$id,
-                      data: {
-                        is_active: false,
-                        is_deleted: true
-                      }
-                    });
-                  }
+                // Ensure that we only deal with workplaces related to the current trainer
+                const currentRelatedWorkplaces = relatedDepartmentsWorkPlacesList.filter(
+                  (relatedWorkplace) => relatedWorkplace.related_department_id === formDepartment.id
+                );
+
+                // Identify removed workplaces (those that are in the database but not in the selected list)
+                const removedWorkplaces = currentRelatedWorkplaces.filter(
+                  (relatedWorkplace) =>
+                    !formWorkPlace.some(
+                      (selectedWorkplace) => selectedWorkplace.id === relatedWorkplace.workplace_id
+                    )
+                );
+
+                // Identify new workplaces (those that are selected but not in the database)
+                const newWorkplaces = formWorkPlace.filter(
+                  (selectedWorkplace) =>
+                    !currentRelatedWorkplaces.some(
+                      (relatedWorkplace) => relatedWorkplace.workplace_id === selectedWorkplace.id
+                    )
+                );
+
+                // Update removed workplaces to be inactive and deleted
+                removedWorkplaces.forEach((workplace) => {
+                  updateRelatedDepartmentsWorkPlace({
+                    databaseId: AppInfo.Database,
+                    collectionId: Collections.Related_Departments_Workplaces,
+                    documentId: workplace.$id,
+                    data: {
+                      is_active: false,
+                      is_deleted: true,
+                    },
+                  });
                 });
 
-                // Eklenmesi gerekenler: yeni eklenen iş yerleri
-                formWorkPlace.forEach((workPlace) => {
-                  if (!relatedDepartmentsWorkPlacesList.some(department => department.workplace_id === workPlace.id)) {
-                    const nanoId = nanoid();
-                    createRelatedDepartmentsWorkPlaces({
-                      documentId: nanoId,
-                      data: {
-                        id: nanoId,
-                        related_department_record_id: formDepartment.record_id,
-                        related_department_id: formDepartment.id,
-                        workplace_id: workPlace.id,
-                        workplace_record_id: workPlace.record_id,
-                        is_active: true,
-                        is_deleted: false
-                      },
-                    });
-                  }
+                // Add new workplaces
+                newWorkplaces.forEach((selectedWorkplace) => {
+                  const nanoId = nanoid();
+                  createRelatedDepartmentsWorkPlaces({
+                    documentId: nanoId,
+                    data: {
+                      id: nanoId,
+                      related_department_record_id: formDepartment.record_id,
+                      related_department_id: formDepartment.id,
+                      workplace_id: selectedWorkplace.id,
+                      workplace_record_id: selectedWorkplace.record_id,
+                      is_active: true,
+                      is_deleted: false
+                    },
+                  });
                 });
               }
               if (isNameChanged) {
