@@ -47,6 +47,15 @@ namespace Competency {
         const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name)
         return { updateCompetency: updateDocument, errorUpdateCompetency: error, isErrorUpdateCompetency: isError, isLoadingUpdateCompetency: isLoading, isSuccessUpdateCompetency: isSuccess }
     }
+
+    export const GetCompetenciesPagination = (page: number, pageSize: number, isActive: boolean): { competencyList: ICompetency.ICompetency[], isLoadingCompetencyList: boolean, totalCompetencyList: number } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency", [Query.equal('is_deleted_competency', false), Query.limit(pageSize), Query.offset(page * pageSize), Query.equal('is_active_competency', isActive)])
+        return {
+            competencyList: documents as any,
+            isLoadingCompetencyList: isLoading,
+            totalCompetencyList: total
+        }
+    }
 }
 
 export default Competency;
