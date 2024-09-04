@@ -63,6 +63,7 @@ import CompetencyGroup from '../../../../server/hooks/competencyGroup/main'
 import { sortEvaluations } from '../../../assets/Functions/sortEmployeeCompetencyValueByPeriod'
 import EChartsReact from 'echarts-for-react'
 import { FaAngleLeft } from "react-icons/fa";
+import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
 
 
 export class EmployeeDashboard extends UIController {
@@ -176,10 +177,11 @@ export class EmployeeDashboard extends UIController {
 
     //image
     const [isHaveImage, setIsHaveImage] = useState(false)
+    const { getFileView, isLoadingViewFile } = BucketFiles.GetView(AppInfo.Name, "employees_image_bucket", employeeDashboardState.$id)
 
 
 
-    return isLoading || isLoadingDepartment || isLoadingPosition || isLoadingCompetencyDepartmentList || isLoadingListEmployeeCompetencyValue
+    return isLoading || isLoadingDepartment || isLoadingViewFile || isLoadingPosition || isLoadingCompetencyDepartmentList || isLoadingListEmployeeCompetencyValue
       || isLoadingAssignedEducationList || isLoadingEmployeeLog || isLoadingCompetencyList || isLoadingDocument ? VStack(Spinner())
       :
       UIViewBuilder(() => {
@@ -190,12 +192,6 @@ export class EmployeeDashboard extends UIController {
           competency_group: []
         }
 
-        const imageFunc = async () => {
-          const response = await fetch(`http://localhost/v1/storage/buckets/employees_image_bucket/files/${employeeDashboardState.$id}/view?project=${AppInfo.Name}&cacheBuster=${new Date().getTime()}`)
-          if (response.status === 200) {
-            setIsHaveImage(true)
-          }
-        }
         useEffect(() => {
           Services.Databases.getDocument(
             AppInfo.Name,
@@ -311,7 +307,6 @@ export class EmployeeDashboard extends UIController {
           setSelectedEvaluationPeriod(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_evaluation_period))
           setSelectedRealValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_real_value))
           setSelectedTargetValue(employeeChartInfos.competency_group[0].competencies[0].details.map((x) => x.competency_target_value))
-          imageFunc()
         }, [])
 
         //Çalışanın birimdeki toplam kidem süresini hesaplar
@@ -366,16 +361,17 @@ export class EmployeeDashboard extends UIController {
                     <EmployeeCard
                       name={employee.name}
                       avatar={
-                        isHaveImage ? (<img src={`http://localhost/v1/storage/buckets/employees_image_bucket/files/${employeeDashboardState.$id}/view?project=${AppInfo.Name}&cacheBuster=${new Date().getTime()}`} width={100} height={100} />
-                        ) : (
-                          <IoMdPerson style={{
-                            color: `rgba(128,128,128,1)`,
-                            width: '100px',
-                            height: '100px',
-                            alignSelf: 'flex-start',
+                        // isHaveImage ? (
+                        <img src={getFileView as any} width={100} height={100} />
+                        // ) : (
+                        //   <IoMdPerson style={{
+                        //     color: `rgba(128,128,128,1)`,
+                        //     width: '100px',
+                        //     height: '100px',
+                        //     alignSelf: 'flex-start',
 
-                          }} />
-                        )
+                        //   }} />
+                        // )
                       }
                       position={position ? position?.name : "Pozisyon Bulunamadı"}
                       department={department ? department?.name : "Birim Bulunamadı"}
