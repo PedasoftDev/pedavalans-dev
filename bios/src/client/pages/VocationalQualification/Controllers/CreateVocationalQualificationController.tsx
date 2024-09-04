@@ -25,10 +25,10 @@ import IVocationalQualification from '../../../interfaces/IVocationalQualificati
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
-import FileUploadButton from '../Views/InputFileButton'
 import Bucket from '../../../../server/hooks/bucket/Main'
 import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
 import AppInfo from '../../../../AppInfo'
+import FileUploadButton from '../Views/VocationalInputFileButton'
 
 
 const resetForm: IVocationalQualification.IAddDocument = {
@@ -201,7 +201,7 @@ export class CreateVocationalQualificationController extends UIFormController {
                   >
                     <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                       <FileUploadButton onFileChange={handleFileChange} />
-                      {file && <p>Yüklenen Dosya: {file.name}</p>}
+                      {file && <p>Yüklenen Belge: {file.name}</p>}
                     </div>
                     <Button
                       type="submit"

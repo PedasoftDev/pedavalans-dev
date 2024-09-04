@@ -30,6 +30,8 @@ import PositionRelationDepartments from '../../../../../server/hooks/positionRel
 import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
 import { IoPersonCircleOutline } from 'react-icons/io5';
+import { MdEdit } from 'react-icons/md';
+import { FaRegTrashAlt } from 'react-icons/fa';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -93,7 +95,7 @@ export class UpdateEmployeeController extends UIController {
     const { getFileView, isLoadingViewFile } = BucketFiles.GetView(AppInfo.Name, "employees_image_bucket", id)
 
     return (
-      isLoading || isLoadingDepartments || isLoadingViewFile || isLoadingWorkPlace || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingDepartments || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -122,8 +124,18 @@ export class UpdateEmployeeController extends UIController {
 
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
-
+            //images
             const [isHaveImage, setIsHaveImage] = useState(false)
+            function isCustomError(error: any): error is { code: number; type: string; message: string } {
+              return (
+                typeof error === 'object' &&
+                error !== null &&
+                'code' in error &&
+                'type' in error &&
+                typeof error.code === 'number' &&
+                typeof error.type === 'string'
+              );
+            }
 
             const selectFormStates = [
               {
@@ -384,16 +396,8 @@ export class UpdateEmployeeController extends UIController {
                   setWorkPlaceDefination(res.documents[0]?.is_active)
                 })
               })
-              imageFunc()
-
             }, [])
 
-            const imageFunc = async () => {
-              const response = await fetch(`http://localhost/v1/storage/buckets/employees_image_bucket/files/${id}/view?project=${AppInfo.Name}&cacheBuster=${new Date().getTime()}`)
-              if (response.status === 200) {
-                setIsHaveImage(true)
-              }
-            }
 
             const onDelete = () => {
               Swal.fire({
@@ -462,12 +466,31 @@ export class UpdateEmployeeController extends UIController {
                         formContent={
                           formIsEmployee ?
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
-                              {
-                                isHaveImage ?
-                                  <img src={`http://localhost/v1/storage/buckets/employees_image_bucket/files/${id}/view?project=${AppInfo.Name}&cacheBuster=${new Date().getTime()}`} width={100} height={100} />
-                                  :
-                                  <IoPersonCircleOutline style={{ width: "100px", height: "100px" }} />
-                              }
+                              <div style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "10px",
+                              }}>
+                                {/* {
+                                  isHaveImage ?
+                                    <img src={getFileView as any} width={100} height={100} />
+                                    :
+                                    <IoPersonCircleOutline style={{ width: "100px", height: "100px" }} />
+                                } */}
+                                <img src={getFileView as any} width={100} height={100} />
+                                <div style={{
+                                  display: "flex",
+                                  gap: "5px",
+                                }}>
+                                  <IconButton color="primary" aria-label="add an alarm">
+                                    <MdEdit />
+                                  </IconButton>
+                                  <IconButton color="primary" aria-label="add an alarm">
+                                    <FaRegTrashAlt />
+                                  </IconButton>
+
+                                </div>
+                              </div>
                               <TextField
                                 name='id'
                                 size='small'

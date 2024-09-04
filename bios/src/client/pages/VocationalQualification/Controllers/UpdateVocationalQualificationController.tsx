@@ -19,6 +19,7 @@ import {
   Button,
   FormControl,
   FormControlLabel,
+  IconButton,
   SelectChangeEvent,
   Switch,
   TextField
@@ -35,6 +36,9 @@ import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansSe
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
 import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
+import { MdEdit } from 'react-icons/md'
+import { FaEye, FaRegTrashAlt } from 'react-icons/fa'
+import { IoMdDownload } from 'react-icons/io'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -187,7 +191,6 @@ export class UpdateVocationalQualificationController extends UIController {
             }
           })
         }
-
         return VStack({ alignment: cTop })(
           ReactView(
             <Form
@@ -248,9 +251,26 @@ export class UpdateVocationalQualificationController extends UIController {
                     name="document_name"
                     label="Belge Adı"
                   />
-                  <img src={getFileDownload as any} />
-                  <img src={getFilePreview as any} />
-                  <a href={getFilePreview as any}>{getFilePage?.name}</a>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    borderBottom: '1px solid #ccc',
+                  }
+                  }>
+                    {getFilePage?.name}
+                    <div style={{
+                      display: 'flex',
+                      gap: '3px',
+                    }}>
+                      <IconButton color="primary" aria-label="add an alarm">
+                        <a href={getFilePreview as any} target="_blank"><FaEye /></a>
+                      </IconButton>
+                      <IconButton color="primary" aria-label="add an alarm">
+                        <a href={getFileDownload as any}><IoMdDownload /></a>
+                      </IconButton>
+                    </div>
+                  </div>
                   {showValidityPeriod && (
                     <TextField
                       size="small"
@@ -277,7 +297,7 @@ export class UpdateVocationalQualificationController extends UIController {
                       marginTop: '10px',
                     }}
                   >
-                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
+                    <Button component="label" variant="contained" size='small' tabIndex={-1} startIcon={<CloudUploadIcon />}>Belge Yükle<VisuallyHiddenInput type="file" /> </Button>
                     <Button
                       type="submit"
                       variant="contained"
@@ -305,7 +325,7 @@ export class UpdateVocationalQualificationController extends UIController {
                       İptal
                     </Button>
                   </div>
-                </form>
+                </form >
               }
             />
           )

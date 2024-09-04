@@ -28,8 +28,9 @@ import PositionRelationDepartments from '../../../../../server/hooks/positionRel
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
 import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
-import FileUploadButton from '../../../VocationalQualification/Views/InputFileButton';
+
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -325,6 +326,10 @@ export class CreateEmployeeController extends UIController {
                         formContent={
                           formIsEmployee ?
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
+                              <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+                                <FileUploadButton onFileChange={handleFileChange} />
+                                {file && <p>Yüklenen Fotoğarf: {file.name}</p>}
+                              </div>
                               <TextField
                                 name='id'
                                 size='small'
@@ -544,10 +549,7 @@ export class CreateEmployeeController extends UIController {
                                   }
                                   }
                                 />
-                                <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
-                                  <FileUploadButton onFileChange={handleFileChange} />
-                                  {file && <p>Yüklenen Dosya: {file.name}</p>}
-                                </div>
+
                               </FormControl>
                             </div>
                             :
