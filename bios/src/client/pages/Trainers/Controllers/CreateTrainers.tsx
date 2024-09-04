@@ -1,7 +1,7 @@
 import { ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Autocomplete, Button, TextField } from "@mui/material";
-import { useDeleteCache, useGetMe, useListAccounts } from "@realmocean/sdk";
+import { Query, Services, useDeleteCache, useGetMe, useListAccounts } from "@realmocean/sdk";
 import { Toast } from "../../../components/Toast";
 import ITrainers from "../../../interfaces/ITrainers";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
@@ -12,6 +12,11 @@ import ITrainerEducations from "../../../interfaces/ITrainerEducations";
 import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
+import AppInfo from "../../../../AppInfo";
+import Collections from "../../../../server/core/Collections";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
+import { idID } from "@mui/material/locale";
+import RelatedWorkPlacesToTrainer from "../../../../server/hooks/relatedWorkplacesToTrainer/Main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -49,6 +54,12 @@ export class CreateTrainers extends UIController {
     const { trainersList, isLoadingTrainersList } = Trainers.GetList()
     const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
 
+    //workplace
+    const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+    const [formWorkPlace, setFormWorkPlace] = useState([]);
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+    const { createRelatedWorkplacesToTrainer } = RelatedWorkPlacesToTrainer.Create();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [e.target.name as string]: e.target.value })
     }
@@ -71,20 +82,34 @@ export class CreateTrainers extends UIController {
           ...form,
           id: trainerId,
         }
-      }, () => {
-        educations.forEach((item) => {
-          const trainerEducationId = nanoid();
-          const createForm: ITrainerEducations.ICreate = {
-            id: trainerEducationId,
-            trainer_id: trainerId,
-            trainer_duty_id: item.$id,
-            trainer_duty_name: item.name
-          }
-          createTrainerEducations({
-            documentId: trainerEducationId,
-            data: createForm
-          })
+      })
+      educations.forEach((item) => {
+        const trainerEducationId = nanoid();
+        const createForm: ITrainerEducations.ICreate = {
+          id: trainerEducationId,
+          trainer_id: trainerId,
+          trainer_duty_id: item.$id,
+          trainer_duty_name: item.name
+        }
+        createTrainerEducations({
+          documentId: trainerEducationId,
+          data: createForm
         })
+      })
+      formWorkPlace.forEach((item) => {
+        const relatedWorkPlaceId = nanoid();
+        const createForm = {
+          id: relatedWorkPlaceId,
+          trainer_id: trainerId,
+          work_place_id: item.$id,
+          work_place_name: item.name,
+          tenant_id: me?.prefs?.organization,
+        }
+        createRelatedWorkplacesToTrainer({
+          documentId: relatedWorkPlaceId,
+          data: createForm
+        })
+
       })
       Toast.fire({
         icon: "success",
@@ -107,10 +132,24 @@ export class CreateTrainers extends UIController {
       }
     ];
 
+    useEffect(() => {
+      Services.Databases.listDocuments(
+        AppInfo.Name,
+        AppInfo.Database,
+        Collections.Parameter,
+        [
+          Query.equal("name", "work_place_definition"),
+          Query.limit(10000),
+        ]
+      ).then((res) => {
+        setWorkPlaceDefination(res.documents[0]?.is_active)
+      })
+    }, [])
+
 
     return (
       VStack({ alignment: cTop })(
-        isLoading || isLoadingAccounts || isLoadingEducation || isLoadingTrainersList || isLoadingResult ? VStack(Spinner()) :
+        isLoading || isLoadingAccounts || isLoadingWorkPlace || isLoadingEducation || isLoadingTrainersList || isLoadingResult ? VStack(Spinner()) :
           UIViewBuilder(() => {
             return (
               ReactView(
@@ -143,6 +182,21 @@ export class CreateTrainers extends UIController {
                         }}
                         value={accounts.find((item) => item.$id === form.trainer_id) || null}
                       />
+                      {
+                        workPlaceDefination ? (<Autocomplete
+                          size='small'
+                          multiple
+                          onChange={
+                            (event, newValue) => {
+                              setFormWorkPlace(newValue)
+                            }}
+                          options={workPlaces.filter((item) => item.is_active === true)}
+                          value={formWorkPlace}
+                          getOptionLabel={(option) => option.record_id + " - " + option.name}
+                          renderInput={(params) => <TextField {...params} required={formWorkPlace.length === 0} label="Bağlı Olduğu İşyeri" />}
+                        />)
+                          : null
+                      }
                       <StyledDataGrid
                         rows={
                           educationList.filter((item) => item.is_active === true && item.is_deleted === false).filter((item) => item.name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)

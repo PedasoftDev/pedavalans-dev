@@ -79,38 +79,55 @@ export class UpdatePositionController extends UIController {
               }
             }, () => {
               if (workPlaceDefination) {
-                // Silinmesi gerekenler: eski ama artık formda olmayan iş yerleri
-                relatedPositionsWorkPlacesList.forEach((position) => {
-                  if (!formWorkPlace.some(workPlace => workPlace.id === position.workplace_id)) {
-                    updateRelatedPositonsWorkPlace({
-                      databaseId: AppInfo.Database,
-                      collectionId: Collections.Related_Position_Workplaces,
-                      documentId: position.$id,
-                      data: {
-                        is_active: false,
-                        is_deleted: true
-                      }
-                    });
-                  }
+                // Ensure that we only deal with workplaces related to the current trainer
+                const currentRelatedWorkplaces = relatedPositionsWorkPlacesList.filter(
+                  (relatedWorkplace) => relatedWorkplace.related_positon_id === formPosition.id
+                );
+
+                // Identify removed workplaces (those that are in the database but not in the selected list)
+                const removedWorkplaces = currentRelatedWorkplaces.filter(
+                  (relatedWorkplace) =>
+                    !formWorkPlace.some(
+                      (selectedWorkplace) => selectedWorkplace.id === relatedWorkplace.workplace_id
+                    )
+                );
+
+                // Identify new workplaces (those that are selected but not in the database)
+                const newWorkplaces = formWorkPlace.filter(
+                  (selectedWorkplace) =>
+                    !currentRelatedWorkplaces.some(
+                      (relatedWorkplace) => relatedWorkplace.workplace_id === selectedWorkplace.id
+                    )
+                );
+
+                // Update removed workplaces to be inactive and deleted
+                removedWorkplaces.forEach((workplace) => {
+                  updateRelatedPositonsWorkPlace({
+                    databaseId: AppInfo.Database,
+                    collectionId: Collections.Related_Position_Workplaces,
+                    documentId: workplace.$id,
+                    data: {
+                      is_active: false,
+                      is_deleted: true,
+                    },
+                  });
                 });
 
-                // Eklenmesi gerekenler: yeni eklenen iş yerleri
-                formWorkPlace.forEach((workPlace) => {
-                  if (!relatedPositionsWorkPlacesList.some(position => position.workplace_id === workPlace.id)) {
-                    const nanoId = nanoid();
-                    createRelatedPositionsWorkPlaces({
-                      documentId: nanoId,
-                      data: {
-                        id: nanoId,
-                        related_positon_id: id,
-                        related_position_record_id: formPosition.record_id,
-                        workplace_id: workPlace.id,
-                        workplace_record_id: workPlace.record_id,
-                        is_active: true,
-                        is_deleted: false
-                      },
-                    });
-                  }
+                // Add new workplaces
+                newWorkplaces.forEach((selectedWorkplace) => {
+                  const nanoId = nanoid();
+                  createRelatedPositionsWorkPlaces({
+                    documentId: nanoId,
+                    data: {
+                      id: nanoId,
+                      related_positon_id: id,
+                      related_position_record_id: formPosition.record_id,
+                      workplace_id: selectedWorkplace.id,
+                      workplace_record_id: selectedWorkplace.record_id,
+                      is_active: true,
+                      is_deleted: false
+                    },
+                  });
                 });
               }
               ToastSuccess("Başarılı!", "Pozisyon başarıyla güncellendi!")

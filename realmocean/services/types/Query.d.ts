@@ -20,4 +20,5 @@ export class Query {
    offset(offset);
    addQuery(attribute, method, value);
    parseValues(value);
+   contains(attribute, value);
 }

@@ -222,7 +222,7 @@ export class CreateCompetencyController extends UIController {
         }, [])
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingDepartments || isLoadingRelWorkPlaces || isLoadingWorkPlace || isLoadingActiveGroups || isLoadingParameter || isLoadingLines || isLoadingPositions ? VStack(Spinner()) :
+                isLoading || isLoadingDepartments || isLoadingCreateLineRelation || isLoadingRelWorkPlaces || isLoadingWorkPlace || isLoadingActiveGroups || isLoadingParameter || isLoadingLines || isLoadingPositions ? VStack(Spinner()) :
                     ReactView(
                         <Form
                             title="Yeni Yetkinlik Ekleyin"

@@ -5,8 +5,6 @@ import styled from 'styled-components';
 const FileInputContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
 `;
 
 const FileLabel = styled.label`
@@ -35,7 +33,7 @@ const HiddenFileInput = styled.input`
 const FileUploadButton = ({ onFileChange }) => {
     return (
         <FileInputContainer>
-            <FileLabel htmlFor="file-upload">Dosya Yükle</FileLabel>
+            <FileLabel htmlFor="file-upload">Fotoğraf Yükle</FileLabel>
             <HiddenFileInput
                 id="file-upload"
                 type="file"

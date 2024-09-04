@@ -1,11 +1,12 @@
 import { ReactView, Spinner, UIFormController, UIView, UIViewBuilder, VStack, cTop, nanoid, useNavigate } from "@tuval/forms";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Button,
     TextField,
     SelectChangeEvent,
+    Autocomplete,
 } from "@mui/material";
-import { useGetMe, useDeleteCache } from "@realmocean/sdk";
+import { useGetMe, useDeleteCache, Services, Query } from "@realmocean/sdk";
 import Form from "../../Competency/Views/Form";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import Education from "../../../../server/hooks/education/main";
@@ -16,6 +17,8 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import EducationPlan from "../../../../server/hooks/educationPlan/main";
+import Collections from "../../../../server/core/Collections";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
 
 const resetForm: IEducationPlan.ICreate = {
     education_plan_id: "",
@@ -35,13 +38,20 @@ export class CreateEducationPlanController extends UIFormController {
         const { deleteCache } = useDeleteCache(AppInfo.Name)
 
         const { createEducationPlan, isLoading: isLoadingEducationPlan } = EducationPlan.Create()
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+
 
         return (
             VStack({ alignment: cTop })(
-                isLoading || isLoadingEducationPlan ? VStack(Spinner()) :
+                isLoading || isLoadingEducationPlan || isLoadingWorkPlace ? VStack(Spinner()) :
                     UIViewBuilder(() => {
 
                         const [form, setForm] = useState<IEducationPlan.ICreate>(resetForm);
+
+                        //workplace
+                        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+                        const [formWorkPlace, setFormWorkPlace] = useState([]);
+
 
                         const navigateToList = () => navigate("/app/education-plan/plans");
 
@@ -68,8 +78,21 @@ export class CreateEducationPlanController extends UIFormController {
                                 deleteCache();
                                 navigateToList();
                             })
-                        };
 
+                        };
+                        useEffect(() => {
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "work_place_definition"),
+                                    Query.limit(10000),
+                                ]
+                            ).then((res) => {
+                                setWorkPlaceDefination(res.documents[0]?.is_active)
+                            })
+                        }, []);
                         return (
                             ReactView(
                                 <Form
@@ -94,6 +117,20 @@ export class CreateEducationPlanController extends UIFormController {
                                                 label="Eğitim Planı Adı"
                                                 required
                                             />
+                                            {
+                                                workPlaceDefination ? (<Autocomplete
+                                                    size='small'
+                                                    onChange={
+                                                        (event: any, newValue: any) => {
+                                                            setForm({ ...form, work_place_id: newValue.id, work_place_name: newValue.name });
+                                                        }
+                                                    }
+                                                    options={workPlaces.filter((item) => item.is_active === true)}
+                                                    getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                                    renderInput={(params) => <TextField {...params} required={formWorkPlace.length === 0} label="Bağlı Olduğu İşyeri" />}
+                                                />)
+                                                    : null
+                                            }
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                 <DatePicker label="Plan Başlangıç Tarihi"
                                                     format="DD/MM/YYYY"

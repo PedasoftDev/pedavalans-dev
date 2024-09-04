@@ -16,6 +16,8 @@ import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, GridToolbar, trTR } from "@mui/x-data-grid";
 import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
+import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
+import RelatedWorkPlacesToTrainer from "../../../../server/hooks/relatedWorkplacesToTrainer/Main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -61,6 +63,14 @@ export class EditTrainers extends UIController {
     const { educationList, isLoading: isLoadingEducation } = Education.GetList()
     const { trainerEducationsRelationList, isLoading: isLoadingTrainerEducationRelation } = TrainerEducations.ListByTrainer(id)
 
+    //workplace
+    const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+    const [formWorkPlace, setFormWorkPlace] = useState([]);
+    const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+    const { createRelatedWorkplacesToTrainer } = RelatedWorkPlacesToTrainer.Create();
+    const { relatedWorkPlacesToTrainer, isLoading: isLoadingRelatedWorkPlacesToTrainer } = RelatedWorkPlacesToTrainer.GetList()
+    const { updateRelatedWorkplacesToTrainer } = RelatedWorkPlacesToTrainer.Update()
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({
@@ -76,12 +86,65 @@ export class EditTrainers extends UIController {
         title: "Eğitici düzenleniyor...",
         timer: 5000,
       })
+
       updateTrainers({
         databaseId: AppInfo.Database,
         collectionId: Collections.Trainers,
         documentId: id,
         data: removeDollarProperties(form)
       }, () => {
+        if (workPlaceDefination) {
+          // Ensure that we only deal with workplaces related to the current trainer
+          const currentRelatedWorkplaces = relatedWorkPlacesToTrainer.filter(
+            (relatedWorkplace) => relatedWorkplace.trainer_id === form.id
+          );
+
+          // Identify removed workplaces (those that are in the database but not in the selected list)
+          const removedWorkplaces = currentRelatedWorkplaces.filter(
+            (relatedWorkplace) =>
+              !formWorkPlace.some(
+                (selectedWorkplace) => selectedWorkplace.id === relatedWorkplace.work_place_id
+              )
+          );
+
+          // Identify new workplaces (those that are selected but not in the database)
+          const newWorkplaces = formWorkPlace.filter(
+            (selectedWorkplace) =>
+              !currentRelatedWorkplaces.some(
+                (relatedWorkplace) => relatedWorkplace.work_place_id === selectedWorkplace.id
+              )
+          );
+
+          // Update removed workplaces to be inactive and deleted
+          removedWorkplaces.forEach((workplace) => {
+            updateRelatedWorkplacesToTrainer({
+              databaseId: AppInfo.Database,
+              collectionId: Collections.Related_Workplaces_To_Trainer,
+              documentId: workplace.$id,
+              data: {
+                is_active: false,
+                is_deleted: true,
+              },
+            });
+          });
+
+          // Add new workplaces
+          newWorkplaces.forEach((selectedWorkplace) => {
+            const nanoId = nanoid();
+            createRelatedWorkplacesToTrainer({
+              documentId: nanoId,
+              data: {
+                id: nanoId,
+                trainer_id: form.id,
+                work_place_id: selectedWorkplace.id,
+                work_place_name: selectedWorkplace.name,
+                tenant_id: me?.prefs?.organization,
+                is_active: true,
+                is_deleted: false,
+              },
+            });
+          });
+        }
         trainerEducationsRelationList.forEach((relation) => {
           updateTrainerEducations({
             databaseId: AppInfo.Database,
@@ -108,6 +171,7 @@ export class EditTrainers extends UIController {
             }
           })
         })
+
         Toast.fire({
           icon: "success",
           title: "Eğitim başarıyla güncellendi!"
@@ -118,6 +182,7 @@ export class EditTrainers extends UIController {
 
 
     }
+
     const onDelete = () => {
       Swal.fire({
         title: "Eğitici Silme",
@@ -171,7 +236,7 @@ export class EditTrainers extends UIController {
 
     return (
       VStack({ alignment: cTop })(
-        isLoading || isLoadingAccounts || isLoadingTrainerEducationsList || isLoadingEducation || isLoadingTrainerEducationRelation ? VStack(Spinner()) :
+        isLoading || isLoadingAccounts || isLoadingWorkPlace || isLoadingRelatedWorkPlacesToTrainer || isLoadingTrainerEducationsList || isLoadingEducation || isLoadingTrainerEducationRelation ? VStack(Spinner()) :
           UIViewBuilder(() => {
             useEffect(() => {
               Services.Databases.listDocuments(
@@ -193,9 +258,33 @@ export class EditTrainers extends UIController {
                 })
                 setIsActive(data.is_active)
               })
-
               setTrainerEducationsForm(trainerEducationsRelationList.map((relation) => relation.trainer_duty_id))
-
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "work_place_definition"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setWorkPlaceDefination(res.documents[0]?.is_active)
+              })
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Related_Workplaces_To_Trainer,
+                [
+                  Query.equal("trainer_id", id),
+                  Query.equal("is_deleted", false),
+                  Query.equal("is_active", true),
+                  Query.limit(10000)
+                ]
+              ).then((res) => {
+                const relatedWorkplaces = workPlaces.filter((item) =>
+                  res.documents.some((relatedWorkplace) => relatedWorkplace.work_place_id === item.id))
+                setFormWorkPlace(relatedWorkplaces)
+              })
 
             }, [])
             return (
@@ -225,6 +314,20 @@ export class EditTrainers extends UIController {
                         }}
                         value={accounts.find((item) => item.$id === form.trainer_id) || null}
                       />
+                      {
+                        workPlaceDefination ? (<Autocomplete
+                          size='small'
+                          multiple
+                          onChange={(event, newValue) => {
+                            setFormWorkPlace(newValue);
+                          }}
+                          options={workPlaces.filter((item) => item.is_active === true)}
+                          value={formWorkPlace}
+                          getOptionLabel={(option) => option?.record_id + " - " + option?.name}
+                          renderInput={(params) => <TextField {...params} label="Bağlı Olduğu İşyeri" />}
+                        />)
+                          : null
+                      }
                       <StyledDataGrid
                         rows={
                           educationList.filter((item) => item.is_active === true && item.is_deleted === false)

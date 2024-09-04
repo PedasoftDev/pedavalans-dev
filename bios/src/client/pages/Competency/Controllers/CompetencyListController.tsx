@@ -1,6 +1,6 @@
 import { HStack, ReactView, Spinner, State, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid, useNavigate } from "@tuval/forms";
 import React, { useState, useEffect, useRef, Fragment } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField, Tooltip } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton, TextField, Tooltip } from "@mui/material";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import StyledDataGrid from "../../../components/StyledDataGrid";
@@ -25,6 +25,7 @@ import { GridContainer } from "../Views/View";
 import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
 import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
 import CompetencyWorkplace from "../../../../server/hooks/competencyWorkPlace/Main";
+import { IoIosArrowForward } from "react-icons/io";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -37,6 +38,26 @@ interface ICompetencyImportFromExcel {
 
 export class CompetencyListController extends UIController {
 
+    // Pagination States
+    @State()
+    private page: number;
+
+    @State()
+    private pageSize: number;
+
+    @State()
+    private searchTerm: string;
+
+    @State()
+    private isActive: boolean;
+
+    protected BindRouterParams(): void {
+        this.page = 0;
+        this.pageSize = 20;
+        this.searchTerm = "";
+        this.isActive = true;
+    }
+
     public LoadView(): UIView {
 
         const navigate = useNavigate();
@@ -44,7 +65,7 @@ export class CompetencyListController extends UIController {
         const { me, isLoading: isMeLoading } = useGetMe("console");
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
 
-        const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization)
+        const { competencyList, isLoadingCompetencyList, totalCompetencyList } = Competency.GetCompetenciesPagination(this.page, this.pageSize, this.isActive);
         const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization)
 
         // positions
@@ -58,7 +79,6 @@ export class CompetencyListController extends UIController {
                 UIViewBuilder(() => {
 
                     const [filterKey, setFilterKey] = useState("");
-                    const [rowsActive, setRowsActive] = useState<boolean>(true);
 
                     // excel import -- start
                     const [open, setOpen] = React.useState(false);
@@ -336,7 +356,7 @@ export class CompetencyListController extends UIController {
                     }
 
                     const handleSetActiveRows = () => {
-                        setRowsActive(!rowsActive);
+                        this.isActive = !this.isActive;
                     }
 
                     useEffect(() => {
@@ -356,7 +376,7 @@ export class CompetencyListController extends UIController {
                     return (
                         VStack({ spacing: 15, alignment: cTopLeading })(
                             HStack({ alignment: cLeading })(
-                                Views.Title(rowsActive ? "Yetkinlikler" : "Pasif Yetkinlikler").paddingTop("10px")
+                                Views.Title(this.isActive ? "Yetkinlikler" : "Pasif Yetkinlikler").paddingTop("10px")
                             ).height(70).shadow("rgb(0 0 0 / 5%) 0px 4px 2px -2px"),
                             HStack({ alignment: cTop })(
                                 ReactView(
@@ -374,7 +394,7 @@ export class CompetencyListController extends UIController {
                                             <div style={{ width: "80%" }}>
                                                 <TextField placeholder="Yetkinlik Arayın..." size="small" fullWidth onChange={handleSearch} />
                                             </div>
-                                            <Tooltip title={`${rowsActive ? "Pasif" : "Aktif"} Yetkinlikleri Göster`}>
+                                            <Tooltip title={`${this.isActive ? "Pasif" : "Aktif"} Yetkinlikleri Göster`}>
                                                 <IconButton onClick={handleSetActiveRows}>
                                                     <FilterAltOutlinedIcon />
                                                 </IconButton>
@@ -415,10 +435,34 @@ export class CompetencyListController extends UIController {
                                         </div>
                                         <GridContainer>
                                             <StyledDataGrid
-                                                rows={competencyList.filter((item) => item.is_active_competency === rowsActive).filter((item) => item.competency_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
+                                                rows={competencyList.filter((item) => item.competency_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1)}
                                                 columns={columns}
                                                 getRowId={(row) => row.$id}
                                                 localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
+                                                hideFooter
+                                                slots={{
+                                                    toolbar: () => (
+                                                        <div style={{ display: "flex", gap: "10px", width: "100%", alignItems: "center" }}>
+                                                            <IconButton onClick={() => {
+                                                                if (this.page > 0) {
+                                                                    this.page = this.page - 1;  // Önceki sayfaya git
+                                                                }
+                                                            }}>
+                                                                <IoIosArrowForward style={{ transform: "rotate(180deg)" }} />
+                                                            </IconButton>
+                                                            <IconButton onClick={() => {
+                                                                if (this.page < Math.ceil(totalCompetencyList / this.pageSize) - 1) {
+                                                                    this.page = this.page + 1;  // Sonraki sayfaya git
+                                                                }
+                                                            }}>
+                                                                <IoIosArrowForward />
+                                                            </IconButton>
+                                                            <span>{this.page} / {Math.ceil(totalCompetencyList / this.pageSize) - 1}</span>
+                                                            <span>Toplam: {totalCompetencyList}</span>
+                                                            <span>Gösterilen: {competencyList.length}</span>
+                                                        </div>
+                                                    )
+                                                }}
                                             />
                                         </GridContainer>
                                         <Dialog

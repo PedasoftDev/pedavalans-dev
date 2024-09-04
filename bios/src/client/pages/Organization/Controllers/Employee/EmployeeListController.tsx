@@ -8,7 +8,7 @@ import { employeeTransferTemplateByExcel } from '../../../../assets/Functions/em
 import { Resources } from '../../../../assets/Resources'
 import excelToJson from '../../../../assets/Functions/excelToJson'
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { Query, Services, useGetMe } from '@realmocean/sdk'
+import { Query, Services, useDeleteCache, useGetMe } from '@realmocean/sdk'
 import LinearProgressWithLabel from '../../../../components/LinearProgressWithLabel'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
@@ -57,6 +57,7 @@ export class EmployeeListController extends UIController {
   public LoadView(): UIView {
 
     const { me, isLoading } = useGetMe("console");
+    const { deleteCache } = useDeleteCache(AppInfo.Name);
     const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
     const { departments: propDepartments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
     const { employees: propEmployees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
@@ -606,6 +607,7 @@ export class EmployeeListController extends UIController {
             employeeListExport(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false, filteredEmployees.filter(x => x.is_active === active), propDepartments, propTitles, propPositions, propLines)
           }
           useEffect(() => {
+            deleteCache();
             Services.Databases.listDocuments(
               AppInfo.Name,
               AppInfo.Database,

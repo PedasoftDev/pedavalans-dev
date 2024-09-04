@@ -72,7 +72,7 @@ export class PedavalansServiceBroker extends ServiceBroker<any> {
     }, payload);
   }
 
-  async listEmployeeCompetencyValue(competency_id,competency_evaluation_period?): Promise<any> {
+  async listEmployeeCompetencyValue(competency_id, competency_evaluation_period?): Promise<any> {
 
 
     let path = '/listEmployeeCompetencyValue';
@@ -93,6 +93,22 @@ export class PedavalansServiceBroker extends ServiceBroker<any> {
     let payload: Payload = {};
 
     payload['competency_id'] = competency_id;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+  }
+
+  async listCompetenciesPagination(filterText: string, page: number, pageSize: number, isActive: boolean): Promise<any> {
+
+    let path = '/listCompetenciesPagination';
+    let payload: Payload = {};
+
+    payload['filterText'] = filterText;
+    payload['page'] = page;
+    payload['pageSize'] = pageSize;
+    payload['isActive'] = isActive;
 
     const uri = new URL(this.config.endpoint + path);
     return await this.call('post', uri, {

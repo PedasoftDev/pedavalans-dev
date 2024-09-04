@@ -9,14 +9,14 @@ import {
   nanoid,
   useNavigate,
 } from '@tuval/forms'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Button,
   TextField,
   FormControl,
   Autocomplete,
 } from '@mui/material'
-import { useGetMe } from '@realmocean/sdk'
+import { Services, useCreateBucket, useCreateFile, useGetMe, useListBuckets } from '@realmocean/sdk'
 import Form from '../../Competency/Views/Form'
 
 import VocationalQualification from '../../../../server/hooks/vocationalQualification/main'
@@ -25,9 +25,10 @@ import IVocationalQualification from '../../../interfaces/IVocationalQualificati
 import VocationalQualificationType from '../../../../server/hooks/vocationalQualificationType/main'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
-import FileUploadButton from '../Views/InputFileButton'
 import Bucket from '../../../../server/hooks/bucket/Main'
 import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
+import AppInfo from '../../../../AppInfo'
+import FileUploadButton from '../Views/VocationalInputFileButton'
 
 
 const resetForm: IVocationalQualification.IAddDocument = {
@@ -49,15 +50,13 @@ export class CreateVocationalQualificationController extends UIFormController {
 
     const { createVocationalQualification } = VocationalQualification.Create()
     const { documentGetList, isLoading: isLoadingDocument } = VocationalQualification.GetList(me?.prefs?.organization)
-
     const { documentTypeGetList, isLoading: isLoadingDocumentType } = VocationalQualificationType.GetList(me?.prefs?.organization)
-    const { createBucketPage } = Bucket.Create("pedavalans", "education", "test")
-    const { getBucketPage, isLoadingBucket } = Bucket.GetBucket("pedavalans", "education")
-    const { createFilePage } = BucketFiles.Create("pedavalans", "education")
+    const { createFilePage } = BucketFiles.Create(AppInfo.Name, "vocational_qualification_bucket")
+
 
 
     return VStack({ alignment: cTop })(
-      isLoading || isLoadingDocument || isLoadingDocumentType || isLoadingBucket
+      isLoading || isLoadingDocument || isLoadingDocumentType
         ? VStack(Spinner())
         : UIViewBuilder(() => {
           const [form, setForm] = useState<IVocationalQualification.IAddDocument>(resetForm)
@@ -72,7 +71,6 @@ export class CreateVocationalQualificationController extends UIFormController {
 
           const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault()
-
             if (documentGetList.find((document) => document.document_code === form.document_code)) {
               Toast.fire({
                 icon: 'error',
@@ -105,33 +103,25 @@ export class CreateVocationalQualificationController extends UIFormController {
                 }, 2000)
               }
             )
+            createFilePage({
+              bucketId: "vocational_qualification_bucket",
+              fileId: form.document_id,
+              file: file,
+              onProgress: (progress) => {
+                console.log('Yükleme durumu:', progress);
+                return {};
+              },
+            })
           }
-          const handleFileChange = (event) => {
-            // const uploadedFile = event.target.files[0];
-            // setFile(uploadedFile);
-            // console.log('Dosya yüklendi:', uploadedFile);
-            // if (
-            //   getBucketPage
-            // ) {
-            //   createFilePage({
-            //     bucketId: "education",
-            //     fileId: form.document_id,
-            //     file: uploadedFile,
-            //     onProgress: (progress) => {
-            //       console.log('Yükleme durumu:', progress);
-            //       return {};
-            //     },
-            //   })
 
-            // } else if (
-            //   !getBucketPage
-            // ) {
-            //   createBucketPage({
-            //     bucketId: "education",
-            //     name: "test",
-            //   })
-            // }
+          const handleFileChange = (event) => {
+            const uploadedFile = event.target.files[0];
+            setFile(uploadedFile);
+            console.log('Dosya yüklendi:', uploadedFile);
           };
+
+          useEffect(() => {
+          }, [])
 
           return ReactView(
             <Form
@@ -144,7 +134,7 @@ export class CreateVocationalQualificationController extends UIFormController {
                     gap: '10px',
                     width: '60%',
                   }}
-                  onSubmit={handleSubmit}
+                // onSubmit={handleSubmit}
                 >
                   <TextField
                     size="small"
@@ -211,13 +201,14 @@ export class CreateVocationalQualificationController extends UIFormController {
                   >
                     <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                       <FileUploadButton onFileChange={handleFileChange} />
-                      {file && <p>Yüklenen Dosya: {file.name}</p>}
+                      {file && <p>Yüklenen Belge: {file.name}</p>}
                     </div>
                     <Button
                       type="submit"
                       variant="contained"
                       color="primary"
                       size="small"
+                      onClick={handleSubmit}
                     >
                       Kaydet
                     </Button>

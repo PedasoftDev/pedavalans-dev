@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material'
 import React, { Fragment, useEffect, useState } from 'react'
 import { HStack, ReactView, Spinner, Text, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { Query, Services, useGetMe } from '@realmocean/sdk'
+import { Query, Services, useCreateBucket, useGetMe } from '@realmocean/sdk'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
@@ -28,6 +28,9 @@ import PositionRelationDepartments from '../../../../../server/hooks/positionRel
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
 import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
+
+import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -85,6 +88,10 @@ export class CreateEmployeeController extends UIController {
 
     const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
 
+    const { createBucket } = useCreateBucket(AppInfo.Name)
+
+    const { createFilePage } = BucketFiles.Create(AppInfo.Name, "employee_documents_id")
+
     return (
       isLoading || isLoadingResult || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
@@ -106,7 +113,13 @@ export class CreateEmployeeController extends UIController {
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
 
+            const [file, setFile] = useState(null);
 
+            const handleFileChange = (event) => {
+              const uploadedFile = event.target.files[0];
+              setFile(uploadedFile);
+              console.log('Dosya yüklendi:', uploadedFile);
+            };
 
             const selectFormStates = [
               {
@@ -236,8 +249,16 @@ export class CreateEmployeeController extends UIController {
                   }
                 })
               })
+              createFilePage({
+                bucketId: "employees_image_bucket",
+                fileId: id,
+                file: file,
+                onProgress: (progress) => {
+                  console.log('Yükleme durumu:', progress);
+                  return {};
+                },
+              })
             }
-
             const handleSelectType = (event, newValue) => {
               const selectedValue = newValue.document_type_id;
               const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
@@ -305,6 +326,10 @@ export class CreateEmployeeController extends UIController {
                         formContent={
                           formIsEmployee ?
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
+                              <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+                                <FileUploadButton onFileChange={handleFileChange} />
+                                {file && <p>Yüklenen Fotoğarf: {file.name}</p>}
+                              </div>
                               <TextField
                                 name='id'
                                 size='small'
@@ -524,6 +549,7 @@ export class CreateEmployeeController extends UIController {
                                   }
                                   }
                                 />
+
                               </FormControl>
                             </div>
                             :
@@ -604,6 +630,7 @@ export class CreateEmployeeController extends UIController {
                               </div>
                             </div>
                         }
+
                         buttons={formIsEmployee ? [
                           {
                             text: "Kaydet",

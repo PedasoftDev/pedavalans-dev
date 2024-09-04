@@ -19,6 +19,7 @@ import {
   Button,
   FormControl,
   FormControlLabel,
+  IconButton,
   SelectChangeEvent,
   Switch,
   TextField
@@ -34,6 +35,10 @@ import VocationalQualificationType from '../../../../server/hooks/vocationalQual
 import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
+import BucketFiles from '../../../../server/hooks/bucketFiles/Main'
+import { MdEdit } from 'react-icons/md'
+import { FaEye, FaRegTrashAlt } from 'react-icons/fa'
+import { IoMdDownload } from 'react-icons/io'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -73,7 +78,11 @@ export class UpdateVocationalQualificationController extends UIController {
 
     const { documentTypeGetList } = VocationalQualificationType.GetList(me?.prefs?.organization)
 
-    return isLoading || isLoadingDocument || isLoadingDocuments ? VStack(Spinner())
+    const { getFilePage, isLoadingFile } = BucketFiles.GetList(AppInfo.Name, "vocational_qualification_bucket", document.$id)
+    const { getFileDownload, isLoadingDownloadFile } = BucketFiles.GetDownload(AppInfo.Name, "vocational_qualification_bucket", document.$id)
+    const { getFilePreview, isLoadingPreviewFile } = BucketFiles.GetPreview(AppInfo.Name, "vocational_qualification_bucket", document.$id)
+
+    return isLoading || isLoadingDocument || isLoadingFile || isLoadingPreviewFile || isLoadingDocuments || isLoadingDownloadFile ? VStack(Spinner())
       : UIViewBuilder(() => {
         const [form, setForm] = useState<IVocationalQualification.IBase>(formReset)
         const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
@@ -182,7 +191,6 @@ export class UpdateVocationalQualificationController extends UIController {
             }
           })
         }
-
         return VStack({ alignment: cTop })(
           ReactView(
             <Form
@@ -243,6 +251,26 @@ export class UpdateVocationalQualificationController extends UIController {
                     name="document_name"
                     label="Belge Adı"
                   />
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    borderBottom: '1px solid #ccc',
+                  }
+                  }>
+                    {getFilePage?.name}
+                    <div style={{
+                      display: 'flex',
+                      gap: '3px',
+                    }}>
+                      <IconButton color="primary" aria-label="add an alarm">
+                        <a href={getFilePreview as any} target="_blank"><FaEye /></a>
+                      </IconButton>
+                      <IconButton color="primary" aria-label="add an alarm">
+                        <a href={getFileDownload as any}><IoMdDownload /></a>
+                      </IconButton>
+                    </div>
+                  </div>
                   {showValidityPeriod && (
                     <TextField
                       size="small"
@@ -269,7 +297,7 @@ export class UpdateVocationalQualificationController extends UIController {
                       marginTop: '10px',
                     }}
                   >
-                    <Button component="label" variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>Dosya Yükle<VisuallyHiddenInput type="file" /> </Button>
+                    <Button component="label" variant="contained" size='small' tabIndex={-1} startIcon={<CloudUploadIcon />}>Belge Yükle<VisuallyHiddenInput type="file" /> </Button>
                     <Button
                       type="submit"
                       variant="contained"
@@ -297,7 +325,7 @@ export class UpdateVocationalQualificationController extends UIController {
                       İptal
                     </Button>
                   </div>
-                </form>
+                </form >
               }
             />
           )

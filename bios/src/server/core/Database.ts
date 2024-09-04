@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 35,
+    "version": 36,
     "collections": [
         {
             "id": "competency",
@@ -2023,6 +2023,18 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 37
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 37
+                },
+                {
                     "key": "plan_start_date",
                     "type": "string",
                     "size": 256,
@@ -3307,6 +3319,60 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "competency_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "work_place_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
+            "id": "related_workplaces_to_trainer",
+            "name": "Related Workplaces To Trainer",
+            "description": {
+                "en": "Related Workplaces To Trainer is a collection of related workplaces to trainer.",
+                "tr": "Eğiticiye bağlı iş yerlerinin koleksiyonudur."
+            },
+            "version": 37,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "trainer_id",
                     "type": "string",
                     "size": 256,
                     "version": 1

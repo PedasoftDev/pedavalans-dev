@@ -1,4 +1,4 @@
-import { Query, useCreateBucket, useCreateDocument, useCreateFile, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
+import { Query, useCreateBucket, useGetFileDownload,useGetFilePreview,useGetFileView, useCreateFile, useGetFile,useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 
 
 namespace BucketFiles {
@@ -8,6 +8,37 @@ namespace BucketFiles {
                 createFilePage : createFile
             }
    }
+   export const GetList = (projectId, bucketId, fileId) => {
+    const {file, isLoading} = useGetFile(projectId, bucketId, fileId) 
+    return {
+        getFilePage : file,
+        isLoadingFile : isLoading
+    }
+   }
+
+   export const GetDownload = (projectId, bucketId, fileId) => {
+    const {fileDownload,isLoading} = useGetFileDownload(projectId, bucketId, fileId)
+    return {
+        getFileDownload : fileDownload,
+        isLoadingDownloadFile : isLoading
+    }
+   }
+
+    export const GetPreview = (projectId, bucketId, fileId) => {
+     const {filePreview,isLoading} = useGetFilePreview(projectId, bucketId, fileId)
+     return {
+          getFilePreview : filePreview,
+          isLoadingPreviewFile : isLoading
+     }
+    }
+
+    export const GetView = (projectId, bucketId, fileId) => {
+        const {fileView,isLoading} = useGetFileView(projectId, bucketId, fileId)
+        return {
+            getFileView : fileView,
+            isLoadingViewFile : isLoading
+        }
+    }
 
 
 }

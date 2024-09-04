@@ -31,7 +31,7 @@ const EmployeeCard = ({
       <CardHeader
         avatar={
           <Avatar
-            sx={{ bgcolor: 'white', border: `1px solid black` }}
+            sx={{ bgcolor: 'white', border: `1px solid black`, width: "100px", height: "100px" }}
             aria-label="recipe"
           >
             {avatar}
@@ -66,7 +66,7 @@ const EmployeeCard = ({
           >
             Pozisyon :
           </span>{' '}
-          <a style={{cursor: 'pointer',fontSize: '1rem',}} onClick={() => navigate("/app/position-dashboard/view/" + positionId + "/" + period)}>{position}</a>
+          <a style={{ cursor: 'pointer', fontSize: '1rem', }} onClick={() => navigate("/app/position-dashboard/view/" + positionId + "/" + period)}>{position}</a>
         </Typography>
         <Typography
           variant="body2"
