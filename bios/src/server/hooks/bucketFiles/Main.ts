@@ -1,4 +1,4 @@
-import { Query, useCreateBucket, useGetFileDownload,useGetFilePreview,useGetFileView, useCreateFile, useGetFile,useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
+import { Query, useCreateBucket, useGetFileDownload,useGetFilePreview,useGetFileView, useCreateFile, useGetFile,useGetDocument, useListDocuments, useUpdateDocument, useDeleteFile } from '@realmocean/sdk'
 
 
 namespace BucketFiles {
@@ -40,6 +40,14 @@ namespace BucketFiles {
         }
     }
 
+    export const DeleteView = (projectId) => {
+        const {deleteFile,isLoading} = useDeleteFile(projectId)
+        return {
+            deleteFile:deleteFile,
+            isLoadingDeleteFile:isLoading
+        }
+    }
+ 
 
 }
 

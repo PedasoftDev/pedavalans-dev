@@ -328,7 +328,7 @@ export class CreateEmployeeController extends UIController {
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "80%" }}>
                               <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                                 <FileUploadButton onFileChange={handleFileChange} />
-                                {file && <p>Yüklenen Fotoğarf: {file.name}</p>}
+                                {file && <p>Yüklenen Fotoğraf: {file.name}</p>}
                               </div>
                               <TextField
                                 name='id'
