@@ -1,7 +1,7 @@
 import { cTop, cTopLeading, HStack, nanoid, ReactView, Spinner, UIController, UINavigate, UIViewBuilder, useNavigate, VStack } from '@tuval/forms';
 import React, { Fragment, useEffect, useState } from 'react';
 import { PortalMenu } from '../../../components/PortalMenu';
-import { Query, Services, useGetMe, useListCollections, useListAccounts } from '@realmocean/sdk';
+import { Query, Services, useGetMe, useListCollections, useListAccounts, useCreateBucket } from '@realmocean/sdk';
 import Main from '../../../../server/hooks/main/Main';
 import Parameters from '../../../../server/hooks/parameters/main';
 import { Resources } from '../../../assets/Resources';
@@ -22,6 +22,7 @@ import IParameters from '../../../interfaces/IParameters';
 import IStringParameter from '../../../interfaces/IStringParameter';
 import { PedavalansServiceBroker } from '../../../../server/brokers/PedavalansServiceBroker';
 import StringParameter from '../../../../server/hooks/stringParameter/main';
+import Bucket from '../../../../server/hooks/bucket/Main';
 
 
 export class DashboardController extends UIController {
@@ -45,12 +46,14 @@ export class DashboardController extends UIController {
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
         const { accountRelations: accountRelationList, isLoadingResult: isLoadingAccountResult } = AccountRelation.GetList(me?.prefs?.organization)
         const { accounts, isLoading: isLoadingUsers } = useListAccounts()
+        const { getBucketListPage, isLoadingBucketList } = Bucket.GetBucketList(AppInfo.Name)
+        const { createBucket } = useCreateBucket(AppInfo.Name)
 
 
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingPositionBased || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingBucketList || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingPositionBased || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         accountRelations[0].is_active == false ? UINavigate("/logout") :
@@ -381,6 +384,25 @@ export class DashboardController extends UIController {
                                     updateVersionTask.Run()
                                 }
 
+                                const isBucketExist = async () => {
+                                    const bucketsToCheck = [
+                                        { bucketId: "employees_image_bucket", name: "employees_image_bucket" },
+                                        { bucketId: "vocational_qualification_bucket", name: "vocational_qualification_bucket" },
+                                        { bucketId: "employees_education_attachment", name: "employees_education_attachment" }
+                                    ];
+
+                                    for (const { bucketId, name } of bucketsToCheck) {
+                                        const bucketExists = getBucketListPage.find(bucket => bucket?.$id === bucketId);
+                                        if (!bucketExists) {
+                                            try {
+                                                await createBucket({ bucketId, name });
+                                            } catch (error) {
+                                                console.error(`Bucket Oluşturulurken hata oluştu: ${bucketId}`, error);
+                                            }
+                                        }
+                                    }
+                                };
+
                                 const assignOrganization = async () => {
                                     await Services.Client.setProject("console");
                                     await Services.Client.setMode(undefined);
@@ -647,8 +669,8 @@ export class DashboardController extends UIController {
                                                 })
                                             }
                                         })
-
                                     }
+                                    isBucketExist()
 
                                 }, [])
 

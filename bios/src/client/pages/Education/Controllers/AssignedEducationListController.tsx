@@ -1,12 +1,12 @@
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
-import { HStack, ReactView, Spinner, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useParams } from "@tuval/forms";
+import { HStack, ReactView, Spinner, State, UIFormController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, useNavigate, useParams } from "@tuval/forms";
 import React, { useEffect, useState } from "react";
 import { Views } from "../../../components/Views";
 import StyledDataGrid from "../../../components/StyledDataGrid";
 import { GridColDef, trTR } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import SummarizeIcon from '@mui/icons-material/Summarize';
-import { Query, Services, useDeleteCache, useGetMe } from "@realmocean/sdk";
+import { Query, Services, useDeleteCache, useGetFile, useGetMe } from "@realmocean/sdk";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import IAssignedEducationResult from "../../../interfaces/IAssignedEducationResult";
 import AssignEducationResult from "../../../../server/hooks/assignEducationResult/main";
@@ -26,6 +26,10 @@ import EducationPlan from "../../../../server/hooks/educationPlan/main";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import styled from "styled-components";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
+import FileUploadButton from "../../VocationalQualification/Views/VocationalInputFileButton";
+import BucketFiles from "../../../../server/hooks/bucketFiles/Main";
+import { LuDownload } from "react-icons/lu";
+
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -43,8 +47,6 @@ const VisuallyHiddenInput = styled('input')({
 
 
 export class AssignedEducationListController extends UIFormController {
-
-
     public LoadView(): UIView {
         const { id } = useParams();
         const { deleteCache } = useDeleteCache(AppInfo.Name);
@@ -73,17 +75,21 @@ export class AssignedEducationListController extends UIFormController {
         const [filterKey, setFilterKey] = useState("");
         const [checkedRows, setCheckedRows] = useState({});
 
+        const { createFilePage } = BucketFiles.Create(AppInfo.Name, "employees_education_attachment");
+
+
 
         return (
             isLoading || isLoadingResult || isLoadingAssignedEducationEmpList || isLoadingAssignedEducationResultList || isLoadingEducationPlan || isLoadingEducations || isLoadingCompetencyList || isLoadingRelation ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
-
                         const [assignedEducationList, setAssignedEducationList] = useState<IAssignedEducation.IBase[]>([]);
                         const [selectedAssinedEducationId, setSelectedAssinedEducationId] = useState<string>("");
                         const [selectedEducationId, setSelectedEducationId] = useState<string>("");
                         const [open, setOpen] = useState(false);
                         const [assignedEducationResultListArr, setAssignedEducationResultListArr] = useState<IAssignedEducationResult.IBase[]>([]);
+
+                        const [filesNames, setFilesNames] = useState([]);
                         /* GLOBAL STATE ASSIGN EDUCATION */
                         const assignEducationState: IAssignedEducation.IBase = selector(selectAssignEducation);
                         const [rowForms, setRowForms] = useState<IAssignedEducationResult.ICreate>({
@@ -188,6 +194,9 @@ export class AssignedEducationListController extends UIFormController {
                                     }))
                                 })
                             }
+                            Services.Storage.listFiles("employees_education_attachment").then((res) => {
+                                setFilesNames(res.files)
+                            })
                             setOpen(true);
                         }
 
@@ -374,8 +383,21 @@ export class AssignedEducationListController extends UIFormController {
                                     status: "completed"
                                 }
                             });
+                            rowFiles && Object.keys(rowFiles).forEach(async (rowId) => {
+                                createFilePage({
+                                    bucketId: "employees_education_attachment",
+                                    fileId: rowId,
+                                    file: rowFiles[rowId],
+                                    onProgress: (progress) => {
+                                        console.log('Yükleme durumu:', progress);
+                                        return {};
+                                    },
+                                })
+                            })
                             handleCloseDialog();
                         }
+
+
 
 
 
@@ -575,6 +597,15 @@ export class AssignedEducationListController extends UIFormController {
                             }
                         ];
 
+                        //attechment
+                        const [rowFiles, setRowFiles] = useState({});
+                        const handleFileChange = (rowId, event) => {
+                            const file = event.target.files[0];
+                            setRowFiles(prevState => ({
+                                ...prevState,
+                                [rowId]: file
+                            }));
+                        };
 
                         const columnsForDialogContent: GridColDef[] = [
                             {
@@ -647,7 +678,73 @@ export class AssignedEducationListController extends UIFormController {
                                         />
                                     );
                                 }
-                            }
+                            },
+                            {
+                                field: "attachment",
+                                headerName: "Ek Dosya",
+                                flex: 3,
+                                renderCell: (params) => {
+                                    const rowId = params.id;
+                                    const fileName = rowFiles[rowId]?.name || '';
+                                    return (
+                                        <div>
+                                            <VisuallyHiddenInput
+                                                id={`file-upload-${rowId}`}
+                                                type="file"
+                                                onChange={(event) => handleFileChange(rowId, event)}
+                                            />
+                                            <label htmlFor={`file-upload-${rowId}`}>
+                                                <IconButton
+                                                    color="primary"
+                                                    aria-label="upload picture"
+                                                    component="span"
+                                                >
+                                                    <div style={{ display: "flex", gap: "5px", alignItems: "center", justifyContent: "center" }}>
+                                                        {fileName ? <span style={{ fontSize: "10px" }}>{fileName}</span> : <CloudUploadIcon />}
+                                                        {
+                                                            filesNames.filter((item) => item.$id === rowId).map((item) => {
+                                                                return <span style={{ fontSize: "10px" }}>{item.name}</span>
+                                                            })
+                                                        }
+                                                    </div>
+                                                </IconButton>
+                                            </label>
+                                            <Button
+                                                onClick={async () => {
+                                                    try {
+                                                        const existFile = await Services.Storage.getFile("employees_education_attachment", rowId as any);
+                                                        if (!existFile) {
+                                                            console.error('File not found');
+                                                            alert("Dosya bulunamadı.");
+                                                            return;
+                                                        }
+                                                        // Get the download URL from the service
+                                                        const downloadUrl = await Services.Storage.getFileDownload("employees_education_attachment", rowId as any);
+
+                                                        // Create an anchor element
+                                                        const link = document.createElement('a');
+                                                        link.href = downloadUrl as any; // Set the href to the download URL
+                                                        link.download = ''; // Optional: set a file name or leave it empty
+                                                        link.target = '_blank'; // Optional: open in a new tab if needed
+
+                                                        // Append to the document body and trigger the download
+                                                        document.body.appendChild(link);
+                                                        link.click();
+
+                                                        // Clean up the link element
+                                                        link.remove();
+                                                    } catch (error) {
+                                                        console.error('Error while downloading the file:', error);
+                                                        // Handle error (e.g., show a message to the user)
+                                                    }
+                                                }}
+                                            >
+                                                <LuDownload />
+                                            </Button>
+                                        </div>
+                                    );
+                                }
+                            },
                         ];
 
                         const handleSetActiveRows = () => {
