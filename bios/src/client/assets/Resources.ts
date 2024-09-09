@@ -6,7 +6,7 @@ import { themeColor as _themeColor } from "./Colors/themeColor";
 import { formatDate as _formatDate } from "./Functions/formatDate";
 
 export namespace Resources {
-    export const version = "v1.2.2.2"
+    export const version = "v1.2.2.03"
 
     export namespace MailConf {
         export const secretKey = 'mysecretkey12345';
