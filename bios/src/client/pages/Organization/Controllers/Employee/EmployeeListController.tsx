@@ -40,6 +40,7 @@ export interface IEmployeeImportFromExcel {
   cinsiyet: string;
   egitim_durumu: string;
   ise_baslama_tarihi: string;
+  amir_sicil_no: string;
   departman_kodu: string;
   departman_adi: string;
   departmana_baslama_tarihi: string;

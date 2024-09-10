@@ -20,6 +20,7 @@ export interface IEmployeeImportFromExcel {
   cinsiyet: string;
   egitim_durumu: string;
   ise_baslama_tarihi: string;
+  amir_sicil_no: string;
   departman_kodu: string;
   departman_adi: string;
   departmana_baslama_tarihi: string;
@@ -221,6 +222,7 @@ class DataImport extends RealmoceanService {
           const title = dbTitles.find(t => t.record_id === employee.unvan_kodu);
           const position = dbPositions.find(p => p.record_id === employee.pozisyon_kodu);
           const line = dbLines.find(l => l.record_id === employee.hat_kodu);
+          const employeeId = nanoid();
 
           const createEmp = {
             id: employee.sicil_no,
@@ -247,11 +249,25 @@ class DataImport extends RealmoceanService {
           };
 
           if (createEmp.first_name && createEmp.last_name) {
-            await this.databaseService.createDocument(AppInfo.Name, AppInfo.Database, Collections.Employee, createEmp.id, createEmp);
+            await this.databaseService.createDocument(AppInfo.Name, AppInfo.Database, Collections.Employee, employeeId, createEmp);
+            const newEmployee = await this.databaseService.getDocument(AppInfo.Name, AppInfo.Database, Collections.Employee, employeeId);
+            dbEmployees.push(newEmployee);
             employeeCodes.add(employee.sicil_no); // Set'e ekle
           }
         }
       }));
+
+      await Promise.all(dbEmployees.map(async employee => {
+        const excelData = data.find(d => d.sicil_no === employee.id);
+        if (excelData) {
+          const managerId = dbEmployees.find(e => e.id === excelData.amir_sicil_no)
+          if (managerId) {
+            await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, Collections.Employee, employee.$id, {
+              manager_id: managerId.id
+            });
+          }
+        }
+      }))
 
     } catch (e) {
       throw e;
