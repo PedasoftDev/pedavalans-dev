@@ -24,6 +24,7 @@ import { MdOutlineManageAccounts, MdOutlineLibraryBooks, MdPendingActions } from
 import { GrPlan } from "react-icons/gr";
 import { useGetMe, useGetOrganization } from '@realmocean/sdk';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { RiTeamLine } from 'react-icons/ri';
 
 const CustomIcons = Resources.Icons
 export interface PortalSideMenuParams {
@@ -112,6 +113,12 @@ export const PortalMenu = (selectedMenuTitle: string) => {
             title: 'Yetkinlik Durum İzleme Raporu',
             link: '/app/competency-status-report/view',
             icon: <TbHeartRateMonitor size={25} />,
+            isVisible: true,
+        },
+        {
+            title: 'Ekibimdeki Çalışanlar',
+            link: '/app/employees-in-my-team/view',
+            icon: <RiTeamLine size={25} />,
             isVisible: true,
         },
         {

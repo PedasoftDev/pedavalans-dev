@@ -99,6 +99,8 @@ import { MailConfigurationController } from './pages/MailConfiguration/Controlle
 import { WorkPlaceListController } from './pages/Organization/Controllers/WorkPlace/WorkPlaceListController';
 import { CreateWorkPlace } from './pages/Organization/Controllers/WorkPlace/CreateWorkPlace';
 import { UpdateWorkPlace } from './pages/Organization/Controllers/WorkPlace/UpdateWorkPlace';
+import { EmployeesInMyTeamController } from './pages/EmployeesInMyTeam/Controllers/EmployeesInMyTeamController';
+import { EmployeesInMyTeamViewController } from './pages/EmployeesInMyTeam/Controllers/EmployeesInMyTeamViewController';
 
 
 export const Routes = () => {
@@ -280,6 +282,10 @@ export const Routes = () => {
                 ),
 
                 UIRoute('mail-configuration/view', MailConfigurationController),
+
+                UIRoute('employees-in-my-team', EmployeesInMyTeamController).children(
+                    UIRoute('view', EmployeesInMyTeamViewController)
+                ),
 
 
                 // not found

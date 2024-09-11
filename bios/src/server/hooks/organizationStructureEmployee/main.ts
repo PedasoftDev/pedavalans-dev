@@ -43,6 +43,15 @@ namespace OrganizationStructureEmployee {
             updateIsSuccess: isSuccess
         }
     }
+
+    export const GetEmployeesInMyTeam = (account_id: string): { employees: IOrganizationStructure.IEmployees.IEmployee[], isLoadingEmployees: boolean, totalEmployees: number } => {
+        const { documents, isLoading, total } = useListDocuments(AppInfo.Name, AppInfo.Database, "organization_employee", [Query.limit(10000), Query.equal("is_deleted", false), Query.equal("is_active", true), Query.equal("manager_id", account_id)])
+        return {
+            employees: documents as any,
+            isLoadingEmployees: isLoading,
+            totalEmployees: total
+        }
+    }
 }
 
 export default OrganizationStructureEmployee

@@ -1,36 +1,57 @@
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material'
-import React, { Fragment, useEffect, useState } from 'react'
-import { HStack, ReactView, Spinner, Text, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { Query, Services, useCreateBucket, useGetMe } from '@realmocean/sdk'
-import { Views } from '../../../../components/Views'
-import AccountRelation from '../../../../../server/hooks/accountRelation/main'
-import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main'
-import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main'
-import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main'
-import OrganizationStructureLine from '../../../../../server/hooks/organizationStructureLine/main'
-import { Form, GridContainer } from '../../Views/Views'
-import OrganizationStructureTitle from '../../../../../server/hooks/organizationStructureTitle/main'
-import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure'
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { Toast, ToastError, ToastSuccess } from '../../../../components/Toast';
-import OrganizationStructureEmployeeLog from '../../../../../server/hooks/organizationStructureEmployeeLog/main';
-import { IOrganizationEmployeeLog } from '../../../../interfaces/IOrganizationEmployeeLog';
-import OrganizationEmployeeDocument from '../../../../../server/hooks/organizationEmployeeDocument/main';
-import VocationalQualificationType from '../../../../../server/hooks/vocationalQualificationType/main';
-import VocationalQualification from '../../../../../server/hooks/vocationalQualification/main';
+import {
+  Autocomplete,
+  Button,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+} from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Query, Services, useGetMe, useListAccounts } from '@realmocean/sdk';
+import {
+  cLeading,
+  cTop,
+  HStack,
+  nanoid,
+  ReactView,
+  Spinner,
+  UIController,
+  UINavigate,
+  UIView,
+  UIViewBuilder,
+  useNavigate,
+  VStack,
+} from '@tuval/forms';
 import dayjs from 'dayjs';
-import { PlusOneRounded } from '@mui/icons-material';
+import React, { Fragment, useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
-import StyledDataGrid from '../../../../components/StyledDataGrid';
-import { Resources } from '../../../../assets/Resources';
-import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
+
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
-import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
-
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import OrganizationEmployeeDocument from '../../../../../server/hooks/organizationEmployeeDocument/main';
+import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
+import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
+import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
+import OrganizationStructureEmployeeLog from '../../../../../server/hooks/organizationStructureEmployeeLog/main';
+import OrganizationStructureLine from '../../../../../server/hooks/organizationStructureLine/main';
+import OrganizationStructureTitle from '../../../../../server/hooks/organizationStructureTitle/main';
+import OrganizationStructureWorkPlace from '../../../../../server/hooks/organizationStructureWorkPlace/main';
+import PositionRelationDepartments from '../../../../../server/hooks/positionRelationDepartments/Main';
+import VocationalQualification from '../../../../../server/hooks/vocationalQualification/main';
+import VocationalQualificationType from '../../../../../server/hooks/vocationalQualificationType/main';
+import { Resources } from '../../../../assets/Resources';
+import StyledDataGrid from '../../../../components/StyledDataGrid';
+import { Toast, ToastError, ToastSuccess } from '../../../../components/Toast';
+import { Views } from '../../../../components/Views';
+import { IOrganizationEmployeeLog } from '../../../../interfaces/IOrganizationEmployeeLog';
+import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
+import { Form } from '../../Views/Views';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -72,7 +93,6 @@ export class CreateEmployeeController extends UIController {
   public LoadView(): UIView {
 
     const { me, isLoading } = useGetMe("console");
-    const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
     const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
     const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization)
@@ -86,17 +106,16 @@ export class CreateEmployeeController extends UIController {
     const { createEmployee } = OrganizationStructureEmployee.Create()
     const { createLog } = OrganizationStructureEmployeeLog.Create()
 
-    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
+    const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
 
-    const { createBucket } = useCreateBucket(AppInfo.Name)
+    const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
 
     const { createFilePage } = BucketFiles.Create(AppInfo.Name, "employee_documents_id")
 
     return (
-      isLoading || isLoadingResult || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingAccounts || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
-            const accountRelation = accountRelations[0]
             const navigate = useNavigate();
 
             const [formEmployee, setFormEmployee] = useState<IOrganizationStructure.IEmployees.ICreateEmployee>(resetForm)
@@ -514,15 +533,15 @@ export class CreateEmployeeController extends UIController {
                                 ) : null
                               }
                               <Autocomplete
-                                options={employees}
-                                value={employees.find(option => option.$id === formEmployee.manager_id) || null}
+                                options={accounts}
+                                value={accounts.find(option => option.$id === formEmployee.manager_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({
                                     ...formEmployee,
                                     manager_id: newValue.$id
                                   });
                                 }}
-                                getOptionLabel={(option) => option.first_name + " " + option.last_name}
+                                getOptionLabel={(option) => option.name}
                                 renderInput={(params) => (
                                   <TextField
                                     {...params}

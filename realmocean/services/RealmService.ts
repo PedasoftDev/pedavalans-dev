@@ -347,7 +347,7 @@ class RealmService extends RealmoceanService {
         })
 
         // email send
-        this.scheduleService.addJob('*/10 * * * *', async () => {
+        this.scheduleService.addJob('*/1 * * * *', async () => {
             const emailList = await this.getEmailList();
             if (emailList && emailList.length > 0) {
                 const emailSettings = await this.getEmailSettings();
