@@ -388,7 +388,8 @@ export class DashboardController extends UIController {
                                     const bucketsToCheck = [
                                         { bucketId: "employees_image_bucket", name: "employees_image_bucket" },
                                         { bucketId: "vocational_qualification_bucket", name: "vocational_qualification_bucket" },
-                                        { bucketId: "employees_education_attachment", name: "employees_education_attachment" }
+                                        { bucketId: "employees_education_attachment", name: "employees_education_attachment" },
+                                        { bucketId: "competency_real_data_entry_bucket", name: "competency_real_data_entry_bucket" },
                                     ];
 
                                     for (const { bucketId, name } of bucketsToCheck) {
