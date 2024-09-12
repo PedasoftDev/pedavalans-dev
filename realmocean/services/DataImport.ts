@@ -256,14 +256,14 @@ class DataImport extends RealmoceanService {
           }
         }
       }));
-
+      const accounts: any[] = await this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, "account_relation", [this.databaseService.Query.limit(10000)]).then(res => res.documents);
       await Promise.all(dbEmployees.map(async employee => {
         const excelData = data.find(d => d.sicil_no === employee.id);
         if (excelData) {
-          const managerId = dbEmployees.find(e => e.id === excelData.amir_sicil_no)
+          const managerId = accounts.find(x => x.registration_number === excelData.amir_sicil_no);
           if (managerId) {
             await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, Collections.Employee, employee.$id, {
-              manager_id: managerId.id
+              manager_id: managerId.$id
             });
           }
         }
