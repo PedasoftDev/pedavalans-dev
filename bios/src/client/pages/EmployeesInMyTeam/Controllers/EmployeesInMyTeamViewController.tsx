@@ -41,11 +41,6 @@ export interface IEmployeeImportFromExcel {
   hat_adi: string | null;
 }
 
-const excelDateToJSDate = (excelDate: number) => {
-  let jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000);
-  jsDate.setDate(jsDate.getDate() - 1);
-  return jsDate.toISOString().split('T')[0];
-}
 export class EmployeesInMyTeamViewController extends UIController {
 
 
@@ -173,7 +168,7 @@ export class EmployeesInMyTeamViewController extends UIController {
               width: 100,
               renderCell: (params: any) => (
                 <Button variant='text' onClick={() => {
-                  navigate("/" + params.row.$id);
+                  navigate("/app/employees-in-my-team/update/" + params.row.$id);
                 }}>Düzenle</Button>
               )
             }
