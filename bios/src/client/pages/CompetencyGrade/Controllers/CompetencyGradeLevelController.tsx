@@ -9,6 +9,7 @@ import { Toast } from '../../../components/Toast';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import AppInfo from '../../../../AppInfo';
 import Collections from '../../../../server/core/Collections';
+import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
 
 interface IFormData {
     grade_id: string;
@@ -98,7 +99,9 @@ export class CompetencyGradeLevelController extends UIFormController {
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Evet, sil!',
-                cancelButtonText: 'Hayır, iptal et!'
+                cancelButtonText: 'Hayır, iptal et!',
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6"
             }).then((result) => {
                 if (result.isConfirmed) {
                     const index = levels.findIndex((level) => level.$id === id)
@@ -107,8 +110,9 @@ export class CompetencyGradeLevelController extends UIFormController {
                         collectionId: "competency_grade_level",
                         documentId: id,
                         data: {
-                            ...levels[index],
-                            is_deleted_grade: true
+                            ...removeDollarProperties(levels[index]),
+                            is_active_level: false,
+                            is_deleted_level: true
                         }
                     })
                     Toast.fire({
@@ -202,7 +206,7 @@ export class CompetencyGradeLevelController extends UIFormController {
                                         <StyledDataGrid
                                             getRowId={(row) => row.$id}
                                             columns={columns}
-                                            rows={levels}
+                                            rows={levels.filter((item) => item.is_active_level === true)}
                                             localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                         />
                                     </div>

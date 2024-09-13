@@ -18,7 +18,7 @@ import { Toast } from '../../../components/Toast';
 import CompetencyGroup from '../../../../server/hooks/competencyGroup/main';
 import CompetencyGrade from '../../../../server/hooks/competencyGrade/main';
 import AppInfo from '../../../../AppInfo';
-import { useGetMe } from '@realmocean/sdk';
+import { useDeleteCache, useGetMe } from '@realmocean/sdk';
 import ICompetencyGroup from '../../../interfaces/ICompetencyGroup';
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
 
@@ -37,6 +37,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
 
     public LoadView() {
         const { me, isLoading: isLoadingMe } = useGetMe("console");
+        const { deleteCache } = useDeleteCache(AppInfo.Name);
         const { id } = useParams();
 
         const navigate = useNavigate();
@@ -120,6 +121,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                                         title: "Yetkinlik Grubu Silindi",
                                         icon: "info"
                                     })
+                                    deleteCache()
                                     navigateToList()
                                 })
                             }
@@ -130,6 +132,7 @@ export class UpdateCompetencyGroupController extends UIFormController {
                         setGroupForm(removeDollarProperties(group))
                         setIsActive(group.is_active_group)
                     }, [])
+
 
                     return (
                         isLoading ? VStack(Spinner()) :
