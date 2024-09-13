@@ -150,37 +150,42 @@ export class CreateLineController extends UIController {
                 tenant_id: me?.prefs?.organization
               }
             }, () => {
-              if (lineBased[0]?.is_active) {
-                selectedCompetencies.forEach((competencyId, i) => {
-                  const findCompetency = selectedCompetencyValues.find((competency) => competency.competency_id == competencyId);
-                  if (findCompetency) {
-                    const lineRelId = nanoid();
-                    createCompetencyLineRelation({
-                      documentId: lineRelId,
-                      data: {
-                        id: lineRelId,
-                        competency_id: findCompetency.competency_id,
-                        competency_target_value: findCompetency.competency_target_value,
-                        line_id: id,
-                        tenant_id: me?.prefs?.organization
-                      }
-                    })
-                  }
-                  if (i === selectedCompetencies.length - 1) {
-                    Toast.fire({
-                      icon: "success",
-                      title: "Hat başarıyla eklendi!",
-                    })
-                    onReset();
-                  }
-                })
-              } else {
-                Toast.fire({
-                  icon: "success",
-                  title: "Hat başarıyla eklendi!",
-                })
-                onReset();
-              }
+              Toast.fire({
+                icon: "success",
+                title: "Hat başarıyla eklendi!",
+              })
+              onReset();
+              // if (lineBased[0]?.is_active) {
+              //   selectedCompetencies.forEach((competencyId, i) => {
+              //     const findCompetency = selectedCompetencyValues.find((competency) => competency.competency_id == competencyId);
+              //     if (findCompetency) {
+              //       const lineRelId = nanoid();
+              //       createCompetencyLineRelation({
+              //         documentId: lineRelId,
+              //         data: {
+              //           id: lineRelId,
+              //           competency_id: findCompetency.competency_id,
+              //           competency_target_value: findCompetency.competency_target_value,
+              //           line_id: id,
+              //           tenant_id: me?.prefs?.organization
+              //         }
+              //       })
+              //     }
+              //     if (i === selectedCompetencies.length - 1) {
+              //       Toast.fire({
+              //         icon: "success",
+              //         title: "Hat başarıyla eklendi!",
+              //       })
+              //       onReset();
+              //     }
+              //   })
+              // } else {
+              //   Toast.fire({
+              //     icon: "success",
+              //     title: "Hat başarıyla eklendi!",
+              //   })
+              //   onReset();
+              // }
             })
           }
 
@@ -240,7 +245,7 @@ export class CreateLineController extends UIController {
                               )}
                             />
                           </FormControl>
-                          {
+                          {/* {
                             lineBased[0]?.is_active &&
                             <div style={{
                               height: "280px",
@@ -281,7 +286,7 @@ export class CreateLineController extends UIController {
                                 getRowId={(row) => row.$id}
                               />
                             </div>
-                          }
+                          } */}
                         </div>
                       }
 

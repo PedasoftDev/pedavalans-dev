@@ -173,48 +173,53 @@ export class UpdateLineController extends UIController {
               documentId: formLine.id,
               data: formLine
             }, () => {
-              if (lineBased[0]?.is_active) {
-                const values = competencyLineRelation;
-                values.forEach((value) => {
-                  updateCompetencyLineRelation({
-                    databaseId: AppInfo.Database,
-                    collectionId: Collections.CompetencyLineRelation,
-                    documentId: value.$id,
-                    data: {
-                      is_deleted: true
-                    }
-                  })
-                })
-                selectedCompetencies.forEach((competencyId, i) => {
-                  const findCompetency = selectedCompetencyValues.find((competency) => competency.competency_id == competencyId);
-                  if (findCompetency) {
-                    const lineRelId = nanoid();
-                    createCompetencyLineRelation({
-                      documentId: lineRelId,
-                      data: {
-                        id: lineRelId,
-                        competency_id: findCompetency.competency_id,
-                        competency_target_value: findCompetency.competency_target_value,
-                        line_id: id,
-                        tenant_id: me?.prefs?.organization
-                      }
-                    })
-                  }
-                  if (i === selectedCompetencies.length - 1) {
-                    Toast.fire({
-                      icon: "success",
-                      title: "Hat başarıyla eklendi!",
-                    })
-                    onReset();
-                  }
-                })
-              } else {
-                Toast.fire({
-                  icon: "success",
-                  title: "Hat başarıyla eklendi!",
-                })
-                onReset();
-              }
+              // if (lineBased[0]?.is_active) {
+              //   const values = competencyLineRelation;
+              //   values.forEach((value) => {
+              //     updateCompetencyLineRelation({
+              //       databaseId: AppInfo.Database,
+              //       collectionId: Collections.CompetencyLineRelation,
+              //       documentId: value.$id,
+              //       data: {
+              //         is_deleted: true
+              //       }
+              //     })
+              //   })
+              //   selectedCompetencies.forEach((competencyId, i) => {
+              //     const findCompetency = selectedCompetencyValues.find((competency) => competency.competency_id == competencyId);
+              //     if (findCompetency) {
+              //       const lineRelId = nanoid();
+              //       createCompetencyLineRelation({
+              //         documentId: lineRelId,
+              //         data: {
+              //           id: lineRelId,
+              //           competency_id: findCompetency.competency_id,
+              //           competency_target_value: findCompetency.competency_target_value,
+              //           line_id: id,
+              //           tenant_id: me?.prefs?.organization
+              //         }
+              //       })
+              //     }
+              //     if (i === selectedCompetencies.length - 1) {
+              //       Toast.fire({
+              //         icon: "success",
+              //         title: "Hat başarıyla eklendi!",
+              //       })
+              //       onReset();
+              //     }
+              //   })
+              // } else {
+              //   Toast.fire({
+              //     icon: "success",
+              //     title: "Hat başarıyla eklendi!",
+              //   })
+              //   onReset();
+              // }
+              Toast.fire({
+                icon: "success",
+                title: "Hat başarıyla eklendi!",
+              })
+              onReset();
             })
           }
 
@@ -302,7 +307,7 @@ export class UpdateLineController extends UIController {
                             />
                           </FormControl>
 
-                          {
+                          {/* {
                             lineBased[0]?.is_active &&
                             <div style={{
                               height: "280px",
@@ -344,7 +349,7 @@ export class UpdateLineController extends UIController {
                                 getRowId={(row) => row.$id}
                               />
                             </div>
-                          }
+                          } */}
 
                           <FormControlLabel
                             sx={{ width: "100%", alignContent: "end" }}

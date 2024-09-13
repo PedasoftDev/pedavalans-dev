@@ -97,6 +97,11 @@ export namespace Resources {
             name: "İş Yeri Tanımlaması Kullanılacak mı?",
             localStr: "work_place_definition",
             type: "boolean",
+        },
+        {
+            name: "Personel Tanımlarken Birden Fazla Hat Tanımlaması Olacak mı?",
+            localStr: "multiple_line_definition",
+            type: "boolean",
         }
     ];
 

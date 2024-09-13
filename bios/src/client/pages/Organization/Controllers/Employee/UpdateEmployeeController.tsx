@@ -60,6 +60,7 @@ import { Toast, ToastError, ToastSuccess } from '../../../../components/Toast';
 import { Views } from '../../../../components/Views';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Form } from '../../Views/Views';
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -124,8 +125,12 @@ export class UpdateEmployeeController extends UIController {
 
     const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
 
+    const { createEmployeeMultipleLines } = EmployeeMultipleLines.Create()
+    const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleList } = EmployeeMultipleLines.GetList()
+    const { updateEmployeeMultipeLines } = EmployeeMultipleLines.Update()
+
     return (
-      isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingEmployeeMultipleList || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -142,6 +147,7 @@ export class UpdateEmployeeController extends UIController {
               ...resetDocumentForm,
               tenant_id: me?.prefs?.organization
             })
+            const [multipleLines, setMultipleLines] = useState([])
 
             const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
             const [showEditValidityPeriod, setShowEditValidityPeriod] = useState<boolean>(false)
@@ -150,6 +156,7 @@ export class UpdateEmployeeController extends UIController {
             const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+            const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
 
 
 
@@ -245,6 +252,60 @@ export class UpdateEmployeeController extends UIController {
                 documentId: formEmployee.$id,
                 data: removeDollarProperties(formEmployee)
               }, (result) => {
+                if (multipleLineDefinition) {
+                  // Ensure that we only deal with workplaces related to the current trainer
+                  const currentLines = employeeMultipleLinesList.filter(
+                    (lines) => lines.employee_id === id
+                  );
+
+                  // Identify removed workplaces (those that are in the database but not in the selected list)
+                  const removedLines = currentLines.filter(
+                    (relatedLines) =>
+                      !multipleLines.some(
+                        (selectedLines) => selectedLines.id === relatedLines.line_id
+                      )
+                  );
+
+                  // Identify new workplaces (those that are selected but not in the database)
+                  const newLines = multipleLines.filter(
+                    (selectedLines) =>
+                      !currentLines.some(
+                        (relatedLines) => relatedLines.id === selectedLines.line_id
+                      )
+                  );
+
+                  // Update removed workplaces to be inactive and deleted
+                  removedLines.forEach((workplace) => {
+                    updateEmployeeMultipeLines({
+                      databaseId: AppInfo.Database,
+                      collectionId: Collections.EmployeeLineRelation,
+                      documentId: workplace.$id,
+                      data: {
+                        is_active: false,
+                        is_deleted: true,
+                      },
+                    });
+                  });
+
+                  // Add new workplaces
+                  newLines.forEach((selectedWorkplace) => {
+                    const nanoId = nanoid();
+                    createEmployeeMultipleLines({
+                      documentId: nanoId,
+                      data: {
+                        id: nanoId,
+                        employee_id: formEmployee.$id,
+                        department_id: formEmployee.department_id,
+                        line_id: selectedWorkplace.line_id,
+                        line_record_id: lines.find((line) => line.id === selectedWorkplace.line_id)?.record_id,
+                        line_name: lines.find((line) => line.id === selectedWorkplace.line_id)?.name,
+                        is_active: true,
+                        is_deleted: false,
+                        tenant_id: me?.prefs?.organization,
+                      },
+                    });
+                  });
+                }
                 createLog({
                   documentId: nanoid(),
                   data: {
@@ -384,6 +445,18 @@ export class UpdateEmployeeController extends UIController {
               Services.Databases.listDocuments(
                 AppInfo.Name,
                 AppInfo.Database,
+                Collections.EmployeeLineRelation,
+                [
+                  Query.equal("employee_id", id),
+                  Query.equal("is_deleted", false),
+                  Query.equal("is_active", true)
+                ]
+              ).then((res) => {
+                setMultipleLines(res.documents)
+              })
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
                 Collections.Parameter,
                 [
                   Query.equal("name", "position_relation_department"),
@@ -414,6 +487,18 @@ export class UpdateEmployeeController extends UIController {
                   ]
                 ).then((res) => {
                   setWorkPlaceDefination(res.documents[0]?.is_active)
+                })
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Database,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "multiple_line_definition"),
+                    Query.limit(10000),
+                  ]
+                ).then((res) => {
+                  setMultipleLineDefinition(res.documents[0]?.is_active)
                 })
               })
             }, [])
@@ -674,26 +759,54 @@ export class UpdateEmployeeController extends UIController {
                                 </div>
                               )}
                               {lineRelationState ?
-                                (
+                                multipleLineDefinition ? ((
                                   <Autocomplete
                                     options={lines.filter((line) => line.department_id === formEmployee.department_id)}
+                                    value={
+                                      multipleLines.map((line) => lines.find(option => option.id === line.line_id) || null)
+                                    }
                                     multiple
-                                    value={selectedLines}
-                                    disableCloseOnSelect
                                     onChange={(event, newValue) => {
-                                      setSelectedLines(newValue);
+                                      setMultipleLines(newValue.map((line) => {
+                                        return {
+                                          line_id: line.id,
+                                          employee_id: formEmployee.id,
+                                        }
+                                      })
+                                      );
                                     }}
-                                    getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                    getOptionLabel={(option) => option?.record_id + " - " + option?.name}
                                     renderInput={(params) => (
                                       <TextField
                                         {...params}
                                         label="Bulunduğu Hat"
-                                        name="line_id"
                                         size="small"
                                       />
                                     )}
                                   />
-                                ) : null
+                                ))
+                                  : ((
+                                    <Autocomplete
+                                      options={lines.filter((line) => line.department_id === formEmployee.department_id)}
+                                      value={lines.find(option => option.id === formEmployee.line_id) || null}
+                                      onChange={(event, newValue) => {
+                                        setFormEmployee({
+                                          ...formEmployee,
+                                          line_id: newValue.id
+                                        });
+                                      }}
+                                      getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          label="Bulunduğu Hat"
+                                          name="line_id"
+                                          size="small"
+                                        />
+                                      )}
+                                    />
+                                  ))
+                                : null
                               }
                               <Autocomplete
                                 options={accounts}

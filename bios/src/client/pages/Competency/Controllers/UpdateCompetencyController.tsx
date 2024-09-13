@@ -71,7 +71,7 @@ export class UpdateCompetencyController extends UIController {
         // lines
         const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
 
-        const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByCompetencyId(competency?.competency_id);
+        const { competencyDepartments, isLoadingCompetencyDepartments } = CompetencyDepartment.GetByCompetencyId(id);
         const { updateCompetencyDepartment } = CompetencyDepartment.Update();
         const { createCompetencyDepartment } = CompetencyDepartment.CreateCompetencyDepartment();
 
@@ -551,16 +551,9 @@ export class UpdateCompetencyController extends UIController {
                                                     <Typography variant="button" sx={{ marginLeft: "10px" }}>Yetkinlik Departmanları</Typography>
                                                     <StyledDataGrid
                                                         rows={
-                                                            workPlaceDefination
-                                                                ? departments.filter((item) => item.is_active).filter((department) =>
-                                                                    selectedWorkPlace.some((selectedWorkPlaceItem) =>
-                                                                        relatedDepartmentsWorkPlacesList.some((x) =>
-                                                                            x.workplace_id === selectedWorkPlaceItem.work_place_id &&
-                                                                            x.related_department_id === department.id
-                                                                        )
-                                                                    )
-                                                                )
-                                                                : departments.filter((item) => item.is_active)
+                                                            workPlaceDefination ? (
+                                                                departments.filter((department) => department.is_active === true).filter((department) => selectedWorkPlace.some((workPlace) => workPlace.work_place_id === relatedDepartmentsWorkPlacesList.find((x) => x.related_department_id === department.id).workplace_id))
+                                                            ) : departments.filter((department) => department.is_active === true)
                                                         }
                                                         columns={departmentColumns}
                                                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
@@ -577,7 +570,7 @@ export class UpdateCompetencyController extends UIController {
                                                 </div>
                                             }
                                             {
-                                                !positionBased && lineBased[0]?.is_active &&
+                                                (!positionBased && lineBased[0]?.is_active) &&
                                                 <div style={{
                                                     height: "280px",
                                                     width: "100%",

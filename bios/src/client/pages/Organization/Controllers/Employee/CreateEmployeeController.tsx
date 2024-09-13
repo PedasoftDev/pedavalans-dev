@@ -52,6 +52,7 @@ import { IOrganizationEmployeeLog } from '../../../../interfaces/IOrganizationEm
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 import { Form } from '../../Views/Views';
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -112,6 +113,8 @@ export class CreateEmployeeController extends UIController {
 
     const { createFilePage } = BucketFiles.Create(AppInfo.Name, "employee_documents_id")
 
+    const { createEmployeeMultipleLines } = EmployeeMultipleLines.Create()
+
     return (
       isLoading || isLoadingAccounts || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
@@ -125,12 +128,15 @@ export class CreateEmployeeController extends UIController {
               tenant_id: me?.prefs?.organization
             })
 
+            const [multipleLines, setMultipleLines] = useState([])
+
             const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
 
             const [formIsEmployee, setFormIsEmployee] = useState(true)
             const [positionRelationDepartmentsState, setPositionRelationDepartmentsState] = useState<boolean>(false);
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+            const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
 
             const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
 
@@ -193,92 +199,201 @@ export class CreateEmployeeController extends UIController {
 
             const onSubmit = (e: any) => {
               e.preventDefault();
-              const id = nanoid()
-              if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
-                setFormIsEmployee(true)
-                ToastError("Personel bilgileri eksik", "")
-                return;
-              } else if (employees.some((document) => document.id == formEmployee.id)) {
-                Toast.fire({
-                  icon: "error",
-                  title: "Çalışan eklenirken bir hata oluştu!",
-                  text: "Çalışan sicil numarası zaten kullanılmaktadır."
-                })
-                return;
-              }
-              createEmployee({
-                documentId: id,
-                data: {
-                  ...formEmployee,
-                  tenant_id: me?.prefs?.organization,
+              if (multipleLineDefinition) {
+                const id = nanoid()
+                if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
+                  setFormIsEmployee(true)
+                  ToastError("Personel bilgileri eksik", "")
+                  return;
+                } else if (employees.some((document) => document.id == formEmployee.id)) {
+                  Toast.fire({
+                    icon: "error",
+                    title: "Çalışan eklenirken bir hata oluştu!",
+                    text: "Çalışan sicil numarası zaten kullanılmaktadır."
+                  })
+                  return;
                 }
-              }, () => {
-                const manager = employees.find((employee) => employee.id === formEmployee.manager_id)
-                const logData: IOrganizationEmployeeLog.Create = {
-                  employee_id: id,
-                  employee_name: formEmployee.first_name + " " + formEmployee.last_name,
-                  log_date: new Date().toString(),
-                  log_type: "create",
-                  job_start_date: formEmployee.job_start_date,
-                  department_id: formEmployee.department_id,
-                  department_name: departments.find((department) => department.id === formEmployee.department_id)?.name,
-                  position_id: formEmployee.position_id,
-                  position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
-                  line_id: formEmployee.line_id,
-                  line_name: lines.find((line) => line.id === formEmployee.line_id)?.name,
-                  title_id: formEmployee.title_id,
-                  title_name: titles.find((title) => title.id === formEmployee.title_id)?.name,
-                  manager_id: formEmployee.manager_id,
-                  manager_name: manager?.first_name + " " + manager?.last_name,
-                  tenant_id: me?.prefs?.organization,
-                  is_active: true,
-                  is_deleted: false
-                }
-                createLog({
-                  documentId: nanoid(),
-                  data: logData
-                }, () => {
-                  if (documents.length === 0) {
-                    Toast.fire({
-                      icon: 'success',
-                      title: 'Personel başarıyla eklendi'
-                    })
-                    onReset()
-                  } else {
-                    Toast.fire({
-                      icon: 'info',
-                      title: 'Belgeler ekleniyor'
-                    })
-                    documents.map((document, i) => {
-                      delete document.id;
-                      createOrganizationEmployeeDocument({
-                        documentId: nanoid(),
-                        data: {
-                          ...document,
-                          employee_id: id
-                        }
-                      }, () => {
-                        if (i === documents.length - 1) {
-                          Toast.fire({
-                            icon: 'success',
-                            title: 'Personel başarıyla eklendi'
-                          })
-                          onReset()
-                        }
-                      })
-                    })
+                createEmployee({
+                  documentId: id,
+                  data: {
+                    ...formEmployee,
+                    line_id: '',
+                    tenant_id: me?.prefs?.organization,
                   }
+                }, () => {
+                  const manager = employees.find((employee) => employee.id === formEmployee.manager_id)
+                  const logData: IOrganizationEmployeeLog.Create = {
+                    employee_id: id,
+                    employee_name: formEmployee.first_name + " " + formEmployee.last_name,
+                    log_date: new Date().toString(),
+                    log_type: "create",
+                    job_start_date: formEmployee.job_start_date,
+                    department_id: formEmployee.department_id,
+                    department_name: departments.find((department) => department.id === formEmployee.department_id)?.name,
+                    position_id: formEmployee.position_id,
+                    position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
+                    line_id: formEmployee.line_id,
+                    line_name: lines.find((line) => line.id === formEmployee.line_id)?.name,
+                    title_id: formEmployee.title_id,
+                    title_name: titles.find((title) => title.id === formEmployee.title_id)?.name,
+                    manager_id: formEmployee.manager_id,
+                    manager_name: manager?.first_name + " " + manager?.last_name,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  createLog({
+                    documentId: nanoid(),
+                    data: logData
+                  }, () => {
+                    if (documents.length === 0) {
+                      Toast.fire({
+                        icon: 'success',
+                        title: 'Personel başarıyla eklendi'
+                      })
+                      onReset()
+                    } else {
+                      Toast.fire({
+                        icon: 'info',
+                        title: 'Belgeler ekleniyor'
+                      })
+                      documents.map((document, i) => {
+                        delete document.id;
+                        createOrganizationEmployeeDocument({
+                          documentId: nanoid(),
+                          data: {
+                            ...document,
+                            employee_id: id
+                          }
+                        }, () => {
+                          if (i === documents.length - 1) {
+                            Toast.fire({
+                              icon: 'success',
+                              title: 'Personel başarıyla eklendi'
+                            })
+                            onReset()
+                          }
+                        })
+                      })
+                    }
+                  })
                 })
-              })
-              createFilePage({
-                bucketId: "employees_image_bucket",
-                fileId: id,
-                file: file,
-                onProgress: (progress) => {
-                  console.log('Yükleme durumu:', progress);
-                  return {};
-                },
-              })
+                for (const item of multipleLines) {
+                  const multipleLinesId = nanoid();
+                  const createForm = {
+                    id: multipleLinesId,
+                    employee_id: id,
+                    department_id: formEmployee.department_id,
+                    line_id: item.id,
+                    line_record_id: item.record_id,
+                    line_name: item.name,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  createEmployeeMultipleLines({
+                    documentId: multipleLinesId,
+                    data: createForm
+                  })
+                }
+                createFilePage({
+                  bucketId: "employees_image_bucket",
+                  fileId: id,
+                  file: file,
+                  onProgress: (progress) => {
+                    console.log('Yükleme durumu:', progress);
+                    return {};
+                  },
+                })
+              }
+              else {
+                const id = nanoid()
+                if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
+                  setFormIsEmployee(true)
+                  ToastError("Personel bilgileri eksik", "")
+                  return;
+                } else if (employees.some((document) => document.id == formEmployee.id)) {
+                  Toast.fire({
+                    icon: "error",
+                    title: "Çalışan eklenirken bir hata oluştu!",
+                    text: "Çalışan sicil numarası zaten kullanılmaktadır."
+                  })
+                  return;
+                }
+                createEmployee({
+                  documentId: id,
+                  data: {
+                    ...formEmployee,
+                    tenant_id: me?.prefs?.organization,
+                  }
+                }, () => {
+                  const manager = employees.find((employee) => employee.id === formEmployee.manager_id)
+                  const logData: IOrganizationEmployeeLog.Create = {
+                    employee_id: id,
+                    employee_name: formEmployee.first_name + " " + formEmployee.last_name,
+                    log_date: new Date().toString(),
+                    log_type: "create",
+                    job_start_date: formEmployee.job_start_date,
+                    department_id: formEmployee.department_id,
+                    department_name: departments.find((department) => department.id === formEmployee.department_id)?.name,
+                    position_id: formEmployee.position_id,
+                    position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
+                    line_id: formEmployee.line_id,
+                    line_name: lines.find((line) => line.id === formEmployee.line_id)?.name,
+                    title_id: formEmployee.title_id,
+                    title_name: titles.find((title) => title.id === formEmployee.title_id)?.name,
+                    manager_id: formEmployee.manager_id,
+                    manager_name: manager?.first_name + " " + manager?.last_name,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  createLog({
+                    documentId: nanoid(),
+                    data: logData
+                  }, () => {
+                    if (documents.length === 0) {
+                      Toast.fire({
+                        icon: 'success',
+                        title: 'Personel başarıyla eklendi'
+                      })
+                      onReset()
+                    } else {
+                      Toast.fire({
+                        icon: 'info',
+                        title: 'Belgeler ekleniyor'
+                      })
+                      documents.map((document, i) => {
+                        delete document.id;
+                        createOrganizationEmployeeDocument({
+                          documentId: nanoid(),
+                          data: {
+                            ...document,
+                            employee_id: id
+                          }
+                        }, () => {
+                          if (i === documents.length - 1) {
+                            Toast.fire({
+                              icon: 'success',
+                              title: 'Personel başarıyla eklendi'
+                            })
+                            onReset()
+                          }
+                        })
+                      })
+                    }
+                  })
+                })
+                createFilePage({
+                  bucketId: "employees_image_bucket",
+                  fileId: id,
+                  file: file,
+                  onProgress: (progress) => {
+                    console.log('Yükleme durumu:', progress);
+                    return {};
+                  },
+                })
+              }
             }
             const handleSelectType = (event, newValue) => {
               const selectedValue = newValue.document_type_id;
@@ -329,6 +444,18 @@ export class CreateEmployeeController extends UIController {
                   ]
                 ).then((res) => {
                   setWorkPlaceDefination(res.documents[0]?.is_active)
+                })
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Database,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "multiple_line_definition"),
+                    Query.limit(10000),
+                  ]
+                ).then((res) => {
+                  setMultipleLineDefinition(res.documents[0]?.is_active)
                 })
               })
             }, [])
@@ -512,14 +639,13 @@ export class CreateEmployeeController extends UIController {
                                 </div>
                               )}
                               {lineRelationState ?
-                                (
+                                multipleLineDefinition ? ((
                                   <Autocomplete
                                     options={lines.filter((line) => line.department_id === formEmployee.department_id)}
-                                    value={selectedLines}
+                                    value={multipleLines}
                                     multiple
-                                    disableCloseOnSelect
                                     onChange={(event, newValue) => {
-                                      setSelectedLines(newValue);
+                                      setMultipleLines(newValue);
                                     }}
                                     getOptionLabel={(option) => option.record_id + " - " + option.name}
                                     renderInput={(params) => (
@@ -531,7 +657,29 @@ export class CreateEmployeeController extends UIController {
                                       />
                                     )}
                                   />
-                                ) : null
+                                ))
+                                  : ((
+                                    <Autocomplete
+                                      options={lines.filter((line) => line.department_id === formEmployee.department_id)}
+                                      value={lines.find(option => option.id === formEmployee.line_id) || null}
+                                      onChange={(event, newValue) => {
+                                        setFormEmployee({
+                                          ...formEmployee,
+                                          line_id: newValue.id
+                                        });
+                                      }}
+                                      getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          label="Bulunduğu Hat"
+                                          name="line_id"
+                                          size="small"
+                                        />
+                                      )}
+                                    />
+                                  ))
+                                : null
                               }
                               <Autocomplete
                                 options={accounts}
