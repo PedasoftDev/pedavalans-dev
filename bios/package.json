@@ -147,7 +147,7 @@
         "@mui/x-data-grid": "^6.18.7",
         "@mui/x-date-pickers": "^6.19.8",
         "@mui/x-tree-view": "^7.5.0",
-        "@realmocean/sdk": "^1.0.180",
+        "@realmocean/sdk": "^1.0.188",
         "@realmocean/ui": "^1.0.6",
         "@reduxjs/toolkit": "^2.2.3",
         "@types/js-cookie": "^3.0.6",

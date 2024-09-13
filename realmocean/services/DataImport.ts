@@ -236,12 +236,12 @@ class DataImport extends RealmoceanService {
             line_id: line?.id,
             manager_id: null,
             birth_date: employee.dogum_tarihi,
-            gender: (employee.cinsiyet.toLowerCase() === "e" || employee.cinsiyet.toLowerCase() === "erkek") ? "male" : "female",
+            gender: employee.cinsiyet ? (employee.cinsiyet.toLowerCase() === "e" || employee.cinsiyet.toLowerCase() === "erkek") ? "male" : "female" : null,
             phone: employee.telefon_no ? String(employee.telefon_no) : "",
-            educational_status: employee.egitim_durumu.toLowerCase() === "lise" ? "high school" :
+            educational_status: employee.egitim_durumu ? employee.egitim_durumu.toLowerCase() === "lise" ? "high school" :
               employee.egitim_durumu.toLowerCase() === "üniversite" ? "university" :
                 employee.egitim_durumu.toLowerCase() === "ilkokul" ? "elementary school" :
-                  employee.egitim_durumu.toLowerCase() === "ortaokul" ? "secondary school" : null,
+                  employee.egitim_durumu.toLowerCase() === "ortaokul" ? "secondary school" : null : null,
             department_start_date: employee.departmana_baslama_tarihi,
             position_start_date: employee.pozisyona_baslama_tarihi,
             realm_id: organization,
@@ -263,7 +263,7 @@ class DataImport extends RealmoceanService {
           const managerId = accounts.find(x => x.registration_number === excelData.amir_sicil_no);
           if (managerId) {
             await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, Collections.Employee, employee.$id, {
-              manager_id: managerId.$id
+              manager_id: managerId.account_id
             });
           }
         }

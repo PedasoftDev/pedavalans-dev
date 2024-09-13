@@ -162,8 +162,6 @@ export class UpdateEmployeeController extends UIController {
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
 
-            const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
-
             const selectFormStates = [
               {
                 id: "title_id",
