@@ -16,6 +16,7 @@ import OrganizationStructureLine from "../../../../server/hooks/organizationStru
 import OrganizationStructureTitle from "../../../../server/hooks/organizationStructureTitle/main";
 import AppInfo from "../../../../AppInfo";
 import Collections from "../../../../server/core/Collections";
+import EmployeeMultipleLines from "../../../../server/hooks/employeeMultipleLines/Main";
 
 
 
@@ -54,14 +55,16 @@ export class EmployeesInMyTeamViewController extends UIController {
     const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization)
     const { titles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
 
+    const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleList } = EmployeeMultipleLines.GetList()
 
     return (
-      isLoading || isLoadingEmployees || isLoadingDepartments || isLoadingPositions || isLoadingLines || isLoadingTitles ? VStack(Spinner()) :
+      isLoading || isLoadingEmployees || isLoadingDepartments || isLoadingEmployeeMultipleList || isLoadingPositions || isLoadingLines || isLoadingTitles ? VStack(Spinner()) :
         UIViewBuilder(() => {
           const navigate = useNavigate();
 
           const [filterKey, setFilterKey] = useState("");
           const [lineRelationState, setLineRelationState] = useState<boolean>(false);
+          const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
 
           useEffect(() => {
             Services.Databases.listDocuments(
@@ -74,6 +77,18 @@ export class EmployeesInMyTeamViewController extends UIController {
               ]
             ).then((res) => {
               setLineRelationState(res.documents[0]?.is_active)
+            }).then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Database,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "multiple_line_definition"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setMultipleLineDefinition(res.documents[0]?.is_active)
+              })
             })
           }, [])
 
@@ -131,6 +146,17 @@ export class EmployeesInMyTeamViewController extends UIController {
               width: 200,
               flex: 1,
               valueGetter: (params: any) => {
+                if (multipleLineDefinition) {
+                  const employeeMultipleLines = employeeMultipleLinesList.filter((employeeMultipleLine: any) => employeeMultipleLine.employee_id === params.row.$id);
+                  return employeeMultipleLines.map((employeeMultipleLine: any) => {
+                    const line = lines.find((line: any) => line.id === employeeMultipleLine.line_id);
+                    if (line) {
+                      return line.name;
+                    } else {
+                      return "";
+                    }
+                  }).join(", ");
+                }
                 const line = lines.find((line: any) => line.id === params.value);
                 if (line) {
                   return line.name;
