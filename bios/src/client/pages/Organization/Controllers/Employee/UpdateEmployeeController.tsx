@@ -154,18 +154,8 @@ export class UpdateEmployeeController extends UIController {
 
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
-            //images
-            const [isHaveImage, setIsHaveImage] = useState(false)
-            function isCustomError(error: any): error is { code: number; type: string; message: string } {
-              return (
-                typeof error === 'object' &&
-                error !== null &&
-                'code' in error &&
-                'type' in error &&
-                typeof error.code === 'number' &&
-                typeof error.type === 'string'
-              );
-            }
+
+            const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
 
             const selectFormStates = [
               {
@@ -687,12 +677,11 @@ export class UpdateEmployeeController extends UIController {
                                 (
                                   <Autocomplete
                                     options={lines.filter((line) => line.department_id === formEmployee.department_id)}
-                                    value={lines.find(option => option.id === formEmployee.line_id) || null}
+                                    multiple
+                                    value={selectedLines}
+                                    disableCloseOnSelect
                                     onChange={(event, newValue) => {
-                                      setFormEmployee({
-                                        ...formEmployee,
-                                        line_id: newValue.id
-                                      });
+                                      setSelectedLines(newValue);
                                     }}
                                     getOptionLabel={(option) => option.record_id + " - " + option.name}
                                     renderInput={(params) => (

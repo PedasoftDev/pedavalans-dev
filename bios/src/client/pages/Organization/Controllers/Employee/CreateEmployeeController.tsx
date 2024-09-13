@@ -132,6 +132,8 @@ export class CreateEmployeeController extends UIController {
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
 
+            const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
+
             const [file, setFile] = useState(null);
 
             const handleFileChange = (event) => {
@@ -513,12 +515,11 @@ export class CreateEmployeeController extends UIController {
                                 (
                                   <Autocomplete
                                     options={lines.filter((line) => line.department_id === formEmployee.department_id)}
-                                    value={lines.find(option => option.id === formEmployee.line_id) || null}
+                                    value={selectedLines}
+                                    multiple
+                                    disableCloseOnSelect
                                     onChange={(event, newValue) => {
-                                      setFormEmployee({
-                                        ...formEmployee,
-                                        line_id: newValue.id
-                                      });
+                                      setSelectedLines(newValue);
                                     }}
                                     getOptionLabel={(option) => option.record_id + " - " + option.name}
                                     renderInput={(params) => (
