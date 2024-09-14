@@ -1,4 +1,4 @@
-import { Query, useCreateBucket, useCreateDocument, useGetBucket, useGetDocument, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
+import { Query, useCreateBucket, useCreateDocument, useGetBucket, useGetDocument, useListBuckets, useListDocuments, useUpdateDocument } from '@realmocean/sdk'
 
 
 namespace Bucket {
@@ -17,7 +17,13 @@ namespace Bucket {
         }
     }
 
-    
+    export const GetBucketList = (projectId) => {
+        const {isLoading,buckets} = useListBuckets(projectId)
+        return {
+            getBucketListPage : buckets,
+            isLoadingBucketList : isLoading
+        }
+    }    
 
 
 }

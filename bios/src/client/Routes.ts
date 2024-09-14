@@ -99,6 +99,9 @@ import { MailConfigurationController } from './pages/MailConfiguration/Controlle
 import { WorkPlaceListController } from './pages/Organization/Controllers/WorkPlace/WorkPlaceListController';
 import { CreateWorkPlace } from './pages/Organization/Controllers/WorkPlace/CreateWorkPlace';
 import { UpdateWorkPlace } from './pages/Organization/Controllers/WorkPlace/UpdateWorkPlace';
+import { EmployeesInMyTeamController } from './pages/EmployeesInMyTeam/Controllers/EmployeesInMyTeamController';
+import { EmployeesInMyTeamViewController } from './pages/EmployeesInMyTeam/Controllers/EmployeesInMyTeamViewController';
+import { UpdateEmployeeInMyTeamController } from './pages/EmployeesInMyTeam/Controllers/UpdateEmployeeInMyTeam';
 
 
 export const Routes = () => {
@@ -280,6 +283,11 @@ export const Routes = () => {
                 ),
 
                 UIRoute('mail-configuration/view', MailConfigurationController),
+
+                UIRoute('employees-in-my-team', EmployeesInMyTeamController).children(
+                    UIRoute('view', EmployeesInMyTeamViewController),
+                    UIRoute('update/:id', UpdateEmployeeInMyTeamController)
+                ),
 
 
                 // not found

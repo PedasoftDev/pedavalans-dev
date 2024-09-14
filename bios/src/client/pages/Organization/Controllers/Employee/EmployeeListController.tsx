@@ -8,7 +8,7 @@ import { employeeTransferTemplateByExcel } from '../../../../assets/Functions/em
 import { Resources } from '../../../../assets/Resources'
 import excelToJson from '../../../../assets/Functions/excelToJson'
 import { HStack, ReactView, Spinner, UIController, UIView, UIViewBuilder, VStack, cLeading, cTop, nanoid, useNavigate } from '@tuval/forms';
-import { Query, Services, useDeleteCache, useGetMe } from '@realmocean/sdk'
+import { Query, Services, useGetMe } from '@realmocean/sdk'
 import LinearProgressWithLabel from '../../../../components/LinearProgressWithLabel'
 import { Views } from '../../../../components/Views'
 import AccountRelation from '../../../../../server/hooks/accountRelation/main'
@@ -27,13 +27,20 @@ import { Toast } from '../../../../components/Toast'
 import Swal from 'sweetalert2'
 import employeeListExport from '../../../../assets/Functions/employeeListExport'
 import Parameters from '../../../../../server/hooks/parameters/main'
+import { DataImportBroker } from '../../../../../server/brokers/DataImportBroker'
 
 
 
-interface IEmployeeImportFromExcel {
+export interface IEmployeeImportFromExcel {
   sicil_no: string;
   adi: string;
   soyadi: string;
+  dogum_tarihi: string;
+  telefon_no: string;
+  cinsiyet: string;
+  egitim_durumu: string;
+  ise_baslama_tarihi: string;
+  amir_sicil_no: string;
   departman_kodu: string;
   departman_adi: string;
   departmana_baslama_tarihi: string;
@@ -57,7 +64,6 @@ export class EmployeeListController extends UIController {
   public LoadView(): UIView {
 
     const { me, isLoading } = useGetMe("console");
-    const { deleteCache } = useDeleteCache(AppInfo.Name);
     const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
     const { departments: propDepartments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization)
     const { employees: propEmployees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization)
@@ -150,347 +156,19 @@ export class EmployeeListController extends UIController {
 
           const handleTransfer = async () => {
             setIsTransfer(true);
-
-            try {
-              let departments: { code: string, name: string }[] = [];
-              let titles: { code: string, name: string }[] = [];
-              let positions: { code: string, name: string }[] = [];
-              let lines: { code: string, name: string, department_code: string }[] = [];
-
-              excelData.map((row, index) => {
-                if (departments.findIndex(x => x.code === row.departman_kodu) === -1) {
-                  departments.push({ code: row.departman_kodu, name: row.departman_adi });
-                }
-                if (titles.findIndex(x => x.code === row.unvan_kodu) === -1) {
-                  titles.push({ code: row.unvan_kodu, name: row.unvan_tanimi });
-                }
-                if (positions.findIndex(x => x.code === row.pozisyon_kodu) === -1) {
-                  positions.push({ code: row.pozisyon_kodu, name: row.pozisyon_tanimi });
-                }
-                if (row.hat_kodu && lines.findIndex(x => x.code === row.hat_kodu) === -1) {
-                  lines.push({ code: row.hat_kodu, name: row.hat_adi, department_code: row.departman_kodu });
-                }
-              })
-
-              // add departments
-              const tasks = new Umay();
-              const failedDepartments: string[] = [];
-              const createdDepartments: IOrganizationStructure.IDepartments.ICreateDepartment[] = []
-              tasks.Task(async () => {
-                for (let department of departments) {
-                  if (!propDepartments.find(x => x.record_id === department.code)) {
-                    try {
-                      const data: IOrganizationStructure.IDepartments.ICreateDepartment = {
-                        id: nanoid(),
-                        name: department.name,
-                        record_id: department.code,
-                        tenant_id: me?.prefs?.organization,
-                        realm_id: me?.prefs?.organization
-                      }
-
-                      if (data.name && data.record_id) {
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data);
-                        createdDepartments.push(data);
-                      }
-                    }
-                    catch (error) {
-                      failedDepartments.push(department.code);
-                    }
-                  } else {
-                    createdDepartments.push(propDepartments.find(x => x.record_id === department.code));
-                  }
-                }
+            DataImportBroker.Default.employeeImport(excelData, me.prefs.organization).then((res) => {
+              setIsTransfer(false);
+              handleClose();
+              Toast.fire({
+                icon: 'success',
+                title: 'Çalışanlar başarıyla aktarıldı.'
               });
-              tasks.Wait(1);
-              const failedTitles: string[] = [];
-              const createdTitles: IOrganizationStructure.ITitles.ICreateTitle[] = []
-              tasks.Task(async () => {
-                for (let title of titles) {
-                  if (!propTitles.find(x => x.record_id === title.code)) {
-                    try {
-                      const data: IOrganizationStructure.ITitles.ICreateTitle = {
-                        id: nanoid(),
-                        name: title.name,
-                        record_id: title.code,
-                        tenant_id: me?.prefs?.organization,
-                        realm_id: me?.prefs?.organization
-                      }
-                      if (data.name && data.record_id) {
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
-                          createdTitles.push(data);
-                        });
-                      }
-                    }
-                    catch (error) {
-                      failedTitles.push(title.code);
-                    }
-                  } else {
-                    createdTitles.push(propTitles.find(x => x.record_id === title.code));
-                  }
-                }
-              })
-              tasks.Wait(1);
-              const failedPositions: string[] = [];
-              const createdPositions: IOrganizationStructure.IPositions.ICreatePosition[] = [];
-              tasks.Task(async () => {
-                for (let position of positions) {
-                  if (!propPositions.find(x => x.record_id === position.code)) {
-                    try {
-                      const data: IOrganizationStructure.IPositions.ICreatePosition = {
-                        id: nanoid(),
-                        name: position.name,
-                        record_id: position.code,
-                        tenant_id: me?.prefs?.organization,
-                        realm_id: me?.prefs?.organization
-                      }
-                      if (data.name && data.record_id) {
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
-                          createdPositions.push(data);
-                        });
-                      }
-                    }
-                    catch (error) {
-                      failedPositions.push(position.code);
-                    }
-                  } else {
-                    createdPositions.push(propPositions.find(x => x.record_id === position.code));
-                  }
-                }
-              })
-              tasks.Wait(1);
-              const failedLines: string[] = [];
-              const createdLines: IOrganizationStructure.ILines.ICreateLine[] = [];
-              tasks.Task(async () => {
-                for (let line of lines) {
-                  if (!propTitles.find(x => x.record_id === line.code)) {
-                    try {
-                      const data: IOrganizationStructure.ILines.ICreateLine = {
-                        id: nanoid(),
-                        name: line.name,
-                        record_id: line.code,
-                        department_id: createdDepartments.find(x => x.record_id === line.department_code)?.id,
-                        department_name: createdDepartments.find(x => x.record_id === line.department_code)?.name,
-                        tenant_id: me?.prefs?.organization,
-                        realm_id: me?.prefs?.organization
-                      }
-                      if (data.name && data.record_id) {
-                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
-                          createdLines.push(data);
-                        });
-
-                      }
-                    }
-                    catch (error) {
-                      failedLines.push(line.code);
-                    }
-                  }
-                }
-              })
-              tasks.Wait(1);
-
-              tasks.Task(async () => {
-                for (let failedDepartment of failedDepartments) {
-                  try {
-                    const data: IOrganizationStructure.IDepartments.ICreateDepartment = {
-                      id: nanoid(),
-                      name: departments.find(x => x.code === failedDepartment)?.name,
-                      record_id: failedDepartment,
-                      tenant_id: me?.prefs?.organization,
-                      realm_id: me?.prefs?.organization
-                    }
-                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment, data.id, data).then(() => {
-                      createdDepartments.push(data);
-                    })
-                  }
-                  catch (error) {
-                    console.log("Departman eklenemedi: " + failedDepartment);
-                  }
-                }
-              });
-              tasks.Wait(1);
-              tasks.Task(async () => {
-                for (let failedTitle of failedTitles) {
-                  try {
-                    const data: IOrganizationStructure.ITitles.ICreateTitle = {
-                      id: nanoid(),
-                      name: titles.find(x => x.code === failedTitle)?.name,
-                      record_id: failedTitle,
-                      tenant_id: me?.prefs?.organization,
-                      realm_id: me?.prefs?.organization
-                    }
-                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureTitle, data.id, data).then(() => {
-                      createdTitles.push(data);
-                    });
-                  }
-                  catch (error) {
-                    console.log("Ünvan eklenemedi: " + failedTitle);
-                  }
-                }
-              });
-              tasks.Wait(1);
-              tasks.Task(async () => {
-                for (let failedPosition of failedPositions) {
-                  try {
-                    const data: IOrganizationStructure.IPositions.ICreatePosition = {
-                      id: nanoid(),
-                      name: positions.find(x => x.code === failedPosition)?.name,
-                      record_id: failedPosition,
-                      tenant_id: me?.prefs?.organization,
-                      realm_id: me?.prefs?.organization
-                    }
-                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructurePosition, data.id, data).then(() => {
-                      createdPositions.push(data);
-                    });
-                  }
-                  catch (error) {
-                    console.log("Pozisyon eklenemedi: " + failedPosition);
-                  }
-                }
-              });
-              tasks.Wait(1);
-              tasks.Task(async () => {
-                for (let failedLine of failedLines) {
-                  try {
-                    const data: IOrganizationStructure.ILines.ICreateLine = {
-                      id: nanoid(),
-                      name: lines.find(x => x.code === failedLine)?.name,
-                      record_id: failedLine,
-                      department_id: createdDepartments.find(x => x.record_id === lines.find(x => x.code === failedLine)?.department_code)?.id,
-                      department_name: createdDepartments.find(x => x.record_id === lines.find(x => x.code === failedLine)?.department_code)?.name,
-                      tenant_id: me?.prefs?.organization,
-                      realm_id: me?.prefs?.organization
-                    }
-                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureLine, data.id, data).then(() => {
-                      createdLines.push(data);
-                    });
-                  }
-                  catch (error) {
-                    console.log("Hat eklenemedi: " + failedLine);
-                  }
-                }
-              });
-              tasks.Wait(1);
-
-              const failedEmployees: string[] = [];
-              excelData.map((employee, index) => {
-                tasks.Task(async () => {
-                  if (!propEmployees.find(x => x.id === employee.sicil_no)) {
-                    try {
-                      let department = createdDepartments.find(x => x.record_id === employee.departman_kodu);
-                      let title = createdTitles.find(x => x.record_id === employee.unvan_kodu);
-                      let position = createdPositions.find(x => x.record_id === employee.pozisyon_kodu);
-                      let line = createdLines.find(x => x.record_id === employee.hat_kodu);
-                      if (!department) {
-                        department = propDepartments.find(x => x.record_id === employee.departman_kodu);
-                      }
-                      if (!title) {
-                        title = propTitles.find(x => x.record_id === employee.unvan_kodu);
-                      }
-                      if (!position) {
-                        position = propPositions.find(x => x.record_id === employee.pozisyon_kodu);
-                      }
-                      if (!line) {
-                        line = propLines.find(x => x.record_id === employee.hat_kodu);
-                      }
-                      const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
-                        id: employee.sicil_no,
-                        first_name: employee.adi,
-                        last_name: employee.soyadi,
-                        department_id: department?.id,
-                        title_id: title?.id,
-                        position_id: position?.id,
-                        workplace_id: null,
-                        job_start_date: employee["ise_baslama_tarihi"],
-                        line_id: line?.id,
-                        manager_id: null,
-                        birth_date: employee["dogum_tarihi"],
-                        gender: employee["cinsiyet"].toLowerCase() === "e" ? "male" : "female",
-                        phone: employee["telefon_no"] ? String(employee["telefon_no"]) : "",
-                        educational_status: employee["egitim_durumu"].toLowerCase() === "lise" ? "high school" :
-                          employee["egitim_durumu"].toLowerCase() === "üniversite" ? "university" :
-                            employee["egitim_durumu"].toLowerCase() === "ilkokul" ? "elementary school" :
-                              employee["egitim_durumu"].toLowerCase() === "ortaokul" ? "secondary school" :
-                                "",
-                        department_start_date: employee.departmana_baslama_tarihi,
-                        position_start_date: employee.pozisyona_baslama_tarihi,
-                        realm_id: me?.prefs?.organization,
-                        tenant_id: me?.prefs?.organization
-                      }
-                      if (!propEmployees.find(x => x.id === employee.sicil_no)) {
-                        if (data.first_name && data.last_name) {
-                          const employeeNanoId = nanoid();
-                          await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, employeeNanoId, data);
-                          await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployeeLog, nanoid(), {
-                            employee_id: employeeNanoId,
-                            employee_name: data.first_name + " " + data.last_name,
-                            log_date: new Date().toISOString(),
-                            log_type: "create",
-                            department_id: data.department_id,
-                            department_name: department?.name,
-                            title_id: data.title_id,
-                            title_name: title?.name,
-                            position_id: data.position_id,
-                            position_name: position?.name,
-                            line_id: data.line_id,
-                            line_name: line?.name,
-                            tenant_id: me?.prefs?.organization
-                          });
-                          setTransferPercent(index / excelData.length * 100);
-                        }
-                      }
-                    } catch (error) {
-                      failedEmployees.push(employee.sicil_no);
-                    }
-                  }
-                });
-                tasks.Wait(1);
-              })
-
-
-              tasks.Wait(1);
-              tasks.Task(async () => {
-                for (let failedEmployee of failedEmployees) {
-                  try {
-                    const employee = excelData.find(x => x.sicil_no === failedEmployee);
-                    const data: IOrganizationStructure.IEmployees.ICreateEmployee = {
-                      id: employee.sicil_no,
-                      first_name: employee.adi,
-                      last_name: employee.soyadi,
-                      department_id: createdDepartments.find(x => x.record_id === employee.departman_kodu)?.id || null,
-                      title_id: createdTitles.find(x => x.record_id === employee.unvan_kodu)?.id || null,
-                      position_id: createdPositions.find(x => x.record_id === employee.pozisyon_kodu)?.id || null,
-                      workplace_id: null,
-                      line_id: createdLines.find(x => x.record_id === employee.hat_kodu)?.id || null,
-                      job_start_date: employee["ise_baslama_tarihi"],
-                      birth_date: employee["dogum_tarihi"],
-                      gender: employee["cinsiyet"].toLowerCase() === "e" ? "male" : "female",
-                      phone: employee["telefon_no"] ? String(employee["telefon_no"]) : "",
-                      department_start_date: employee.departmana_baslama_tarihi,
-                      position_start_date: employee.pozisyona_baslama_tarihi,
-                      manager_id: null,
-                      realm_id: me?.prefs?.organization,
-                      tenant_id: me?.prefs?.organization
-                    }
-                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureEmployee, nanoid(), data);
-                  } catch (error) {
-                    console.log("Çalışan eklenemedi: " + failedEmployee);
-                  }
-                }
-              })
-              tasks.Wait(1);
-              tasks.Task(async () => {
-                Toast.fire({
-                  icon: 'success',
-                  title: 'Çalışanlar başarıyla aktarıldı.'
-                });
-                setTimeout(() => {
-                  window.location.reload();
-                }, 1000);
-              })
-              tasks.Run();
-            }
-            catch (error: any) {
-              console.log(error);
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            }).catch((error) => {
+              setOpen(false);
+              setIsTransfer(false);
               Swal.fire({
                 icon: 'error',
                 title: 'Hata Oluştu',
@@ -498,10 +176,8 @@ export class EmployeeListController extends UIController {
                 showCloseButton: true,
                 closeButtonAriaLabel: 'Tamam',
               })
-            }
+            })
           }
-
-          // excel import -- end
 
           const columns: GridColDef[] = [
             {
@@ -607,7 +283,6 @@ export class EmployeeListController extends UIController {
             employeeListExport(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false, filteredEmployees.filter(x => x.is_active === active), propDepartments, propTitles, propPositions, propLines)
           }
           useEffect(() => {
-            deleteCache();
             Services.Databases.listDocuments(
               AppInfo.Name,
               AppInfo.Database,

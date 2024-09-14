@@ -5,6 +5,7 @@ namespace IAccountRelation {
         id: string;
         tenant_id: string;
         account_id: string;
+        registration_number: string,
         mail: string;
         authorization_profile: string;
         is_admin: boolean;
@@ -15,6 +16,7 @@ namespace IAccountRelation {
     export interface ICreate {
         id: string;
         authorization_profile: string;
+        registration_number: string,
         mail: string;
         tenant_id: string;
         account_id: string;

@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 36,
+    "version": 37,
     "collections": [
         {
             "id": "competency",
@@ -1816,6 +1816,12 @@ const Database: IDatabase = {
                     "version": 7
                 },
                 {
+                    "key": "registration_number",
+                    "type": "string",
+                    "size": 256,
+                    "version": 37
+                },
+                {
                     "key": "is_admin",
                     "type": "boolean",
                     "version": 1,
@@ -3385,6 +3391,72 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "work_place_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
+            "id": "employee_line_relation",
+            "name": "Employee Line Relation",
+            "description": {
+                "en": "Employee Line Relation is a collection of employee line relations.",
+                "tr": "Çalışan hat ilişkilerinin koleksiyonudur."
+            },
+            "version": 37,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_name",
                     "type": "string",
                     "size": 256,
                     "version": 1

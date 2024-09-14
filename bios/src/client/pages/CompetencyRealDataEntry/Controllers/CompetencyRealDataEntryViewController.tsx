@@ -4,7 +4,7 @@ import { Container, LeftContainer, LeftContainerContent, LeftContainerContentIte
 import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
 import { Toast } from "../../../components/Toast";
-import { Query, Services, useGetMe, useListAccounts } from "@realmocean/sdk";
+import { Query, Services, useGetFileDownload, useGetMe, useListAccounts } from "@realmocean/sdk";
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
 import OrganizationStructureEmployee from "../../../../server/hooks/organizationStructureEmployee/main";
@@ -39,14 +39,15 @@ import dayjs from "dayjs";
 import Trainers from "../../../../server/hooks/trainers/main";
 import EducationCompetencyRelation from "../../../../server/hooks/educationCompetencyRelation/main";
 import TrainerEducations from "../../../../server/hooks/trainerEducations/main";
-
-
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
 import IAssignedEducationEmployees from "../../../interfaces/IAssignedEducationEmployees";
 import AssignedEducationEmployees from "../../../../server/hooks/assignedEducationEmployees/main";
 import EmailMessage from "../../../../server/hooks/emailMessage/main";
 import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
+import styled from "styled-components";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import BucketFiles from "../../../../server/hooks/bucketFiles/Main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -76,6 +77,18 @@ const resetForm: IAssignedEducation.ICreate = {
     employee_name: "",
     status: "open",
 };
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
 
 export class CompetencyRealDataEntryViewController extends UIController {
 
@@ -164,7 +177,10 @@ export class CompetencyRealDataEntryViewController extends UIController {
                 ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
-
+                        const { createFilePage } = BucketFiles.Create(AppInfo.Name, "competency_real_data_entry_bucket");
+                        const [filesNames, setFilesNames] = useState([]);
+                        const [selectedEmployeeCompetencyId, setSelectedEmployeeCompetencyId] = useState<string>("");
+                        const { fileDownload } = useGetFileDownload(AppInfo.Name, "competency_real_data_entry_bucket", selectedEmployeeCompetencyId);
                         /* GLOBAL STATE ASSIGN EDUCATION */
                         const pendingEvaluation: { polyvalence_table_id: string; evaluation_period: string; } = selector(selectPendingEvaluation);
 
@@ -303,11 +319,15 @@ export class CompetencyRealDataEntryViewController extends UIController {
 
 
                         const handleClickOpenDialog = (description: string, competency_id: string) => {
+                            Services.Storage.listFiles("competency_real_data_entry_bucket").then((res) => {
+                                setFilesNames(res.files)
+                            })
                             const alreadyExist = employeeCompetencyValue.find((value) => value.competency_id === competency_id);
                             if (alreadyExist && alreadyExist?.competency_real_value) {
                                 setDescription(description);
                                 setSelectedCompetencyId(competency_id)
                                 setOpenDialog(true);
+                                setSelectedEmployeeCompetencyId(alreadyExist?.employee_competency_value_id);
                             } else {
                                 Toast.fire({
                                     icon: "warning",
@@ -451,6 +471,15 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                     }
                                     return value;
                                 }));
+                            })
+                            createFilePage({
+                                bucketId: "competency_real_data_entry_bucket",
+                                fileId: alreadyExist?.employee_competency_value_id,
+                                file: file,
+                                onProgress: (progress) => {
+                                    console.log('Yükleme durumu:', progress);
+                                    return {};
+                                },
                             })
 
                             handleCloseDialog();
@@ -668,6 +697,15 @@ export class CompetencyRealDataEntryViewController extends UIController {
                             })
                         }, [])
 
+                        //attechment
+                        const [file, setFile] = useState(null);
+
+                        const handleFileChange = (event) => {
+                            const uploadedFile = event.target.files[0];
+                            setFile(uploadedFile);
+                            console.log('Dosya yüklendi:', uploadedFile);
+                        };
+
                         return (
                             VStack(
                                 HStack({ alignment: cLeading })(
@@ -802,15 +840,39 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                             <form onSubmit={handleSubmitDialog} style={{ width: "400px" }}>
                                                 <DialogTitle>Açıklama Giriniz</DialogTitle>
                                                 <DialogContent>
-                                                    <TextField
-                                                        rows={4}
-                                                        multiline
-                                                        fullWidth
-                                                        variant="outlined"
-                                                        required
-                                                        value={description}
-                                                        onChange={(e) => setDescription(e.target.value)}
-                                                    />
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                                                        <TextField
+                                                            rows={4}
+                                                            multiline
+                                                            fullWidth
+                                                            variant="outlined"
+                                                            required
+                                                            value={description}
+                                                            onChange={(e) => setDescription(e.target.value)}
+                                                        />
+                                                        <Button
+                                                            component="label"
+                                                            role={undefined}
+                                                            variant="contained"
+                                                            tabIndex={-1}
+                                                            startIcon={<CloudUploadIcon />}
+                                                            size="small"
+                                                        >
+                                                            Dosya Yükle
+                                                            <VisuallyHiddenInput
+                                                                type="file"
+                                                                onChange={handleFileChange}
+                                                                multiple
+                                                            />
+                                                        </Button>
+                                                        {file && <p>Yüklenen Dosya: {file.name}</p>}
+                                                        {
+                                                            filesNames.filter((item) => item.$id === selectedEmployeeCompetencyId).map((item) => {
+                                                                return <p>Yüklü Dosya : <a href={fileDownload as any} style={{ fontSize: "12px", color: "blue", cursor: "pointer" }}>{item.name}</a></p>
+                                                            })
+                                                        }
+                                                    </div>
+
                                                 </DialogContent>
                                                 <DialogActions>
                                                     <Button onClick={handleCloseDialog}>İptal</Button>

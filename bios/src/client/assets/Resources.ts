@@ -6,7 +6,7 @@ import { themeColor as _themeColor } from "./Colors/themeColor";
 import { formatDate as _formatDate } from "./Functions/formatDate";
 
 export namespace Resources {
-    export const version = "v1.2.2.2"
+    export const version = "v1.2.2.03"
 
     export namespace MailConf {
         export const secretKey = 'mysecretkey12345';
@@ -96,6 +96,11 @@ export namespace Resources {
         {
             name: "İş Yeri Tanımlaması Kullanılacak mı?",
             localStr: "work_place_definition",
+            type: "boolean",
+        },
+        {
+            name: "Personel Tanımlarken Birden Fazla Hat Tanımlaması Olacak mı?",
+            localStr: "multiple_line_definition",
             type: "boolean",
         }
     ];

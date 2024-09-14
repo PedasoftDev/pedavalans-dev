@@ -11,6 +11,7 @@ export function employeeTransferTemplateByExcel(line_is_active: boolean) {
         "CINSIYET",
         "EGITIM_DURUMU",
         "ISE_BASLAMA_TARIHI",
+        "AMIR_SICIL_NO",
         "UNVAN_KODU",
         "UNVAN_TANIMI",
         "DEPARTMAN_KODU",

@@ -41,6 +41,7 @@ const resetAccountRelation: IAccountRelation.IBase = {
     account_id: "",
     // first_name: "",
     // last_name: "",
+    registration_number: "",
     mail: "",
     authorization_profile: "",
     id: "",
@@ -91,6 +92,7 @@ export class AccountManagementViewController extends UIController {
                         const [open, setOpen] = useState(false)
 
                         const [createAccountForm, setCreateAccount] = useState({
+                            registrationNumber: "",
                             email: "",
                             username: "",
                             password: "",
@@ -180,6 +182,20 @@ export class AccountManagementViewController extends UIController {
 
                         const handleCreateAccount = (e: React.FormEvent<HTMLFormElement>) => {
                             e.preventDefault();
+                            if (!isLoadingResult && accountRelations) {
+                                console.log(accountRelations);
+                                const isRegistrationNumberExists = accountRelations.some(
+                                    (relation) => relation.registration_number === createAccountForm.registrationNumber
+                                );
+
+                                if (isRegistrationNumberExists) {
+                                    Toast.fire({
+                                        icon: 'error',
+                                        title: 'Sicil numarası zaten kayıtlı !'
+                                    })
+                                    return
+                                }
+                            }
 
                             if (createAccountForm.password !== createAccountForm.passwordConfirm) {
                                 Toast.fire({
@@ -207,18 +223,19 @@ export class AccountManagementViewController extends UIController {
                                 createAccountRelation({
                                     documentId: docId,
                                     data: {
-                                        "id": docId,
-                                        "tenant_id": me?.prefs?.organization,
-                                        "account_id": data.$id,
-                                        "mail": data.email,
-                                        "is_admin": false
+                                        id: docId,
+                                        tenant_id: me?.prefs?.organization,
+                                        account_id: data.$id,
+                                        mail: data.email,
+                                        registration_number: createAccountForm.registrationNumber,
+                                        is_admin: false
                                     }
                                 }, async () => {
                                     Toast.fire({
                                         icon: 'success',
                                         title: 'Kullanıcı oluşturuldu'
                                     })
-                                    setCreateAccount({ email: "", username: "", password: "", passwordConfirm: "" })
+                                    setCreateAccount({ registrationNumber: "", email: "", username: "", password: "", passwordConfirm: "" })
                                 })
                             })
                             if (isCreateAccountError) {
@@ -487,7 +504,13 @@ export class AccountManagementViewController extends UIController {
                                                 <GridContainer>
                                                     <StyledDataGrid
                                                         columns={[
-                                                            { field: '$id', headerName: 'ID', width: 100 },
+                                                            {
+                                                                field: 'registration_number', headerName: 'Sicil No', width: 100,
+                                                                valueGetter: (params) => {
+                                                                    const accountRelation = accountRelations.find((e) => e.account_id === params.row.$id)
+                                                                    return accountRelation ? accountRelation.registration_number : " "
+                                                                }
+                                                            },
                                                             { field: 'email', headerName: 'E-posta', flex: 1 },
                                                             { field: 'name', headerName: 'Adı Soyadı', flex: 1 },
                                                             {
@@ -523,6 +546,14 @@ export class AccountManagementViewController extends UIController {
                                                         background: "rgb(250 250 250)",
                                                         gap: "10px"
                                                     }}>
+                                                        <TextField
+                                                            size="small"
+                                                            label="Sicil No"
+                                                            value={createAccountForm.registrationNumber}
+                                                            onChange={(e) => setCreateAccount({ ...createAccountForm, registrationNumber: e.target.value })}
+                                                            fullWidth
+                                                            required
+                                                        />
                                                         <TextField
                                                             size="small"
                                                             label="E-posta"

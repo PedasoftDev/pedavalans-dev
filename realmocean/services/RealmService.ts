@@ -347,7 +347,7 @@ class RealmService extends RealmoceanService {
         })
 
         // email send
-        this.scheduleService.addJob('*/10 * * * *', async () => {
+        this.scheduleService.addJob('*/1 * * * *', async () => {
             const emailList = await this.getEmailList();
             if (emailList && emailList.length > 0) {
                 const emailSettings = await this.getEmailSettings();
@@ -439,6 +439,10 @@ class RealmService extends RealmoceanService {
             }
         });
 
+        this.scheduleService.addJob('0 0 * * * *', async () => {
+            await this.updateDashboardChartData();
+        })
+
         const router = this.webServer.getRouter();
         // localhost/v1/service/com.pedavalans.service.main/
 
@@ -501,11 +505,8 @@ class RealmService extends RealmoceanService {
             }
         })
 
+        
 
-
-        this.scheduleService.addJob('0 0 * * * *', async () => {
-            await this.updateDashboardChartData();
-        })
     }
 
     async updateVocationQualificationTypeNames(documentTypeId: string, documentTypeName: string): Promise<any> {
