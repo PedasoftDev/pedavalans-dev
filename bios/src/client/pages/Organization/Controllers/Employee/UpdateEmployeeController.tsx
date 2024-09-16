@@ -61,6 +61,7 @@ import { Views } from '../../../../components/Views';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Form } from '../../Views/Views';
 import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -124,13 +125,14 @@ export class UpdateEmployeeController extends UIController {
     const { getFileView, isLoadingViewFile } = BucketFiles.GetView(AppInfo.Name, "employees_image_bucket", id)
 
     const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
+    const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization);
 
     const { createEmployeeMultipleLines } = EmployeeMultipleLines.Create()
     const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleList } = EmployeeMultipleLines.GetList()
     const { updateEmployeeMultipeLines } = EmployeeMultipleLines.Update()
 
     return (
-      isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingEmployeeMultipleList || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingAccounts || isLoadingResult || isLoadingDepartments || isLoadingEmployeeMultipleList || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -807,7 +809,7 @@ export class UpdateEmployeeController extends UIController {
                                 : null
                               }
                               <Autocomplete
-                                options={accounts}
+                                options={accounts.filter(account => accountRelations.some(relation => relation.account_id === account.$id && !relation.is_deleted))}
                                 value={accounts.find(option => option.$id === formEmployee.manager_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({

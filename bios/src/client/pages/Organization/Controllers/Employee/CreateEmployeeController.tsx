@@ -53,6 +53,7 @@ import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStru
 import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 import { Form } from '../../Views/Views';
 import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -108,6 +109,7 @@ export class CreateEmployeeController extends UIController {
     const { createLog } = OrganizationStructureEmployeeLog.Create()
 
     const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
+    const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization);
 
     const { createOrganizationEmployeeDocument } = OrganizationEmployeeDocument.Create()
 
@@ -116,7 +118,7 @@ export class CreateEmployeeController extends UIController {
     const { createEmployeeMultipleLines } = EmployeeMultipleLines.Create()
 
     return (
-      isLoading || isLoadingAccounts || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingAccounts || isLoadingResult || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -137,8 +139,6 @@ export class CreateEmployeeController extends UIController {
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
-
-            const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
 
             const [file, setFile] = useState(null);
 
@@ -682,7 +682,7 @@ export class CreateEmployeeController extends UIController {
                                 : null
                               }
                               <Autocomplete
-                                options={accounts}
+                                options={accounts.filter(account => accountRelations.some(relation => relation.account_id === account.$id && !relation.is_deleted))}
                                 value={accounts.find(option => option.$id === formEmployee.manager_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({
