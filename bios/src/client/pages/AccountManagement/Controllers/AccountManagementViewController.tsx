@@ -255,7 +255,7 @@ export class AccountManagementViewController extends UIController {
 
                         const updateSelectedAccountRelation = (e) => {
                             e.preventDefault();
-                            if (assignedEducationList.filter((item) => item.status === "open").find((item) => item.educator_id === selectedAccount.$id)) {
+                            if (assignedEducationList.filter((item) => item.status === "open" && item.is_active).find((item) => item.educator_id === selectedAccount.$id)) {
                                 Swal.fire({
                                     title: 'Bu hesaba ait açık bir eğitim bulunmaktadır!',
                                     text: "Bu hesabı düzenleyemezsiniz!",
