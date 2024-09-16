@@ -102,7 +102,12 @@ export namespace Resources {
             name: "Personel Tanımlarken Birden Fazla Hat Tanımlaması Olacak mı?",
             localStr: "multiple_line_definition",
             type: "boolean",
-        }
+        },
+        {
+            name: "Personel Tanımlarken Birden Fazla Departman Tanımlaması Olacak mı?",
+            localStr: "multiple_department_definition",
+            type: "boolean",
+        },
     ];
 
     export const StringParameters = [

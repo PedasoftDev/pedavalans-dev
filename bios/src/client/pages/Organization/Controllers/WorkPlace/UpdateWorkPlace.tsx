@@ -86,7 +86,9 @@ export class UpdateWorkPlace extends UIController {
                             icon: "warning",
                             showCancelButton: true,
                             confirmButtonText: "Evet, sil!",
-                            cancelButtonText: "Hayır, iptal et!"
+                            cancelButtonText: "Hayır, iptal et!",
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33'
                         }).then((result) => {
                             if (!result.isConfirmed) {
                                 return;

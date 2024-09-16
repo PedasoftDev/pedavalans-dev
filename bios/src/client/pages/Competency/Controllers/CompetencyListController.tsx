@@ -26,6 +26,8 @@ import CompetencyPositionRelation from "../../../../server/hooks/competencyPosit
 import OrganizationStructurePosition from "../../../../server/hooks/organizationStructrePosition/main";
 import CompetencyWorkplace from "../../../../server/hooks/competencyWorkPlace/Main";
 import { IoIosArrowForward } from "react-icons/io";
+import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
+import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -71,11 +73,16 @@ export class CompetencyListController extends UIController {
         // positions
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
         const { competencyPositionRelationList, isLoading } = CompetencyPositionRelation.GetList();
+        //lines
+        const [lineBasedCompetencyRelationship, setLineBasedCompetencyRelationship] = useState<boolean>(false);
+        const { competencyLineRelationList, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetList();
+        const { lines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization);
+
         // workplace
         const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
         const { competencyWorkplaceList, isLoadingCompetencyWorkplacetList } = CompetencyWorkplace.GetList(me?.prefs?.organization);
         return (
-            isMeLoading || isLoadingCompetencyList || isLoadingCompetencyWorkplacetList || isLoadingCompetencyDepartmentList || isLoadingResult || isLoading || isLoadingPositions ? VStack(Spinner()) :
+            isMeLoading || isLoadingCompetencyList || isLoadingLines || isLoadingCompetencyWorkplacetList || isLoadingCompetencyDepartmentList || isLoadingResult || isLoading || isLoadingPositions || isLoadingCompetencyLineRelation ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [filterKey, setFilterKey] = useState("");
@@ -323,6 +330,18 @@ export class CompetencyListController extends UIController {
                                         .map((item) => item.competency_department_name).join(", ");
                                 }
                             },
+                        lineBasedCompetencyRelationship &&
+                        {
+                            field: "line_name",
+                            headerName: "Hat",
+                            minWidth: 200,
+                            editable: false,
+                            disableColumnMenu: true,
+                            flex: 1,
+                            valueGetter(params) {
+                                return competencyLineRelationList.filter((item) => item.competency_id === params.row.$id).map((item) => lines.find((line) => line.id === item.line_id)?.name).join(", ");
+                            }
+                        },
                         workPlaceDefination &&
                         {
                             field: "work_place_name",
@@ -370,6 +389,18 @@ export class CompetencyListController extends UIController {
                             ]
                         ).then((res) => {
                             setWorkPlaceDefination(res.documents[0]?.is_active)
+                        }).then(() => {
+                            Services.Databases.listDocuments(
+                                AppInfo.Name,
+                                AppInfo.Database,
+                                Collections.Parameter,
+                                [
+                                    Query.equal("name", "line_based_competency_relationship"),
+                                    Query.limit(10000)
+                                ]
+                            ).then((res) => {
+                                setLineBasedCompetencyRelationship(res.documents[0]?.is_active)
+                            })
                         })
                     }, [])
 

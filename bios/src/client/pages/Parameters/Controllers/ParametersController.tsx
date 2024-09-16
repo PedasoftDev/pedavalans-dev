@@ -167,7 +167,7 @@ export class ParametersController extends UIFormController {
                                                         </div>
                                                     </div>
                                                 }
-                                                {parameters.map((parameter) =>
+                                                {parameters.filter((x) => x.name != "multiple_line_definition" && x.name != "work_place_definition" && x.name != "multiple_department_definition").map((parameter) =>
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>
                                                             {Resources.Parameters.find(x => x.localStr === parameter?.name)?.name}
@@ -180,7 +180,7 @@ export class ParametersController extends UIFormController {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {stringParameters.filter(x => x.name != "position_based_polyvalence_management").map((stringParameter, i) =>
+                                                {stringParameters.filter((x) => x.name != "position_based_polyvalence_management").map((stringParameter, i) =>
                                                     stringParameter.name === "reminder_mail_for_unfilled_tables_day" ?
                                                         parameters.find(x => x.name === "reminder_mail_for_unfilled_tables" && x.is_active) ?
                                                             <StringParameter stringParameter={stringParameter} index={i} />

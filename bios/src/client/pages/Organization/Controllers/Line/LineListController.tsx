@@ -51,6 +51,12 @@ export class LineListController extends UIController {
               flex: 1
             },
             {
+              field: 'department_name',
+              headerName: 'Departman Adı',
+              width: 200,
+              flex: 1
+            },
+            {
               field: '$createdAt',
               headerName: 'Oluşturulma Tarihi',
               width: 200,

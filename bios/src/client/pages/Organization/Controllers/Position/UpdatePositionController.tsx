@@ -143,6 +143,8 @@ export class UpdatePositionController extends UIController {
               showCancelButton: true,
               confirmButtonText: 'Evet, sil!',
               cancelButtonText: 'İptal',
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33'
             }).then((result) => {
               if (result.isConfirmed) {
                 update({

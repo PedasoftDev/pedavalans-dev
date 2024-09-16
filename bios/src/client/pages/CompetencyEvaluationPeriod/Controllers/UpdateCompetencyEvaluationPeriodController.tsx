@@ -103,7 +103,9 @@ export class UpdateCompetenyEvaluationPeriodController extends UIFormController 
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Evet, Sil!',
-                cancelButtonText: 'Hayır, İptal Et'
+                cancelButtonText: 'Hayır, İptal Et',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Toast.fire({
