@@ -9,6 +9,13 @@ namespace Collections {
   export const Position = "organization_position";
   export const Line = "organization_line";
   export const Employee = "organization_employee";
+  export const Competency: string = "competency";
+  export const CompetencyGroup: string = "competency_group";
+  export const CompetencyDepartment: string = "competency_department";
+  export const Parameter: string = "pedavalans_parameter";
+  export const CompetencyLineRelation: string = "competency_line_relation";
+  export const CompetencyWorkPlace: string = "competency_work_place";
+  export const OrganizationStructureWorkPlace: string = "organization_workplace";
 }
 
 export interface IEmployeeImportFromExcel {
@@ -33,6 +40,15 @@ export interface IEmployeeImportFromExcel {
   hat_adi: string | null;
 }
 
+interface ICompetencyImportFromExcel {
+  yetkinlik_adi: string;
+  yetkinlik_aciklamasi: string;
+  yetkinlik_grubu_adi: string;
+  departman_adlari: string;
+  hat_adlari?: string;
+  isyeri_adlari?: string;
+}
+
 function nanoid(size = 21) {
   const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   let id = '';
@@ -55,13 +71,27 @@ class DataImport extends RealmoceanService {
     const router = this.webServer.getRouter();
     // localhost/v1/service/com.pedavalans.service.import/
 
-    router.post("/com.pedavalans.service.main/employeeImport", async (req, res) => {
+    router.post("/com.pedavalans.service.import/employeeImport", async (req, res) => {
       const { data, organization } = req.body;
       try {
         if (!data || !organization) {
           return res.status(400).json({ message: "Data or organization is missing" });
         }
         const result = await this.employeeImport(data as any, organization);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    });
+
+    router.post("/com.pedavalans.service.import/competencyImport", async (req, res) => {
+      const { data, organization } = req.body;
+      try {
+        if (!data || !organization) {
+          return res.status(400).json({ message: "Data or organization is missing" });
+        }
+        const result = await this.competencyImport(data as any, organization);
         return res.json({ result });
 
       } catch (e) {
@@ -271,6 +301,152 @@ class DataImport extends RealmoceanService {
 
     } catch (e) {
       throw e;
+    }
+  }
+
+  async competencyImport(data: ICompetencyImportFromExcel[], organization: string) {
+    const [lineBasedCompetencyRelationship, workPlaceParameterCompetency, competencyGroups, departments, lines, workplaces] = await Promise.all([
+      this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter,
+        [this.databaseService.Query.equal("name", "line_based_competency_relationship")]).then((res) => res.documents[0]?.is_active),
+      this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter,
+        [this.databaseService.Query.equal("name", "work_place_definition")]).then((res) => res.documents[0]?.is_active),
+      this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, Collections.CompetencyGroup, [
+        this.databaseService.Query.equal("tenant_id", organization),
+        this.databaseService.Query.equal("is_active_group", true),
+        this.databaseService.Query.equal("is_deleted_group", false),
+        this.databaseService.Query.limit(10000),
+      ]).then((res) => res.documents),
+      this.getDepartments(),
+      this.getLines(),
+      this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureWorkPlace, [
+        this.databaseService.Query.limit(10000),
+        this.databaseService.Query.equal("is_deleted", false),
+        this.databaseService.Query.equal("is_active", true),
+      ]).then((res) => res.documents)
+    ]);
+
+    const competencyGroupMap = new Map(competencyGroups.map((item: any) => [item.competency_group_name.trim(), item])) as Map<string, { $id: string; competency_group_name: string }>;
+    const departmentMap = new Map(departments.map((item: any) => [item.name.trim(), item])) as Map<string, { id: string; name: string }>;
+    const lineMap = new Map(lines.map((item: any) => [item.name.trim(), item])) as Map<string, { id: string; name: string }>;;
+    const workplaceMap = new Map(workplaces.map((item: any) => [item.name.trim(), item])) as Map<string, { id: string; name: string }>;
+
+    const bulkCompetencies = [];
+    const bulkCompetencyDepartments = [];
+    const bulkCompetencyLines = [];
+    const bulkCompetencyWorkplaces = [];
+
+    for (const competencyItem of data) {
+      const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
+      const competencyGroup = competencyGroupMap.get(competencyItem.yetkinlik_grubu_adi.trim());
+
+      const competencyLineNames = lineBasedCompetencyRelationship
+        ? competencyItem.hat_adlari?.split(",").map((item) => item.trim()) || []
+        : [];
+
+      const competencyWorkPlaceNames = workPlaceParameterCompetency
+        ? competencyItem.isyeri_adlari?.split(",").map((item) => item.trim()) || []
+        : [];
+
+      const createCompetency = {
+        competency_id: nanoid(),
+        competency_name: competencyItem.yetkinlik_adi.trim(),
+        competency_description: competencyItem.yetkinlik_aciklamasi.trim(),
+        competency_group_name: competencyItem.yetkinlik_grubu_adi.trim(),
+        tenant_id: organization,
+        competency_group_id: competencyGroup?.$id,
+        realm_id: organization,
+      };
+
+      // Competency ekle
+      bulkCompetencies.push(createCompetency);
+
+      // Competency-Department ilişkilerini ekle
+      competencyDepartments.forEach((departmentName) => {
+        const department = departmentMap.get(departmentName);
+        if (department) {
+          const comp_dep_id = nanoid();
+          bulkCompetencyDepartments.push({
+            competency_department_table_id: comp_dep_id,
+            competency_department_id: department.id,
+            competency_department_name: department.name.trim(),
+            competency_id: createCompetency.competency_id,
+            tenant_id: organization,
+          });
+        }
+      });
+
+      // Competency-Line ilişkilerini ekle
+      competencyLineNames.forEach((lineName) => {
+        const line = lineMap.get(lineName);
+        if (line) {
+          const comp_line_id = nanoid();
+          bulkCompetencyLines.push({
+            id: comp_line_id,
+            competency_id: createCompetency.competency_id,
+            line_id: line.id,
+            tenant_id: organization,
+          });
+        }
+      });
+
+      // Competency-WorkPlace ilişkilerini ekle
+      competencyWorkPlaceNames.forEach((workPlaceName) => {
+        const workplace = workplaceMap.get(workPlaceName);
+        if (workplace) {
+          const comp_work_place_id = nanoid();
+          bulkCompetencyWorkplaces.push({
+            id: comp_work_place_id,
+            competency_id: createCompetency.competency_id,
+            work_place_id: workplace.id,
+            work_place_name: workplace.name.trim(),
+            tenant_id: organization,
+          });
+        }
+      });
+    }
+
+    // Verileri toplu olarak ekliyoruz (paralel olarak)
+    try {
+      await Promise.all([
+        ...bulkCompetencies.map((competency) =>
+          this.databaseService.createDocument(
+            AppInfo.Name,
+            AppInfo.Database,
+            Collections.Competency,
+            competency.competency_id,
+            competency
+          )
+        ),
+        ...bulkCompetencyDepartments.map((compDep) =>
+          this.databaseService.createDocument(
+            AppInfo.Name,
+            AppInfo.Database,
+            Collections.CompetencyDepartment,
+            compDep.competency_department_table_id,
+            compDep
+          )
+        ),
+        ...bulkCompetencyLines.map((compLine) =>
+          this.databaseService.createDocument(
+            AppInfo.Name,
+            AppInfo.Database,
+            Collections.CompetencyLineRelation,
+            compLine.id,
+            compLine
+          )
+        ),
+        ...bulkCompetencyWorkplaces.map((compWorkPlace) =>
+          this.databaseService.createDocument(
+            AppInfo.Name,
+            AppInfo.Database,
+            Collections.CompetencyWorkPlace,
+            compWorkPlace.id,
+            compWorkPlace
+          )
+        ),
+      ]);
+    } catch (error) {
+      throw new Error(`Toplu kayıt sırasında bir hata oluştu: ${error.message}`);
     }
   }
 

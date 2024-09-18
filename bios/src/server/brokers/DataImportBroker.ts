@@ -11,12 +11,11 @@ export class DataImportBroker extends ServiceBroker<any> {
   }
 
   public get ServiceName(): string {
-    return 'com.pedavalans.service.main'
+    return 'com.pedavalans.service.import'
   }
 
 
-  async employeeImport(excelData: IEmployeeImportFromExcel[], organization:string): Promise<any> {
-
+  async employeeImport(excelData: IEmployeeImportFromExcel[], organization: string): Promise<any> {
 
     let path = '/employeeImport';
     let payload: Payload = {};
@@ -30,6 +29,21 @@ export class DataImportBroker extends ServiceBroker<any> {
     return await this.call('post', uri, {
       'content-type': 'application/json'
     }, payload);
+  }
+
+  async competencyImport(excelData: any[], organization: string): Promise<any> {
+
+    let path = '/competencyImport';
+    let payload: Payload = {};
+
+    payload['data'] = excelData;
+    payload['organization'] = organization;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+
   }
 
 }

@@ -19,7 +19,7 @@ import Collections from "../../../../server/core/Collections";
 import ICompetencyGroup from "../../../interfaces/ICompetencyGroup";
 import { IOrganizationStructure } from "../../../interfaces/IOrganizationStructure";
 import { Umay } from "@tuval/core";
-import { Toast } from "../../../components/Toast";
+import { Toast, ToastError, ToastSuccess } from "../../../components/Toast";
 import AccountRelation from "../../../../server/hooks/accountRelation/main";
 import { GridContainer } from "../Views/View";
 import CompetencyPositionRelation from "../../../../server/hooks/competencyPositionRelation/main";
@@ -28,6 +28,7 @@ import CompetencyWorkplace from "../../../../server/hooks/competencyWorkPlace/Ma
 import { IoIosArrowForward } from "react-icons/io";
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import OrganizationStructureLine from "../../../../server/hooks/organizationStructureLine/main";
+import { DataImportBroker } from "../../../../server/brokers/DataImportBroker";
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
 
@@ -152,129 +153,19 @@ export class CompetencyListController extends UIController {
                     const handleTransfer = async () => {
                         setIsTransfer(true);
 
-                        // transfer
-                        try {
-                            const competencyGroups: ICompetencyGroup.IGetCompetencyGroup[] = await Services.Databases.listDocuments(
-                                AppInfo.Name, AppInfo.Database, Collections.CompetencyGroup,
-                                [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_active_group", true), Query.equal("is_deleted_group", false), Query.limit(10000)]).then((data) => data.documents as any);
-                            console.log(competencyGroups);
-
-                            const departments: IOrganizationStructure.IDepartments.IDepartment[] = await Services.Databases.listDocuments(
-                                AppInfo.Name, AppInfo.Database, Collections.OrganizationStructureDepartment,
-                                [Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted", false), Query.equal("is_active", true), Query.limit(10000)]).then((data) => data.documents as any);
-
-                            const task = new Umay();
-                            const failedCompetencies: ICompetencyImportFromExcel[] = [];
-                            excelData.forEach((competencyItem, index) => {
-                                const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim()).filter((value, index, self) => self.indexOf(value) === index);
-                                const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
-                                const createCompetency: ICompetency.ICreateCompetency = {
-                                    competency_id: nanoid(),
-                                    competency_name: competencyItem.yetkinlik_adi,
-                                    competency_description: competencyItem.yetkinlik_aciklamasi,
-                                    competency_group_name: competencyItem.yetkinlik_grubu_adi,
-                                    tenant_id: me?.prefs?.organization,
-                                    competency_group_id: competencyGroup?.$id,
-                                    realm_id: me?.prefs?.organization,
-                                }
-                                task.Task(async () => {
-                                    try {
-                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Competency, createCompetency.competency_id, createCompetency)
-                                        competencyDepartments.forEach(async (departmentName) => {
-                                            const department = departments.find((item) => item.name === departmentName);
-                                            if (department) {
-                                                const comp_dep_id = nanoid();
-                                                try {
-                                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment, comp_dep_id, {
-                                                        competency_department_table_id: comp_dep_id,
-                                                        competency_department_id: department.id,
-                                                        competency_department_name: department.name,
-                                                        competency_id: createCompetency.competency_id,
-                                                        tenant_id: me?.prefs?.organization
-                                                    });
-                                                } catch {
-                                                    console.log(departmentName);
-                                                }
-                                            }
-                                        })
-
-                                        const percentage = index / excelData.length * 100;
-                                        setTransferPercent(percentage);
-
-                                    } catch {
-                                        failedCompetencies.push(competencyItem);
-                                    }
-                                })
-                                task.Wait(2);
-                            })
-
-                            task.Wait(1);
-
-                            failedCompetencies.forEach((competencyItem, index) => {
-                                const competencyDepartments = competencyItem.departman_adlari.split(",").map((item) => item.trim());
-                                const competencyGroup = competencyGroups.find((item) => item.competency_group_name === competencyItem.yetkinlik_grubu_adi);
-                                const createCompetency: ICompetency.ICreateCompetency = {
-                                    competency_id: nanoid(),
-                                    competency_name: competencyItem.yetkinlik_adi,
-                                    competency_description: competencyItem.yetkinlik_aciklamasi,
-                                    competency_group_name: competencyItem.yetkinlik_grubu_adi,
-                                    tenant_id: me?.prefs?.organization,
-                                    competency_group_id: competencyGroup?.$id,
-                                    realm_id: me?.prefs?.organization,
-                                }
-                                task.Task(async () => {
-                                    try {
-                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.Competency, createCompetency.competency_id, createCompetency)
-
-                                        competencyDepartments.forEach(async (departmentName) => {
-                                            const department = departments.find((item) => item.name === departmentName);
-                                            if (department) {
-                                                const comp_dep_id = nanoid();
-                                                try {
-                                                    await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.CompetencyDepartment, comp_dep_id, {
-                                                        competency_department_table_id: comp_dep_id,
-                                                        competency_department_id: department.id,
-                                                        competency_department_name: department.name,
-                                                        competency_id: createCompetency.competency_id,
-                                                        tenant_id: me?.prefs?.organization
-                                                    });
-                                                } catch {
-                                                    console.log(departmentName);
-                                                }
-                                            }
-                                        })
-
-                                    } catch {
-                                        console.log(competencyItem);
-                                    }
-                                })
-                            })
-
-
-                            task.Wait(2);
-
-
-                            task.Task(() => {
-                                Toast.fire({
-                                    icon: 'success',
-                                    title: 'Yetkinlikler aktarıldı.'
-                                });
-
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 2000);
-                            })
-
-                            task.Run()
-
-                        }
-                        catch (error: any) {
-                            setIsTransfer(false);
-                            Toast.fire({
-                                icon: 'error',
-                                title: 'Yetkinlikler aktarılamadı.'
-                            });
-                        }
+                        DataImportBroker.Default.competencyImport(excelData, me?.prefs?.organization).then((res) => {
+                            ToastSuccess("Başarılı", "Aktarım başarılı bir şekilde tamamlandı.");
+                            handleClose();
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }).catch((err) => {
+                            ToastError("Hata", "Aktarım sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+                            handleClose();
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        })
                     }
 
                     // excel import -- end
@@ -441,7 +332,13 @@ export class CompetencyListController extends UIController {
                                                     <Tooltip title={`Yetkinlik Aktarım Şablonunu İndir`}>
                                                         <Button
                                                             variant='contained'
-                                                            onClick={() => competencyTransferTemplateByExcel(localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false)}
+                                                            onClick={() => {
+                                                                Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.equal("name", "work_place_definition")]).
+                                                                    then((res) => {
+                                                                        competencyTransferTemplateByExcel(
+                                                                            localStorage.getItem(Resources.ParameterLocalStr.line_based_competency_relationship) == "true" ? true : false, res.documents[0]?.is_active)
+                                                                    })
+                                                            }}
                                                             size='small'><SiMicrosoftexcel size={20} />
                                                         </Button>
                                                     </Tooltip>
@@ -515,7 +412,6 @@ export class CompetencyListController extends UIController {
                                                     {isTransfer &&
                                                         <div style={{ width: "100%" }}>
                                                             <DialogContentText>Aktarım yapılıyor...</DialogContentText>
-                                                            <LinearProgressWithLabel value={transferPercent} />
                                                         </div>
                                                     }
                                                 </div>
