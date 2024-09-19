@@ -80,43 +80,6 @@ export class ParametersController extends UIFormController {
                             })
                         }
 
-                        const StringParameter = ({ stringParameter, index }) => (
-                            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
-                                <div style={{ fontSize: "14px", fontWeight: 400 }}>
-                                    {Resources.StringParameters.find(x => x.localStr === stringParameter?.name)?.name}
-                                </div>
-                                <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center", gap: "5px" }}>
-                                    <TextField
-                                        size="small"
-                                        value={stringParameter.value}
-                                        onChange={(e) => {
-                                            const updatedStringParameters = [...stringParameters];
-                                            updatedStringParameters[index].value = e.target.value;
-                                            setStringParameters(updatedStringParameters);
-                                        }}
-                                    />
-                                    <IconButton onClick={() => {
-                                        updateParameter({
-                                            databaseId: AppInfo.Database,
-                                            collectionId: Collections.StringParameter,
-                                            documentId: stringParameter.$id,
-                                            data: {
-                                                value: stringParameter.value
-                                            }
-                                        }, () => {
-                                            Toast.fire({
-                                                icon: "success",
-                                                title: "Parametre güncellendi"
-                                            });
-                                        });
-                                    }}>
-                                        <CheckIcon />
-                                    </IconButton>
-                                </div>
-                            </div>
-                        );
-
-
                         return (
                             HStack({ alignment: cTopLeading })(
                                 PortalMenu("Parametreler").background(theme ? "rgba(0,0,0,.85)" : "white").foregroundColor(theme ? "white" : ""),
@@ -181,12 +144,49 @@ export class ParametersController extends UIFormController {
                                                     </div>
                                                 )}
                                                 {stringParameters.filter((x) => x.name != "position_based_polyvalence_management").map((stringParameter, i) =>
-                                                    stringParameter.name === "reminder_mail_for_unfilled_tables_day" ?
-                                                        parameters.find(x => x.name === "reminder_mail_for_unfilled_tables" && x.is_active) ?
-                                                            <StringParameter stringParameter={stringParameter} index={i} />
-                                                            : null
-                                                        :
-                                                        <StringParameter stringParameter={stringParameter} index={i} />
+                                                    <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }} key={i}>
+                                                        <div style={{ fontSize: "14px", fontWeight: 400 }}>
+                                                            {Resources.StringParameters.find(x => x.localStr === stringParameter?.name)?.name}
+                                                        </div>
+                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center", gap: "5px" }}>
+                                                            <TextField
+                                                                size="small"
+                                                                value={stringParameters[i].value}
+                                                                key={i}
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value;
+                                                                    if (!isNaN(Number(value))) {
+                                                                        const updatedStringParameters = stringParameters;
+                                                                        updatedStringParameters[i].value = value;
+                                                                        setStringParameters(updatedStringParameters);
+                                                                    } else {
+                                                                        Toast.fire({
+                                                                            icon: "error",
+                                                                            title: "Lütfen geçerli bir sayı girin"
+                                                                        });
+                                                                        return;
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <IconButton onClick={() => {
+                                                                updateParameter({
+                                                                    databaseId: AppInfo.Database,
+                                                                    collectionId: Collections.StringParameter,
+                                                                    documentId: stringParameter.$id,
+                                                                    data: {
+                                                                        value: stringParameter.value
+                                                                    }
+                                                                }, () => {
+                                                                    Toast.fire({
+                                                                        icon: "success",
+                                                                        title: "Parametre güncellendi"
+                                                                    });
+                                                                });
+                                                            }}>
+                                                                <CheckIcon />
+                                                            </IconButton>
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         )
@@ -196,7 +196,5 @@ export class ParametersController extends UIFormController {
                         )
                     })
         )
-
-
     }
 }

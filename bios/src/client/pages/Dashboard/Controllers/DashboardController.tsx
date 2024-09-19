@@ -515,13 +515,13 @@ export class DashboardController extends UIController {
                                                         console.log("Boolean Parametreler eşit")
                                                         Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, "string_parameter", [Query.limit(1000)]).then((stringDocs) => {
                                                             const stringParameters: IStringParameter.IBase[] = stringDocs.documents as any[];
-                                                            if (Resources.StringParameters.length > stringParameters.length) {
+                                                            if (Resources.StringParameters.length + 1 > stringParameters.length) { // Buradaki +1 ifadesi service broker'dan gelen position_based_polyvalence_management değeri için
                                                                 const stringParameterTasks = new Umay()
                                                                 stringParameterTasks.Task(async () => {
                                                                     setIsUpdate(true)
                                                                 })
                                                                 Resources.StringParameters.forEach(async (param) => {
-                                                                    const stringParameter = stringParameters.find((m) => m.$id === param.localStr)
+                                                                    const stringParameter = stringParameters.find((m) => m.name === param.localStr)
                                                                     if (!stringParameter) {
                                                                         stringParameterTasks.Task(async () => {
                                                                             try {

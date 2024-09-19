@@ -49,7 +49,8 @@ export namespace Resources {
         line_based_competency_relationship: "line_based_competency_relationship",
         polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
         reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables",
-        competency_education_relationship: "competency_education_relationship"
+        competency_education_relationship: "competency_education_relationship",
+        new_employee_evaluation_day: "new_employee_evaluation_day",
     }
 
     export const Parameters = [
@@ -119,6 +120,11 @@ export namespace Resources {
         {
             name: "Veri girişi yapılmayan tablolar için hatırlatma maili kaç gün öncesinden gönderilsin?",
             localStr: "reminder_mail_for_unfilled_tables_day",
+            type: "string",
+        },
+        {
+            name: "Yeni işe giren personel kaç gün sonra değerlendirmeye tabi tutulsun?",
+            localStr: "new_employee_evaluation_day",
             type: "string",
         }
     ]
