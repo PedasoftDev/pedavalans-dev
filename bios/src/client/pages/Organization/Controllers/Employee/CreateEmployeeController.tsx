@@ -54,6 +54,7 @@ import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 import { Form } from '../../Views/Views';
 import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 import AccountRelation from '../../../../../server/hooks/accountRelation/main';
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -116,6 +117,7 @@ export class CreateEmployeeController extends UIController {
     const { createFilePage } = BucketFiles.Create(AppInfo.Name, "employee_documents_id")
 
     const { createEmployeeMultipleLines } = EmployeeMultipleLines.Create()
+    const { createEmployeeMultipleDepartments } = EmployeeMultipleDepartments.Create()
 
     return (
       isLoading || isLoadingAccounts || isLoadingResult || isLoadingWorkPlace || isLoadingPositionRelationDepartmentsList || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
@@ -131,6 +133,7 @@ export class CreateEmployeeController extends UIController {
             })
 
             const [multipleLines, setMultipleLines] = useState([])
+            const [multipleDepartments, setMultipleDepartments] = useState([])
 
             const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
 
@@ -139,6 +142,7 @@ export class CreateEmployeeController extends UIController {
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
+            const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
 
             const [file, setFile] = useState(null);
 
@@ -154,11 +158,13 @@ export class CreateEmployeeController extends UIController {
                 label: "Ünvanı",
                 options: titles
               },
-              {
-                id: "department_id",
-                label: "Bulunduğu Departman",
-                options: departments.filter((item) => item.is_active === true)
-              },
+              multipleDepartmentDefinition ? {}
+                :
+                {
+                  id: "department_id",
+                  label: "Bulunduğu Departman",
+                  options: departments.filter((item) => item.is_active === true)
+                },
               {
                 id: "position_id",
                 label: "Bulunduğu Pozisyon",
@@ -278,6 +284,23 @@ export class CreateEmployeeController extends UIController {
                     }
                   })
                 })
+                for (const item of multipleDepartments) {
+                  const multipleDepartmentsId = nanoid();
+                  const createForm = {
+                    id: multipleDepartmentsId,
+                    employee_id: id,
+                    department_id: item.id,
+                    department_record_id: item.record_id,
+                    department_name: item.name,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  createEmployeeMultipleDepartments({
+                    documentId: multipleDepartmentsId,
+                    data: createForm
+                  })
+                }
                 for (const item of multipleLines) {
                   const multipleLinesId = nanoid();
                   const createForm = {
@@ -457,6 +480,18 @@ export class CreateEmployeeController extends UIController {
                 ).then((res) => {
                   setMultipleLineDefinition(res.documents[0]?.is_active)
                 })
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Name,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "multiple_department_definition"),
+                    Query.limit(10000),
+                  ]
+                ).then((res) => {
+                  setMultipleDepartmentDefinition(res.documents[0]?.is_active)
+                })
               })
             }, [])
 
@@ -581,6 +616,30 @@ export class CreateEmployeeController extends UIController {
                                     />
                                   )}
                                 />) : null
+                              }
+                              {
+                                multipleDepartmentDefinition ? (
+                                  <Autocomplete
+                                    options={departments.filter((item) => item.is_active === true)}
+                                    value={multipleDepartments}
+                                    multiple
+                                    onChange={(event, newValue) => {
+                                      setMultipleDepartments(newValue);
+                                    }}
+                                    getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        label="Bulunduğu Departman"
+                                        name="department_id"
+                                        size="small"
+                                      />
+                                    )}
+                                  />
+                                )
+                                  : (
+                                    null
+                                  )
                               }
                               {selectFormStates.map((selectFormState) =>
                                 <div key={selectFormState.id}>
