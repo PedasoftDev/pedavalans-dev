@@ -28,6 +28,7 @@ import Swal from 'sweetalert2'
 import employeeListExport from '../../../../assets/Functions/employeeListExport'
 import Parameters from '../../../../../server/hooks/parameters/main'
 import { DataImportBroker } from '../../../../../server/brokers/DataImportBroker'
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main'
 
 
 
@@ -71,9 +72,10 @@ export class EmployeeListController extends UIController {
     const { lines: propLines, isLoadingLines } = OrganizationStructureLine.GetList(me?.prefs?.organization)
     const { titles: propTitles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
+    const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleLineList } = EmployeeMultipleLines.GetList()
 
     return (
-      isLoading || isLoadingResult || isLoadingDepartments || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines ? VStack(Spinner()) :
+      isLoading || isLoadingResult || isLoadingDepartments || isLoadingEmployeeMultipleLineList || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines ? VStack(Spinner()) :
         UIViewBuilder(() => {
           const accountRelation = accountRelations[0]
           const value = 0;
@@ -90,6 +92,7 @@ export class EmployeeListController extends UIController {
 
           const [lineRelationState, setLineRelationState] = useState<boolean>(false);
           const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
+          const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
 
 
           const filteredEmployees = propEmployees.filter((employee) =>
@@ -226,20 +229,38 @@ export class EmployeeListController extends UIController {
                 }
               }
             },
-            {
-              field: 'line_id',
-              headerName: 'Hat',
-              width: 200,
-              flex: 1,
-              valueGetter: (params: any) => {
-                const line = propLines.find((line: any) => line.id === params.value);
-                if (line) {
-                  return line.name;
-                } else {
-                  return "";
+            multipleLineDefinition ?
+              ({
+                field: 'line_id',
+                headerName: 'Hat',
+                width: 200,
+                flex: 1,
+                valueGetter: (params: any) => {
+                  const employeeLines = employeeMultipleLinesList.filter((x) => x.employee_id === params.row.$id);
+                  const lines = propLines.filter((item) =>
+                    employeeLines.some((employeeLine) => employeeLine.line_id === item.id)
+                  );
+                  if (lines.length > 0) {
+                    return lines.map((line) => line.name).join(", ");
+                  }
+                  return ''; // Eğer satır yoksa boş döner
                 }
-              }
-            },
+              })
+              :
+              ({
+                field: 'line_id',
+                headerName: 'Hat',
+                width: 200,
+                flex: 1,
+                valueGetter: (params: any) => {
+                  const line = propLines.find((line: any) => line.id === params.value);
+                  if (line) {
+                    return line.name;
+                  } else {
+                    return "";
+                  }
+                }
+              }),
             {
               field: 'department_id',
               headerName: 'Departman',
@@ -295,7 +316,7 @@ export class EmployeeListController extends UIController {
               setLineRelationState(res.documents[0]?.is_active)
             }).then(() => {
               Services.Databases.listDocuments(
-                AppInfo.Database,
+                AppInfo.Name,
                 AppInfo.Database,
                 Collections.Parameter,
                 [
@@ -304,6 +325,18 @@ export class EmployeeListController extends UIController {
                 ]
               ).then((res) => {
                 setWorkPlaceDefination(res.documents[0]?.is_active)
+              })
+            }).then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "multiple_line_definition"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setMultipleLineDefinition(res.documents[0]?.is_active)
               })
             })
           }, [])

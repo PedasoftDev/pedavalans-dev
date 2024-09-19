@@ -435,7 +435,7 @@ export class CreateEmployeeController extends UIController {
                 })
               }).then(() => {
                 Services.Databases.listDocuments(
-                  AppInfo.Database,
+                  AppInfo.Name,
                   AppInfo.Database,
                   Collections.Parameter,
                   [
@@ -447,7 +447,7 @@ export class CreateEmployeeController extends UIController {
                 })
               }).then(() => {
                 Services.Databases.listDocuments(
-                  AppInfo.Database,
+                  AppInfo.Name,
                   AppInfo.Database,
                   Collections.Parameter,
                   [

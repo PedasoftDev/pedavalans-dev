@@ -49,6 +49,7 @@ namespace Collections {
     export const Related_Position_Workplaces = "related_position_workplaces";
     export const Related_Workplaces_To_Trainer = "related_workplaces_to_trainer";
     export const EmployeeLineRelation = "employee_line_relation";
+    export const EmployeeDepartmentRelation = "employee_department_relation";
 }
 
 export default Collections;
