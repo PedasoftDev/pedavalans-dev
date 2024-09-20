@@ -29,6 +29,7 @@ import employeeListExport from '../../../../assets/Functions/employeeListExport'
 import Parameters from '../../../../../server/hooks/parameters/main'
 import { DataImportBroker } from '../../../../../server/brokers/DataImportBroker'
 import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main'
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main'
 
 
 
@@ -73,9 +74,10 @@ export class EmployeeListController extends UIController {
     const { titles: propTitles, isLoadingTitles } = OrganizationStructureTitle.GetList(me?.prefs?.organization)
     const { parameters: lineBased, isLoading: isLoadingParameter } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
     const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleLineList } = EmployeeMultipleLines.GetList()
+    const { employeeMultipleDepartmentsList, isLoading: isLoadingEmployeeMultipleDepList } = EmployeeMultipleDepartments.GetList()
 
     return (
-      isLoading || isLoadingResult || isLoadingDepartments || isLoadingEmployeeMultipleLineList || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines ? VStack(Spinner()) :
+      isLoading || isLoadingResult || isLoadingDepartments || isLoadingEmployeeMultipleLineList || isLoadingEmployeeMultipleDepList || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingLines ? VStack(Spinner()) :
         UIViewBuilder(() => {
           const accountRelation = accountRelations[0]
           const value = 0;
@@ -93,7 +95,7 @@ export class EmployeeListController extends UIController {
           const [lineRelationState, setLineRelationState] = useState<boolean>(false);
           const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
           const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
-
+          const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
 
           const filteredEmployees = propEmployees.filter((employee) =>
             employee.first_name.toLowerCase().indexOf(filterKey.toLowerCase()) > -1 ||
@@ -236,9 +238,9 @@ export class EmployeeListController extends UIController {
                 width: 200,
                 flex: 1,
                 valueGetter: (params: any) => {
-                  const employeeLines = employeeMultipleLinesList.filter((x) => x.employee_id === params.row.$id);
+                  const employeeLines = employeeMultipleLinesList?.filter((x) => x.employee_id === params.row.$id);
                   const lines = propLines.filter((item) =>
-                    employeeLines.some((employeeLine) => employeeLine.line_id === item.id)
+                    employeeLines?.some((employeeLine) => employeeLine.line_id === item.id)
                   );
                   if (lines.length > 0) {
                     return lines.map((line) => line.name).join(", ");
@@ -261,20 +263,38 @@ export class EmployeeListController extends UIController {
                   }
                 }
               }),
-            {
-              field: 'department_id',
-              headerName: 'Departman',
-              width: 200,
-              flex: 1,
-              valueGetter: (params: any) => {
-                const department = propDepartments.find((department: any) => department.id === params.value);
-                if (department) {
-                  return department.name;
-                } else {
-                  return "";
+            multipleDepartmentDefinition ?
+              {
+                field: 'department_id',
+                headerName: 'Departman',
+                width: 200,
+                flex: 1,
+                valueGetter: (params: any) => {
+                  const employeeDeps = employeeMultipleDepartmentsList.filter((x) => x.employee_id === params.row.$id);
+                  const deps = propDepartments.filter((item) =>
+                    employeeDeps.some((employeeLine) => employeeLine.department_id === item.id)
+                  );
+                  if (deps.length > 0) {
+                    return deps.map((line) => line.name).join(", ");
+                  }
+                  return ''; // Eğer satır yoksa boş döner
                 }
               }
-            },
+              :
+              {
+                field: 'department_id',
+                headerName: 'Departman',
+                width: 200,
+                flex: 1,
+                valueGetter: (params: any) => {
+                  const department = propDepartments.find((department: any) => department.id === params.value);
+                  if (department) {
+                    return department.name;
+                  } else {
+                    return "";
+                  }
+                }
+              },
             {
               field: '$createdAt',
               headerName: 'Oluşturulma Tarihi',
@@ -337,6 +357,18 @@ export class EmployeeListController extends UIController {
                 ]
               ).then((res) => {
                 setMultipleLineDefinition(res.documents[0]?.is_active)
+              })
+            }).then(() => {
+              Services.Databases.listDocuments(
+                AppInfo.Name,
+                AppInfo.Database,
+                Collections.Parameter,
+                [
+                  Query.equal("name", "multiple_department_definition"),
+                  Query.limit(10000),
+                ]
+              ).then((res) => {
+                setMultipleDepartmentDefinition(res.documents[0]?.is_active)
               })
             })
           }, [])

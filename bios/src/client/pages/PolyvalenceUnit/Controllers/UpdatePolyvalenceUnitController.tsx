@@ -425,7 +425,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                             {...params}
                                                             label="Bağlı Hat"
                                                             size="small"
-                                                            required
+
                                                         />}
                                                     />
                                                 </FormControl>
