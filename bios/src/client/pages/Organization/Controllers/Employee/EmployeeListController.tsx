@@ -238,9 +238,9 @@ export class EmployeeListController extends UIController {
                 width: 200,
                 flex: 1,
                 valueGetter: (params: any) => {
-                  const employeeLines = employeeMultipleLinesList.filter((x) => x.employee_id === params.row.$id);
+                  const employeeLines = employeeMultipleLinesList?.filter((x) => x.employee_id === params.row.$id);
                   const lines = propLines.filter((item) =>
-                    employeeLines.some((employeeLine) => employeeLine.line_id === item.id)
+                    employeeLines?.some((employeeLine) => employeeLine.line_id === item.id)
                   );
                   if (lines.length > 0) {
                     return lines.map((line) => line.name).join(", ");

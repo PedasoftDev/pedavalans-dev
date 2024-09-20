@@ -34,6 +34,9 @@ import LinearProgressWithLabel from '../../../components/LinearProgressWithLabel
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { selectPendingEvaluation, setPendingEvaluationToNull } from "../../../features/pendingEvaluation";
 import OrganizationStructureWorkPlace from "../../../../server/hooks/organizationStructureWorkPlace/main";
+import PolyvalenceUnitTableLineRelation from "../../../../server/hooks/polyvalenceUnitTableLineRelation/main";
+import EmployeeMultipleLines from "../../../../server/hooks/employeeMultipleLines/Main";
+import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -100,6 +103,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
         const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
         const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+        const [selectedTableLineId, setSelectedTableLineId] = useState<string>("");
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
@@ -113,10 +117,12 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
-
+        const { lineRelation, isLoading: isLoadingLineRelation } = PolyvalenceUnitTableLineRelation.GetByPolyvalenceUnitId(selectedTable.polyvalence_table_id, me?.prefs?.organization);
+        const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleLine } = EmployeeMultipleLines.GetList()
+        const { competencyLineRelationList, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetList();
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingCompetencyLineRelation || isLoadingEmployeeMultipleLine || isLoadingLineRelation || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
@@ -132,6 +138,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                         const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
                         const [selectedWorkPlaceId, setSelectedWorkPlaceId] = useState<string>("");
                         //
+                        const [lineBasedCompetencyRelationship, setLineBasedCompetencyRelationship] = useState<boolean>(false);
                         // Dialog State
                         const [dialogOpen, setDialogOpen] = useState(false);
                         const [dialogForm, setDialogForm] = useState<{ polyvalence_table_id: string, previous_evaluation_period: string, current_evaluation_period: string }>({
@@ -450,6 +457,18 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 ]
                             ).then((res) => {
                                 setWorkPlaceDefination(res.documents[0]?.is_active)
+                            }).then(() => {
+                                Services.Databases.listDocuments(
+                                    AppInfo.Name,
+                                    AppInfo.Database,
+                                    Collections.Parameter,
+                                    [
+                                        Query.equal("name", "line_based_competency_relationship"),
+                                        Query.limit(10000)
+                                    ]
+                                ).then((res) => {
+                                    setLineBasedCompetencyRelationship(res.documents[0]?.is_active)
+                                })
                             })
                         }, [])
 
@@ -536,16 +555,44 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                 selectedTable && selectedPeriod &&
                                                 <LeftContainerContent>
                                                     {
-                                                        employees
-                                                            .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
-                                                            .filter((employee) => employee.is_active)
-                                                            .sort((a, b) => a.first_name.localeCompare(b.first_name))
-                                                            .map((employee, i) =>
-                                                                <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>
-                                                                    <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.$id && { color: "#3BA2EE" })} />
-                                                                    {employee.first_name} {employee.last_name}
-                                                                </LeftContainerContentItem>
+                                                        lineBasedCompetencyRelationship ?
+                                                            (
+                                                                employeeMultipleLinesList
+                                                                    .filter((item) => item.line_id === lineRelation[0].line_id)
+                                                                    .filter((item) => employees.some((x) => x.$id === item.employee_id))
+                                                                    .map((employeeItem, i) => {
+                                                                        const employee = employees.find((x) => x.$id === employeeItem.employee_id);
+                                                                        console.log('EmployeeItem:', employeeItem);
+                                                                        console.log('Found Employee:', employee);
+
+                                                                        if (!employee) return null;
+
+                                                                        return (
+                                                                            <LeftContainerContentItem
+                                                                                key={employeeItem.employee_id}
+                                                                                selected={selectedEmployeeId === employeeItem.employee_id}
+                                                                                onClick={() => selectEmployee(employeeItem.employee_id)}
+                                                                            >
+                                                                                <IoPersonCircleOutline
+                                                                                    size={25}
+                                                                                    {...(selectedEmployeeId === employeeItem.employee_id && { color: "#3BA2EE" })}
+                                                                                />
+                                                                                {employee.first_name} {employee.last_name}
+                                                                            </LeftContainerContentItem>
+                                                                        );
+                                                                    })
                                                             )
+                                                            :
+                                                            (employees
+                                                                .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
+                                                                .filter((employee) => employee.is_active)
+                                                                .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                                                                .map((employee, i) =>
+                                                                    <LeftContainerContentItem key={employee.id} selected={selectedEmployeeId === employee.$id} onClick={() => selectEmployee(employee.$id)}>
+                                                                        <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.$id && { color: "#3BA2EE" })} />
+                                                                        {employee.first_name} {employee.last_name}
+                                                                    </LeftContainerContentItem>
+                                                                ))
                                                     }
                                                 </LeftContainerContent>
                                             }
@@ -578,7 +625,19 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                 }}>
                                                     <StyledDataGrid
                                                         columns={columns}
-                                                        rows={selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList}
+                                                        rows={
+                                                            lineBasedCompetencyRelationship ?
+                                                                (
+                                                                    competencyLineRelationList
+                                                                        .filter((item) => item.line_id === lineRelation[0].line_id)
+                                                                        .filter((item) => selectedCompetencyList.some((x) => x.competency_id === item.competency_id))
+                                                                        .map((relation) => selectedCompetencyList.find((x) => x.competency_id === relation.competency_id))
+                                                                )
+                                                                :
+                                                                (
+                                                                    selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList
+                                                                )
+                                                        }
                                                         getRowId={(row) => row.competency_id}
                                                         localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                     />
