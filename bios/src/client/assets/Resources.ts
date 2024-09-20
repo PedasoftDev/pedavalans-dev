@@ -109,6 +109,11 @@ export namespace Resources {
             localStr: "multiple_department_definition",
             type: "boolean",
         },
+        {
+            name: "Pozisyon bazlı polivalans yönetimi uygulanacak mı?",
+            localStr: "position_based_polyvalence_management",
+            type: "boolean",
+        }
     ];
 
     export const StringParameters = [

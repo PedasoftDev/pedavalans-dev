@@ -130,7 +130,7 @@ export class ParametersController extends UIFormController {
                                                         </div>
                                                     </div>
                                                 }
-                                                {parameters.filter((x) => x.name != "multiple_line_definition" && x.name != "work_place_definition" && x.name != "multiple_department_definition").map((parameter) =>
+                                                {parameters.filter((x) => x.name != "position_based_polyvalence_management").filter((x) => x.name != "multiple_line_definition" && x.name != "work_place_definition" && x.name != "multiple_department_definition").map((parameter) =>
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>
                                                             {Resources.Parameters.find(x => x.localStr === parameter?.name)?.name}
@@ -143,7 +143,7 @@ export class ParametersController extends UIFormController {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {stringParameters.filter((x) => x.name != "position_based_polyvalence_management").map((stringParameter, i) =>
+                                                {stringParameters.map((stringParameter, i) =>
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }} key={i}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>
                                                             {Resources.StringParameters.find(x => x.localStr === stringParameter?.name)?.name}
@@ -151,7 +151,7 @@ export class ParametersController extends UIFormController {
                                                         <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center", gap: "5px" }}>
                                                             <TextField
                                                                 size="small"
-                                                                value={stringParameters[i].value}
+                                                                value={stringParameter.value}
                                                                 key={i}
                                                                 onChange={(e) => {
                                                                     const value = e.target.value;
