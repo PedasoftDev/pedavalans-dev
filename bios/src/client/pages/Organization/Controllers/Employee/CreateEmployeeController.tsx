@@ -158,19 +158,18 @@ export class CreateEmployeeController extends UIController {
                 label: "Ünvanı",
                 options: titles
               },
-              multipleDepartmentDefinition ? {}
-                :
-                {
-                  id: "department_id",
-                  label: "Bulunduğu Departman",
-                  options: departments.filter((item) => item.is_active === true)
-                },
+              !multipleDepartmentDefinition &&
+              {
+                id: "department_id",
+                label: "Bulunduğu Departman",
+                options: departments?.filter((item) => item.is_active === true)
+              },
               {
                 id: "position_id",
                 label: "Bulunduğu Pozisyon",
                 options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
               }
-            ];
+            ].filter(Boolean);
 
             const documentColumns = [
               { field: 'document_type_name', headerName: 'Belge Türü', flex: 1 },
@@ -235,7 +234,113 @@ export class CreateEmployeeController extends UIController {
                     log_type: "create",
                     job_start_date: formEmployee.job_start_date,
                     department_id: formEmployee.department_id,
-                    department_name: departments.find((department) => department.id === formEmployee.department_id)?.name,
+                    department_name: departments?.find((department) => department.id === formEmployee.department_id)?.name,
+                    position_id: formEmployee.position_id,
+                    position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
+                    line_id: formEmployee.line_id,
+                    line_name: lines.find((line) => line.id === formEmployee.line_id)?.name,
+                    title_id: formEmployee.title_id,
+                    title_name: titles.find((title) => title.id === formEmployee.title_id)?.name,
+                    manager_id: formEmployee.manager_id,
+                    manager_name: manager?.first_name + " " + manager?.last_name,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  createLog({
+                    documentId: nanoid(),
+                    data: logData
+                  }, () => {
+                    if (documents.length === 0) {
+                      Toast.fire({
+                        icon: 'success',
+                        title: 'Personel başarıyla eklendi'
+                      })
+                      onReset()
+                    } else {
+                      Toast.fire({
+                        icon: 'info',
+                        title: 'Belgeler ekleniyor'
+                      })
+                      documents.map((document, i) => {
+                        delete document.id;
+                        createOrganizationEmployeeDocument({
+                          documentId: nanoid(),
+                          data: {
+                            ...document,
+                            employee_id: id
+                          }
+                        }, () => {
+                          if (i === documents.length - 1) {
+                            Toast.fire({
+                              icon: 'success',
+                              title: 'Personel başarıyla eklendi'
+                            })
+                            onReset()
+                          }
+                        })
+                      })
+                    }
+                  })
+                })
+                for (const item of multipleLines) {
+                  const multipleLinesId = nanoid();
+                  const createForm = {
+                    id: multipleLinesId,
+                    employee_id: id,
+                    department_id: formEmployee.department_id,
+                    line_id: item.id,
+                    line_record_id: item.record_id,
+                    line_name: item.name,
+                    tenant_id: me?.prefs?.organization,
+                    is_active: true,
+                    is_deleted: false
+                  }
+                  createEmployeeMultipleLines({
+                    documentId: multipleLinesId,
+                    data: createForm
+                  })
+                }
+                createFilePage({
+                  bucketId: "employees_image_bucket",
+                  fileId: id,
+                  file: file,
+                  onProgress: (progress) => {
+                    console.log('Yükleme durumu:', progress);
+                    return {};
+                  },
+                })
+              }
+              else if (multipleDepartmentDefinition) {
+                const id = nanoid()
+                if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
+                  setFormIsEmployee(true)
+                  ToastError("Personel bilgileri eksik", "")
+                  return;
+                } else if (employees.some((document) => document.id == formEmployee.id)) {
+                  Toast.fire({
+                    icon: "error",
+                    title: "Çalışan eklenirken bir hata oluştu!",
+                    text: "Çalışan sicil numarası zaten kullanılmaktadır."
+                  })
+                  return;
+                }
+                createEmployee({
+                  documentId: id,
+                  data: {
+                    ...formEmployee,
+                    tenant_id: me?.prefs?.organization,
+                  }
+                }, () => {
+                  const manager = employees.find((employee) => employee.id === formEmployee.manager_id)
+                  const logData: IOrganizationEmployeeLog.Create = {
+                    employee_id: id,
+                    employee_name: formEmployee.first_name + " " + formEmployee.last_name,
+                    log_date: new Date().toString(),
+                    log_type: "create",
+                    job_start_date: formEmployee.job_start_date,
+                    department_id: formEmployee.department_id,
+                    department_name: departments?.find((department) => department.id === formEmployee.department_id)?.name,
                     position_id: formEmployee.position_id,
                     position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
                     line_id: formEmployee.line_id,
@@ -301,24 +406,6 @@ export class CreateEmployeeController extends UIController {
                     data: createForm
                   })
                 }
-                for (const item of multipleLines) {
-                  const multipleLinesId = nanoid();
-                  const createForm = {
-                    id: multipleLinesId,
-                    employee_id: id,
-                    department_id: formEmployee.department_id,
-                    line_id: item.id,
-                    line_record_id: item.record_id,
-                    line_name: item.name,
-                    tenant_id: me?.prefs?.organization,
-                    is_active: true,
-                    is_deleted: false
-                  }
-                  createEmployeeMultipleLines({
-                    documentId: multipleLinesId,
-                    data: createForm
-                  })
-                }
                 createFilePage({
                   bucketId: "employees_image_bucket",
                   fileId: id,
@@ -328,8 +415,7 @@ export class CreateEmployeeController extends UIController {
                     return {};
                   },
                 })
-              }
-              else {
+              } else {
                 const id = nanoid()
                 if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
                   setFormIsEmployee(true)
@@ -358,7 +444,7 @@ export class CreateEmployeeController extends UIController {
                     log_type: "create",
                     job_start_date: formEmployee.job_start_date,
                     department_id: formEmployee.department_id,
-                    department_name: departments.find((department) => department.id === formEmployee.department_id)?.name,
+                    department_name: departments?.find((department) => department.id === formEmployee.department_id)?.name,
                     position_id: formEmployee.position_id,
                     position_name: positions.find((position) => position.id === formEmployee.position_id)?.name,
                     line_id: formEmployee.line_id,
@@ -618,7 +704,7 @@ export class CreateEmployeeController extends UIController {
                                 />) : null
                               }
                               {
-                                multipleDepartmentDefinition ? (
+                                multipleDepartmentDefinition && (
                                   <Autocomplete
                                     options={departments.filter((item) => item.is_active === true)}
                                     value={multipleDepartments}
@@ -637,9 +723,6 @@ export class CreateEmployeeController extends UIController {
                                     )}
                                   />
                                 )
-                                  : (
-                                    null
-                                  )
                               }
                               {selectFormStates.map((selectFormState) =>
                                 <div key={selectFormState.id}>
