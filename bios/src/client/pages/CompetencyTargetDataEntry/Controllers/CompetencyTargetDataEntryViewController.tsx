@@ -675,8 +675,9 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                                 return competencyLineRelationList
                                                                     .filter((item) => item.line_id === lineRelation[0].line_id)
                                                                     .filter((item) => selectedCompetencyList.some((x) => x.competency_id === item.competency_id))
+                                                                    .map((relation) => selectedCompetencyList.find((x) => x.competency_id === relation.competency_id))
                                                             } else if (departmentBasedCompetencyRelationship) {
-                                                                return selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList
+                                                                return selectedCompetencyList.filter((competency) => selectedGroupId === "" ? true : competency.competency_group_id === selectedGroupId)
                                                             }
                                                             else {
                                                                 return selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList
