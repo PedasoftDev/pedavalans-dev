@@ -20,6 +20,8 @@ export namespace IOrganizationStructure {
             department_start_date: string;
             position_start_date: string;
             phone: string;
+            email: string;
+            proxy_employee_id: string;
             tenant_id: string;
             realm_id: string;
             educational_status?: string;
@@ -41,6 +43,8 @@ export namespace IOrganizationStructure {
             department_start_date: string;
             position_start_date: string;
             phone: string;
+            email: string;
+            proxy_employee_id: string;
             is_active: boolean;
             is_deleted: boolean;
             tenant_id: string;

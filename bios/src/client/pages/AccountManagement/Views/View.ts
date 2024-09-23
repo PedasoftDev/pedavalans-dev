@@ -7,3 +7,12 @@ export const GridContainer = styled.div`
     width: 100%;
   }
 `
+export const ResponsiveDiv = styled.div`
+  width: calc(100vw - 400px);
+  display: flex;
+  justify-content: flex-end;
+
+  @media (max-width: 1200px) {
+    width: auto;  // 1200px'den küçük ekranlarda width kaldırılır
+  }
+`;

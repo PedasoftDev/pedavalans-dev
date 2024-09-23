@@ -42,7 +42,10 @@ import Swal from 'sweetalert2';
 
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
 import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
@@ -60,9 +63,6 @@ import { Toast, ToastError, ToastSuccess } from '../../../../components/Toast';
 import { Views } from '../../../../components/Views';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Form } from '../../Views/Views';
-import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
-import AccountRelation from '../../../../../server/hooks/accountRelation/main';
-import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -79,6 +79,8 @@ const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   title_id: '',
   manager_id: '',
   phone: '',
+  email: '',
+  proxy_employee_id: '',
   educational_status: '',
   position_start_date: '',
   realm_id: '',
@@ -245,6 +247,14 @@ export class UpdateEmployeeController extends UIController {
                 Toast.fire({
                   icon: "error",
                   title: "Bu sicil numarası zaten kullanılıyor. Lütfen farklı bir sicil numarası girin."
+                })
+                return;
+              }
+              if (employees.find(x => x.email != formEmployee.email && x.email === formEmployee.email)) {
+                Toast.fire({
+                  icon: "error",
+                  title: "Çalışan eklenirken bir hata oluştu!",
+                  text: "E-Posta zaten kullanılmaktadır."
                 })
                 return;
               }
@@ -946,6 +956,25 @@ export class UpdateEmployeeController extends UIController {
                                   />
                                 )}
                               />
+                              <Autocomplete
+                                options={employees}
+                                value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
+                                onChange={(event, newValue) => {
+                                  setFormEmployee({
+                                    ...formEmployee,
+                                    proxy_employee_id: newValue.$id
+                                  });
+                                }}
+                                getOptionLabel={(option) => option.first_name + " " + option.last_name}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    label="Yerine Vekalet Edecek Personel"
+                                    name="proxy_employee_id"
+                                    size="small"
+                                  />
+                                )}
+                              />
                               <FormControl fullWidth size="small">
                                 <TextField
                                   name='phone'
@@ -963,6 +992,22 @@ export class UpdateEmployeeController extends UIController {
                                   }
                                   }
                                 />
+                              </FormControl>
+                              <FormControl fullWidth size="small">
+                                <TextField
+                                  name='email'
+                                  size='small'
+                                  label='E-Posta'
+                                  value={formEmployee.email}
+                                  onChange={(e) => {
+                                    setFormEmployee({
+                                      ...formEmployee,
+                                      email: e.target.value as string
+                                    })
+                                  }
+                                  }
+                                />
+
                               </FormControl>
                               <FormControlLabel
                                 sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}

@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 38,
+    "version": 39,
     "collections": [
         {
             "id": "competency",
@@ -103,7 +103,7 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
-                    "key":"work_place_id",
+                    "key": "work_place_id",
                     "type": "string",
                     "size": 256,
                     "version": 33
@@ -1709,6 +1709,18 @@ const Database: IDatabase = {
                     "version": 10
                 },
                 {
+                    "key": "email",
+                    "type": "string",
+                    "size": 256,
+                    "version": 39
+                },
+                {
+                    "key": "proxy_employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 39
+                },
+                {
                     "key": "is_active",
                     "type": "boolean",
                     "version": 1,
@@ -3088,49 +3100,49 @@ const Database: IDatabase = {
                     "key": "education_id",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "id",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
                     "size": 256,
-                    "version":28                    
+                    "version": 28
                 },
                 {
                     "key": "lower_bound",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "upper_bound",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "competency_level",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "competency_level_id",
                     "type": "string",
                     "size": 256,
-                    "version":29                    
+                    "version": 29
                 },
                 {
-                    "key":"tenant_id",
-                    "type":"string",
-                    "size":256,
-                    "version":27
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 27
                 },
                 {
                     "key": "is_active",
@@ -3483,46 +3495,52 @@ const Database: IDatabase = {
             ]
         },
         {
-            "id": "employee_department_relation",
-            "name": "Employee Department Relation",
+            "id": "proxy_account",
+            "name": "Proxy Account",
             "description": {
-                "en": "Employee Department Relation is a collection of employee department relations.",
-                "tr": "Çalışan departman ilişkilerinin koleksiyonudur."
+                "en": "",
+                "tr": ""
             },
-            "version": 38,
+            "version": 39,
             "attributes": [
                 {
-                    "key": "id",
+                    "key": "principal_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
                 },
                 {
-                    "key": "employee_id",
+                    "key": "agent_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
                 },
                 {
-                    "key": "department_id",
+                    "key": "start_date",
                     "type": "string",
                     "size": 256,
                     "version": 1
                 },
                 {
-                    "key": "department_record_id",
+                    "key": "end_date",
                     "type": "string",
                     "size": 256,
                     "version": 1
                 },
                 {
-                    "key": "department_name",
+                    "key": "password",
                     "type": "string",
                     "size": 256,
                     "version": 1
                 },
                 {
-                    "key": "tenant_id",
+                    "key": "email",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "power_of_attorney_type",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3539,7 +3557,6 @@ const Database: IDatabase = {
                     "version": 1,
                     "default": false
                 },
-
             ]
         },
     ]

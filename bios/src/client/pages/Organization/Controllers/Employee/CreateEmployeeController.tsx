@@ -27,12 +27,15 @@ import {
   VStack,
 } from '@tuval/forms';
 import dayjs from 'dayjs';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 import OrganizationEmployeeDocument from '../../../../../server/hooks/organizationEmployeeDocument/main';
 import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
@@ -52,9 +55,6 @@ import { IOrganizationEmployeeLog } from '../../../../interfaces/IOrganizationEm
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 import { Form } from '../../Views/Views';
-import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
-import AccountRelation from '../../../../../server/hooks/accountRelation/main';
-import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -72,6 +72,8 @@ const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   title_id: '',
   manager_id: '',
   phone: '',
+  email: '',
+  proxy_employee_id: '',
   position_start_date: '',
   realm_id: '',
   tenant_id: ''
@@ -143,6 +145,7 @@ export class CreateEmployeeController extends UIController {
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
             const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
+            const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
 
             const [file, setFile] = useState(null);
 
@@ -340,6 +343,14 @@ export class CreateEmployeeController extends UIController {
                     icon: "error",
                     title: "Çalışan eklenirken bir hata oluştu!",
                     text: "Çalışan sicil numarası zaten kullanılmaktadır."
+                  })
+                  return;
+                }
+                if (employees.some((document) => document.email === formEmployee.email)) {
+                  Toast.fire({
+                    icon: "error",
+                    title: "Çalışan eklenirken bir hata oluştu!",
+                    text: "E-Posta zaten kullanılmaktadır."
                   })
                   return;
                 }
@@ -759,6 +770,25 @@ export class CreateEmployeeController extends UIController {
                                   />
                                 )}
                               />
+                              <Autocomplete
+                                options={employees}
+                                value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
+                                onChange={(event, newValue) => {
+                                  setFormEmployee({
+                                    ...formEmployee,
+                                    proxy_employee_id: newValue.$id
+                                  });
+                                }}
+                                getOptionLabel={(option) => option.first_name + " " + option.last_name}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    label="Yerine Vekalet Edecek Personel"
+                                    name="proxy_employee_id"
+                                    size="small"
+                                  />
+                                )}
+                              />
                               <FormControl fullWidth size="small">
                                 <TextField
                                   name='phone'
@@ -773,6 +803,22 @@ export class CreateEmployeeController extends UIController {
                                     if (/^\+?\d{0,15}$/.test(enteredValue)) {
                                       setFormEmployee({ ...formEmployee, [e.target.name]: enteredValue });
                                     }
+                                  }
+                                  }
+                                />
+
+                              </FormControl>
+                              <FormControl fullWidth size="small">
+                                <TextField
+                                  name='email'
+                                  size='small'
+                                  label='E-Posta'
+                                  value={formEmployee.email}
+                                  onChange={(e) => {
+                                    setFormEmployee({
+                                      ...formEmployee,
+                                      email: e.target.value as string
+                                    })
                                   }
                                   }
                                 />
