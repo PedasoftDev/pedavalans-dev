@@ -267,6 +267,8 @@ export class UpdateEducationController extends UIFormController {
                 showCancelButton: true,
                 confirmButtonText: "Evet",
                 cancelButtonText: "Hayır",
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
               }).then((result) => {
                 if (result.isConfirmed) {
                   updateEducation({

@@ -61,6 +61,8 @@ import { Views } from '../../../../components/Views';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Form } from '../../Views/Views';
 import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
@@ -124,13 +126,18 @@ export class UpdateEmployeeController extends UIController {
     const { getFileView, isLoadingViewFile } = BucketFiles.GetView(AppInfo.Name, "employees_image_bucket", id)
 
     const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
+    const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization);
 
     const { createEmployeeMultipleLines } = EmployeeMultipleLines.Create()
     const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleList } = EmployeeMultipleLines.GetList()
     const { updateEmployeeMultipeLines } = EmployeeMultipleLines.Update()
 
+    const { createEmployeeMultipleDepartments } = EmployeeMultipleDepartments.Create()
+    const { employeeMultipleDepartmentsList, isLoading: isLoadingEmployeeMultipleDepartmentsList } = EmployeeMultipleDepartments.GetList()
+    const { updateEmployeeMultipleDepartments } = EmployeeMultipleDepartments.Update()
+
     return (
-      isLoading || isLoadingAccounts || isLoadingDepartments || isLoadingEmployeeMultipleList || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
+      isLoading || isLoadingAccounts || isLoadingResult || isLoadingDepartments || isLoadingEmployeeMultipleDepartmentsList || isLoadingEmployeeMultipleList || isLoadingWorkPlace || isLoadingViewFile || isLoadingEmployees || isLoadingPositionRelationDepartmentsList || isLoadingPositions || isLoadingTitles || isLoadingLines || isLoadingDocument || isLoadingDocumentType ? VStack(Spinner()) :
         me === null ? UINavigate("/login") :
           UIViewBuilder(() => {
             const navigate = useNavigate();
@@ -148,6 +155,7 @@ export class UpdateEmployeeController extends UIController {
               tenant_id: me?.prefs?.organization
             })
             const [multipleLines, setMultipleLines] = useState([])
+            const [multipleDepartments, setMultipleDepartments] = useState([])
 
             const [showValidityPeriod, setShowValidityPeriod] = useState<boolean>(false)
             const [showEditValidityPeriod, setShowEditValidityPeriod] = useState<boolean>(false)
@@ -157,6 +165,7 @@ export class UpdateEmployeeController extends UIController {
             const [lineRelationState, setLineRelationState] = useState<boolean>(false);
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
+            const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
 
 
 
@@ -168,6 +177,7 @@ export class UpdateEmployeeController extends UIController {
                 label: "Ünvanı",
                 options: titles
               },
+              !multipleDepartmentDefinition &&
               {
                 id: "department_id",
                 label: "Bulunduğu Departman",
@@ -178,7 +188,7 @@ export class UpdateEmployeeController extends UIController {
                 label: "Bulunduğu Pozisyon",
                 options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
               },
-            ];
+            ].filter(Boolean);
 
             const documentColumns = [
               { field: 'document_type_name', headerName: 'Belge Türü', flex: 1 },
@@ -250,6 +260,59 @@ export class UpdateEmployeeController extends UIController {
                 documentId: formEmployee.$id,
                 data: removeDollarProperties(formEmployee)
               }, (result) => {
+                if (multipleDepartmentDefinition) {
+                  // Ensure that we only deal with workplaces related to the current trainer
+                  const currentDepartments = employeeMultipleDepartmentsList.filter(
+                    (dep) => dep.employee_id === id
+                  );
+
+                  // Identify removed workplaces (those that are in the database but not in the selected list)
+                  const removedDepList = currentDepartments.filter(
+                    (relatedDep) =>
+                      !multipleDepartments.some(
+                        (selectedLines) => selectedLines.id === relatedDep.department_id
+                      )
+                  );
+
+                  // Identify new workplaces (those that are selected but not in the database)
+                  const newDeps = multipleDepartments.filter(
+                    (selectedDeps) =>
+                      !currentDepartments.some(
+                        (relatedDeps) => relatedDeps.id === selectedDeps.department_id
+                      )
+                  );
+
+                  // Update removed workplaces to be inactive and deleted
+                  removedDepList.forEach((workplace) => {
+                    updateEmployeeMultipleDepartments({
+                      databaseId: AppInfo.Database,
+                      collectionId: Collections.EmployeeDepartmentRelation,
+                      documentId: workplace.$id,
+                      data: {
+                        is_active: false,
+                        is_deleted: true,
+                      },
+                    });
+                  });
+
+                  // Add new workplaces
+                  newDeps.forEach((selectedWorkplace) => {
+                    const nanoId = nanoid();
+                    createEmployeeMultipleDepartments({
+                      documentId: nanoId,
+                      data: {
+                        id: nanoId,
+                        employee_id: formEmployee.$id,
+                        department_id: selectedWorkplace.department_id,
+                        department_record_id: departments.find((department) => department.id === selectedWorkplace.department_id)?.record_id,
+                        department_name: departments.find((department) => department.id === selectedWorkplace.department_id)?.name,
+                        is_active: true,
+                        is_deleted: false,
+                        tenant_id: me?.prefs?.organization,
+                      },
+                    });
+                  });
+                }
                 if (multipleLineDefinition) {
                   // Ensure that we only deal with workplaces related to the current trainer
                   const currentLines = employeeMultipleLinesList.filter(
@@ -451,6 +514,19 @@ export class UpdateEmployeeController extends UIController {
                 ]
               ).then((res) => {
                 setMultipleLines(res.documents)
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Name,
+                  AppInfo.Database,
+                  Collections.EmployeeDepartmentRelation,
+                  [
+                    Query.equal("employee_id", id),
+                    Query.equal("is_deleted", false),
+                    Query.equal("is_active", true)
+                  ]
+                ).then((res) => {
+                  setMultipleDepartments(res.documents)
+                })
               })
               Services.Databases.listDocuments(
                 AppInfo.Name,
@@ -476,7 +552,7 @@ export class UpdateEmployeeController extends UIController {
                 })
               }).then(() => {
                 Services.Databases.listDocuments(
-                  AppInfo.Database,
+                  AppInfo.Name,
                   AppInfo.Database,
                   Collections.Parameter,
                   [
@@ -488,7 +564,7 @@ export class UpdateEmployeeController extends UIController {
                 })
               }).then(() => {
                 Services.Databases.listDocuments(
-                  AppInfo.Database,
+                  AppInfo.Name,
                   AppInfo.Database,
                   Collections.Parameter,
                   [
@@ -497,6 +573,18 @@ export class UpdateEmployeeController extends UIController {
                   ]
                 ).then((res) => {
                   setMultipleLineDefinition(res.documents[0]?.is_active)
+                })
+              }).then(() => {
+                Services.Databases.listDocuments(
+                  AppInfo.Name,
+                  AppInfo.Database,
+                  Collections.Parameter,
+                  [
+                    Query.equal("name", "multiple_department_definition"),
+                    Query.limit(10000),
+                  ]
+                ).then((res) => {
+                  setMultipleDepartmentDefinition(res.documents[0]?.is_active)
                 })
               })
             }, [])
@@ -700,6 +788,35 @@ export class UpdateEmployeeController extends UIController {
                                   )}
                                 />) : null
                               }
+                              {
+                                multipleDepartmentDefinition && (
+                                  <Autocomplete
+                                    options={departments.filter((item) => item.is_active === true)}
+                                    value={
+                                      multipleDepartments.map((department) => departments?.find(option => option.id === department.department_id) || null)
+                                    }
+                                    multiple
+                                    onChange={(event, newValue) => {
+                                      setMultipleDepartments(newValue.map((department) => {
+                                        return {
+                                          department_id: department.id,
+                                          employee_id: formEmployee.id,
+                                        }
+                                      })
+                                      );
+                                    }}
+                                    getOptionLabel={(option) => option.record_id + " - " + option.name}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        label="Bulunduğu Departman"
+                                        name="department_id"
+                                        size="small"
+                                      />
+                                    )}
+                                  />
+                                )
+                              }
                               {selectFormStates.map((selectFormState) =>
                                 <div key={selectFormState.id}>
                                   <Autocomplete
@@ -807,7 +924,7 @@ export class UpdateEmployeeController extends UIController {
                                 : null
                               }
                               <Autocomplete
-                                options={accounts}
+                                options={accounts.filter(account => accountRelations.some(relation => relation.account_id === account.$id && !relation.is_deleted))}
                                 value={accounts.find(option => option.$id === formEmployee.manager_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({

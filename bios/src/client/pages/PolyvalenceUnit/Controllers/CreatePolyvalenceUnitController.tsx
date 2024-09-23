@@ -351,7 +351,6 @@ export class CreatePolyvalenceUnitController extends UIController {
                                                                 {...params}
                                                                 label="Bağlı Hat"
                                                                 size="small"
-                                                                required
                                                             />
                                                         )}
                                                     />

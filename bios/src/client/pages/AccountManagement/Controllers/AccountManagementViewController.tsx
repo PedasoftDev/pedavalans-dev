@@ -18,6 +18,7 @@ import { GridContainer } from "../Views/View";
 import ModeIcon from '@mui/icons-material/Mode';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
+import Trainers from "../../../../server/hooks/trainers/main";
 
 
 const resetMe: IAccount.IBase = {
@@ -66,8 +67,10 @@ export class AccountManagementViewController extends UIController {
         const { createAccountRelation } = AccountRelation.Create()
         const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization)
 
+        const { trainersList, isLoadingTrainersList } = Trainers.GetList()
+
         return (
-            isLoading || isLoadingAccounts || isLoadingResult || isLoadingAssignedEducationList ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingTrainersList || isLoadingResult || isLoadingAssignedEducationList ? VStack(Spinner()) :
                 me == null ? VStack(UINavigate("/login")) :
                     UIViewBuilder(() => {
 
@@ -255,7 +258,7 @@ export class AccountManagementViewController extends UIController {
 
                         const updateSelectedAccountRelation = (e) => {
                             e.preventDefault();
-                            if (assignedEducationList.filter((item) => item.status === "open").find((item) => item.educator_id === selectedAccount.$id)) {
+                            if (assignedEducationList.filter((item) => item.status === "open" && item.is_active).find((item) => item.educator_id === selectedAccount.$id)) {
                                 Swal.fire({
                                     title: 'Bu hesaba ait açık bir eğitim bulunmaktadır!',
                                     text: "Bu hesabı düzenleyemezsiniz!",
@@ -265,20 +268,21 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
-                            updateAccountRelation({
-                                databaseId: AppInfo.Database,
-                                collectionId: "account_relation",
-                                documentId: selectedAccountRelation.id,
-                                data: removeDollarProperties(selectedAccountRelation)
-                            }, (data) => {
-                                Toast.fire({
-                                    icon: 'success',
-                                    title: 'Hesap bilgileri güncellendi'
+                            // trainer check
+                                updateAccountRelation({
+                                    databaseId: AppInfo.Database,
+                                    collectionId: "account_relation",
+                                    documentId: selectedAccountRelation.id,
+                                    data: removeDollarProperties(selectedAccountRelation)
+                                }, (data) => {
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Hesap bilgileri güncellendi'
+                                    })
+                                    setSelectedTab(1)
+                                    setSelectedAccountRelation(resetAccountRelation)
+                                    setSelectedAccount(resetMe);
                                 })
-                                setSelectedTab(1)
-                                setSelectedAccountRelation(resetAccountRelation)
-                                setSelectedAccount(resetMe);
-                            })
                         }
 
                         return (

@@ -8,6 +8,11 @@ namespace CompetencyLineRelation {
         return { createCompetencyLineRelation: createDocument, error, isError, isLoading, isSuccess }
     }
 
+    export const GetList = () => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, "competency_line_relation", [Query.limit(10000), Query.equal("is_deleted", false)])
+        return { competencyLineRelationList: documents as any, isLoading }
+    }
+
     export const GetByCompetencyId = (competencyId: string, tenant_id: string): {
         competencyLineRelation: ICompetencyLineRelation.ICompetencyLineRelation[],
         isLoading: boolean

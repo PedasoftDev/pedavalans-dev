@@ -6,3 +6,5 @@ bios/dist_web/index.js
 bios/dist_web/index.js.map
 bios/public
 realmocean/system/bios
+bios/yarn.lock
+/yarn.lock

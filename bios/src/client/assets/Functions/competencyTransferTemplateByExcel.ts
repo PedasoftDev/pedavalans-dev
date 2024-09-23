@@ -1,6 +1,6 @@
 import XLSX from 'xlsx-js-style';
 
-export function competencyTransferTemplateByExcel(line_is_active: boolean) {
+export function competencyTransferTemplateByExcel(line_is_active: boolean, workplace_is_active: boolean) {
     const wb = XLSX.utils.book_new();
     const headers = [
         "YETKINLIK_ADI",
@@ -10,6 +10,9 @@ export function competencyTransferTemplateByExcel(line_is_active: boolean) {
     ];
     if (line_is_active) {
         headers.push("HAT_ADLARI");
+    }
+    if (workplace_is_active) {
+        headers.push("ISYERI_ADLARI");
     }
 
     const ws = XLSX.utils.aoa_to_sheet([headers]);

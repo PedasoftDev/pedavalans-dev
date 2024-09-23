@@ -6,7 +6,7 @@ import { themeColor as _themeColor } from "./Colors/themeColor";
 import { formatDate as _formatDate } from "./Functions/formatDate";
 
 export namespace Resources {
-    export const version = "v1.2.2.03"
+    export const version = "v1.2.3"
 
     export namespace MailConf {
         export const secretKey = 'mysecretkey12345';
@@ -49,7 +49,8 @@ export namespace Resources {
         line_based_competency_relationship: "line_based_competency_relationship",
         polyvalence_unit_table_mail: "polyvalence_unit_table_mail",
         reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables",
-        competency_education_relationship: "competency_education_relationship"
+        competency_education_relationship: "competency_education_relationship",
+        new_employee_evaluation_day: "new_employee_evaluation_day",
     }
 
     export const Parameters = [
@@ -102,6 +103,16 @@ export namespace Resources {
             name: "Personel Tanımlarken Birden Fazla Hat Tanımlaması Olacak mı?",
             localStr: "multiple_line_definition",
             type: "boolean",
+        },
+        {
+            name: "Personel Tanımlarken Birden Fazla Departman Tanımlaması Olacak mı?",
+            localStr: "multiple_department_definition",
+            type: "boolean",
+        },
+        {
+            name: "Pozisyon bazlı polivalans yönetimi uygulanacak mı?",
+            localStr: "position_based_polyvalence_management",
+            type: "boolean",
         }
     ];
 
@@ -114,6 +125,11 @@ export namespace Resources {
         {
             name: "Veri girişi yapılmayan tablolar için hatırlatma maili kaç gün öncesinden gönderilsin?",
             localStr: "reminder_mail_for_unfilled_tables_day",
+            type: "string",
+        },
+        {
+            name: "Yeni işe giren personel kaç gün sonra değerlendirmeye tabi tutulsun?",
+            localStr: "new_employee_evaluation_day",
             type: "string",
         }
     ]

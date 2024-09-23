@@ -521,7 +521,7 @@ export class DashboardController extends UIController {
                                                                     setIsUpdate(true)
                                                                 })
                                                                 Resources.StringParameters.forEach(async (param) => {
-                                                                    const stringParameter = stringParameters.find((m) => m.$id === param.localStr)
+                                                                    const stringParameter = stringParameters.find((m) => m.name === param.localStr)
                                                                     if (!stringParameter) {
                                                                         stringParameterTasks.Task(async () => {
                                                                             try {
