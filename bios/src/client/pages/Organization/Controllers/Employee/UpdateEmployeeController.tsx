@@ -179,19 +179,18 @@ export class UpdateEmployeeController extends UIController {
                 label: "Ünvanı",
                 options: titles
               },
-              multipleDepartmentDefinition ? {}
-                :
-                {
-                  id: "department_id",
-                  label: "Bulunduğu Departman",
-                  options: departments.filter((item) => item.is_active === true)
-                },
+              !multipleDepartmentDefinition &&
+              {
+                id: "department_id",
+                label: "Bulunduğu Departman",
+                options: departments.filter((item) => item.is_active === true)
+              },
               {
                 id: "position_id",
                 label: "Bulunduğu Pozisyon",
                 options: positionRelationDepartmentsState ? (positions.filter((item) => positionRelationDepartmentsList.filter((item2) => item2.parent_department_id === formEmployee.department_id).map((item3) => item3.relation_position_id).includes(item.id))) : positions
               },
-            ];
+            ].filter(Boolean);
 
             const documentColumns = [
               { field: 'document_type_name', headerName: 'Belge Türü', flex: 1 },
@@ -800,11 +799,11 @@ export class UpdateEmployeeController extends UIController {
                                 />) : null
                               }
                               {
-                                multipleDepartmentDefinition ? (
+                                multipleDepartmentDefinition && (
                                   <Autocomplete
                                     options={departments.filter((item) => item.is_active === true)}
                                     value={
-                                      multipleDepartments.map((department) => departments.find(option => option.id === department.department_id) || null)
+                                      multipleDepartments.map((department) => departments?.find(option => option.id === department.department_id) || null)
                                     }
                                     multiple
                                     onChange={(event, newValue) => {
@@ -827,9 +826,6 @@ export class UpdateEmployeeController extends UIController {
                                     )}
                                   />
                                 )
-                                  : (
-                                    null
-                                  )
                               }
                               {selectFormStates.map((selectFormState) =>
                                 <div key={selectFormState.id}>
