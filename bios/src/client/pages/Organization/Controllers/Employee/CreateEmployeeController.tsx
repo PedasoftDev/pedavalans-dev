@@ -145,7 +145,9 @@ export class CreateEmployeeController extends UIController {
             const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
             const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
-            const [selectedLines, setSelectedLines] = useState<IOrganizationStructure.ILines.ILine[]>([])
+
+
+            const [proxySelectedEmployees, setProxySelectedEmployees] = useState<string[]>([]);
 
             const [file, setFile] = useState(null);
 
@@ -515,6 +517,7 @@ export class CreateEmployeeController extends UIController {
                 })
               }
             }
+
             const handleSelectType = (event, newValue) => {
               const selectedValue = newValue.document_type_id;
               const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
@@ -531,65 +534,45 @@ export class CreateEmployeeController extends UIController {
             }
 
             useEffect(() => {
-              Services.Databases.listDocuments(
-                AppInfo.Name,
-                AppInfo.Database,
-                Collections.Parameter,
-                [
-                  Query.equal("name", "position_relation_department"),
-                  Query.limit(10000),
-                ]
-              ).then((res) => {
-                setPositionRelationDepartmentsState(res.documents[0]?.is_active)
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "line_based_competency_relationship"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setLineRelationState(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "work_place_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setWorkPlaceDefination(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "multiple_line_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setMultipleLineDefinition(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "multiple_department_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setMultipleDepartmentDefinition(res.documents[0]?.is_active)
-                })
-              })
+              const fetchData = async () => {
+                try {
+                  const appInfoParams = {
+                    name: AppInfo.Name,
+                    database: AppInfo.Database,
+                    collection: Collections.Parameter,
+                  };
+
+                  const queries = [
+                    { queryName: "position_relation_department", setter: setPositionRelationDepartmentsState },
+                    { queryName: "line_based_competency_relationship", setter: setLineRelationState },
+                    { queryName: "work_place_definition", setter: setWorkPlaceDefination },
+                    { queryName: "multiple_line_definition", setter: setMultipleLineDefinition },
+                    { queryName: "multiple_department_definition", setter: setMultipleDepartmentDefinition },
+                  ];
+
+                  const requests = queries.map(({ queryName }) =>
+                    Services.Databases.listDocuments(appInfoParams.name, appInfoParams.database, appInfoParams.collection, [
+                      Query.equal("name", queryName),
+                      Query.limit(10000),
+                    ])
+                  );
+
+                  const responses = await Promise.all(requests);
+
+                  responses.forEach((res, index) => {
+                    const isActive = res.documents[0]?.is_active;
+                    queries[index].setter(isActive);
+                  });
+
+                  setProxySelectedEmployees(employees.filter((employee) => employee.proxy_employee_id).map((employee) => employee.proxy_employee_id));
+
+                } catch (error) {
+                  console.error("Error fetching data:", error);
+                  ToastError("Bir hata oluştu", "");
+                }
+              };
+
+              fetchData();
             }, [])
 
             return (
@@ -854,7 +837,7 @@ export class CreateEmployeeController extends UIController {
                                 )}
                               />
                               <Autocomplete
-                                options={employees}
+                                options={employees.filter((x)=> !proxySelectedEmployees.includes(x.$id))}
                                 value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({
