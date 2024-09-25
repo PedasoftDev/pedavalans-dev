@@ -10,7 +10,7 @@ namespace ProxyAccount {
 
     export const GetByAccountId = (account_id: string) => {
         const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, Collections.ProxyAccount,
-            [Query.equal("principal_name", account_id), Query.equal("is_active", true)]);
+            [Query.equal("principal_id", account_id), Query.equal("is_active", true), Query.equal("is_deleted", false)]);
         return { accountProxyList: documents as any, isLoading };
     }
 

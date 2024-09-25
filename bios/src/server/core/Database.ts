@@ -3510,7 +3510,19 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "principal_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
                     "key": "agent_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "agent_id",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3559,6 +3571,7 @@ const Database: IDatabase = {
                 },
             ]
         },
+
     ]
 }
 
