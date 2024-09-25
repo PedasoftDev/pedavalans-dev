@@ -1,6 +1,6 @@
 import { Autocomplete, Box, Button, TextField } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import { Query, useGetMe, useListAccounts } from '@realmocean/sdk';
+import { Query, useDeleteCache, useGetMe, useListAccounts } from '@realmocean/sdk';
 import dayjs from 'dayjs';
 import React, { useState } from 'react'
 import { TbUserShare } from 'react-icons/tb';
@@ -40,6 +40,8 @@ const ProxyManagement = () => {
   const { createProxyAccount } = ProxyAccount.Create();
   const { updateProxyAccount } = ProxyAccount.Update();
   const { accountProxyList, isLoading: isLoadingProxyAccounts } = ProxyAccount.GetByAccountId(me?.$id)
+
+  const { deleteCache } = useDeleteCache(AppInfo.Name)
 
   // edit proxy info
   const [selectedProxy, setSelectedProxy] = useState<IProxyAccount.IBase>(resetProxyAccount)
@@ -451,6 +453,7 @@ const ProxyManagement = () => {
                         is_active: false
                       }
                     }, (data) => {
+                      deleteCache()
                       Toast.fire({
                         icon: 'success',
                         title: 'Vekalet Silindi!'
