@@ -122,6 +122,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                         e.preventDefault();
                         const id: string = nanoid();
+                        const polyvalence_table_line_relation_id: string = nanoid();
                         if (positionBased && selectedPositions.length === 0) {
                             Toast.fire({
                                 icon: "error",
@@ -188,6 +189,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                                 createPolyvalenceUnitLineRelation({
                                     documentId: id,
                                     data: {
+                                        polyvalence_table_line_relation_id: polyvalence_table_line_relation_id,
                                         polyvalence_table_id: id,
                                         line_id: selectedLine,
                                         tenant_id: me?.prefs?.organization

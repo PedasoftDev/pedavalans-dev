@@ -222,10 +222,12 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                     updatePolyvalenceUnitLineRelation({
                                         databaseId: AppInfo.Database,
                                         collectionId: "polyvalence_unit_table_line_rel",
-                                        documentId: lineRelation[0]?.polyvalence_table_line_relation_id,
+                                        documentId: id,
                                         data: {
-                                            ...removeDollarProperties(lineRelation[0]),
-                                            line_id: selectedLine
+                                            line_id: selectedLine,
+                                            polyvalence_table_line_relation_id: lineRelation[0]?.polyvalence_table_line_relation_id,
+                                            polyvalence_table_id: id,
+                                            tenant_id: me?.prefs?.organization,
                                         }
                                     })
                                 }
@@ -417,7 +419,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     <Autocomplete
                                                         options={lines.filter(x => x.department_id == form.polyvalence_department_id)}
                                                         getOptionLabel={(option) => option.name}
-                                                        value={lines.find((line) => line.id == selectedLine)}
+                                                        value={lines.find((line) => line.id === selectedLine) || null}
                                                         onChange={(e, value) => {
                                                             setSelectedLine(value.id)
                                                         }}
