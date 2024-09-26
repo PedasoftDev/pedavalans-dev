@@ -1,6 +1,6 @@
-import { Autocomplete, Box, Button, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import { Query, useDeleteCache, useGetMe, useListAccounts } from '@realmocean/sdk';
+import { Query, Services, useCreateEmailSession, useDeleteCache, useGetMe, useListAccounts } from '@realmocean/sdk';
 import dayjs from 'dayjs';
 import React, { useState } from 'react'
 import { TbUserShare } from 'react-icons/tb';
@@ -41,11 +41,18 @@ const ProxyManagement = () => {
   const { updateProxyAccount } = ProxyAccount.Update();
   const { accountProxyList, isLoading: isLoadingProxyAccounts } = ProxyAccount.GetByAccountId(me?.$id)
 
+  const { createEmailSession, isError, isLoading: isLoadingEmailSession } = useCreateEmailSession("console")
+
   const { deleteCache } = useDeleteCache(AppInfo.Name)
 
   // edit proxy info
   const [selectedProxy, setSelectedProxy] = useState<IProxyAccount.IBase>(resetProxyAccount)
   const [proxyScreen, setProxyScreen] = useState(0)
+
+  // dialog open
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  const handleClose = () => setDialogOpen(false);
 
   const handleOpenProxy = () => setProxyScreen(1);
   const handleCloseProxy = () => setProxyScreen(0);
@@ -164,9 +171,13 @@ const ProxyManagement = () => {
     setProxyScreen(2)
   };
 
-  // Proxy kullanıcı oluşturma işlemi
-  const handleCreateProxyUser = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleOpenDialog = (e: any) => {
     e.preventDefault();
+    setDialogOpen(true);
+  }
+
+  // Proxy kullanıcı oluşturma işlemi
+  const handleCreateProxyUser = async (password: string) => {
     handleCloseProxy();
 
     const docId: string = nanoid();
@@ -180,7 +191,7 @@ const ProxyManagement = () => {
         start_date: giveProxyForm.startDate,
         end_date: giveProxyForm.endDate,
         email: giveProxyForm.email,
-        password: encrypt(giveProxyForm.password)
+        password: encrypt(password)
       }
     }, async () => {
       Toast.fire({
@@ -240,7 +251,7 @@ const ProxyManagement = () => {
             justifyContent: "center",
             width: "100%",
           }}>
-            <form onSubmit={handleCreateProxyUser} style={{
+            <form onSubmit={handleOpenDialog} style={{
               border: "1px solid #e0e0e0",
               borderRadius: "5px",
               padding: "20px",
@@ -256,7 +267,6 @@ const ProxyManagement = () => {
                 InputProps={{ readOnly: true }}
                 size="small"
               />
-              {/* 2 */}
               <Autocomplete
                 options={accounts.filter(account =>
                   accountRelations.some(relation =>
@@ -297,10 +307,10 @@ const ProxyManagement = () => {
                   format="DD/MM/YYYY"
                   slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   value={giveProxyForm.startDate ? dayjs(giveProxyForm.startDate) : null}
-                  onChange={(newDate) => {
+                  onChange={(newDate: any) => {
                     setGiveProxyForm({
                       ...giveProxyForm,
-                      startDate: newDate ? dayjs(newDate).format('YYYY-MM-DD') : '',
+                      startDate: newDate.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)",
                     });
                   }}
                 />
@@ -309,10 +319,10 @@ const ProxyManagement = () => {
                   format="DD/MM/YYYY"
                   slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   value={giveProxyForm.endDate ? dayjs(giveProxyForm.endDate) : null}
-                  onChange={(newDate) => {
+                  onChange={(newDate: any) => {
                     setGiveProxyForm({
                       ...giveProxyForm,
-                      endDate: newDate ? dayjs(newDate).format('YYYY-MM-DD') : '',
+                      endDate: newDate.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)",
                     });
                   }}
                 />
@@ -406,10 +416,10 @@ const ProxyManagement = () => {
                   format="DD/MM/YYYY"
                   slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   value={selectedProxy.start_date ? dayjs(selectedProxy.start_date) : null}  // selectedProxy'ye göre tarih ayarlanıyor
-                  onChange={(newDate) => {
+                  onChange={(newDate: any) => {
                     setSelectedProxy({
                       ...selectedProxy,
-                      start_date: newDate ? dayjs(newDate).format('YYYY-MM-DD') : '',  // Tarihi güncelliyoruz
+                      start_date: newDate.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)",  // Tarihi güncelliyoruz
                     });
                   }}
                 />
@@ -422,10 +432,10 @@ const ProxyManagement = () => {
                   format="DD/MM/YYYY"
                   slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   value={selectedProxy.end_date ? dayjs(selectedProxy.end_date) : null}  // selectedProxy'deki bitiş tarihi ayarlanıyor
-                  onChange={(newDate) => {
+                  onChange={(newDate: any) => {
                     setSelectedProxy({
                       ...selectedProxy,
-                      end_date: newDate ? dayjs(newDate).format('YYYY-MM-DD') : '',  // Tarihi güncelliyoruz
+                      end_date: newDate.$d.toString().split("GMT")[0] + "GMT+0000 (GMT+00:00)",  // Tarihi güncelliyoruz
                     });
                   }}
                 />
@@ -479,8 +489,49 @@ const ProxyManagement = () => {
           </div>
         }
 
-
-      </div>
+        <Dialog
+          open={dialogOpen}
+          onClose={handleClose}
+          PaperProps={{
+            component: 'form',
+            onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              const password = formData.get('password') as string;
+              await createEmailSession({
+                email: me.email,
+                password: password
+              }, () => {
+                handleClose();
+                handleCreateProxyUser(password);
+                return;
+              });
+            },
+          }}
+        >
+          <DialogTitle>İşlemi Onaylayın</DialogTitle>
+          <DialogContent style={{ width: "300px" }}>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="password"
+              name="password"
+              label="Şifre"
+              type="password"
+              fullWidth
+              variant="standard"
+              size='small'
+              error={isError}
+              helperText={isError ? 'Şifre hatalı' : ''}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>İptal</Button>
+            <Button type="submit">Vekaleti Onayla</Button>
+          </DialogActions>
+        </Dialog>
+      </div >
   )
 }
 
