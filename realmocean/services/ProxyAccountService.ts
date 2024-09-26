@@ -46,6 +46,19 @@ class ProxyAccountService extends RealmoceanService {
       await this.getExpiredProxyUsers();
     });
 
+    router.post("/com.pedavalans.service.proxy-account/getAgentProxyAccounts", async (req, res) => {
+      const { agentUserId } = req.body;
+
+
+      try {
+        const result = await this.getAgentProxyAccounts(agentUserId);
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+    });
+
   }
 
   async getExpiredProxyUsers() {
@@ -53,12 +66,18 @@ class ProxyAccountService extends RealmoceanService {
     const list = await this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, "proxy_account", [this.databaseService.Query.equal("is_active", true), this.databaseService.Query.equal("is_deleted", false)])
     for (const item of list.documents) {
       if (new Date(item.end_date) < date) {
-        await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, "proxy_account", item.$id, { is_active: false, is_deleted: true });
-        console.log("Proxy Account Deleted");
-      } else {
-        console.log("Proxy Account Not Expired: ", item);
+        try {
+          await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, "proxy_account", item.$id, { is_active: false, is_deleted: true });
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
+  }
+
+  async getAgentProxyAccounts(agentUserId: string) {
+    const doc = await this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, "proxy_account", [this.databaseService.Query.equal("agent_id", agentUserId)]);
+    return doc.documents;
   }
 
 }

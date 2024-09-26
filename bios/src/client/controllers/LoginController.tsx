@@ -1,9 +1,13 @@
 import { Fragment, ReactView, UIController, UINavigate, UIView, UIViewBuilder, VStack, cTop, useNavigate, useState } from "@tuval/forms";
-import { useCreateEmailSession, useGetMe } from "@realmocean/sdk";
+import { Services, useCreateEmailSession, useDeleteSession, useGetMe } from "@realmocean/sdk";
 import React from "react";
 import { Container, Header, LoginContainer, LoginError, LoginForm, LoginInput, LoginLabel, LoginToSignUp, customLogo } from "./LoginStyles/Styles";
 import Button from '../components/Button';
 import Main from "../../server/hooks/main/Main";
+import { ProxyAccountBroker } from "../../server/brokers/ProxyAccountBroker";
+import { Avatar, Dialog, DialogTitle, List, ListItemAvatar, ListItemButton, ListItemText, } from "@mui/material";
+import { IoPersonCircleOutline } from "react-icons/io5";
+import decrypt from "../assets/Functions/decrypt";
 
 
 export class LoginController extends UIController {
@@ -17,12 +21,16 @@ export class LoginController extends UIController {
         const { isLoading: isLoadingRequired, required } = Main.SetupRequired();
 
         const { createEmailSession, isSuccess, isError, error } = useCreateEmailSession('console');
+        const { deleteSession } = useDeleteSession('console');
 
         const [form, setForm] = useState({
             email: '',
             password: '',
             disabled: false
         });
+
+        const [dialogOpen, setDialogOpen] = useState(false);
+        const [proxyAccounts, setProxyAccounts] = useState([]);
 
         const handleFormChange = (e: any) => {
             setForm({
@@ -38,7 +46,16 @@ export class LoginController extends UIController {
                 email: form.email,
                 password: form.password
             }, () => {
-                navigate('/app/dashboard')
+                Services.Accounts.get().then((res) => {
+                    ProxyAccountBroker.Default.getByAgentUserId(res.$id).then((res) => {
+                        if (res.result.length > 0) {
+                            setProxyAccounts(res.result)
+                            setDialogOpen(true)
+                        } else {
+                            navigate('/app/dashboard')
+                        }
+                    })
+                })
             })
             setForm({ ...form, disabled: false })
         }
@@ -52,56 +69,97 @@ export class LoginController extends UIController {
             )
         }
 
+        const handleClose = () => {
+            setDialogOpen(false)
+        }
+
         return (
             isLoading || isLoadingRequired ? Fragment() :
                 me != null ? UINavigate('/app/dashboard') :
-                    UIViewBuilder(() => {
-                        return (
-                            VStack({ alignment: cTop })(
-                                ReactView(
-                                    <Container>
-                                        <LoginContainer>
-                                            <HeaderInfo />
-                                            <LoginForm onSubmit={onSubmit}>
-                                                <LoginInput
-                                                    onChange={handleFormChange}
-                                                    placeholder="E-posta"
-                                                    name="email"
-                                                    type="email"
-                                                    value={form.email}
-                                                    required
-                                                />
-                                                <LoginInput
-                                                    onChange={handleFormChange}
-                                                    placeholder="Şifre"
-                                                    type="password"
-                                                    name="password"
-                                                    value={form.password}
-                                                    required
-                                                />
-                                                <Button
-                                                    variant="contained"
-                                                    fullWidth
-                                                    type="submit"
-                                                    disabled={form.disabled}
-                                                >Giriş Yap</Button>
-                                                {isError && <LoginError>{error?.message}</LoginError>}
-                                            </LoginForm>
-                                            {
-                                                required &&
-                                                <LoginToSignUp onClick={() => navigate('/signup')}>
-                                                    Kayıt Ol
-                                                </LoginToSignUp>
-                                            }
-                                            <LoginToSignUp onClick={() => navigate('/reset-password')}>
-                                                Şifrenizi mi unuttunuz?
+                UIViewBuilder(() => {
+                    return (
+                        VStack({ alignment: cTop })(
+                            ReactView(
+                                <Container>
+                                    <LoginContainer>
+                                        <HeaderInfo />
+                                        <Dialog onClose={handleClose} open={dialogOpen}>
+                                            <DialogTitle>Giriş yapmak istediğiniz hesabı seçiniz</DialogTitle>
+                                            <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                                                {proxyAccounts.map((account: any) =>
+                                                    <ListItemButton onClick={() => {
+                                                        Services.Accounts.deleteSession('current').then(() => {
+                                                            createEmailSession({
+                                                                email: account.email,
+                                                                password: decrypt(account.password)
+                                                            }, () => {
+                                                                localStorage.setItem('proxyAccount', account.agent_id)
+                                                                localStorage.setItem('mainAccount', account.principal_id)
+                                                                navigate('/app/dashboard')
+                                                            })
+                                                        })
+                                                    }}>
+                                                        <ListItemAvatar>
+                                                            <Avatar>
+                                                                <IoPersonCircleOutline />
+                                                            </Avatar>
+                                                        </ListItemAvatar>
+                                                        <ListItemText primary={account.email} secondary={account.principal_name} />
+                                                    </ListItemButton>
+                                                )}
+                                                <ListItemButton onClick={() => {
+                                                    navigate('/app/dashboard')
+                                                }}>
+                                                    <ListItemAvatar>
+                                                        <Avatar>
+                                                            <IoPersonCircleOutline />
+                                                        </Avatar>
+                                                    </ListItemAvatar>
+                                                    <ListItemText primary={form.email} secondary={"Kişisel Hesap"} />
+                                                </ListItemButton>
+
+                                            </List>
+                                        </Dialog>
+                                        <LoginForm onSubmit={onSubmit}>
+                                            <LoginInput
+                                                onChange={handleFormChange}
+                                                placeholder="E-posta"
+                                                name="email"
+                                                type="email"
+                                                value={form.email}
+                                                required
+                                            />
+                                            <LoginInput
+                                                onChange={handleFormChange}
+                                                placeholder="Şifre"
+                                                type="password"
+                                                name="password"
+                                                value={form.password}
+                                                required
+                                            />
+                                            <Button
+                                                variant="contained"
+                                                fullWidth
+                                                type="submit"
+                                                disabled={form.disabled}
+                                            >Giriş Yap</Button>
+                                            {isError && <LoginError>{error?.message}</LoginError>}
+                                        </LoginForm>
+                                        {
+                                            required &&
+                                            <LoginToSignUp onClick={() => navigate('/signup')}>
+                                                Kayıt Ol
                                             </LoginToSignUp>
-                                        </LoginContainer>
-                                    </Container>
-                                )
-                            ).height()
-                        )
-                    })
+                                        }
+                                        <LoginToSignUp onClick={() => navigate('/reset-password')}>
+                                            Şifrenizi mi unuttunuz?
+                                        </LoginToSignUp>
+                                    </LoginContainer>
+                                </Container>
+                            )
+                        ).height()
+                    )
+                })
         )
     }
 }
