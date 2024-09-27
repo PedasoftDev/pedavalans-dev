@@ -149,6 +149,8 @@ export class CreateEmployeeController extends UIController {
 
             const [proxySelectedEmployees, setProxySelectedEmployees] = useState<string[]>([]);
 
+            const employeesSameManagerId = formEmployee.manager_id ? employees.filter((employee) => employee.manager_id === formEmployee.manager_id) : []
+
             const [file, setFile] = useState(null);
 
             const handleFileChange = (event) => {
@@ -837,7 +839,7 @@ export class CreateEmployeeController extends UIController {
                                 )}
                               />
                               <Autocomplete
-                                options={employees.filter((x)=> !proxySelectedEmployees.includes(x.$id))}
+                                options={employeesSameManagerId.filter((x)=> !proxySelectedEmployees.includes(x.$id))}
                                 value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({
