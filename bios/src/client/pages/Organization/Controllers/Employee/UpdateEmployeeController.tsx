@@ -171,6 +171,7 @@ export class UpdateEmployeeController extends UIController {
 
             const [proxySelectedEmployees, setProxySelectedEmployees] = useState<string[]>([])
 
+            const employeesSameManagerId = formEmployee.manager_id ? employees.filter((employee) => employee.manager_id === formEmployee.manager_id) : []
 
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
@@ -931,7 +932,7 @@ export class UpdateEmployeeController extends UIController {
                                 )}
                               />
                               <Autocomplete
-                                options={employees.filter((x) => !proxySelectedEmployees.includes(x.$id) && x.$id !== formEmployee.$id)}
+                                options={employeesSameManagerId.filter((x) => !proxySelectedEmployees.includes(x.$id) && x.$id !== formEmployee.$id)}
                                 value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({
