@@ -52,6 +52,7 @@ import EmployeeMultipleLines from "../../../../server/hooks/employeeMultipleLine
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import PolyvalenceUnitTableLineRelation from "../../../../server/hooks/polyvalenceUnitTableLineRelation/main";
 import EmployeeMultipleDepartments from "../../../../server/hooks/employeeMultipleDepartments/Main";
+import IPolyvalenceUnitTableLineRelation from "../../../interfaces/IPolyvalenceUnitTableLineRelation";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -170,7 +171,6 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { trainerEducationsList, isLoadingTrainerEducationsList } = TrainerEducations.GetList()
         const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleLine } = EmployeeMultipleLines.GetList()
         const { competencyLineRelationList, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetList();
-        const { lineRelation, isLoading: isLoadingLineRelation } = PolyvalenceUnitTableLineRelation.GetByPolyvalenceUnitId(selectedTable.polyvalence_table_id, me?.prefs?.organization);
         const { employeeMultipleDepartmentsList, isLoading: isLoadingMultipleDepartmentsList } = EmployeeMultipleDepartments.GetList()
 
 
@@ -183,7 +183,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const [departmentBasedCompetencyRelationship, setDepartmentBasedCompetencyRelationship] = useState<boolean>(false);
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingLineRelation || isLoadingEmployeeMultipleLine || isLoadingCompetencyLineRelation || isLoadingCompetencyRelations || isLoadingTrainerEducationsList || isLoadingEmployees
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingEmployeeMultipleLine || isLoadingCompetencyLineRelation || isLoadingCompetencyRelations || isLoadingTrainerEducationsList || isLoadingEmployees
                 || isLoadingGroups || isLoadingLevels || isLoadingCompetencyList || isLoadingTrainersList || isLoadingEducation || isLoadingAccounts
                 ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
@@ -199,6 +199,9 @@ export class CompetencyRealDataEntryViewController extends UIController {
                         const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                         const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
                         const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
+
+                        // line relation
+                        const [lineRelation, setLineRelation] = useState<IPolyvalenceUnitTableLineRelation.IPolyvalenceUnitTableLineRelation[]>([]);
 
                         // MUI Dialog
                         const [openDialog, setOpenDialog] = useState(false);
@@ -355,8 +358,12 @@ export class CompetencyRealDataEntryViewController extends UIController {
                             setSelectedCompetencyId("");
                         };
 
-                        const onChangeTable = (polyvalence_table_id: string) => {
+                        const onChangeTable = async (polyvalence_table_id: string) => {
                             const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === polyvalence_table_id);
+                            // services
+                            await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.limit(10000), Query.equal('polyvalence_table_id', polyvalence_table_id)]).then((res) => {
+                                setLineRelation(res.documents as any)
+                            })
                             const periodYear = Number(periods[0].evaluation_period_year);
                             setSelectedTable(table)
                             setSelectedPeriod("")
@@ -592,7 +599,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                 size="small"
                                                 required
                                             >
-                                                {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
+                                                {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id)?.competency_grade_id)
                                                     .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                                     .map((value) => (
                                                         <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
