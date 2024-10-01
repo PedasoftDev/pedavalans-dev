@@ -9,6 +9,7 @@ export namespace IOrganizationStructure {
             first_name: string;
             last_name: string;
             title_id: string;
+            id_number: string;
             position_id: string;
             workplace_id: string;
             line_id: string;
@@ -31,6 +32,7 @@ export namespace IOrganizationStructure {
             id: string;
             first_name: string;
             last_name: string;
+            id_number: string;
             title_id: string;
             position_id: string;
             workplace_id: string;

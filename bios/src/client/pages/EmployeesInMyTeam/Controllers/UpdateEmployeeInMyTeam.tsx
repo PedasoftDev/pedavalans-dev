@@ -53,6 +53,7 @@ const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   title_id: '',
   manager_id: '',
   phone: '',
+  id_number: '',
   email: '',
   proxy_employee_id: '',
   educational_status: '',

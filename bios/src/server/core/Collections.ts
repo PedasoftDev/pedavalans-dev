@@ -50,7 +50,8 @@ namespace Collections {
     export const Related_Workplaces_To_Trainer = "related_workplaces_to_trainer";
     export const EmployeeLineRelation = "employee_line_relation";
     export const EmployeeDepartmentRelation = "employee_department_relation";
-    export const ProxyAccount = "proxy_account"
+    export const ProxyAccount = "proxy_account";
+    export const OrganizationIntegration = "organization_integration";
 }
 
 export default Collections;

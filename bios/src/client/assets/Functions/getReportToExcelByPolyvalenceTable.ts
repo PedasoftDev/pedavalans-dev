@@ -41,6 +41,7 @@ export function getReportToExcelByPolyvalenceTable(competenciesDb: ICompetency.I
                 position_id: "",
                 workplace_id: "",
                 birth_date: "",
+                id_number: "",
                 gender: "",
                 realm_id: "",
                 job_start_date: "",

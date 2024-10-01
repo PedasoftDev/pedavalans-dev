@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 39,
+    "version": 40,
     "collections": [
         {
             "id": "competency",
@@ -1617,6 +1617,12 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 1
+                },
+                {
+                    "key": "id_number",
+                    "type": "string",
+                    "size": 256,
+                    "version": 40
                 },
                 {
                     "key": "first_name",
@@ -3571,6 +3577,161 @@ const Database: IDatabase = {
                 },
             ]
         },
+        {
+            "id": "organization_integration",
+            "name": "Organization Integration",
+            "description": {
+                "en": "Organization Integration is a collection of organization entegrations.",
+                "tr": "Organizasyon entegrasyonlarının koleksiyonudur."
+            },
+            "version": 40,
+            "attributes": [
+                {
+                    "key": "body",
+                    "type": "string",
+                    "size": 1000,
+                    "version": 1
+                },
+                {
+                    "key": "link",
+                    "type": "string",
+                    "size": 1000,
+                    "version": 1
+                },
+                {
+                    "key": "response_data_attribute",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "id_number",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "first_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "last_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "title_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "position_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "manager_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "job_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "birth_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "position_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": 'phone',
+                    "type": 'string',
+                    "version": 1,
+                    "size": 256
+                },
+                {
+                    "key": 'email',
+                    "type": 'string',
+                    "version": 1,
+                    "size": 256
+                },
+                {
+                    "key": "gender",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "proxy_employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "educational_status",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+            ]
+        }
 
     ]
 }

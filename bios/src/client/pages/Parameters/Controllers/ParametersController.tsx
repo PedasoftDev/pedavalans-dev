@@ -130,6 +130,18 @@ export class ParametersController extends UIFormController {
                                                         </div>
                                                     </div>
                                                 }
+                                                {accountRelations && accountRelations[0] && accountRelations[0].is_admin &&
+                                                    <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
+                                                        <div style={{ fontSize: "14px", fontWeight: 400 }}>
+                                                            {"Organizasyon Entegrasyonu"}
+                                                        </div>
+                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                                            <IconButton onClick={() => navigate("/app/organization-integration/view")}>
+                                                                <RxExternalLink size={20} />
+                                                            </IconButton>
+                                                        </div>
+                                                    </div>
+                                                }
                                                 {parameters.filter((x) => x.name != "position_based_polyvalence_management").filter((x) => x.name != "multiple_line_definition" && x.name != "work_place_definition" && x.name != "multiple_department_definition").map((parameter) =>
                                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "0.5px solid lightgray", alignItems: "center", padding: "10px" }}>
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>

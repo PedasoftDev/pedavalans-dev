@@ -102,6 +102,7 @@ import { UpdateWorkPlace } from './pages/Organization/Controllers/WorkPlace/Upda
 import { EmployeesInMyTeamController } from './pages/EmployeesInMyTeam/Controllers/EmployeesInMyTeamController';
 import { EmployeesInMyTeamViewController } from './pages/EmployeesInMyTeam/Controllers/EmployeesInMyTeamViewController';
 import { UpdateEmployeeInMyTeamController } from './pages/EmployeesInMyTeam/Controllers/UpdateEmployeeInMyTeam';
+import { OrganizationIntegrationViewController } from './pages/OrganizationIntegration/Controller/OrganizationIntegrationViewController';
 
 
 export const Routes = () => {
@@ -282,7 +283,10 @@ export const Routes = () => {
                     UIRoute('edit/:id', UpdateVocationalQualificationTypeController)
                 ),
 
+                // mail configuration
                 UIRoute('mail-configuration/view', MailConfigurationController),
+                // organization integration
+                UIRoute('organization-integration/view', OrganizationIntegrationViewController),
 
                 UIRoute('employees-in-my-team', EmployeesInMyTeamController).children(
                     UIRoute('view', EmployeesInMyTeamViewController),

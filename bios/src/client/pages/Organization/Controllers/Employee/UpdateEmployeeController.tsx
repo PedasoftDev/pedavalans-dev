@@ -66,6 +66,7 @@ import { Form } from '../../Views/Views';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
+  id_number: '',
   first_name: '',
   last_name: '',
   job_start_date: '',

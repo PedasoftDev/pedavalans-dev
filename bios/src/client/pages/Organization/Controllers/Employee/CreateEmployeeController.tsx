@@ -65,6 +65,7 @@ const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   department_id: '',
   department_start_date: '',
   gender: '',
+  id_number: '',
   educational_status: '',
   position_id: '',
   workplace_id: '',
@@ -604,6 +605,19 @@ export class CreateEmployeeController extends UIController {
                                 required
                               />
                               <TextField
+                                name='id'
+                                size='small'
+                                label='TCKN'
+                                value={formEmployee.id_number}
+                                onChange={(e) => {
+                                  const regex = /^[1-9]{1}[0-9]{9}[02468]{1}$/
+                                  if (regex.test(e.target.value)) {
+                                    setFormEmployee({ ...formEmployee, id_number: e.target.value });
+                                  }
+                                }}
+                                required
+                              />
+                              <TextField
                                 name='first_name'
                                 size='small'
                                 label='İsim'
@@ -839,7 +853,7 @@ export class CreateEmployeeController extends UIController {
                                 )}
                               />
                               <Autocomplete
-                                options={employeesSameManagerId.filter((x)=> !proxySelectedEmployees.includes(x.$id))}
+                                options={employeesSameManagerId.filter((x) => !proxySelectedEmployees.includes(x.$id))}
                                 value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
                                 onChange={(event, newValue) => {
                                   setFormEmployee({
