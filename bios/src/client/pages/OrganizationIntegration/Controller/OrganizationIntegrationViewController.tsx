@@ -22,12 +22,20 @@ const resetForm: IOrganizationIntegration = {
   first_name: "",
   last_name: "",
   title_id: "",
+  title_name: "",
   position_id: "",
+  position_name: "",
   workplace_id: "",
+  workplace_name: "",
   line_id: "",
+  line_name: "",
   manager_id: "",
+  manager_name: "",
   department_id: "",
+  department_name: "",
   job_start_date: "",
+  photo: "",
+  photo_type: "",
   birth_date: "",
   department_start_date: "",
   position_start_date: "",
@@ -208,6 +216,16 @@ export class OrganizationIntegrationViewController extends UIController {
                               onChange={handleChange}
                             />
                             <TextField
+                              id="title_name"
+                              fullWidth
+                              label="Title Name - Ünvan"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.title_name}
+                              onChange={handleChange}
+                            />
+                            <TextField
                               id="position_id"
                               fullWidth
                               label="Position Id - Pozisyon"
@@ -215,6 +233,16 @@ export class OrganizationIntegrationViewController extends UIController {
                               margin="normal"
                               size="small"
                               value={form.position_id}
+                              onChange={handleChange}
+                            />
+                            <TextField
+                              id="position_name"
+                              fullWidth
+                              label="Position Name - Pozisyon"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.position_name}
                               onChange={handleChange}
                             />
                             <TextField
@@ -228,6 +256,16 @@ export class OrganizationIntegrationViewController extends UIController {
                               onChange={handleChange}
                             />
                             <TextField
+                              id="workplace_name"
+                              fullWidth
+                              label="Workplace Name - İşyeri"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.workplace_name}
+                              onChange={handleChange}
+                            />
+                            <TextField
                               id="line_id"
                               fullWidth
                               label="Line Id - Hat"
@@ -235,6 +273,16 @@ export class OrganizationIntegrationViewController extends UIController {
                               margin="normal"
                               size="small"
                               value={form.line_id}
+                              onChange={handleChange}
+                            />
+                            <TextField
+                              id="line_name"
+                              fullWidth
+                              label="Line Name - Hat"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.line_name}
                               onChange={handleChange}
                             />
                             <TextField
@@ -248,6 +296,16 @@ export class OrganizationIntegrationViewController extends UIController {
                               onChange={handleChange}
                             />
                             <TextField
+                              id="manager_name"
+                              fullWidth
+                              label="Manager Name - Yönetici Adı"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.manager_name}
+                              onChange={handleChange}
+                            />
+                            <TextField
                               id="department_id"
                               fullWidth
                               label="Department Id - Departman"
@@ -255,6 +313,36 @@ export class OrganizationIntegrationViewController extends UIController {
                               margin="normal"
                               size="small"
                               value={form.department_id}
+                              onChange={handleChange}
+                            />
+                            <TextField
+                              id="department_name"
+                              fullWidth
+                              label="Department Name - Departman"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.department_name}
+                              onChange={handleChange}
+                            />
+                            <TextField
+                              id="photo"
+                              fullWidth
+                              label="Photo - Fotoğraf"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.photo}
+                              onChange={handleChange}
+                            />
+                            <TextField
+                              id="photo_type"
+                              fullWidth
+                              label="Photo Type - Fotoğraf Türü"
+                              variant="outlined"
+                              margin="normal"
+                              size="small"
+                              value={form.photo_type}
                               onChange={handleChange}
                             />
                             <TextField

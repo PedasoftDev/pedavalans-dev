@@ -1727,6 +1727,12 @@ const Database: IDatabase = {
                     "version": 39
                 },
                 {
+                    "key": "record_type",
+                    "type": "string",
+                    "size": 256,
+                    "version": 40
+                },
+                {
                     "key": "is_active",
                     "type": "boolean",
                     "version": 1,
@@ -3635,7 +3641,19 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "title_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
                     "key": "position_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "position_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3647,7 +3665,19 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "workplace_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
                     "key": "line_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3659,7 +3689,19 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "manager_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
                     "key": "department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3714,6 +3756,18 @@ const Database: IDatabase = {
                 },
                 {
                     "key": "educational_status",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "photo",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "photo_type",
                     "type": "string",
                     "size": 256,
                     "version": 1
