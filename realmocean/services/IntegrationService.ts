@@ -380,15 +380,12 @@ class IntegrationService extends RealmoceanService {
       Promise.all([
         departmentsToDelete.map(d => this.databaseService.updateDocument(IntegrationAppInfo.Name, IntegrationAppInfo.Database, IntegrationCollections.Department, d.$id, {
           is_active: false,
-          is_deleted: true,
         })),
         titlesToDelete.map(t => this.databaseService.updateDocument(IntegrationAppInfo.Name, IntegrationAppInfo.Database, IntegrationCollections.Title, t.$id, {
           is_active: false,
-          is_deleted: true,
         })),
         positionsToDelete.map(p => this.databaseService.updateDocument(IntegrationAppInfo.Name, IntegrationAppInfo.Database, IntegrationCollections.Position, p.$id, {
           is_active: false,
-          is_deleted: true,
         }))
       ]).then(() => {
         console.log("Departman, Ünvan ve Pozisyonlar silindi.");
@@ -397,7 +394,6 @@ class IntegrationService extends RealmoceanService {
       employeesToDelete.forEach(employee => {
         this.databaseService.updateDocument(IntegrationAppInfo.Name, IntegrationAppInfo.Database, IntegrationCollections.Employee, employee.$id, {
           is_active: false,
-          is_deleted: true,
         });
       });
 

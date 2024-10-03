@@ -66,9 +66,9 @@ export class PendingTaskListController extends UIController {
                                     <Button
                                         onClick={() => handleClickAssignedEducation(params.row as IAssignedEducation.IBase)}
                                         variant="text"
-                                        style={{ textTransform: "none" }}
+                                        style={{ textTransform: "none", textAlign: "left" }}
                                     >
-                                        {params.value}
+                                        {params.value.length > 30 ? params.value.slice(0, 30) + "..." : params.value}
                                     </Button>
                                 )
                             }
