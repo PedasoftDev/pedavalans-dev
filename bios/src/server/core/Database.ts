@@ -3773,6 +3773,12 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
                     "key": "is_active",
                     "type": "boolean",
                     "version": 1,

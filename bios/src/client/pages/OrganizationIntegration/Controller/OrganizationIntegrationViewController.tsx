@@ -91,14 +91,20 @@ export class OrganizationIntegrationViewController extends UIController {
                     databaseId: AppInfo.Database,
                     collectionId: Collections.OrganizationIntegration,
                     documentId: OrganizationIntegration.documentId,
-                    data: form
+                    data: {
+                      ...form,
+                      tenant_id: me.prefs.organization
+                    }
                   }, () => {
                     ToastSuccess("Başarılı", "Organizasyon entegrasyonu başarıyla güncellendi.");
                   })
                 } else {
                   createOrganizationIntegration({
                     documentId: OrganizationIntegration.documentId,
-                    data: form
+                    data: {
+                      ...form,
+                      tenant_id: me.prefs.organization
+                    }
                   }, () => {
                     ToastSuccess("Başarılı", "Organizasyon entegrasyonu başarıyla oluşturuldu.");
                   })
