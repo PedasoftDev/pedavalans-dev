@@ -33,6 +33,7 @@ import PolyvalenceUnitTableLineRelation from "../../../../server/hooks/polyvalen
 import EmployeeMultipleLines from "../../../../server/hooks/employeeMultipleLines/Main";
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import EmployeeMultipleDepartments from "../../../../server/hooks/employeeMultipleDepartments/Main";
+import IPolyvalenceUnitTableLineRelation from "../../../interfaces/IPolyvalenceUnitTableLineRelation";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -115,7 +116,6 @@ export class CompetencyReportDataViewController extends UIController {
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { competencyDepartments } = CompetencyDepartment.GetByDepartmentId(selectedTable.polyvalence_department_id);
         const { competencyList, isLoadingCompetencyList } = Competency.GetList(me?.prefs?.organization);
-        const { lineRelation, isLoading: isLoadingLineRelation } = PolyvalenceUnitTableLineRelation.GetByPolyvalenceUnitId(selectedTable.polyvalence_table_id, me?.prefs?.organization);
         const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleLine } = EmployeeMultipleLines.GetList()
         const { competencyLineRelationList, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetList();
         const { employeeMultipleDepartmentsList, isLoading: isLoadingMultipleDepartmentsList } = EmployeeMultipleDepartments.GetList()
@@ -131,7 +131,7 @@ export class CompetencyReportDataViewController extends UIController {
 
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingWorkPlace || isLoadingMultipleDepartmentsList || isLoadingLineRelation || isLoadingEmployeeMultipleLine || isLoadingCompetencyLineRelation || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList ? VStack(Spinner()) :
+            isLoading || this.polyvalenceUnitList == null || isLoadingWorkPlace || isLoadingMultipleDepartmentsList || isLoadingEmployeeMultipleLine || isLoadingCompetencyLineRelation || isLoadingPeriods || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList ? VStack(Spinner()) :
                 UIViewBuilder(() => {
 
                     const [dataYear, setDataYear] = useState<{ name: string }[]>([]);
@@ -141,12 +141,18 @@ export class CompetencyReportDataViewController extends UIController {
                     // radar=true or table=false
                     const [isRadar, setIsRadar] = useState<boolean>(false);
 
+                    // line relation
+                    const [lineRelation, setLineRelation] = useState<IPolyvalenceUnitTableLineRelation.IPolyvalenceUnitTableLineRelation[]>([]);
+
 
                     // radar data
                     const [radarData, setRadarData] = useState<{ name: string, target: number, real: number }[]>([]);
 
-                    const onChangeTable = (e: SelectChangeEvent<string>) => {
+                    const onChangeTable = async (e: SelectChangeEvent<string>) => {
                         const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === e.target.value);
+                        await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.limit(10000), Query.equal('polyvalence_table_id', e.target.value)]).then((res) => {
+                            setLineRelation(res.documents as any)
+                        })
                         const periodYear = Number(periods[0].evaluation_period_year);
                         setSelectedTable(table)
                         setSelectedPeriod("")
@@ -368,13 +374,16 @@ export class CompetencyReportDataViewController extends UIController {
                                                         : this.polyvalenceUnitList
                                                 }
                                                 value={selectedTable}
-                                                onChange={(event, newValue) => {
+                                                onChange={async (event, newValue) => {
                                                     setSelectedTable(newValue);
                                                     setSelectedPeriod("");
                                                     setSelectedEmployeeId("");
                                                     setSelectedGroupId("");
                                                     setSelectedCompetencyList([]);
                                                     const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === newValue?.polyvalence_table_id);
+                                                    await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.limit(10000), Query.equal('polyvalence_table_id', newValue?.polyvalence_table_id)]).then((res) => {
+                                                        setLineRelation(res.documents as any)
+                                                    })
                                                     const periodYear = Number(periods[0].evaluation_period_year);
                                                     if (table?.polyvalence_evaluation_frequency == "Yıl") {
                                                         setDataYear(getYearPeriods(periodYear));

@@ -159,8 +159,23 @@ class IntegrationService extends RealmoceanService {
 
   async init() {
     console.log("Integration Service is running...");
-    this.taskOrganizationIntegration();
-    this.scheduleService.addJob("*/10 * * * *", () => this.taskOrganizationIntegration());
+    await this.taskOrganizationIntegration();
+
+    // every day at 07:00
+    this.scheduleService.addJob('0 7 * * *', await this.taskOrganizationIntegration.bind(this));
+
+    const router = this.webServer.getRouter();
+
+    router.post("/com.pedavalans.service.integration/organization", async (req, res) => {
+      try {
+        const result = await this.taskOrganizationIntegration()
+        return res.json({ result });
+
+      } catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+
+    });
   }
 
   async taskOrganizationIntegration() {

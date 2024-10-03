@@ -28,12 +28,14 @@ import { useGetMe } from '@realmocean/sdk';
 import AppInfo from '../../../../AppInfo';
 import IParameters from '../../../interfaces/IParameters';
 import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
-import { Toast } from '../../../components/Toast';
+import { Toast, ToastError, ToastSuccess } from '../../../components/Toast';
 import { RxExternalLink } from 'react-icons/rx';
+import { TfiReload } from "react-icons/tfi";
 import AccountRelation from '../../../../server/hooks/accountRelation/main';
 import StringParameter from '../../../../server/hooks/stringParameter/main';
 import CheckIcon from '@mui/icons-material/Check';
 import Collections from '../../../../server/core/Collections';
+import { IntegrationBroker } from '../../../../server/brokers/IntegrationBroker';
 
 export class ParametersController extends UIFormController {
 
@@ -77,6 +79,19 @@ export class ParametersController extends UIFormController {
                             Toast.fire({
                                 icon: "success",
                                 title: "Parametre güncellendi"
+                            })
+                        }
+
+                        const organizationIntegration = async () => {
+                            Toast.fire({
+                                icon: "info",
+                                title: "Organizasyon entegrasyonu başlatılıyor...",
+                                text: "Bu işlem biraz zaman alabilir. Lütfen sonuç alana kadar bekleyin."
+                            })
+                            await IntegrationBroker.Default.organization().then((res) => {
+                                ToastSuccess("Başarılı", "Organizasyon entegrasyonu başarılı bir şekilde senkronize edildi");
+                            }).catch((err) => {
+                                ToastError("Hata!", "Organizasyon entegrasyonu sırasında bir hata oluştu! Lütfen ayarları kontrol edip tekrar deneyin.");
                             })
                         }
 
@@ -135,7 +150,10 @@ export class ParametersController extends UIFormController {
                                                         <div style={{ fontSize: "14px", fontWeight: 400 }}>
                                                             {"Organizasyon Entegrasyonu"}
                                                         </div>
-                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                                        <div style={{ width: "100px", display: "flex", justifyContent: "center", alignItems: "center", gap: "10px" }}>
+                                                            <IconButton onClick={organizationIntegration}>
+                                                                <TfiReload size={20} />
+                                                            </IconButton>
                                                             <IconButton onClick={() => navigate("/app/organization-integration/view")}>
                                                                 <RxExternalLink size={20} />
                                                             </IconButton>
