@@ -269,7 +269,6 @@ class IntegrationService extends RealmoceanService {
             title_id: titlesDb.find(t => t.record_id === employee.title_id)?.$id,
             position_id: positionsDb.find(p => p.record_id === employee.position_id)?.$id,
             manager_id: employee.manager_id,
-            line_id: employee.line_id,
             department_id: departmentsDb.find(d => d.record_id === employee.department_id)?.$id,
             job_start_date: date(employee?.job_start_date),
             birth_date: date(employee?.birth_date),
