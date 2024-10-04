@@ -212,6 +212,12 @@ export class CreateEmployeeController extends UIController {
 
             const onSubmit = (e: any) => {
               e.preventDefault();
+
+              const regex = /^[1-9]{1}[0-9]{9}[02468]{1}$/
+              if (!regex.test(formEmployee.id_number)) {
+                ToastError("Hata", "Geçersiz TCKN")
+                return;
+              }
               if (multipleLineDefinition) {
                 const id = nanoid()
                 if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
@@ -605,16 +611,11 @@ export class CreateEmployeeController extends UIController {
                                 required
                               />
                               <TextField
-                                name='id'
+                                name='id_number'
                                 size='small'
                                 label='TCKN'
                                 value={formEmployee.id_number}
-                                onChange={(e) => {
-                                  const regex = /^[1-9]{1}[0-9]{9}[02468]{1}$/
-                                  if (regex.test(e.target.value)) {
-                                    setFormEmployee({ ...formEmployee, id_number: e.target.value });
-                                  }
-                                }}
+                                onChange={onChange}
                                 required
                               />
                               <TextField
