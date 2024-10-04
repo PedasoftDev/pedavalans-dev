@@ -1249,7 +1249,7 @@ class RealmService extends RealmoceanService {
             const key = await this.emailService.createKey({
                 smtpServer: "smtp-mail.outlook.com",
                 smtpPort: "587",
-                password: "V%443989818492ug",
+                password: "",
                 username: "notification@pedabilisim.com",
                 tls: false
             })
