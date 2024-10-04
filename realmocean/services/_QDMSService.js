@@ -2,7 +2,7 @@
 
 
 
-const url = 'http://93.180.135.42/QDMS/QDMSNET/BSAT/BSATWebapi.asmx?WSDL';
+const url = '';
 
 
 class QDMSTestService extends RealmoceanService {
@@ -14,7 +14,7 @@ class QDMSTestService extends RealmoceanService {
 
 
         const authPack = {
-            url: 'http://93.180.135.42/QDMS/QDMSNET/BSAT/BSATWebapi.asmx?WSDL',
+            url: '',
             token
         }
 

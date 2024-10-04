@@ -34,7 +34,6 @@ interface ICollection {
 interface IAdmin {
     name: "pedasoft";
     email: "info@pedasoft.com";
-    password: "pedasoft";
 }
 
 export default IDatabase;

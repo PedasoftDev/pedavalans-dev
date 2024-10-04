@@ -10,7 +10,6 @@ const Database: IDatabase = {
     seed_admin: {
         "name": "pedasoft",
         "email": "info@pedasoft.com",
-        "password": "pedasoft"
     },
     "enabled": true,
     "version": 40,
