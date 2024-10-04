@@ -9,6 +9,7 @@ export namespace IOrganizationStructure {
             first_name: string;
             last_name: string;
             title_id: string;
+            id_number: string;
             position_id: string;
             workplace_id: string;
             line_id: string;
@@ -20,6 +21,8 @@ export namespace IOrganizationStructure {
             department_start_date: string;
             position_start_date: string;
             phone: string;
+            email: string;
+            proxy_employee_id: string;
             tenant_id: string;
             realm_id: string;
             educational_status?: string;
@@ -29,6 +32,7 @@ export namespace IOrganizationStructure {
             id: string;
             first_name: string;
             last_name: string;
+            id_number: string;
             title_id: string;
             position_id: string;
             workplace_id: string;
@@ -41,6 +45,8 @@ export namespace IOrganizationStructure {
             department_start_date: string;
             position_start_date: string;
             phone: string;
+            email: string;
+            proxy_employee_id: string;
             is_active: boolean;
             is_deleted: boolean;
             tenant_id: string;

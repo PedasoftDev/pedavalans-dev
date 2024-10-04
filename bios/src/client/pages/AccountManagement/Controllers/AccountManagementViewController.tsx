@@ -1,24 +1,48 @@
-import { HStack, ReactView, Spinner, UIController, UINavigate, UIView, UIViewBuilder, VStack, cLeading, cTop, cTopLeading, nanoid } from "@tuval/forms";
-import { Views } from "../../../components/Views";
-import React, { useEffect, useState } from "react";
-import { useGetMe, Services, Query, setUpProject, useCreateAccount, useListAccounts, EmailBroker } from "@realmocean/sdk";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, Switch, TextField } from "@mui/material";
-import IAccountRelation from "../../../interfaces/IAccountRelation";
-import AccountRelation from "../../../../server/hooks/accountRelation/main";
-import AppInfo from "../../../../AppInfo";
-import removeDollarProperties from "../../../assets/Functions/removeDollarProperties";
-import { Toast } from "../../../components/Toast";
-import { BsFillPersonFill } from "react-icons/bs";
-import { TbBuildingCommunity } from "react-icons/tb";
-import { Tab } from "../Views/Form";
-import { IoPersonAddOutline } from "react-icons/io5";
-import StyledDataGrid from "../../../components/StyledDataGrid";
-import Swal from "sweetalert2";
-import { GridContainer } from "../Views/View";
-import ModeIcon from '@mui/icons-material/Mode';
 import LockPersonIcon from '@mui/icons-material/LockPerson';
-import AssignEducation from "../../../../server/hooks/assignEducation/main";
-import Trainers from "../../../../server/hooks/trainers/main";
+import ModeIcon from '@mui/icons-material/Mode';
+import {
+    Button, Dialog, DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControlLabel,
+    IconButton,
+    Switch,
+    TextField,
+} from '@mui/material';
+import { Query, Services, setUpProject, useCreateAccount, useGetMe, useListAccounts } from '@realmocean/sdk';
+import {
+    cLeading,
+    cTop,
+    cTopLeading,
+    HStack,
+    nanoid,
+    ReactView,
+    Spinner,
+    UIController,
+    UINavigate,
+    UIView,
+    UIViewBuilder,
+    VStack,
+} from '@tuval/forms';
+import React, { useEffect, useState } from 'react';
+import { BsFillPersonFill } from 'react-icons/bs';
+import { FaUsers } from 'react-icons/fa';
+import { IoPersonAddOutline } from 'react-icons/io5';
+import { TbBuildingCommunity, TbUserShare } from 'react-icons/tb';
+import Swal from 'sweetalert2';
+
+import AppInfo from '../../../../AppInfo';
+import AccountRelation from '../../../../server/hooks/accountRelation/main';
+import AssignEducation from '../../../../server/hooks/assignEducation/main';
+import removeDollarProperties from '../../../assets/Functions/removeDollarProperties';
+import StyledDataGrid from '../../../components/StyledDataGrid';
+import { Toast } from '../../../components/Toast';
+import { Views } from '../../../components/Views';
+import IAccountRelation from '../../../interfaces/IAccountRelation';
+import IProxyAccount from '../../../interfaces/IProxyAccount';
+import { Tab } from '../Views/Form';
+import { GridContainer } from '../Views/View';
+import ProxyManagement from '../Views/ProxyManagement';
 
 
 const resetMe: IAccount.IBase = {
@@ -52,31 +76,41 @@ const resetAccountRelation: IAccountRelation.IBase = {
     tenant_id: "",
 }
 
+const resetProxyAccount: IProxyAccount.IBase = {
+    $id: "",
+    principal_id: "",
+    principal_name: "",
+    agent_id: "",
+    agent_name: "",
+    end_date: "",
+    start_date: "",
+    password: "",
+    email: "",
+    is_active: true,
+    is_deleted: false,
+}
+
+
 export class AccountManagementViewController extends UIController {
+
     public LoadView(): UIView {
 
         const { me, isLoading } = useGetMe("console");
         const { updateAccountRelation } = AccountRelation.Update();
-        const {
-            createAccount,
-            isError: isCreateAccountError,
-            error: createAccountError
-        } = useCreateAccount('console');
+        const { createAccount, isError: isCreateAccountError, error: createAccountError } = useCreateAccount('console');
         const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
         const { accountRelations, isLoadingResult } = AccountRelation.GetList(me?.prefs?.organization)
         const { createAccountRelation } = AccountRelation.Create()
         const { assignedEducationList, isLoadingAssignedEducationList } = AssignEducation.GetList(me?.prefs?.organization)
 
-        const { trainersList, isLoadingTrainersList } = Trainers.GetList()
 
         return (
-            isLoading || isLoadingAccounts || isLoadingTrainersList || isLoadingResult || isLoadingAssignedEducationList ? VStack(Spinner()) :
+            isLoading || isLoadingAccounts || isLoadingResult || isLoadingAssignedEducationList ? VStack(Spinner()) :
                 me == null ? VStack(UINavigate("/login")) :
                     UIViewBuilder(() => {
 
                         const [accountInfo, setAccountInfo] = useState<IAccount.IBase>(resetMe)
                         const [accountRelation, setAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
-
                         // edit account info
                         const [selectedAccount, setSelectedAccount] = useState<IAccount.IBase>(resetMe)
                         const [selectedAccountRelation, setSelectedAccountRelation] = useState<IAccountRelation.IBase>(resetAccountRelation)
@@ -84,6 +118,7 @@ export class AccountManagementViewController extends UIController {
 
                         const [passwordChange, setPasswordChange] = useState<IAccount.IPasswordChange>({ password: "", newPassword: "", newPasswordConfirm: "" })
                         const [isRegexError, setIsRegexError] = useState(false)
+
 
                         // edit account
                         const [form, setForm] = useState({
@@ -186,8 +221,8 @@ export class AccountManagementViewController extends UIController {
                         const handleCreateAccount = (e: React.FormEvent<HTMLFormElement>) => {
                             e.preventDefault();
                             if (!isLoadingResult && accountRelations) {
-                                console.log(accountRelations);
-                                const isRegistrationNumberExists = accountRelations.some(
+                                console.log("accountRelations", accountRelations);
+                                const isRegistrationNumberExists = accountRelations?.some(
                                     (relation) => relation.registration_number === createAccountForm.registrationNumber
                                 );
 
@@ -256,9 +291,10 @@ export class AccountManagementViewController extends UIController {
                             setSelectedTab(3)
                         }
 
+                        // edit account relation
                         const updateSelectedAccountRelation = (e) => {
                             e.preventDefault();
-                            if (assignedEducationList.filter((item) => item.status === "open" && item.is_active).find((item) => item.educator_id === selectedAccount.$id)) {
+                            if (assignedEducationList.filter((item) => item.status === "open").find((item) => item.educator_id === selectedAccount.$id)) {
                                 Swal.fire({
                                     title: 'Bu hesaba ait açık bir eğitim bulunmaktadır!',
                                     text: "Bu hesabı düzenleyemezsiniz!",
@@ -268,22 +304,23 @@ export class AccountManagementViewController extends UIController {
                                 })
                                 return
                             }
-                            // trainer check
-                                updateAccountRelation({
-                                    databaseId: AppInfo.Database,
-                                    collectionId: "account_relation",
-                                    documentId: selectedAccountRelation.id,
-                                    data: removeDollarProperties(selectedAccountRelation)
-                                }, (data) => {
-                                    Toast.fire({
-                                        icon: 'success',
-                                        title: 'Hesap bilgileri güncellendi'
-                                    })
-                                    setSelectedTab(1)
-                                    setSelectedAccountRelation(resetAccountRelation)
-                                    setSelectedAccount(resetMe);
+                            updateAccountRelation({
+                                databaseId: AppInfo.Database,
+                                collectionId: "account_relation",
+                                documentId: selectedAccountRelation.id,
+                                data: removeDollarProperties(selectedAccountRelation)
+                            }, (data) => {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Hesap bilgileri güncellendi'
                                 })
+                                setSelectedTab(1)
+                                setSelectedAccountRelation(resetAccountRelation)
+                                setSelectedAccount(resetMe);
+                            })
                         }
+
+
 
                         return (
                             VStack({ spacing: 15, alignment: cTopLeading })(
@@ -318,6 +355,12 @@ export class AccountManagementViewController extends UIController {
                                                     <Tab active={selectedTab === 2} onClick={() => setSelectedTab(2)}>
                                                         <IoPersonAddOutline />
                                                         <div>Yeni Kullanıcı</div>
+                                                    </Tab>
+                                                }
+                                                {
+                                                    <Tab active={selectedTab === 4} onClick={() => setSelectedTab(4)}>
+                                                        <FaUsers />
+                                                        <div>Vekaletlerim</div>
                                                     </Tab>
                                                 }
                                             </div>
@@ -504,6 +547,7 @@ export class AccountManagementViewController extends UIController {
                                                     </div>
                                                 </div>
                                             }
+                                            {/* users */}
                                             {selectedTab === 1 &&
                                                 <GridContainer>
                                                     <StyledDataGrid
@@ -530,10 +574,11 @@ export class AccountManagementViewController extends UIController {
                                                                 renderCell: (params: any) => <Button variant="text" onClick={() => setEditAccount(params.row)}>Düzenle</Button>
                                                             }
                                                         ]}
-                                                        rows={accounts.filter(account => accountRelations.some(relation => relation.account_id === account.$id && !relation.is_deleted))}
+                                                        rows={accounts.filter(account => accountRelations?.some(relation => relation.account_id === account.$id && !relation.is_deleted))}
                                                         getRowId={(row) => row.$id} />
                                                 </GridContainer>
                                             }
+                                            {/* create user */}
                                             {selectedTab === 2 &&
                                                 <div style={{
                                                     display: "flex",
@@ -596,6 +641,7 @@ export class AccountManagementViewController extends UIController {
                                                     </form>
                                                 </div>
                                             }
+                                            {/* edit user */}
                                             {selectedTab === 3 &&
                                                 <div style={{
                                                     display: "flex",
@@ -647,41 +693,15 @@ export class AccountManagementViewController extends UIController {
                                                         {
                                                             accountRelation.is_admin && selectedAccountRelationIsActive === false &&
                                                             <Button variant="contained" onClick={() => {
-                                                                Swal.fire({
-                                                                    title: 'Kullanıcıyı Sil',
-                                                                    text: "Kullanıcıyı silmek istediğinizden emin misiniz? Bu işlemi geri alamazsınız!",
-                                                                    icon: 'warning',
-                                                                    showCancelButton: true,
-                                                                    confirmButtonColor: '#3085d6',
-                                                                    cancelButtonColor: '#d33'
-                                                                }).then(async (result) => {
-                                                                    if (result.isConfirmed) {
-                                                                        updateAccountRelation({
-                                                                            databaseId: AppInfo.Database,
-                                                                            collectionId: "account_relation",
-                                                                            documentId: selectedAccountRelation.id,
-                                                                            data: {
-                                                                                ...removeDollarProperties(selectedAccountRelation),
-                                                                                is_deleted: true,
-                                                                                is_active: false
-                                                                            }
-                                                                        }, (data) => {
-                                                                            Toast.fire({
-                                                                                icon: 'success',
-                                                                                title: 'Kullanıcı Silindi!'
-                                                                            })
-                                                                            setSelectedTab(1)
-                                                                            setSelectedAccountRelation(resetAccountRelation)
-                                                                            setSelectedAccountRelationIsActive(true)
-                                                                            setSelectedAccount(resetMe);
-                                                                        })
-                                                                    }
-                                                                })
                                                             }}>Kullanıcıyı Sil</Button>
                                                         }
                                                     </form>
                                                 </div>
                                             }
+                                            {/* Vekaletlerim Sekmesi */}
+                                            {selectedTab === 4 && (
+                                                <ProxyManagement />
+                                            )}
                                         </div >
                                     )
                                 )

@@ -42,7 +42,10 @@ import Swal from 'sweetalert2';
 
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
 import OrganizationStructureEmployee from '../../../../../server/hooks/organizationStructureEmployee/main';
@@ -60,12 +63,10 @@ import { Toast, ToastError, ToastSuccess } from '../../../../components/Toast';
 import { Views } from '../../../../components/Views';
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import { Form } from '../../Views/Views';
-import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
-import AccountRelation from '../../../../../server/hooks/accountRelation/main';
-import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   id: '',
+  id_number: '',
   first_name: '',
   last_name: '',
   job_start_date: '',
@@ -79,6 +80,8 @@ const resetForm: IOrganizationStructure.IEmployees.IEmployee = {
   title_id: '',
   manager_id: '',
   phone: '',
+  email: '',
+  proxy_employee_id: '',
   educational_status: '',
   position_start_date: '',
   realm_id: '',
@@ -167,6 +170,9 @@ export class UpdateEmployeeController extends UIController {
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
             const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
 
+            const [proxySelectedEmployees, setProxySelectedEmployees] = useState<string[]>([])
+
+            const employeesSameManagerId = formEmployee.manager_id ? employees.filter((employee) => employee.manager_id === formEmployee.manager_id) : []
 
 
             const [isOpenDialog, setIsOpenDialog] = useState(false)
@@ -235,6 +241,11 @@ export class UpdateEmployeeController extends UIController {
 
             const onSubmit = (e: any) => {
               e.preventDefault();
+              const regex = /^[1-9]{1}[0-9]{9}[02468]{1}$/
+              if (!regex.test(formEmployee.id_number)) {
+                ToastError("Hata", "Geçersiz TCKN")
+                return;
+              }
               if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
                 setFormIsEmployee(true)
                 ToastError("Personel bilgileri eksik", "")
@@ -244,6 +255,14 @@ export class UpdateEmployeeController extends UIController {
                 Toast.fire({
                   icon: "error",
                   title: "Bu sicil numarası zaten kullanılıyor. Lütfen farklı bir sicil numarası girin."
+                })
+                return;
+              }
+              if (employees.find(x => x.email != formEmployee.email && x.email === formEmployee.email)) {
+                Toast.fire({
+                  icon: "error",
+                  title: "Çalışan eklenirken bir hata oluştu!",
+                  text: "E-Posta zaten kullanılmaktadır."
                 })
                 return;
               }
@@ -478,116 +497,92 @@ export class UpdateEmployeeController extends UIController {
 
             useEffect(() => {
               if (id) {
-                const employee = employees.find((employee) => employee.$id === id)
+                const employee = employees.find((employee) => employee.$id === id);
                 if (employee) {
-                  setFormEmployee(employee)
-                  setIsActive(employee.is_active)
-                  Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.OrganizationEmployeeDocument,
-                    [Query.equal("employee_id", id), Query.equal("is_deleted", false), Query.equal("is_active", true)
-                    ]).then((result) => {
-                      const docsCreateCopies: IOrganizationStructure.IEmployeeVocationalQualificationRelation.ICreate[] = result.documents.map((doc) => {
-                        return {
-                          document_id: doc.document_id,
-                          document_name: doc.document_name,
-                          document_type_id: doc.document_type_id,
-                          document_type_name: doc.document_type_name,
-                          end_date: doc.end_date,
-                          employee_id: doc.employee_id,
-                          id: doc.$id,
-                          tenant_id: doc.tenant_id
-                        }
-                      })
-                      setDocumentsCopy(docsCreateCopies)
-                      setDocuments(docsCreateCopies)
-                    })
+                  setFormEmployee(employee);
+                  setIsActive(employee.is_active);
 
-                }
-              }
-              Services.Databases.listDocuments(
-                AppInfo.Name,
-                AppInfo.Database,
-                Collections.EmployeeLineRelation,
-                [
-                  Query.equal("employee_id", id),
-                  Query.equal("is_deleted", false),
-                  Query.equal("is_active", true)
-                ]
-              ).then((res) => {
-                setMultipleLines(res.documents)
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.EmployeeDepartmentRelation,
-                  [
+                  const appInfoParams = {
+                    name: AppInfo.Name,
+                    database: AppInfo.Database,
+                  };
+
+                  const commonQuery = [
                     Query.equal("employee_id", id),
                     Query.equal("is_deleted", false),
-                    Query.equal("is_active", true)
-                  ]
-                ).then((res) => {
-                  setMultipleDepartments(res.documents)
-                })
-              })
-              Services.Databases.listDocuments(
-                AppInfo.Name,
-                AppInfo.Database,
-                Collections.Parameter,
-                [
-                  Query.equal("name", "position_relation_department"),
-                  Query.limit(10000),
-                ]
-              ).then((res) => {
-                setPositionRelationDepartmentsState(res.documents[0]?.is_active)
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "line_based_competency_relationship"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setLineRelationState(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "work_place_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setWorkPlaceDefination(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "multiple_line_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setMultipleLineDefinition(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "multiple_department_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setMultipleDepartmentDefinition(res.documents[0]?.is_active)
-                })
-              })
-            }, [])
+                    Query.equal("is_active", true),
+                  ];
+
+                  const fetchEmployeeDocs = Services.Databases.listDocuments(
+                    appInfoParams.name,
+                    appInfoParams.database,
+                    Collections.OrganizationEmployeeDocument,
+                    commonQuery
+                  ).then((result) => {
+                    const docsCreateCopies = result.documents.map((doc) => ({
+                      document_id: doc.document_id,
+                      document_name: doc.document_name,
+                      document_type_id: doc.document_type_id,
+                      document_type_name: doc.document_type_name,
+                      end_date: doc.end_date,
+                      employee_id: doc.employee_id,
+                      id: doc.$id,
+                      tenant_id: doc.tenant_id,
+                    }));
+                    setDocumentsCopy(docsCreateCopies);
+                    setDocuments(docsCreateCopies);
+                  });
+
+                  const fetchMultipleLines = Services.Databases.listDocuments(
+                    appInfoParams.name,
+                    appInfoParams.database,
+                    Collections.EmployeeLineRelation,
+                    commonQuery
+                  ).then((res) => {
+                    setMultipleLines(res.documents);
+                  });
+
+                  const fetchMultipleDepartments = Services.Databases.listDocuments(
+                    appInfoParams.name,
+                    appInfoParams.database,
+                    Collections.EmployeeDepartmentRelation,
+                    commonQuery
+                  ).then((res) => {
+                    setMultipleDepartments(res.documents);
+                  });
+
+                  const fetchParameters = [
+                    { queryName: "position_relation_department", setter: setPositionRelationDepartmentsState },
+                    { queryName: "line_based_competency_relationship", setter: setLineRelationState },
+                    { queryName: "work_place_definition", setter: setWorkPlaceDefination },
+                    { queryName: "multiple_line_definition", setter: setMultipleLineDefinition },
+                    { queryName: "multiple_department_definition", setter: setMultipleDepartmentDefinition },
+                  ];
+
+                  const parameterRequests = fetchParameters.map(({ queryName }) =>
+                    Services.Databases.listDocuments(
+                      appInfoParams.name,
+                      appInfoParams.database,
+                      Collections.Parameter,
+                      [Query.equal("name", queryName), Query.limit(10000)]
+                    )
+                  );
+
+                  Promise.all([fetchEmployeeDocs, fetchMultipleLines, fetchMultipleDepartments, ...parameterRequests])
+                    .then((results: any) => {
+                      fetchParameters.forEach((param, index) => {
+                        param.setter(results[3 + index].documents[0]?.is_active);
+                      });
+                    })
+                    .catch((error) => {
+                      console.error("Error fetching data:", error);
+                    });
+                }
+              }
+
+              setProxySelectedEmployees(employees.filter((employee) => employee.proxy_employee_id).map((employee) => employee.proxy_employee_id));
+            }, [id, employees]);
+
 
 
             const onDelete = () => {
@@ -687,6 +682,14 @@ export class UpdateEmployeeController extends UIController {
                                 size='small'
                                 label='Sicil No'
                                 value={formEmployee.id}
+                                onChange={onChange}
+                                required
+                              />
+                              <TextField
+                                name='id_number'
+                                size='small'
+                                label='TCKN'
+                                value={formEmployee.id_number}
                                 onChange={onChange}
                                 required
                               />
@@ -942,6 +945,25 @@ export class UpdateEmployeeController extends UIController {
                                   />
                                 )}
                               />
+                              <Autocomplete
+                                options={employeesSameManagerId.filter((x) => !proxySelectedEmployees.includes(x.$id) && x.$id !== formEmployee.$id)}
+                                value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
+                                onChange={(event, newValue) => {
+                                  setFormEmployee({
+                                    ...formEmployee,
+                                    proxy_employee_id: newValue.$id
+                                  });
+                                }}
+                                getOptionLabel={(option) => option.first_name + " " + option.last_name}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    label="Yerine Vekalet Edecek Personel"
+                                    name="proxy_employee_id"
+                                    size="small"
+                                  />
+                                )}
+                              />
                               <FormControl fullWidth size="small">
                                 <TextField
                                   name='phone'
@@ -959,6 +981,22 @@ export class UpdateEmployeeController extends UIController {
                                   }
                                   }
                                 />
+                              </FormControl>
+                              <FormControl fullWidth size="small">
+                                <TextField
+                                  name='email'
+                                  size='small'
+                                  label='E-Posta'
+                                  value={formEmployee.email}
+                                  onChange={(e) => {
+                                    setFormEmployee({
+                                      ...formEmployee,
+                                      email: e.target.value as string
+                                    })
+                                  }
+                                  }
+                                />
+
                               </FormControl>
                               <FormControlLabel
                                 sx={{ width: "100%", alignContent: "end", padding: "0 5px 0 0" }}

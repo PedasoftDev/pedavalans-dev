@@ -44,12 +44,14 @@ namespace Collections {
     export const AssignedEducationEmployees = "assigned_education_employees";
     export const MailSettings = "mail_settings";
     export const EmailMessage = "email_message";
-    export const EducationCompetencyStatusInfos ="education_competency_status_infos";
+    export const EducationCompetencyStatusInfos = "education_competency_status_infos";
     export const Related_Departments_Workplaces = "related_departments_workplaces";
     export const Related_Position_Workplaces = "related_position_workplaces";
     export const Related_Workplaces_To_Trainer = "related_workplaces_to_trainer";
     export const EmployeeLineRelation = "employee_line_relation";
     export const EmployeeDepartmentRelation = "employee_department_relation";
+    export const ProxyAccount = "proxy_account";
+    export const OrganizationIntegration = "organization_integration";
 }
 
 export default Collections;

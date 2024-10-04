@@ -683,8 +683,8 @@ export class DashboardController extends UIController {
                                                 <MainView>
 
                                                     <EmployeePerformanceDashboard
-                                                        employeesByTitle={employeesByTitle}
-                                                        employeesByDepartment={employeesByDepartment}
+                                                        employeesByTitle={employeesByTitle.slice(-20)}
+                                                        employeesByDepartment={employeesByDepartment.slice(-20)}
                                                         employeesByPosition={employeesByPosition}
                                                         employeePerformanceData={employeePerformance}
                                                         successfulFiveDepartments={successfullFiveDepartments}

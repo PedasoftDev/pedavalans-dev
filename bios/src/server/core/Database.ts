@@ -13,7 +13,7 @@ const Database: IDatabase = {
         "password": "pedasoft"
     },
     "enabled": true,
-    "version": 38,
+    "version": 40,
     "collections": [
         {
             "id": "competency",
@@ -103,7 +103,7 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
-                    "key":"work_place_id",
+                    "key": "work_place_id",
                     "type": "string",
                     "size": 256,
                     "version": 33
@@ -1619,6 +1619,12 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
+                    "key": "id_number",
+                    "type": "string",
+                    "size": 256,
+                    "version": 40
+                },
+                {
                     "key": "first_name",
                     "type": "string",
                     "size": 256,
@@ -1707,6 +1713,24 @@ const Database: IDatabase = {
                     "type": "string",
                     "size": 256,
                     "version": 10
+                },
+                {
+                    "key": "email",
+                    "type": "string",
+                    "size": 256,
+                    "version": 39
+                },
+                {
+                    "key": "proxy_employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 39
+                },
+                {
+                    "key": "record_type",
+                    "type": "string",
+                    "size": 256,
+                    "version": 40
                 },
                 {
                     "key": "is_active",
@@ -3088,49 +3112,49 @@ const Database: IDatabase = {
                     "key": "education_id",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "id",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "competency_id",
                     "type": "string",
                     "size": 256,
-                    "version":28                    
+                    "version": 28
                 },
                 {
                     "key": "lower_bound",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "upper_bound",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "competency_level",
                     "type": "string",
                     "size": 256,
-                    "version":1                    
+                    "version": 1
                 },
                 {
                     "key": "competency_level_id",
                     "type": "string",
                     "size": 256,
-                    "version":29                    
+                    "version": 29
                 },
                 {
-                    "key":"tenant_id",
-                    "type":"string",
-                    "size":256,
-                    "version":27
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 27
                 },
                 {
                     "key": "is_active",
@@ -3483,14 +3507,109 @@ const Database: IDatabase = {
             ]
         },
         {
-            "id": "employee_department_relation",
-            "name": "Employee Department Relation",
+            "id": "proxy_account",
+            "name": "Proxy Account",
             "description": {
-                "en": "Employee Department Relation is a collection of employee department relations.",
-                "tr": "Çalışan departman ilişkilerinin koleksiyonudur."
+                "en": "",
+                "tr": ""
             },
-            "version": 38,
+            "version": 39,
             "attributes": [
+                {
+                    "key": "principal_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "principal_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "agent_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "agent_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "end_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "password",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "email",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "power_of_attorney_type",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+            ]
+        },
+        {
+            "id": "organization_integration",
+            "name": "Organization Integration",
+            "description": {
+                "en": "Organization Integration is a collection of organization entegrations.",
+                "tr": "Organizasyon entegrasyonlarının koleksiyonudur."
+            },
+            "version": 40,
+            "attributes": [
+                {
+                    "key": "body",
+                    "type": "string",
+                    "size": 1000,
+                    "version": 1
+                },
+                {
+                    "key": "link",
+                    "type": "string",
+                    "size": 1000,
+                    "version": 1
+                },
+                {
+                    "key": "response_data_attribute",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
                 {
                     "key": "id",
                     "type": "string",
@@ -3498,7 +3617,79 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
-                    "key": "employee_id",
+                    "key": "id_number",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "first_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "last_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "title_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "title_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "position_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "position_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "workplace_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "line_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "manager_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "manager_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3510,13 +3701,73 @@ const Database: IDatabase = {
                     "version": 1
                 },
                 {
-                    "key": "department_record_id",
+                    "key": "department_name",
                     "type": "string",
                     "size": 256,
                     "version": 1
                 },
                 {
-                    "key": "department_name",
+                    "key": "job_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "birth_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "position_start_date",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": 'phone',
+                    "type": 'string',
+                    "version": 1,
+                    "size": 256
+                },
+                {
+                    "key": 'email',
+                    "type": 'string',
+                    "version": 1,
+                    "size": 256
+                },
+                {
+                    "key": "gender",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "proxy_employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "educational_status",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "photo",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "photo_type",
                     "type": "string",
                     "size": 256,
                     "version": 1
@@ -3539,9 +3790,9 @@ const Database: IDatabase = {
                     "version": 1,
                     "default": false
                 },
-
             ]
-        },
+        }
+
     ]
 }
 

@@ -27,12 +27,15 @@ import {
   VStack,
 } from '@tuval/forms';
 import dayjs from 'dayjs';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 
 import AppInfo from '../../../../../AppInfo';
 import Collections from '../../../../../server/core/Collections';
+import AccountRelation from '../../../../../server/hooks/accountRelation/main';
 import BucketFiles from '../../../../../server/hooks/bucketFiles/Main';
+import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
+import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
 import OrganizationEmployeeDocument from '../../../../../server/hooks/organizationEmployeeDocument/main';
 import OrganizationStructurePosition from '../../../../../server/hooks/organizationStructrePosition/main';
 import OrganizationStructureDepartment from '../../../../../server/hooks/organizationStructureDepartment/main';
@@ -52,9 +55,6 @@ import { IOrganizationEmployeeLog } from '../../../../interfaces/IOrganizationEm
 import { IOrganizationStructure } from '../../../../interfaces/IOrganizationStructure';
 import FileUploadButton from '../../Views/EmployeeImageInputFileButton';
 import { Form } from '../../Views/Views';
-import EmployeeMultipleLines from '../../../../../server/hooks/employeeMultipleLines/Main';
-import AccountRelation from '../../../../../server/hooks/accountRelation/main';
-import EmployeeMultipleDepartments from '../../../../../server/hooks/employeeMultipleDepartments/Main';
 
 const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   id: '',
@@ -65,6 +65,7 @@ const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   department_id: '',
   department_start_date: '',
   gender: '',
+  id_number: '',
   educational_status: '',
   position_id: '',
   workplace_id: '',
@@ -72,6 +73,8 @@ const resetForm: IOrganizationStructure.IEmployees.ICreateEmployee = {
   title_id: '',
   manager_id: '',
   phone: '',
+  email: '',
+  proxy_employee_id: '',
   position_start_date: '',
   realm_id: '',
   tenant_id: ''
@@ -144,6 +147,11 @@ export class CreateEmployeeController extends UIController {
             const [multipleLineDefinition, setMultipleLineDefinition] = useState<boolean>(false);
             const [multipleDepartmentDefinition, setMultipleDepartmentDefinition] = useState<boolean>(false);
 
+
+            const [proxySelectedEmployees, setProxySelectedEmployees] = useState<string[]>([]);
+
+            const employeesSameManagerId = formEmployee.manager_id ? employees.filter((employee) => employee.manager_id === formEmployee.manager_id) : []
+
             const [file, setFile] = useState(null);
 
             const handleFileChange = (event) => {
@@ -204,6 +212,12 @@ export class CreateEmployeeController extends UIController {
 
             const onSubmit = (e: any) => {
               e.preventDefault();
+
+              const regex = /^[1-9]{1}[0-9]{9}[02468]{1}$/
+              if (!regex.test(formEmployee.id_number)) {
+                ToastError("Hata", "Geçersiz TCKN")
+                return;
+              }
               if (multipleLineDefinition) {
                 const id = nanoid()
                 if (formEmployee.first_name === "" || formEmployee.last_name === "" || formEmployee.id === "") {
@@ -429,6 +443,14 @@ export class CreateEmployeeController extends UIController {
                   })
                   return;
                 }
+                if (employees.some((document) => document.email === formEmployee.email)) {
+                  Toast.fire({
+                    icon: "error",
+                    title: "Çalışan eklenirken bir hata oluştu!",
+                    text: "E-Posta zaten kullanılmaktadır."
+                  })
+                  return;
+                }
                 createEmployee({
                   documentId: id,
                   data: {
@@ -504,6 +526,7 @@ export class CreateEmployeeController extends UIController {
                 })
               }
             }
+
             const handleSelectType = (event, newValue) => {
               const selectedValue = newValue.document_type_id;
               const selectedDocumentType = documentGetList.find((type) => type.document_type_id === selectedValue);
@@ -520,65 +543,45 @@ export class CreateEmployeeController extends UIController {
             }
 
             useEffect(() => {
-              Services.Databases.listDocuments(
-                AppInfo.Name,
-                AppInfo.Database,
-                Collections.Parameter,
-                [
-                  Query.equal("name", "position_relation_department"),
-                  Query.limit(10000),
-                ]
-              ).then((res) => {
-                setPositionRelationDepartmentsState(res.documents[0]?.is_active)
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "line_based_competency_relationship"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setLineRelationState(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "work_place_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setWorkPlaceDefination(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "multiple_line_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setMultipleLineDefinition(res.documents[0]?.is_active)
-                })
-              }).then(() => {
-                Services.Databases.listDocuments(
-                  AppInfo.Name,
-                  AppInfo.Database,
-                  Collections.Parameter,
-                  [
-                    Query.equal("name", "multiple_department_definition"),
-                    Query.limit(10000),
-                  ]
-                ).then((res) => {
-                  setMultipleDepartmentDefinition(res.documents[0]?.is_active)
-                })
-              })
+              const fetchData = async () => {
+                try {
+                  const appInfoParams = {
+                    name: AppInfo.Name,
+                    database: AppInfo.Database,
+                    collection: Collections.Parameter,
+                  };
+
+                  const queries = [
+                    { queryName: "position_relation_department", setter: setPositionRelationDepartmentsState },
+                    { queryName: "line_based_competency_relationship", setter: setLineRelationState },
+                    { queryName: "work_place_definition", setter: setWorkPlaceDefination },
+                    { queryName: "multiple_line_definition", setter: setMultipleLineDefinition },
+                    { queryName: "multiple_department_definition", setter: setMultipleDepartmentDefinition },
+                  ];
+
+                  const requests = queries.map(({ queryName }) =>
+                    Services.Databases.listDocuments(appInfoParams.name, appInfoParams.database, appInfoParams.collection, [
+                      Query.equal("name", queryName),
+                      Query.limit(10000),
+                    ])
+                  );
+
+                  const responses = await Promise.all(requests);
+
+                  responses.forEach((res, index) => {
+                    const isActive = res.documents[0]?.is_active;
+                    queries[index].setter(isActive);
+                  });
+
+                  setProxySelectedEmployees(employees.filter((employee) => employee.proxy_employee_id).map((employee) => employee.proxy_employee_id));
+
+                } catch (error) {
+                  console.error("Error fetching data:", error);
+                  ToastError("Bir hata oluştu", "");
+                }
+              };
+
+              fetchData();
             }, [])
 
             return (
@@ -604,6 +607,14 @@ export class CreateEmployeeController extends UIController {
                                 size='small'
                                 label='Sicil No'
                                 value={formEmployee.id}
+                                onChange={onChange}
+                                required
+                              />
+                              <TextField
+                                name='id_number'
+                                size='small'
+                                label='TCKN'
+                                value={formEmployee.id_number}
                                 onChange={onChange}
                                 required
                               />
@@ -842,6 +853,25 @@ export class CreateEmployeeController extends UIController {
                                   />
                                 )}
                               />
+                              <Autocomplete
+                                options={employeesSameManagerId.filter((x) => !proxySelectedEmployees.includes(x.$id))}
+                                value={employees.find(option => option.$id === formEmployee.proxy_employee_id) || null}
+                                onChange={(event, newValue) => {
+                                  setFormEmployee({
+                                    ...formEmployee,
+                                    proxy_employee_id: newValue.$id
+                                  });
+                                }}
+                                getOptionLabel={(option) => option.first_name + " " + option.last_name}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    label="Yerine Vekalet Edecek Personel"
+                                    name="proxy_employee_id"
+                                    size="small"
+                                  />
+                                )}
+                              />
                               <FormControl fullWidth size="small">
                                 <TextField
                                   name='phone'
@@ -856,6 +886,22 @@ export class CreateEmployeeController extends UIController {
                                     if (/^\+?\d{0,15}$/.test(enteredValue)) {
                                       setFormEmployee({ ...formEmployee, [e.target.name]: enteredValue });
                                     }
+                                  }
+                                  }
+                                />
+
+                              </FormControl>
+                              <FormControl fullWidth size="small">
+                                <TextField
+                                  name='email'
+                                  size='small'
+                                  label='E-Posta'
+                                  value={formEmployee.email}
+                                  onChange={(e) => {
+                                    setFormEmployee({
+                                      ...formEmployee,
+                                      email: e.target.value as string
+                                    })
                                   }
                                   }
                                 />

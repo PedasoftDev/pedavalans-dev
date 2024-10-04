@@ -38,6 +38,7 @@ import PolyvalenceUnitTableLineRelation from "../../../../server/hooks/polyvalen
 import EmployeeMultipleLines from "../../../../server/hooks/employeeMultipleLines/Main";
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import EmployeeMultipleDepartments from "../../../../server/hooks/employeeMultipleDepartments/Main";
+import IPolyvalenceUnitTableLineRelation from "../../../interfaces/IPolyvalenceUnitTableLineRelation";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -104,7 +105,6 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const [selectedTable, setSelectedTable] = useState<IPolyvalenceUnit.IPolyvalenceUnit>(resetUnitTable);
         const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
         const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-        const [selectedTableLineId, setSelectedTableLineId] = useState<string>("");
 
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
@@ -118,14 +118,14 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
         const { createEmployeeCompetencyValue } = EmployeeCompetencyValue.Create();
         const { updateEmployeeCompetencyValue } = EmployeeCompetencyValue.Update();
-        const { lineRelation, isLoading: isLoadingLineRelation } = PolyvalenceUnitTableLineRelation.GetByPolyvalenceUnitId(selectedTable.polyvalence_table_id, me?.prefs?.organization);
         const { employeeMultipleLinesList, isLoading: isLoadingEmployeeMultipleLine } = EmployeeMultipleLines.GetList()
         const { competencyLineRelationList, isLoading: isLoadingCompetencyLineRelation } = CompetencyLineRelation.GetList();
         const { employeeMultipleDepartmentsList, isLoading: isLoadingMultipleDepartmentsList } = EmployeeMultipleDepartments.GetList()
         const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization);
+        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingCompetencyDepartmentList || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingCompetencyLineRelation || isLoadingEmployeeMultipleLine || isLoadingLineRelation || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
+            isLoadingWorkPlace || isLoading || this.polyvalenceUnitList == null || isLoadingCompetencyDepartmentList || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingCompetencyLineRelation || isLoadingEmployeeMultipleLine || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
@@ -136,8 +136,11 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                         const [selectedGroupId, setSelectedGroupId] = useState<string>("");
                         const [selectedCompetencyList, setSelectedCompetencyList] = useState<ICompetency.ICompetency[]>([]);
                         const [employeeCompetencyValue, setEmployeeCompetencyValue] = useState<IEmployeeCompetencyValue.IEmployeeCompetencyValue[]>([]);
+
+                        // line relation
+                        const [lineRelation, setLineRelation] = useState<IPolyvalenceUnitTableLineRelation.IPolyvalenceUnitTableLineRelation[]>([]);
+
                         // workplace 
-                        const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
                         const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
                         const [selectedWorkPlaceId, setSelectedWorkPlaceId] = useState<string>("");
                         //
@@ -258,8 +261,12 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                             }
                         }
 
-                        const onChangeTable = (polyvalence_table_id: string) => {
+                        const onChangeTable = async (polyvalence_table_id: string) => {
                             const table = this.polyvalenceUnitList.find((unit) => unit.polyvalence_table_id === polyvalence_table_id);
+                            // services
+                            await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.limit(10000), Query.equal('polyvalence_table_id', polyvalence_table_id)]).then((res) => {
+                                setLineRelation(res.documents as any)
+                            })
                             const periodYear = Number(periods[0].evaluation_period_year);
                             setSelectedTable(table)
                             setSelectedPeriod("")
@@ -379,7 +386,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                             size="small"
                                             required
                                         >
-                                            {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id).competency_grade_id)
+                                            {levels.filter(x => x.grade_id === groups.find(x => x.competency_group_id === params.row.competency_group_id)?.competency_grade_id)
                                                 .sort((a: any, b: any) => a.grade_level_number - b.grade_level_number)
                                                 .map((value) => (
                                                     <MenuItem value={value.grade_level_number} key={value.grade_level_id}>{value.grade_level_number}</MenuItem>
@@ -421,7 +428,6 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                         })
                                     })
                                 })
-                            console.log(appendToSelectedCompetencyList)
                             setSelectedCompetencyList(appendToSelectedCompetencyList);
                         }
 
@@ -431,62 +437,50 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 Toast.fire({
                                     icon: "warning",
                                     title: "Kişi bilgileri alınamadı."
-                                })
-                                navigate("/login")
+                                });
+                                navigate("/login");
+                                return;
                             }
+
                             if (!periods[0]) {
                                 Toast.fire({
                                     icon: "warning",
                                     title: "Henüz bir yetkinlik değerlendirme dönemi tanımlanmamış."
-                                })
-                                navigate("/app/competency-evaluation-period/list")
+                                });
+                                navigate("/app/competency-evaluation-period/list");
+                                return;
                             }
-                            // eklendi
+
                             if (pendingEvaluation) {
                                 onChangeTable(pendingEvaluation.polyvalence_table_id);
                                 setSelectedPeriod(pendingEvaluation.evaluation_period);
-                                setSelectedEmployeeId("")
-                                setSelectedGroupId("")
-                                setSelectedCompetencyList([])
-                                setEmployeeCompetencyValue([])
+                                setSelectedEmployeeId("");
+                                setSelectedGroupId("");
+                                setSelectedCompetencyList([]);
+                                setEmployeeCompetencyValue([]);
                                 setAssignEducationNull();
                             }
-                            Services.Databases.listDocuments(
-                                AppInfo.Name,
-                                AppInfo.Database,
-                                Collections.Parameter,
-                                [
-                                    Query.equal("name", "work_place_definition"),
-                                    Query.limit(10000)
-                                ]
-                            ).then((res) => {
-                                setWorkPlaceDefination(res.documents[0]?.is_active)
-                            }).then(() => {
-                                Services.Databases.listDocuments(
+
+                            const fetchParameter = async (name) => {
+                                const res = await Services.Databases.listDocuments(
                                     AppInfo.Name,
                                     AppInfo.Database,
                                     Collections.Parameter,
-                                    [
-                                        Query.equal("name", "line_based_competency_relationship"),
-                                        Query.limit(10000)
-                                    ]
-                                ).then((res) => {
-                                    setLineBasedCompetencyRelationship(res.documents[0]?.is_active)
-                                })
-                            }).then(() => {
-                                Services.Databases.listDocuments(
-                                    AppInfo.Name,
-                                    AppInfo.Database,
-                                    Collections.Parameter,
-                                    [
-                                        Query.equal("name", "multiple_department_definition"),
-                                        Query.limit(10000)
-                                    ]
-                                ).then((res) => {
-                                    setDepartmentBasedCompetencyRelationship(res.documents[0]?.is_active)
-                                })
-                            })
-                        }, [])
+                                    [Query.equal("name", name), Query.limit(10000)]
+                                );
+                                return res.documents[0]?.is_active;
+                            };
+
+                            Promise.all([
+                                fetchParameter("work_place_definition").then(setWorkPlaceDefination),
+                                fetchParameter("line_based_competency_relationship").then(setLineBasedCompetencyRelationship),
+                                fetchParameter("multiple_department_definition").then(setDepartmentBasedCompetencyRelationship)
+                            ]).catch((error) => {
+                                console.error("Error fetching parameters: ", error);
+                            });
+
+                        }, []);
+
 
                         return (
                             VStack(
@@ -675,8 +669,9 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                                 return competencyLineRelationList
                                                                     .filter((item) => item.line_id === lineRelation[0].line_id)
                                                                     .filter((item) => selectedCompetencyList.some((x) => x.competency_id === item.competency_id))
+                                                                    .map((relation) => selectedCompetencyList.find((x) => x.competency_id === relation.competency_id))
                                                             } else if (departmentBasedCompetencyRelationship) {
-                                                                return selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList
+                                                                return selectedCompetencyList.filter((competency) => selectedGroupId === "" ? true : competency.competency_group_id === selectedGroupId)
                                                             }
                                                             else {
                                                                 return selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList
