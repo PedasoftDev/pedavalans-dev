@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Container, LeftContainer, LeftContainerContent, LeftContainerContentItem, LeftContainerHeader, RightContainer, RightContainerHeader } from "../Views/View";
 import { Views } from "../../../components/Views";
 import CompetencyEvaluationPeriod from "../../../../server/hooks/competencyEvaluationPeriod/main";
-import { Toast } from "../../../components/Toast";
+import { Toast, ToastError, ToastSuccess } from "../../../components/Toast";
 import { Query, Services, useGetMe } from "@realmocean/sdk";
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Tooltip } from "@mui/material";
 import IPolyvalenceUnit from "../../../interfaces/IPolyvalenceUnit";
@@ -39,6 +39,7 @@ import EmployeeMultipleLines from "../../../../server/hooks/employeeMultipleLine
 import CompetencyLineRelation from "../../../../server/hooks/competencyLineRelation/main";
 import EmployeeMultipleDepartments from "../../../../server/hooks/employeeMultipleDepartments/Main";
 import IPolyvalenceUnitTableLineRelation from "../../../interfaces/IPolyvalenceUnitTableLineRelation";
+import { DataImportBroker } from "../../../../server/brokers/DataImportBroker";
 
 const resetUnitTable: IPolyvalenceUnit.IPolyvalenceUnit = {
     is_active_table: true,
@@ -172,46 +173,15 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                             })
                         }
 
-                        const confirmTransferData = async () => {
-                            const tasks = new Umay();
-                            const data = await Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue,
-                                [Query.limit(10000), Query.equal("tenant_id", me?.prefs?.organization), Query.equal("is_deleted_competency_value", false),
-                                Query.equal("polyvalence_table_id", dialogForm.polyvalence_table_id), Query.equal("competency_evaluation_period", dialogForm.previous_evaluation_period)]).then((res) => res.documents)
-                            data.forEach((value, index) => {
-                                tasks.Task(async () => {
-                                    const docId: string = nanoid();
-                                    const createObj: IEmployeeCompetencyValue.ICreateEmployeeCompetencyValue = {
-                                        competency_department_id: value.competency_department_id,
-                                        competency_department_name: value.competency_department_name,
-                                        competency_evaluation_period: dialogForm.current_evaluation_period,
-                                        competency_id: value.competency_id,
-                                        competency_name: value.competency_name,
-                                        competency_real_value: "",
-                                        competency_target_value: value.competency_target_value,
-                                        competency_value_desc: "",
-                                        employee_id: value.employee_id,
-                                        employee_name: value.employee_name,
-                                        polyvalence_table_id: value.polyvalence_table_id,
-                                        polyvalence_table_name: value.polyvalence_table_name,
-                                        tenant_id: value.tenant_id,
-                                        employee_competency_value_id: docId,
-                                        realm_id: value.realm_id,
-                                    }
-                                    try {
-                                        await Services.Databases.createDocument(AppInfo.Name, AppInfo.Database, Collections.EmployeeCompetencyValue, docId, createObj)
-                                        setDialogPercent(((index + 1) / data.length) * 100)
-                                    }
-                                    catch (err) {
-                                        console.error(err)
-                                    }
-                                })
-                                tasks.Wait(1);
+                        const confirmTransferData = async (write_on_it: boolean) => {
+                            DataImportBroker.Default.transferEmployeeCompetencyValuesToNewPeriodAllData(dialogForm.current_evaluation_period, dialogForm.previous_evaluation_period, dialogForm.polyvalence_table_id, write_on_it).then((res) => {
+                                ToastSuccess("Veri aktarımı başarılı bir şekilde tamamlandı.", "");
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 3000);
+                            }).catch((error) => {
+                                ToastError("Veri aktarımı sırasında bir hata oluştu.", "");
                             })
-                            tasks.Wait(1);
-                            tasks.Task(() => {
-                                window.location.reload();
-                            })
-                            tasks.Run();
                         }
 
                         const handleStartDialogTransferData = () => {
@@ -223,7 +193,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                 if (currentPeriodData.documents.length > 0) {
                                     setDialogAlreadyExistData(true);
                                 } else {
-                                    confirmTransferData();
+                                    confirmTransferData(false);
                                 }
                             })
                         }
@@ -700,7 +670,7 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                                 <Button color="error" onClick={handleCloseDialog}>
                                                                     İptal
                                                                 </Button>
-                                                                <Button onClick={() => { confirmTransferData(); }}>
+                                                                <Button onClick={() => { confirmTransferData(true); }}>
                                                                     Verilerin Üzerine Yaz ve Aktarımı Başlat
                                                                 </Button>
                                                             </div>

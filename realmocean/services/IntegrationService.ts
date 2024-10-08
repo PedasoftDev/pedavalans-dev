@@ -159,7 +159,6 @@ class IntegrationService extends RealmoceanService {
 
   async init() {
     console.log("Integration Service is running...");
-    await this.taskOrganizationIntegration();
 
     // every day at 07:00
     this.scheduleService.addJob('0 7 * * *', await this.taskOrganizationIntegration.bind(this));

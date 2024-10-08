@@ -98,6 +98,40 @@ class DataImport extends RealmoceanService {
         return res.status(500).json({ message: e.message });
       }
     });
+
+    router.post("/com.pedavalans.service.import/transferEmployeeCompetencyValuesToNewPeriodTargetData", async (req, res) => {
+      const { polyvalence_table_id, previous_evaluation_period, current_evaluation_period, write_on_it } = req.body;
+      try {
+
+        if (!polyvalence_table_id || !previous_evaluation_period || !current_evaluation_period) {
+          return res.status(400).json({ message: "Missing required parameters" });
+        }
+
+        const result = await this.transferEmployeeCompetencyValuesToNewPeriodTargetData(current_evaluation_period, previous_evaluation_period, polyvalence_table_id, write_on_it);
+        return res.json({ result });
+      }
+      catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+
+    });
+
+    router.post("/com.pedavalans.service.import/transferEmployeeCompetencyValuesToNewPeriodAllData", async (req, res) => {
+      const { polyvalence_table_id, previous_evaluation_period, current_evaluation_period, write_on_it } = req.body;
+      try {
+
+        if (!polyvalence_table_id || !previous_evaluation_period || !current_evaluation_period) {
+          return res.status(400).json({ message: "Missing required parameters" });
+        }
+
+        const result = await this.transferEmployeeCompetencyValuesToNewPeriodAllData(current_evaluation_period, previous_evaluation_period, polyvalence_table_id, write_on_it);
+        return res.json({ result });
+      }
+      catch (e) {
+        return res.status(500).json({ message: e.message });
+      }
+
+    });
   }
 
   async getDepartments() {
@@ -445,6 +479,93 @@ class DataImport extends RealmoceanService {
           )
         ),
       ]);
+    } catch (error) {
+      throw new Error(`Toplu kayıt sırasında bir hata oluştu: ${error.message}`);
+    }
+  }
+
+  async getEmployeeCompetencyValuesByPolyvalenceTableIdAndPeriod(polyvalenceTableId: string, period: string) {
+    const data = await this.databaseService.listDocuments(AppInfo.Name, AppInfo.Database, "employee_competency_value", [this.databaseService.Query.equal("polyvalence_table_id", polyvalenceTableId),
+    this.databaseService.Query.equal("competency_evaluation_period", period), this.databaseService.Query.equal("is_deleted_competency_value", false), this.databaseService.Query.limit(20000)]).then(res => res.documents);
+    return data;
+  }
+
+  async transferEmployeeCompetencyValuesToNewPeriodTargetData(current_evaluation_period: string, previous_evaluation_period: string, polyvalence_table_id: string, write_on_it: boolean) {
+    try {
+      const data = await this.getEmployeeCompetencyValuesByPolyvalenceTableIdAndPeriod(polyvalence_table_id, previous_evaluation_period);
+      if (write_on_it) {
+        const nextData = await this.getEmployeeCompetencyValuesByPolyvalenceTableIdAndPeriod(polyvalence_table_id, current_evaluation_period);
+        nextData.forEach(async (value: any) => {
+          await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, "employee_competency_value", value.$id,
+            { is_active_competency_value: false, is_deleted_competency_value: true });
+        });
+      }
+
+      data.forEach(async (value: any) => {
+        const docId: string = nanoid();
+        const createObj = {
+          competency_department_id: value.competency_department_id,
+          competency_department_name: value.competency_department_name,
+          competency_evaluation_period: current_evaluation_period,
+          competency_id: value.competency_id,
+          competency_name: value.competency_name,
+          competency_real_value: "",
+          competency_target_value: value.competency_target_value,
+          competency_value_desc: "",
+          employee_id: value.employee_id,
+          employee_name: value.employee_name,
+          polyvalence_table_id: value.polyvalence_table_id,
+          polyvalence_table_name: value.polyvalence_table_name,
+          tenant_id: value.tenant_id,
+          employee_competency_value_id: docId,
+          realm_id: value.realm_id,
+        }
+
+        await this.databaseService.createDocument(AppInfo.Name, AppInfo.Database, "employee_competency_value", docId, createObj)
+      })
+
+      return "Transfer işlemi başarılı";
+    } catch (error) {
+      throw new Error(`Toplu kayıt sırasında bir hata oluştu: ${error.message}`);
+    }
+
+  }
+
+  async transferEmployeeCompetencyValuesToNewPeriodAllData(current_evaluation_period: string, previous_evaluation_period: string, polyvalence_table_id: string, write_on_it: boolean) {
+    try {
+      const data = await this.getEmployeeCompetencyValuesByPolyvalenceTableIdAndPeriod(polyvalence_table_id, previous_evaluation_period);
+      if (write_on_it) {
+        const nextData = await this.getEmployeeCompetencyValuesByPolyvalenceTableIdAndPeriod(polyvalence_table_id, current_evaluation_period);
+        nextData.forEach(async (value: any) => {
+          await this.databaseService.updateDocument(AppInfo.Name, AppInfo.Database, "employee_competency_value", value.$id,
+            { is_active_competency_value: false, is_deleted_competency_value: true });
+        });
+      }
+
+      data.forEach(async (value: any) => {
+        const docId: string = nanoid();
+        const createObj = {
+          competency_department_id: value.competency_department_id,
+          competency_department_name: value.competency_department_name,
+          competency_evaluation_period: current_evaluation_period,
+          competency_id: value.competency_id,
+          competency_name: value.competency_name,
+          competency_real_value: value.competency_real_value,
+          competency_target_value: value.competency_target_value,
+          competency_value_desc: value.competency_value_desc,
+          employee_id: value.employee_id,
+          employee_name: value.employee_name,
+          polyvalence_table_id: value.polyvalence_table_id,
+          polyvalence_table_name: value.polyvalence_table_name,
+          tenant_id: value.tenant_id,
+          employee_competency_value_id: docId,
+          realm_id: value.realm_id,
+        }
+
+        await this.databaseService.createDocument(AppInfo.Name, AppInfo.Database, "employee_competency_value", docId, createObj)
+      })
+
+      return "Transfer işlemi başarılı";
     } catch (error) {
       throw new Error(`Toplu kayıt sırasında bir hata oluştu: ${error.message}`);
     }
