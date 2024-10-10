@@ -9,9 +9,7 @@ import { Avatar, Dialog, DialogTitle, List, ListItemAvatar, ListItemButton, List
 import { IoPersonCircleOutline } from "react-icons/io5";
 import decrypt from "../assets/Functions/decrypt";
 
-
 export class LoginController extends UIController {
-
 
     public LoadView(): UIView {
 
@@ -36,12 +34,29 @@ export class LoginController extends UIController {
             setForm({
                 ...form,
                 [e.target.name]: e.target.value
-            })
-        }
+            });
+        };
+
+        const handleProxyAccountSelection = (account: any) => {
+            Services.Accounts.deleteSession('current').then(() => {
+                createEmailSession({
+                    email: account.email,
+                    password: decrypt(account.password)
+                }, () => {
+                    localStorage.setItem('proxyAccount', account.agent_id);
+                    localStorage.setItem('mainAccount', account.principal_id);
+                    navigate('/app/dashboard');
+                });
+            });
+        };
+
+        const handlePersonalAccountSelection = () => {
+            navigate('/app/dashboard');
+        };
 
         const onSubmit = (e: any) => {
             e.preventDefault();
-            setForm({ ...form, disabled: true })
+            setForm({ ...form, disabled: true });
             createEmailSession({
                 email: form.email,
                 password: form.password
@@ -49,117 +64,106 @@ export class LoginController extends UIController {
                 Services.Accounts.get().then((res) => {
                     ProxyAccountBroker.Default.getByAgentUserId(res.$id).then((res) => {
                         if (res.result.length > 0) {
-                            setProxyAccounts(res.result)
-                            setDialogOpen(true)
+                            setProxyAccounts(res.result);
+                            setDialogOpen(true);
                         } else {
-                            navigate('/app/dashboard')
+                            navigate('/app/dashboard');
                         }
-                    })
-                })
-            })
-            setForm({ ...form, disabled: false })
-        }
+                    });
+                });
+            });
+            setForm({ ...form, disabled: false });
+        };
 
-        const HeaderInfo = () => {
-            return (
-                <Header>
-                    <img src={customLogo} style={{ width: "50px", height: "50px" }} />
-                    <LoginLabel>Pedavalans</LoginLabel>
-                </Header>
-            )
-        }
+        const HeaderInfo = () => (
+            <Header>
+                <img src={customLogo} style={{ width: "50px", height: "50px" }} />
+                <LoginLabel>Pedavalans</LoginLabel>
+            </Header>
+        );
 
         const handleClose = () => {
-            setDialogOpen(false)
-        }
+            setDialogOpen(false);
+        };
+
+        const renderDialog = () => (
+            <Dialog onClose={handleClose} open={dialogOpen}>
+                <DialogTitle>Giriş yapmak istediğiniz hesabı seçiniz</DialogTitle>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                    {proxyAccounts.map((account: any) => (
+                        <ListItemButton key={account.email} onClick={() => handleProxyAccountSelection(account)}>
+                            <ListItemAvatar>
+                                <Avatar>
+                                    <IoPersonCircleOutline />
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={account.email} secondary={account.principal_name} />
+                        </ListItemButton>
+                    ))}
+                    <ListItemButton onClick={handlePersonalAccountSelection}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <IoPersonCircleOutline />
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={form.email} secondary={"Kişisel Hesap"} />
+                    </ListItemButton>
+                </List>
+            </Dialog>
+        );
+
+        const renderLoginForm = () => (
+            <LoginForm onSubmit={onSubmit}>
+                <LoginInput
+                    onChange={handleFormChange}
+                    placeholder="E-posta"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    required
+                />
+                <LoginInput
+                    onChange={handleFormChange}
+                    placeholder="Şifre"
+                    type="password"
+                    name="password"
+                    value={form.password}
+                    required
+                />
+                <Button
+                    variant="contained"
+                    fullWidth
+                    type="submit"
+                    disabled={form.disabled}
+                >Giriş Yap</Button>
+                {isError && <LoginError>{error?.message}</LoginError>}
+            </LoginForm>
+        );
+
+        const renderSignUpLinks = () => (
+            <div>
+                {required && <LoginToSignUp onClick={() => navigate('/signup')}>Kayıt Ol</LoginToSignUp>}
+                <LoginToSignUp onClick={() => navigate('/reset-password')}>Şifrenizi mi unuttunuz?</LoginToSignUp>
+            </div>
+        );
 
         return (
             isLoading || isLoadingRequired ? Fragment() :
                 me != null ? UINavigate('/app/dashboard') :
-                UIViewBuilder(() => {
-                    return (
+                    UIViewBuilder(() => (
                         VStack({ alignment: cTop })(
                             ReactView(
                                 <Container>
                                     <LoginContainer>
                                         <HeaderInfo />
-                                        <Dialog onClose={handleClose} open={dialogOpen}>
-                                            <DialogTitle>Giriş yapmak istediğiniz hesabı seçiniz</DialogTitle>
-                                            <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                                                {proxyAccounts.map((account: any) =>
-                                                    <ListItemButton onClick={() => {
-                                                        Services.Accounts.deleteSession('current').then(() => {
-                                                            createEmailSession({
-                                                                email: account.email,
-                                                                password: decrypt(account.password)
-                                                            }, () => {
-                                                                localStorage.setItem('proxyAccount', account.agent_id)
-                                                                localStorage.setItem('mainAccount', account.principal_id)
-                                                                navigate('/app/dashboard')
-                                                            })
-                                                        })
-                                                    }}>
-                                                        <ListItemAvatar>
-                                                            <Avatar>
-                                                                <IoPersonCircleOutline />
-                                                            </Avatar>
-                                                        </ListItemAvatar>
-                                                        <ListItemText primary={account.email} secondary={account.principal_name} />
-                                                    </ListItemButton>
-                                                )}
-                                                <ListItemButton onClick={() => {
-                                                    navigate('/app/dashboard')
-                                                }}>
-                                                    <ListItemAvatar>
-                                                        <Avatar>
-                                                            <IoPersonCircleOutline />
-                                                        </Avatar>
-                                                    </ListItemAvatar>
-                                                    <ListItemText primary={form.email} secondary={"Kişisel Hesap"} />
-                                                </ListItemButton>
-
-                                            </List>
-                                        </Dialog>
-                                        <LoginForm onSubmit={onSubmit}>
-                                            <LoginInput
-                                                onChange={handleFormChange}
-                                                placeholder="E-posta"
-                                                name="email"
-                                                type="email"
-                                                value={form.email}
-                                                required
-                                            />
-                                            <LoginInput
-                                                onChange={handleFormChange}
-                                                placeholder="Şifre"
-                                                type="password"
-                                                name="password"
-                                                value={form.password}
-                                                required
-                                            />
-                                            <Button
-                                                variant="contained"
-                                                fullWidth
-                                                type="submit"
-                                                disabled={form.disabled}
-                                            >Giriş Yap</Button>
-                                            {isError && <LoginError>{error?.message}</LoginError>}
-                                        </LoginForm>
-                                        {
-                                            required &&
-                                            <LoginToSignUp onClick={() => navigate('/signup')}>
-                                                Kayıt Ol
-                                            </LoginToSignUp>
-                                        }
-                                        <LoginToSignUp onClick={() => navigate('/reset-password')}>
-                                            Şifrenizi mi unuttunuz?
-                                        </LoginToSignUp>
+                                        {renderDialog()}
+                                        {renderLoginForm()}
+                                        {renderSignUpLinks()}
                                     </LoginContainer>
                                 </Container>
                             )
                         ).height()
-                    )
-                })
-        )
+                    ))
+        );
     }
 }
