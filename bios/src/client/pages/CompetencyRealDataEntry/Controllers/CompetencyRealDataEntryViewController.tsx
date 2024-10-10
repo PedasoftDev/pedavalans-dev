@@ -104,7 +104,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
     private polyvalenceUnitList: IPolyvalenceUnit.IPolyvalenceUnit[] = [];
 
     protected BindRouterParams(): void {
-        Services.Accounts.get().then((me) => {
+        Services.Accounts.get().then((me) =>
             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.limit(10000), Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
                 if (parameter?.documents[0]?.is_active) {
                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
@@ -137,7 +137,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                     })
                 }
             })
-        })
+        )
     }
 
     public LoadView(): UIView {
