@@ -30,7 +30,6 @@ import { MdOutlineLibraryBooks } from "react-icons/md";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Education from "../../../../server/hooks/education/main";
-import IEducation from "../../../interfaces/IEducation";
 import IAssignedEducation from "../../../interfaces/IAssignedEducation";
 import AssignEducation from "../../../../server/hooks/assignEducation/main";
 import CompetencyGrade from "../../../../server/hooks/competencyGrade/main";
@@ -107,7 +106,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
     protected BindRouterParams(): void {
         Services.Accounts.get().then((me) => {
             Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.Parameter, [Query.limit(10000), Query.equal("name", Resources.ParameterLocalStr.polyvalence_unit_table_auth), Query.equal("tenant_id", me?.prefs?.organization)]).then((parameter) => {
-                if (parameter && parameter.documents[0] && parameter.documents[0]?.is_active) {
+                if (parameter?.documents[0]?.is_active) {
                     Services.Databases.listDocuments(AppInfo.Name, AppInfo.Database, Collections.AccountRelation, [Query.limit(10000), Query.equal("account_id", me.$id)]).then((accountRelation: any) => {
 
                         const accountRelationData: IAccountRelation.IBase = accountRelation.documents[0];
@@ -232,7 +231,6 @@ export class CompetencyRealDataEntryViewController extends UIController {
                         const [dialogDataYear, setDialogDataYear] = useState<{ name: string }[]>([]);
                         const [startDialogTransferData, setStartDialogTransferData] = useState(false);
                         const [dialogAlreadyExistData, setDialogAlreadyExistData] = useState(false);
-                        const [dialogPercent, setDialogPercent] = useState(0);
 
                         const handleOpenDialog = () => {
                             setDialogOpen(true);
@@ -1344,7 +1342,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             <div>
                                                                 <p>Seçtiğiniz dönem için veri zaten mevcut.</p>
                                                                 <p>Üzerine yazmak istiyor musunuz? Bu işlem geri alınamaz.</p>
-                                                                <Button color="error" onClick={handleCloseDialog}>
+                                                                <Button color="error" onClick={handleCloseTransferDialog}>
                                                                     İptal
                                                                 </Button>
                                                                 <Button onClick={() => { confirmTransferData(true); }}>
@@ -1354,7 +1352,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                             :
                                                             <div>
                                                                 <p>Veri aktarımı başlatıldı. Lütfen bekleyin ve işlem tamamlanana kadar sayfayı kapatmayın.</p>
-                                                                <LinearProgressWithLabel value={dialogPercent} />
+                                                                <LinearProgressWithLabel value={0} />
                                                             </div>
                                                         }
                                                     </div>
@@ -1419,7 +1417,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                                     </div>}
                                             </DialogContent>
                                             {!startDialogTransferData && <DialogActions>
-                                                <Button color={"error"} onClick={handleCloseDialog}>
+                                                <Button color={"error"} onClick={handleCloseTransferDialog}>
                                                     İptal
                                                 </Button>
                                                 <Button onClick={handleStartDialogTransferData}>

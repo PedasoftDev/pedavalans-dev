@@ -359,10 +359,10 @@ class DataImport extends RealmoceanService {
       ]).then((res) => res.documents)
     ]);
 
-    const competencyGroupMap = new Map(competencyGroups.map((item: any) => [item.competency_group_name.trim(), item])) as Map<string, { $id: string; competency_group_name: string }>;
-    const departmentMap = new Map(departments.map((item: any) => [item.name.trim(), item])) as Map<string, { id: string; name: string }>;
-    const lineMap = new Map(lines.map((item: any) => [item.name.trim(), item])) as Map<string, { id: string; name: string }>;;
-    const workplaceMap = new Map(workplaces.map((item: any) => [item.name.trim(), item])) as Map<string, { id: string; name: string }>;
+    const competencyGroupMap: Map<string, { $id: string; competency_group_name: string }> = new Map(competencyGroups.map((item: any) => [item.competency_group_name.trim(), item]));
+    const departmentMap: Map<string, { id: string; name: string }> = new Map(departments.map((item: any) => [item.name.trim(), item]));
+    const lineMap: Map<string, { id: string; name: string }> = new Map(lines.map((item: any) => [item.name.trim(), item]));
+    const workplaceMap: Map<string, { id: string; name: string }> = new Map(workplaces.map((item: any) => [item.name.trim(), item]));
 
     const bulkCompetencies = [];
     const bulkCompetencyDepartments = [];
