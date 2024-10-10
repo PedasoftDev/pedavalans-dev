@@ -12,11 +12,9 @@ services:
     command:
       - --log.level=DEBUG
       - --api.insecure=true
-      - --providers.file.directory=/storage/config
+      - --providers.file.filename=/etc/traefik/dynamic_conf.yml
       - --providers.file.watch=true
       - --providers.docker=true
-      - --providers.docker.exposedByDefault=false
-      - --providers.docker.constraints=Label(`traefik.constraint-label-stack`,`realmocean`)
       - --entrypoints.realmocean_web.address=:80
       - --entrypoints.realmocean_websecure.address=:443
       - --accesslog=true
@@ -29,6 +27,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - realmocean-config:/storage/config:ro
       - realmocean-certificates:/storage/certificates:ro
+      - ssl-certificates:/etc/ssl/private:ro
+      - /etc/ca-certificates/pedavalans/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro
     depends_on:
       - realmocean
     networks:
@@ -1015,3 +1015,9 @@ volumes:
   realmocean-builds:
   realmocean-influxdb:
   realmocean-config: # realmocean-chronograf:
+  ssl-certificates:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /etc/ca-certificates/pedavalans
