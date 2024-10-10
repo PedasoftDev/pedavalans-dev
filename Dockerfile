@@ -32,4 +32,4 @@ RUN ls -ll /install/data
 
 RUN chmod +x /install/data/install.sh
 
-CMD /bin/bash -c "/install/data/install.sh"
+CMD ["/bin/bash", "-c", "/install/data/install.sh"]
