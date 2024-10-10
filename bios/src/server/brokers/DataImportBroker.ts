@@ -46,4 +46,38 @@ export class DataImportBroker extends ServiceBroker<any> {
 
   }
 
+  async transferEmployeeCompetencyValuesToNewPeriodTargetData(current_evaluation_period: string, previous_evaluation_period: string, polyvalence_table_id: string, write_on_it: boolean): Promise<any> {
+
+    let path = '/transferEmployeeCompetencyValuesToNewPeriodTargetData';
+    let payload: Payload = {};
+
+    payload['current_evaluation_period'] = current_evaluation_period;
+    payload['previous_evaluation_period'] = previous_evaluation_period;
+    payload['polyvalence_table_id'] = polyvalence_table_id;
+    payload['write_on_it'] = write_on_it;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+
+  }
+
+  async transferEmployeeCompetencyValuesToNewPeriodAllData(current_evaluation_period: string, previous_evaluation_period: string, polyvalence_table_id: string, write_on_it: boolean): Promise<any> {
+
+    let path = '/transferEmployeeCompetencyValuesToNewPeriodAllData';
+    let payload: Payload = {};
+
+    payload['current_evaluation_period'] = current_evaluation_period;
+    payload['previous_evaluation_period'] = previous_evaluation_period;
+    payload['polyvalence_table_id'] = polyvalence_table_id;
+    payload['write_on_it'] = write_on_it;
+
+    const uri = new URL(this.config.endpoint + path);
+    return await this.call('post', uri, {
+      'content-type': 'application/json'
+    }, payload);
+
+  }
+
 }

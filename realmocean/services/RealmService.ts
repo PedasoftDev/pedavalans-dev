@@ -971,21 +971,21 @@ class RealmService extends RealmoceanService {
 
                 if (reminderDate.getTime() === today.getTime() && unfilledEmployees.length > 0) {
                     const mailTemplateWithEmployees = mailTemplate(unfilledEmployees)
-                    if (authParameterIsActive) {
-                        responsibleUsers.forEach(async (responsibleUser) => {
-                            const account = accountRelations.find(x => x.account_id === responsibleUser.responsible_employee_id);
-                            if (account) {
-                                try {
-                                    await this.emailSender(account.mail, "Polivalans Tablosu Veri Girişi Hatırlatma", mailTemplateWithEmployees, {
-                                        day: reminderDayCount,
-                                        polyvalenceTableName: table.polyvalence_table_name
-                                    })
-                                } catch (error) {
-                                    console.log(error);
-                                }
-                            }
-                        })
-                    }
+                    // if (authParameterIsActive) {
+                    //     responsibleUsers.forEach(async (responsibleUser) => {
+                    //         const account = accountRelations.find(x => x.account_id === responsibleUser.responsible_employee_id);
+                    //         if (account) {
+                    //             try {
+                    //                 await this.emailSender(account.mail, "Polivalans Tablosu Veri Girişi Hatırlatma", mailTemplateWithEmployees, {
+                    //                     day: reminderDayCount,
+                    //                     polyvalenceTableName: table.polyvalence_table_name
+                    //                 })
+                    //             } catch (error) {
+                    //                 console.log(error);
+                    //             }
+                    //         }
+                    //     })
+                    // }
                     //  else {
                     //   accountRelations.forEach(async (account) => {
                     //     try {
@@ -1218,20 +1218,20 @@ class RealmService extends RealmoceanService {
 
 
                     // Eğer bugün hatırlatma günü ise console'a yazdır
-                    if (today.toDateString() === endDate.toDateString()) {
-                        accountRelation.forEach(async (account) => {
-                            if (account.authorization_profile === 'admin' || account.is_admin) {
-                                await this.emailSender(account.mail, "Belge Hatırlatma", documentRemainderHtml, {
-                                    employeeName: employee?.first_name + " " + employee?.last_name,  // query ile employee name alınacak ** query şuanda çalışmıyor
-                                    documentName: doc.document_name,
-                                    documentNo: vocationalQualification.find(x => x.document_id === doc.document_id)?.document_code,
-                                    endDate: endDateMail.toLocaleDateString("tr-TR")
-                                })
-                            }
-                        })
-                    } else {
-                        console.log('Bugün hatırlatma günü değil');
-                    }
+                    // if (today.toDateString() === endDate.toDateString()) {
+                    //     accountRelation.forEach(async (account) => {
+                    //         if (account.authorization_profile === 'admin' || account.is_admin) {
+                    //             await this.emailSender(account.mail, "Belge Hatırlatma", documentRemainderHtml, {
+                    //                 employeeName: employee?.first_name + " " + employee?.last_name,  // query ile employee name alınacak ** query şuanda çalışmıyor
+                    //                 documentName: doc.document_name,
+                    //                 documentNo: vocationalQualification.find(x => x.document_id === doc.document_id)?.document_code,
+                    //                 endDate: endDateMail.toLocaleDateString("tr-TR")
+                    //             })
+                    //         }
+                    //     })
+                    // } else {
+                    //     console.log('Bugün hatırlatma günü değil');
+                    // }
                 })
 
             }
@@ -1244,20 +1244,20 @@ class RealmService extends RealmoceanService {
     }
 
     // Email gönderme fonksiyonu
-    async emailSender(to_email: string, subject: string, html: string, values: any) {
-        try {
-            const key = await this.emailService.createKey({
-                smtpServer: "smtp-mail.outlook.com",
-                smtpPort: "587",
-                password: "",
-                username: "notification@pedabilisim.com",
-                tls: false
-            })
-            await this.emailService.sendEmail(key, "notification@pedabilisim.com", to_email, subject, html, values)
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    // async emailSender(to_email: string, subject: string, html: string, values: any) {
+    //     try {
+    //         const key = await this.emailService.createKey({
+    //             smtpServer: "smtp-mail.outlook.com",
+    //             smtpPort: "587",
+    //             password: "",
+    //             username: "notification@pedabilisim.com",
+    //             tls: false
+    //         })
+    //         await this.emailService.sendEmail(key, "notification@pedabilisim.com", to_email, subject, html, values)
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // }
 
     // posizyon bazlı polivalans yönetimi parametresi kontrolü
     // async checkPositionBasedPolyvalenceManagement() {
