@@ -603,6 +603,23 @@ export class DashboardController extends UIController {
                                                                                     window.location.reload()
                                                                                 })
                                                                             }
+                                                                        }).catch((error) => {
+                                                                            if (error.code === 404) {
+                                                                                attributeTasks.Task(async () => {
+                                                                                    setIsUpdate(true)
+                                                                                })
+                                                                                attributeTasks.Task(async () => {
+                                                                                    try {
+                                                                                        await Services.Databases.createCollection(AppInfo.Name, AppInfo.Database, collection.id, collection.name)
+                                                                                    } catch (error) {
+                                                                                        console.error(error)
+                                                                                    }
+                                                                                })
+                                                                                attributeTasks.Task(async () => {
+                                                                                    window.location.reload()
+                                                                                })
+                                                                                attributeTasks.Run()
+                                                                            }
                                                                         })
                                                                     })
 
