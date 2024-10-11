@@ -3506,6 +3506,66 @@ const Database: IDatabase = {
             ]
         },
         {
+            "id": "employee_department_relation",
+            "name": "Employee Department Relation",
+            "description": {
+                "en": "Employee Department Relation is a collection of employee department relations.",
+                "tr": "Çalışan departman ilişkilerinin koleksiyonudur."
+            },
+            "version": 38,
+            "attributes": [
+                {
+                    "key": "id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "employee_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_record_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "department_name",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "size": 256,
+                    "version": 1
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": true
+                },
+                {
+                    "key": "is_deleted",
+                    "type": "boolean",
+                    "version": 1,
+                    "default": false
+                },
+
+            ]
+        },
+        {
             "id": "proxy_account",
             "name": "Proxy Account",
             "description": {
