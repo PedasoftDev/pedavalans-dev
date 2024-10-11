@@ -95,6 +95,7 @@ class DataImport extends RealmoceanService {
         return res.json({ result });
 
       } catch (e) {
+        console.log(e);
         return res.status(500).json({ message: e.message });
       }
     });
@@ -384,7 +385,7 @@ class DataImport extends RealmoceanService {
       const createCompetency = {
         competency_id: nanoid(),
         competency_name: competencyItem.yetkinlik_adi.trim(),
-        competency_description: competencyItem.yetkinlik_aciklamasi.trim(),
+        competency_description: competencyItem.yetkinlik_aciklamasi?.trim(),
         competency_group_name: competencyItem.yetkinlik_grubu_adi.trim(),
         tenant_id: organization,
         competency_group_id: competencyGroup?.$id,
