@@ -173,6 +173,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const { me, isLoading } = useGetMe("console");
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id);
         const { periods, isLoading: isLoadingPeriods } = CompetencyEvaluationPeriod.GetDefaultCompetencyEvaluationPeriod(me?.prefs?.organization);
+        const { periods: allPeriods, isLoading: isLoadingPeriodList } = CompetencyEvaluationPeriod.GetCompetencyEvaluationPeriods(me?.prefs?.organization);
         const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
         const { groups, isLoadingGroups } = CompetencyGroup.GetList(me?.prefs?.organization);
         const { levels, isLoadingLevels } = CompetencyGrade.GetGradeLevelList();
@@ -206,7 +207,7 @@ export class CompetencyRealDataEntryViewController extends UIController {
         const [departmentBasedCompetencyRelationship, setDepartmentBasedCompetencyRelationship] = useState<boolean>(false);
 
         return (
-            isLoading || this.polyvalenceUnitList == null || isLoadingResult || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingEmployeeMultipleLine || isLoadingCompetencyLineRelation || isLoadingCompetencyRelations || isLoadingTrainerEducationsList || isLoadingEmployees
+            isLoading || this.polyvalenceUnitList == null || isLoadingPeriodList || isLoadingResult || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingEmployeeMultipleLine || isLoadingCompetencyLineRelation || isLoadingCompetencyRelations || isLoadingTrainerEducationsList || isLoadingEmployees
                 || isLoadingGroups || isLoadingLevels || isLoadingCompetencyList || isLoadingTrainersList || isLoadingEducation || isLoadingAccounts
                 ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
@@ -771,25 +772,25 @@ export class CompetencyRealDataEntryViewController extends UIController {
                                 polyvalence_table_id: e.target.value
                             })
                             if (table.polyvalence_evaluation_frequency == "Yıl") {
-                                periods.forEach((period) => {
+                                allPeriods.forEach((period) => {
                                     getYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
                                 })
                                 setDialogDataYear(appedValue)
                             }
                             else if (table.polyvalence_evaluation_frequency == "Yarıyıl") {
-                                periods.forEach((period) => {
+                                allPeriods.forEach((period) => {
                                     getHalfYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
                                 })
                                 setDialogDataYear(appedValue)
                             }
                             else if (table.polyvalence_evaluation_frequency == "Çeyrekyıl") {
-                                periods.forEach((period) => {
+                                allPeriods.forEach((period) => {
                                     getQuarterYearPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
                                 })
                                 setDialogDataYear(appedValue)
                             }
                             else if (table.polyvalence_evaluation_frequency == "Ay") {
-                                periods.forEach((period) => {
+                                allPeriods.forEach((period) => {
                                     getMonthPeriods(Number(period.evaluation_period_year)).forEach((value) => appedValue.push(value))
                                 })
                                 setDialogDataYear(appedValue)
