@@ -624,7 +624,7 @@ export class DashboardController extends UIController {
                                                                     })
 
                                                                     attributeTasks.Run()
-
+                                                                    
                                                                     const employeesByTitleData = []
                                                                     const employeesByDepartmentData = []
                                                                     const employeesByPositionData = []

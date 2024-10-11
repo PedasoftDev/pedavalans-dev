@@ -3643,23 +3643,6 @@ const Database: IDatabase = {
             ]
         },
         {
-            "id": "org_int_deneme",
-            "name": "Org Int Deneme",
-            "description": {
-                "en": "",
-                "tr": ""
-            },
-            "version": 39,
-            "attributes": [
-                {
-                    "key": "principal_name",
-                    "type": "string",
-                    "size": 256,
-                    "version": 1
-                }
-            ]
-        },
-        {
             "id": "organization_integration",
             "name": "Organization Integration",
             "description": {
