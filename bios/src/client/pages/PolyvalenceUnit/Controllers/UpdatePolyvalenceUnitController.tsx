@@ -453,7 +453,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     rowHeight={30}
                                                     columnHeaderHeight={30}
                                                     rowSelectionModel={selectedResponsibleAccounts}
-                                                    getRowId={(row) => row.$id}
+                                                    getRowId={(row) => row?.$id}
                                                 />
                                             </div>
                                             <div style={{
@@ -477,7 +477,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     rowSelectionModel={selectedViewerAccounts}
                                                     rowHeight={30}
                                                     columnHeaderHeight={30}
-                                                    getRowId={(row) => row.$id}
+                                                    getRowId={(row) => row?.$id}
                                                 />
                                             </div>
                                             <FormControl fullWidth size="small">
