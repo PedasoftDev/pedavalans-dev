@@ -124,9 +124,10 @@ export class CompetencyTargetDataEntryViewController extends UIController {
         const { employeeMultipleDepartmentsList, isLoading: isLoadingMultipleDepartmentsList } = EmployeeMultipleDepartments.GetList()
         const { competencyDepartmentList, isLoadingCompetencyDepartmentList } = CompetencyDepartment.GetList(me?.prefs?.organization);
         const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
+        const { lineRelations, isLoadingLineRelations } = PolyvalenceUnitTableLineRelation.GetList();
 
         return (
-            isLoadingWorkPlace || isLoading || this.polyvalenceUnitList == null || isLoadingCompetencyDepartmentList || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingCompetencyLineRelation || isLoadingEmployeeMultipleLine || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
+            isLoadingWorkPlace || isLoading || this.polyvalenceUnitList == null || isLoadingLineRelations || isLoadingCompetencyDepartmentList || isLoadingPeriods || isLoadingMultipleDepartmentsList || isLoadingCompetencyLineRelation || isLoadingEmployeeMultipleLine || isLoadingEmployees || isLoadingGroups || isLoadingCompetencyList || isLoadingLevels || isLoadingPeriodList ? VStack(Spinner()) :
                 me === null ? UINavigate("/login") :
                     UIViewBuilder(() => {
 
@@ -536,30 +537,46 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                 <LeftContainerContent>
                                                     {(() => {
                                                         if (lineBasedCompetencyRelationship) {
-                                                            return employeeMultipleLinesList
-                                                                .filter((item) => item.line_id === lineRelation[0].line_id)
-                                                                .filter((item) => employees.some((x) => x.$id === item.employee_id))
-                                                                .map((employeeItem, i) => {
-                                                                    const employee = employees.find((x) => x.$id === employeeItem.employee_id);
-                                                                    console.log('EmployeeItem:', employeeItem);
-                                                                    console.log('Found Employee:', employee);
+                                                            if (lineRelations.find((item) => item.polyvalence_table_id === selectedTable.polyvalence_table_id)) {
+                                                                return employeeMultipleLinesList
+                                                                    .filter((item) => item.line_id === lineRelation[0].line_id)
+                                                                    .filter((item) => employees.some((x) => x.$id === item.employee_id))
+                                                                    .map((employeeItem, i) => {
+                                                                        const employee = employees.find((x) => x.$id === employeeItem.employee_id);
 
-                                                                    if (!employee) return null; // Eğer çalışan bulunamazsa
+                                                                        if (!employee) return null; // Eğer çalışan bulunamazsa
 
-                                                                    return (
+                                                                        return (
+                                                                            <LeftContainerContentItem
+                                                                                key={employeeItem.employee_id}
+                                                                                selected={selectedEmployeeId === employeeItem.employee_id}
+                                                                                onClick={() => selectEmployee(employeeItem.employee_id)}
+                                                                            >
+                                                                                <IoPersonCircleOutline
+                                                                                    size={25}
+                                                                                    {...(selectedEmployeeId === employeeItem.employee_id && { color: "#3BA2EE" })}
+                                                                                />
+                                                                                {employee.first_name} {employee.last_name}
+                                                                            </LeftContainerContentItem>
+                                                                        );
+                                                                    });
+                                                            } else {
+                                                                return employees
+                                                                    .filter((employee) => employee.department_id === selectedTable.polyvalence_department_id)
+                                                                    .filter((employee) => employee.is_active)
+                                                                    .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                                                                    .map((employee, i) => (
                                                                         <LeftContainerContentItem
-                                                                            key={employeeItem.employee_id}
-                                                                            selected={selectedEmployeeId === employeeItem.employee_id}
-                                                                            onClick={() => selectEmployee(employeeItem.employee_id)}
+                                                                            key={employee.id}
+                                                                            selected={selectedEmployeeId === employee.$id}
+                                                                            onClick={() => selectEmployee(employee.$id)}
                                                                         >
-                                                                            <IoPersonCircleOutline
-                                                                                size={25}
-                                                                                {...(selectedEmployeeId === employeeItem.employee_id && { color: "#3BA2EE" })}
-                                                                            />
+                                                                            <IoPersonCircleOutline size={25} {...(selectedEmployeeId === employee.$id && { color: "#3BA2EE" })} />
                                                                             {employee.first_name} {employee.last_name}
                                                                         </LeftContainerContentItem>
-                                                                    );
-                                                                });
+                                                                    ));
+                                                            }
+
                                                         } else if (departmentBasedCompetencyRelationship) {
                                                             return employeeMultipleDepartmentsList
                                                                 .filter((item) => item.department_id === selectedTable.polyvalence_department_id)
@@ -636,10 +653,15 @@ export class CompetencyTargetDataEntryViewController extends UIController {
                                                         columns={columns}
                                                         rows={(() => {
                                                             if (lineBasedCompetencyRelationship) {
-                                                                return competencyLineRelationList
-                                                                    .filter((item) => item.line_id === lineRelation[0].line_id)
-                                                                    .filter((item) => selectedCompetencyList.some((x) => x.competency_id === item.competency_id))
-                                                                    .map((relation) => selectedCompetencyList.find((x) => x.competency_id === relation.competency_id))
+                                                                if (lineRelations.find((item) => item.polyvalence_table_id === selectedTable.polyvalence_table_id)) {
+                                                                    return competencyLineRelationList
+                                                                        .filter((item) => item.line_id === lineRelation[0].line_id)
+                                                                        .filter((item) => selectedCompetencyList.some((x) => x.competency_id === item.competency_id))
+                                                                        .map((relation) => selectedCompetencyList.find((x) => x.competency_id === relation.competency_id))
+                                                                } else {
+                                                                    return selectedGroupId ? selectedCompetencyList.filter((competency) => competency.competency_group_id === selectedGroupId) : selectedCompetencyList
+                                                                }
+
                                                             } else if (departmentBasedCompetencyRelationship) {
                                                                 return selectedCompetencyList.filter((competency) => selectedGroupId === "" ? true : competency.competency_group_id === selectedGroupId)
                                                             }
