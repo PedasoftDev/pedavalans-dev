@@ -53,6 +53,7 @@ const formReset = {
 }
 
 const positionBased = localStorage.getItem("position_based_polyvalence_management") === "true" ? true : false;
+const workPlaceDefination = localStorage.getItem("work_place_definition") === "true" ? true : false;
 
 export class UpdatePolyvalenceUnitController extends UIController {
     public LoadView(): UIView {
@@ -85,8 +86,6 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { updatePolyvalenceUnitTableDataResponsible } = PolyvalenceUnitTableDataResponsible.Update();
         const { updatePolyvalenceUnitTableDataViewer } = PolyvalenceUnitTableDataViewer.Update();
 
-        //workplace
-        const [workPlaceDefination, setWorkPlaceDefination] = useState<boolean>(false);
         const { workPlaces, isLoadingWorkPlace } = OrganizationStructureWorkPlace.GetList(me?.prefs?.organization);
         const { relatedDepartmentsWorkPlacesList, isLoading: isLoadingRelDepList } = RelatedDepartmentsWorkPlaces.GetList();
 
@@ -294,17 +293,6 @@ export class UpdatePolyvalenceUnitController extends UIController {
                             }
                         })
                         setAccountsData(accountsDataCpy)
-                        Services.Databases.listDocuments(
-                            AppInfo.Name,
-                            AppInfo.Database,
-                            Collections.Parameter,
-                            [
-                                Query.equal("name", "work_place_definition"),
-                                Query.limit(10000)
-                            ]
-                        ).then((res) => {
-                            setWorkPlaceDefination(res.documents[0]?.is_active)
-                        })
                     }, [])
 
                     return (

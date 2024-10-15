@@ -42,6 +42,7 @@ export class DashboardController extends UIController {
         const { parameters: tableAuth, isLoading: isLoadingTableAuth } = Parameters.GetParameterByName(Resources.ParameterLocalStr.polyvalence_unit_table_auth)
         const { parameters: machineBased, isLoading: isLoadingMachineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.machine_based_polyvalence_management)
         const { parameters: lineBased, isLoading: isLoadingLineBased } = Parameters.GetParameterByName(Resources.ParameterLocalStr.line_based_competency_relationship)
+        const { parameters: workPlaceDefinition, isLoading: isLoadingWorkPlaceDefinition } = Parameters.GetParameterByName(Resources.ParameterLocalStr.work_place_definition)
         const { stringParameters: positionBased, isLoading: isLoadingPositionBased } = StringParameter.GetParameterByName("position_based_polyvalence_management")
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
         const { accountRelations: accountRelationList, isLoadingResult: isLoadingAccountResult } = AccountRelation.GetList(me?.prefs?.organization)
@@ -53,7 +54,7 @@ export class DashboardController extends UIController {
         const navigate = useNavigate();
 
         return (
-            isLoading || isLoadingDb || isLoadingBucketList || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingPositionBased || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
+            isLoading || isLoadingDb || isLoadingBucketList || isLoadingWorkPlaceDefinition || isLoadingTableAuth || isLoadingResult || isLoadingUsers || isLoadingPositionBased || isLoadingAccountResult || isLoadingMachineBased || isLoadingLineBased || isLoadingCollections || isLoadingEmployees || isLoadingPositions || isLoadingTitles || isLoadingDepartments ? VStack(Spinner()) :
                 me == null ? UINavigate("/login") :
                     required ? UINavigate("/app/setup") :
                         accountRelations[0].is_active == false ? UINavigate("/logout") :
@@ -467,6 +468,7 @@ export class DashboardController extends UIController {
                                         }
                                         localStorage.setItem(Resources.ParameterLocalStr.machine_based_polyvalence_management, machineBased[0]?.is_active ? "true" : "false")
                                         localStorage.setItem(Resources.ParameterLocalStr.line_based_competency_relationship, lineBased[0]?.is_active ? "true" : "false")
+                                        localStorage.setItem(Resources.ParameterLocalStr.work_place_definition, workPlaceDefinition[0]?.is_active ? "true" : "false")
                                         localStorage.setItem("position_based_polyvalence_management", positionBased[0]?.value)
 
                                         const collection_version = collections.find(collection => collection.$id === "collection_version")
@@ -624,7 +626,7 @@ export class DashboardController extends UIController {
                                                                     })
 
                                                                     attributeTasks.Run()
-                                                                    
+
                                                                     const employeesByTitleData = []
                                                                     const employeesByDepartmentData = []
                                                                     const employeesByPositionData = []
