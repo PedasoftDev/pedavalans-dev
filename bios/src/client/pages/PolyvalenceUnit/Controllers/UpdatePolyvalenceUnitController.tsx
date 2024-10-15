@@ -441,7 +441,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                             }}>
                                                 <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Sorumluları</Typography>
                                                 <StyledDataGrid
-                                                    rows={accountsData.filter((account) => !selectedViewerAccounts.includes(account?.$id))}
+                                                    rows={accountsData.filter((account) => !selectedViewerAccounts.includes(account.$id))}
                                                     columns={accountColumns}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                     isCellEditable={() => false}
@@ -465,7 +465,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                             }}>
                                                 <Typography variant="button" sx={{ marginLeft: "10px" }}>Polivalans Veri Görüntüleyicileri</Typography>
                                                 <StyledDataGrid
-                                                    rows={accountsData.filter((account) => !selectedResponsibleAccounts.includes(account?.$id))}
+                                                    rows={accountsData.filter((account) => !selectedResponsibleAccounts.includes(account.$id))}
                                                     columns={accountColumns}
                                                     localeText={trTR.components.MuiDataGrid.defaultProps.localeText}
                                                     isCellEditable={() => false}
