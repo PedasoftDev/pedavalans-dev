@@ -51,6 +51,7 @@ export namespace Resources {
         reminder_mail_for_unfilled_tables: "reminder_mail_for_unfilled_tables",
         competency_education_relationship: "competency_education_relationship",
         new_employee_evaluation_day: "new_employee_evaluation_day",
+        work_place_definition: "work_place_definition",
     }
 
     export const Parameters = [

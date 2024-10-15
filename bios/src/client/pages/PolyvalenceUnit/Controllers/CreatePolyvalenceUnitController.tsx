@@ -185,7 +185,7 @@ export class CreatePolyvalenceUnitController extends UIController {
                                 })
                             }
 
-                            if (lineBased[0]?.is_active) {
+                            if (lineBased[0]?.is_active && selectedLine) {
                                 createPolyvalenceUnitLineRelation({
                                     documentId: id,
                                     data: {

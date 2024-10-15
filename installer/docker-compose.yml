@@ -169,7 +169,7 @@ services:
       - _APP_MIGRATIONS_FIREBASE_CLIENT_ID
       - _APP_MIGRATIONS_FIREBASE_CLIENT_SECRET
       - _APP_ASSISTANT_OPENAI_API_KEY
-  
+
   realmocean_services:
     container_name: realmocean-services
     image: realmocean/services:1.1
@@ -998,11 +998,11 @@ services:
   # Dev Tools End   ------------------------------------------------------------------------------------------
 
 networks:
-  gateway: 
+  gateway:
     external: false
-  realmocean: 
+  realmocean:
     external: false
-  runtimes: 
+  runtimes:
     external: false
 
 volumes:

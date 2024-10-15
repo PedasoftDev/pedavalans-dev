@@ -18,6 +18,11 @@ namespace PolyvalenceUnitTableLineRelation {
         const { updateDocument, error, isError, isLoading, isSuccess } = useUpdateDocument(AppInfo.Name)
         return { updatePolyvalenceUnitLineRelation: updateDocument, error, isError, isLoading, isSuccess }
     }
+
+    export const GetList = (): { lineRelations: IPolyvalenceUnitTableLineRelation.IPolyvalenceUnitTableLineRelation[], isLoadingLineRelations: boolean } => {
+        const { documents, isLoading } = useListDocuments(AppInfo.Name, AppInfo.Database, 'polyvalence_unit_table_line_rel', [Query.limit(10000)])
+        return { lineRelations: documents as any, isLoadingLineRelations: isLoading }
+    }
 }
 
 export default PolyvalenceUnitTableLineRelation;
