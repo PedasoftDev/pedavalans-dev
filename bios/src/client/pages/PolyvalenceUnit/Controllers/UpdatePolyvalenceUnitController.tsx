@@ -61,7 +61,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
         const { id } = useParams();
         const navigate = useNavigate();
         const { me, isLoading } = useGetMe("console");
-        const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)]);
         const { accountRelations, isLoadingResult: isLoadingAccountRelations } = AccountRelation.GetList(me?.prefs?.organization);
         const { departments, isLoadingDepartments } = OrganizationStructureDepartment.GetList(me?.prefs?.organization);
         const { positions, isLoadingPositions } = OrganizationStructurePosition.GetList(me?.prefs?.organization);
