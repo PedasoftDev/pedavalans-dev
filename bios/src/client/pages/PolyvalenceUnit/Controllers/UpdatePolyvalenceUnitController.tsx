@@ -56,6 +56,7 @@ const positionBased = localStorage.getItem("position_based_polyvalence_managemen
 const workPlaceDefination = localStorage.getItem("work_place_definition") === "true" ? true : false;
 
 export class UpdatePolyvalenceUnitController extends UIController {
+
     public LoadView(): UIView {
 
         const { id } = useParams();
@@ -275,25 +276,43 @@ export class UpdatePolyvalenceUnitController extends UIController {
                         })
                     }
 
+                    const mapResponsibleEmployeeIds = (dataResponsible) => {
+                        return dataResponsible.map((responsible) => responsible.responsible_employee_id);
+                    };
+
+                    const mapViewerEmployeeIds = (dataViewer) => {
+                        return dataViewer.map((viewer) => viewer.viewer_employee_id);
+                    };
+
+                    const mapPositionRelations = (positionRelations, positions) => {
+                        return positionRelations.map((positionRelation) =>
+                            positions.find((position) => position.$id === positionRelation.position_id)
+                        );
+                    };
+
+                    const getActiveAccounts = (accounts, accountRelations) => {
+                        if (!accounts || !accountRelations) return [];
+                        return accountRelations
+                            .filter((accountRelation) => accountRelation.is_active)
+                            .map((accountRelation) => accounts.find((account) => account.$id === accountRelation.account_id))
+                            .filter(Boolean);
+                    };
+
                     useEffect(() => {
-                        setSelectedResponsibleAccounts(dataResponsible.map((responsible) => responsible.responsible_employee_id))
-                        setSelectedViewerAccounts(dataViewer.map((viewer) => viewer.viewer_employee_id))
-                        setForm(removeDollarProperties(polyvalenceUnit))
-                        if (lineBased[0]?.is_active) {
-                            setSelectedLine(lineRelation[0]?.line_id)
+                        if (dataResponsible) {
+                            setSelectedResponsibleAccounts(mapResponsibleEmployeeIds(dataResponsible));
                         }
-                        setSelectedPositions(polyvalenceUnitPositionRelations.map((positionRelation) => {
-                            return positions.find((position) => position.$id === positionRelation.position_id)
-                        }))
-                        setIsActive(polyvalenceUnit.is_active_table)
-                        const accountsDataCpy = []
-                        accountRelations.forEach((accountRelation) => {
-                            if (accountRelation.is_active) {
-                                accountsDataCpy.push(accounts.find((account) => account.$id === accountRelation.account_id))
-                            }
-                        })
-                        setAccountsData(accountsDataCpy)
-                    }, [])
+                        if (dataViewer) {
+                            setSelectedViewerAccounts(mapViewerEmployeeIds(dataViewer));
+                        }
+                        setForm(removeDollarProperties(polyvalenceUnit));
+                        if (lineBased[0]?.is_active) {
+                            setSelectedLine(lineRelation[0]?.line_id);
+                        }
+                        setSelectedPositions(mapPositionRelations(polyvalenceUnitPositionRelations, positions));
+                        setIsActive(polyvalenceUnit.is_active_table);
+                        setAccountsData(getActiveAccounts(accounts, accountRelations));
+                    }, [dataResponsible, dataViewer, polyvalenceUnit, lineBased, lineRelation, polyvalenceUnitPositionRelations, positions, accounts, accountRelations]);
 
                     return (
                         VStack({ alignment: cTop })(
