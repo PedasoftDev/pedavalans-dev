@@ -439,7 +439,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     />
                                                 </FormControl>
                                             }
-                                            <div style={{
+                                            {(accountsData != null || accountsData != undefined) && <div style={{
                                                 height: "250px",
                                                 width: "100%",
                                                 display: "flex",
@@ -462,8 +462,8 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     rowSelectionModel={selectedResponsibleAccounts}
                                                     getRowId={(row) => row.$id}
                                                 />
-                                            </div>
-                                            <div style={{
+                                            </div>}
+                                            {(accountsData != null || accountsData != undefined) && <div style={{
                                                 height: "250px",
                                                 width: "100%",
                                                 display: "flex",
@@ -486,7 +486,7 @@ export class UpdatePolyvalenceUnitController extends UIController {
                                                     columnHeaderHeight={30}
                                                     getRowId={(row) => row.$id}
                                                 />
-                                            </div>
+                                            </div>}
                                             <FormControl fullWidth size="small">
                                                 <InputLabel>Değerlendirme Sıklığı</InputLabel>
                                                 <Select
