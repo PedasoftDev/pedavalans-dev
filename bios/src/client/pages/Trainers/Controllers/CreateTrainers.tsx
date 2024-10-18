@@ -46,7 +46,7 @@ export class CreateTrainers extends UIController {
 
 
     const { me, isLoading } = useGetMe("console");
-    const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+    const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
     const { educationList, isLoading: isLoadingEducation } = Education.GetList()
 
     const { createTrainers } = Trainers.Create();

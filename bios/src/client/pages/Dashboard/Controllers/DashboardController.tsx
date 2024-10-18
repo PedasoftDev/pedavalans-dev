@@ -46,7 +46,7 @@ export class DashboardController extends UIController {
         const { stringParameters: positionBased, isLoading: isLoadingPositionBased } = StringParameter.GetParameterByName("position_based_polyvalence_management")
         const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
         const { accountRelations: accountRelationList, isLoadingResult: isLoadingAccountResult } = AccountRelation.GetList(me?.prefs?.organization)
-        const { accounts, isLoading: isLoadingUsers } = useListAccounts()
+        const { accounts, isLoading: isLoadingUsers } = useListAccounts([Query.limit(10000)])
         const { getBucketListPage, isLoadingBucketList } = Bucket.GetBucketList(AppInfo.Name)
         const { createBucket } = useCreateBucket(AppInfo.Name)
 

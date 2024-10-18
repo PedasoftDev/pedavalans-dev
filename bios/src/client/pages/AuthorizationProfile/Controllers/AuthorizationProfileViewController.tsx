@@ -19,7 +19,7 @@ export class AuthorizationProfileViewController extends UIController {
     public LoadView(): UIView {
         const { me, isLoading: isLoadingMe } = useGetMe("console");
         const navigate = useNavigate();
-        const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+        const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)]);
         const { accountRelations: accountRel, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
         const { updateAccountRelation } = AccountRelation.Update();
 

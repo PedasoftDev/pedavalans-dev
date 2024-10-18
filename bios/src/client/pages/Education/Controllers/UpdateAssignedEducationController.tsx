@@ -75,7 +75,7 @@ export class UpdateAssignedEducationController extends UIController {
     const { me, isLoading } = useGetMe("console");
     const { educationList, isLoading: isLoadingEducation } = Education.GetList();
     const { employees, isLoadingEmployees } = OrganizationStructureEmployee.GetList(me?.prefs?.organization);
-    const { accounts, isLoading: isLoadingAccounts } = useListAccounts();
+    const { accounts, isLoading: isLoadingAccounts } = useListAccounts([Query.limit(10000)])
     const { accountRelations, isLoadingResult } = AccountRelation.GetByAccountId(me?.$id)
     const { assignedEducation, isLoadingAssignedEducation } = AssignEducation.Get(id)
     const { assignedEducationResult, isLoadingAssignedEducationResult } = AssignEducationResult.Get(id);
